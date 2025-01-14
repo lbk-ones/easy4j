@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 从高到地低 OFF 、 FATAL 、 ERROR 、 WARN 、 INFO 、 DEBUG 、 TRACE 、 ALL -->
+<!-- 日志输出规则 根据当前ROOT 级别，日志输出时，级别高于root默认的级别时 会输出 -->
+
+<!-- 属性描述 scan：性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true scanPeriod:设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒。当scan为true时，此属性生效。默认的时间间隔为1分钟。
+	debug:当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。 -->
+<configuration scan="true" scanPeriod="60 seconds"
+               debug="false">
+
+    <springProperty scope="context" name="serviceName" source="spring.application.name" defaultValue="easy4j-service"/>
+    <springProperty scope="context" name="consoleLogLevel" source="logback.console.logLevel" defaultValue="debug"/>
+
+
+    <!-- 定义日志文件 输入位置 -->
+    <springProperty scope="context" name="loggingFile" source="log.save.path" defaultValue="logs"/>
+
+    <!-- 日志最大的历史 30天 -->
+    <property name="maxHistory" value="2"/>
+    <property name="loggingFile" value=""/>
+
+
+    <!-- ConsoleAppender 控制台输出日志 -->
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 对日志进行格式化 -->
+        <encoder>
+            <pattern>%d %-5level [${serviceName}] [%thread] [%logger{36}:%line] - %traceId %m%n</pattern>
+        </encoder>
+        <!-- 生产环境只打印错误日志 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${consoleLogLevel}</level>
+        </filter>
+    </appender>
+
+    <appender name="LOG_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${loggingFile}/${hostname}.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>
+                ${loggingFile}/${hostname}.%d.log
+            </fileNamePattern>
+            <maxHistory>${maxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d %-5level [${serviceName}] [%thread] [%logger{36}:%line] - %traceId %m%n
+            </pattern>
+        </encoder>
+    </appender>
+
+<!--    <appender name="LOG"-->
+<!--              class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>${logDir}/${hostname}.sys</file>-->
+<!--        <rollingPolicy-->
+<!--                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>-->
+<!--                ${logDir}/${hostname}.%d.sys-->
+<!--            </fileNamePattern>-->
+<!--            <maxHistory>${maxHistory}</maxHistory>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>%d %-5level [${serviceName}] [%thread] [%logger{36}:%line] - %traceId %m%n-->
+<!--            </pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+    <root level="INFO">
+        <!-- 控制台输出 -->
+        <appender-ref ref="STDOUT"/>
+        <!-- 文件输出 -->
+        <appender-ref ref="LOG_FILE"/>
+    </root>
+
+</configuration>

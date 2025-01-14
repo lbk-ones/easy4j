@@ -1,0 +1,4 @@
+easy4j.module.dubbo3.ConsumerExceptionFilter
+easy4j.module.dubbo3.ProviderExceptionFilter
+easy4j.module.dubbo3.DubboTraceFilter
+exception=easy4j.module.dubbo3.ExceptionFilter

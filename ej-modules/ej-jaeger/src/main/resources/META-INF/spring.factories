@@ -1,0 +1,9 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+easy4j.module.jaeger.spring.autoconfig.TracerAutoConfiguration,\
+easy4j.module.jaeger.spring.autoconfig.TracerRegisterAutoConfiguration,\
+easy4j.module.jaeger.spring.starter.JaegerAutoConfiguration
+
+
+
+org.springframework.context.ApplicationListener=\
+easy4j.module.jaeger.spring.logback.ApplicationRunListener
