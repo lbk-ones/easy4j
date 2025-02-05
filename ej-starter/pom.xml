@@ -9,6 +9,7 @@
         <module>ej-dubbo3-mp-starter</module>
         <module>ej-spring-boot-starter</module>
         <module>ej-spring-nd-boot-starter</module>
+        <module>ej-jpa-boot-starter</module>
     </modules>
     <name>ej-starter</name>
     <url>http://maven.apache.org</url>

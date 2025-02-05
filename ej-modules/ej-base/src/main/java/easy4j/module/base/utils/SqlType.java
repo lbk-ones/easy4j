@@ -16,6 +16,7 @@ public final class SqlType {
     public static String datatype1 = "mysql";
     public static String datatype2 = "oracle";
     public static String datatype3 = "sqlserver";
+    public static String datatype4 = "h2";
     private static final Map<String,String> DATASOURCECLASS =  new HashMap<>();
     private static final Map<String,String> VALIDATIONQUERY =  new HashMap<>();
 
@@ -23,10 +24,12 @@ public final class SqlType {
         DATASOURCECLASS.put(datatype1, "com.mysql.cj.jdbc.Driver");
         DATASOURCECLASS.put(datatype2, "oracle.jdbc.driver.OracleDriver");
         DATASOURCECLASS.put(datatype3, "com.microsoft.jdbc.sqlserver.SQLServerDriver");
+        DATASOURCECLASS.put(datatype4, "org.h2.Driver");
 
         VALIDATIONQUERY.put(datatype1, "select 'x'");
         VALIDATIONQUERY.put(datatype2, "select 'x' from dual");
         VALIDATIONQUERY.put(datatype3, "select 1");
+        VALIDATIONQUERY.put(datatype4, "select 1");
 
     }
     /**
@@ -35,6 +38,9 @@ public final class SqlType {
      * @date 2022/2/23
      */
     public static String getDataTypeByUrl(String url){
+        if(StrUtil.isBlank(url)){
+            return null;
+        }
         String s = url.toLowerCase();
         if(s.contains(datatype1)){
             return datatype1;
@@ -45,6 +51,9 @@ public final class SqlType {
         if(s.contains(datatype3)){
             return datatype3;
         }
+        if(s.contains(datatype4)){
+            return datatype4;
+        }
         return null;
     }
     /**
@@ -53,6 +62,9 @@ public final class SqlType {
      * @return
      */
     public static String getValidateSqlByUrl(String url){
+        if(StrUtil.isBlank(url)){
+            return null;
+        }
         String s = url.toLowerCase();
         String dataType = getDataTypeByUrl(s);
         return VALIDATIONQUERY.get(dataType);
@@ -63,6 +75,9 @@ public final class SqlType {
      * @return
      */
     public static String getDriverClassNameByUrl(String url){
+        if(StrUtil.isBlank(url)){
+            return null;
+        }
         String s = url.toLowerCase();
         String dataType = getDataTypeByUrl(s);
         return DATASOURCECLASS.get(dataType);
@@ -83,6 +98,9 @@ public final class SqlType {
         if(s.contains(datatype3)){
             return VALIDATIONQUERY.get(datatype3);
         }
+        if(s.contains(datatype4)){
+            return VALIDATIONQUERY.get(datatype4);
+        }
         return null;
     }
     /**
@@ -100,6 +118,9 @@ public final class SqlType {
         }
         if(s.contains(datatype3)){
             return DATASOURCECLASS.get(datatype3);
+        }
+        if(s.contains(datatype4)){
+            return DATASOURCECLASS.get(datatype4);
         }
         return null;
     }

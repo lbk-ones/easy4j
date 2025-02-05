@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>easy4j.module.boot</groupId>
+  <artifactId>ej-jpa-boot-starter</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+
+  <name>ej-jpa-boot-starter</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>easy4j.module.base</groupId>
+      <artifactId>ej-base</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jdbc</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.data</groupId>
+          <artifactId>spring-data-jdbc</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!--mapstruct-->
+    <dependency>
+      <groupId>easy4j.module.mapstruct</groupId>
+      <artifactId>ej-mapstruct</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>easy4j.module.sadmin</groupId>
+      <artifactId>ej-sadmin</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>easy4j.module.logback</groupId>
+      <artifactId>ej-logback</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>easy4j.module.jpa</groupId>
+      <artifactId>ej-jpa</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>easy4j.module.h2</groupId>
+      <artifactId>ej-h2</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+</project>

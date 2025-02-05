@@ -272,7 +272,7 @@ public class ListTs {
             return objects;
         }
         for (T t : source) {
-            R r = ReflectUtil.newInstance(rClass);
+            R r = ReflectUtil.newInstanceIfPossible(rClass);
             BeanUtil.copyProperties(t,r);
             objects.add(r);
         }

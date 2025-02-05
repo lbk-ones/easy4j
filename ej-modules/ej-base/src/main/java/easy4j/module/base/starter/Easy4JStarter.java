@@ -77,4 +77,7 @@ public @interface Easy4JStarter{
     String serviceDesc() default "";
 
     String author() default "";
+
+    boolean enableH2() default false;
+    String h2Url() default "jdbc:h2:mem:testdb";
 }

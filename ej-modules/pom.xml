@@ -25,6 +25,7 @@
         <module>ej-redis</module>
         <module>ej-ltl-transactional</module>
         <module>ej-logback</module>
+        <module>ej-h2</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>

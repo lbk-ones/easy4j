@@ -16,13 +16,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dubbo.version>3.2.7</dubbo.version>
         <nacos.version>2.2.1</nacos.version>
-        <spring-boot.version>2.7.16</spring-boot.version>
+        <!--up to 2.7.18-->
+        <spring-boot.version>2.7.18</spring-boot.version>
         <grpc.version>1.54.1</grpc.version>
         <protobufjava.version>3.19.6</protobufjava.version>
         <sentinel.version>1.8.6</sentinel.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
         <log4j.version>2.17.2</log4j.version>
-        <mplus.version>3.5.1</mplus.version>
+        <mplus.version>3.5.10</mplus.version>
         <hutool.version>5.8.22</hutool.version>
         <flyway2.version>5.2.1</flyway2.version>
         <jooq.version>3.14.16</jooq.version>
