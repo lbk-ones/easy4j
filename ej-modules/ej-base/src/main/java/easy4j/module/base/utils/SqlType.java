@@ -17,6 +17,7 @@ public final class SqlType {
     public static String datatype2 = "oracle";
     public static String datatype3 = "sqlserver";
     public static String datatype4 = "h2";
+    public static String datatype5 = "postgresql";
     private static final Map<String,String> DATASOURCECLASS =  new HashMap<>();
     private static final Map<String,String> VALIDATIONQUERY =  new HashMap<>();
 
@@ -25,11 +26,13 @@ public final class SqlType {
         DATASOURCECLASS.put(datatype2, "oracle.jdbc.driver.OracleDriver");
         DATASOURCECLASS.put(datatype3, "com.microsoft.jdbc.sqlserver.SQLServerDriver");
         DATASOURCECLASS.put(datatype4, "org.h2.Driver");
+        DATASOURCECLASS.put(datatype5, "org.postgresql.Driver");
 
         VALIDATIONQUERY.put(datatype1, "select 'x'");
         VALIDATIONQUERY.put(datatype2, "select 'x' from dual");
         VALIDATIONQUERY.put(datatype3, "select 1");
         VALIDATIONQUERY.put(datatype4, "select 1");
+        VALIDATIONQUERY.put(datatype5, "select 1");
 
     }
     /**
@@ -53,6 +56,9 @@ public final class SqlType {
         }
         if(s.contains(datatype4)){
             return datatype4;
+        }
+        if(s.contains(datatype5)){
+            return datatype5;
         }
         return null;
     }
@@ -101,6 +107,9 @@ public final class SqlType {
         if(s.contains(datatype4)){
             return VALIDATIONQUERY.get(datatype4);
         }
+        if(s.contains(datatype5)){
+            return VALIDATIONQUERY.get(datatype5);
+        }
         return null;
     }
     /**
@@ -121,6 +130,9 @@ public final class SqlType {
         }
         if(s.contains(datatype4)){
             return DATASOURCECLASS.get(datatype4);
+        }
+        if(s.contains(datatype5)){
+            return DATASOURCECLASS.get(datatype5);
         }
         return null;
     }

@@ -76,6 +76,9 @@ public class SysConstant {
      * 对应 Spring JPA 中 Hibernate 数据库表结构自动更新策略配置项的键
      */
     public static final String SPRING_JPA_PROPERTIES_HIBERNATE_HBM2DDL_AUTO = "spring.jpa.properties.hibernate.hbm2ddl.auto";
+    public static final String SPRING_JPA_GENERATE_DDL = "spring.jpa.generate-ddl";
+    public static final String SPRING_JPA_HIBERNATE_DDL_AUTO = "spring.jpa.hibernate.ddl-auto";
+
 
 
     // h2

@@ -85,6 +85,8 @@ public class JpaEnvironment extends AbstractEnvironmentForEj {
         properties.setProperty(SysConstant.SPRING_JPA_PROPERTIES_HIBERNATE_CURRENT_SESSION_CONTEXT_CLASS, SpringSessionContext.class.getName());
         // 表结构自动生成
         properties.setProperty(SysConstant.SPRING_JPA_PROPERTIES_HIBERNATE_HBM2DDL_AUTO,"update");
+        properties.setProperty(SysConstant.SPRING_JPA_GENERATE_DDL,"true");
+        properties.setProperty(SysConstant.SPRING_JPA_HIBERNATE_DDL_AUTO,"update");
         return properties;
     }
 
