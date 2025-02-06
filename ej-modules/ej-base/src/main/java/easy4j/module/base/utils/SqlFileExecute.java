@@ -9,12 +9,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SqlFileExecute {
     public static void executeSqlFile(JdbcTemplate jdbcTemplate, String filePath) {
         try {
             // 从类路径下读取 SQL 文件内容
             String sqlContent = readSqlFileFromClasspath(filePath);
+            sqlContent = removeMultiLineComments(sqlContent);
             // 拆分 SQL 语句
             List<String> sqlStatements = splitSqlStatements(sqlContent);
 
@@ -82,5 +85,18 @@ public class SqlFileExecute {
             statements.add(currentStatement.toString().trim());
         }
         return statements;
+    }
+
+
+    // 去掉多行注释可能不太好 oracle有些语法是注释来完成的 但是不去掉可能会报错 so... 去掉吧
+    public static String removeMultiLineComments(String input) {
+        // 定义正则表达式，用于匹配 /** ... */ 形式的注释
+        String regex = "/\\*.*?\\*/";
+        // 编译正则表达式
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        // 创建 Matcher 对象
+        Matcher matcher = pattern.matcher(input);
+        // 将匹配到的注释替换为空字符串
+        return matcher.replaceAll("");
     }
 }
