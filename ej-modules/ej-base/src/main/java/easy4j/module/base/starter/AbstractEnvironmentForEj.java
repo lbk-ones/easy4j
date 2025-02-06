@@ -61,23 +61,11 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
     }
 
     public String getDbType(){
-        String property = getDbUrl();
-        String dataTypeByUrl = SqlType.getDataTypeByUrl(property);
-        DbType dbType = DbType.getDbType(dataTypeByUrl);
-        return dbType.getDb();
+        return EnvironmentHolder.getDbType(this.environment);
     }
 
     public String getDbUrl(){
-        String property = this.environment.getProperty(SysConstant.DB_URL_STR);
-
-        if(StrUtil.isBlank(property)){
-            String url2 = this.environment.getProperty(SysConstant.DB_URL_STR_NEW);
-            if(StrUtil.isNotBlank(url2)){
-                String[] split = url2.split(SP.AT);
-                property = split[0];
-            }
-        }
-        return property;
+        return EnvironmentHolder.getDbUrl(this.environment);
     }
 
 

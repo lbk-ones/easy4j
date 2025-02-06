@@ -73,7 +73,7 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
 
     // 将数据库中业务ID的key缓存到map
     private void updateCacheFromDb() {
-        logger.info("leaf update cache from db");
+        // logger.info("leaf update cache from db");
         try {
             List<String> dbTags = leafAllocDao.getAllTags();
             if (dbTags == null || dbTags.isEmpty()) {

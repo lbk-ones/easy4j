@@ -129,21 +129,21 @@ public class SysLog {
             return;
         }
         IS_SETTING.set(true);
-        System.setErr(new PrintStream(System.err){
-            @Override
-            public void println(Object x) {
-                // 拦截堆栈信息 e.printStackInfo(); 因为正常来说 e.printStackInfo() 不会记录到日志文件中去
-                if(x instanceof Throwable){
-                    String message = ((Throwable) x).getMessage();
-                    if(!checkPrintException(message,true)){
-                        log.error("错误信息:{}",x);
-                    }
-                }else{
-                    log.error("错误信息:{}",x);
-                }
-                //logErrorObjToJson(x);
-            }
-        });
+//        System.setErr(new PrintStream(System.err){
+//            @Override
+//            public void println(Object x) {
+//                // 拦截堆栈信息 e.printStackInfo(); 因为正常来说 e.printStackInfo() 不会记录到日志文件中去
+//                if(x instanceof Throwable){
+//                    String message = ((Throwable) x).getMessage();
+//                    if(!checkPrintException(message,true)){
+//                        log.error("错误信息:{}",x);
+//                    }
+//                }else{
+//                    log.error("错误信息:{}",x);
+//                }
+//                //logErrorObjToJson(x);
+//            }
+//        });
         System.setOut(new PrintStream(System.out){
             @Override
             public void print(boolean b) {

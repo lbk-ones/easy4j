@@ -9,6 +9,7 @@ import com.alibaba.fastjson2.JSON;
 import easy4j.module.base.enums.DbType;
 import easy4j.module.base.starter.EnvironmentHolder;
 import easy4j.module.base.utils.ListTs;
+import easy4j.module.base.utils.SqlFileExecute;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysLog;
 import org.slf4j.Logger;
@@ -52,10 +53,27 @@ public class CommonKey {
         DataSource dataSource = SpringUtil.getBean(DataSource.class);
         JdbcTemplate jdbcTemplate = SpringUtil.getBean(JdbcTemplate.class);
         jdbcTemplate.setDataSource(dataSource);
-        try {
-            jdbcTemplate.execute(getCreateTableSql());
-        } catch (Throwable ignored) {
-            log.info(SysLog.compact("分布式雪花主键策略已启动"));
+
+        String dbType = EnvironmentHolder.getDbType().toLowerCase();
+
+        String classPathSqlName = "";
+        if(StrUtil.equals(dbType,"h2")){
+            classPathSqlName = "snowip_h2.sql";
+        }else if(StrUtil.contains(dbType,"sqlserver")){
+            classPathSqlName = "snowip_sqlserver.sql";
+        }else if(StrUtil.equals(dbType,"postgresql")){
+            classPathSqlName = "snowip_postgresql.sql";
+        }else if(StrUtil.equals(dbType,"mysql")){
+            classPathSqlName = "snowip_mysql.sql";
+        }else if(StrUtil.equals(dbType,"oracle")){
+            classPathSqlName = "snowip_oracle.sql";
+        }
+        if(StrUtil.isNotBlank(classPathSqlName)){
+            try{
+                SqlFileExecute.executeSqlFile(jdbcTemplate,classPathSqlName);
+            }catch (Exception ignored){
+                log.info(SysLog.compact("分布式雪花主键策略已启动"));
+            }
         }
         boolean enabled = false;
         // 所有节点的 ip num 不能一样

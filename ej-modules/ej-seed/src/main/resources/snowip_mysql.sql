@@ -1,0 +1,5 @@
+CREATE TABLE WORK_IP
+(
+    IP  VARCHAR(100),
+    NUM INT(20)
+) COMMENT '分布式主键IP记录';

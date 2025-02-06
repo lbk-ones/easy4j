@@ -1,0 +1,9 @@
+-- 创建表
+CREATE TABLE WORK_IP
+(
+    IP  VARCHAR(100),
+    NUM INT
+);
+
+-- 添加表注释
+COMMENT ON TABLE WORK_IP IS '分布式主键IP记录';
