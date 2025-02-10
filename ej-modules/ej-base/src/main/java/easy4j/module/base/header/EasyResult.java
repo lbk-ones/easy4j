@@ -7,6 +7,7 @@ import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.base.plugin.i18n.I18nBean;
+import jodd.util.StringPool;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -148,16 +149,17 @@ public class EasyResult<T> implements Serializable {
 	public static <T> EasyResult<T> toI18n(Throwable e, Locale local){
 		String msg = "";
 		boolean isEasy4j = false;
+		String msgKey = null;
 		if(e instanceof EasyException){
 			String message1 = e.getMessage();
 			if(StrUtil.isNotEmpty(message1)){
 				isEasy4j = true;
 				int i = message1.indexOf(",");
-				String msgKey = message1.substring(0, i>0?i:message1.length());
+				msgKey = message1.substring(0, i>0?i:message1.length());
 				if(i>0){
 					String argStr = message1.substring(i+1);
 					if (StrUtil.isNotEmpty(argStr)) {
-						List<String> list = ListTs.asList(argStr.split(","));
+						List<String> list = ListTs.asList(argStr.split(StringPool.COMMA));
 						msg = I18nBean.getMessage(msgKey,local, list.toArray(new String[]{}));
 					}
 				}else{
@@ -165,13 +167,17 @@ public class EasyResult<T> implements Serializable {
 				}
 			}
 		}
+		String code = "A00003";
 		// 不允许使用自己定义的内容发布异常
-		if("".equals(msg)){
-			msg = isEasy4j?e.getMessage():I18nBean.getMessage("A00003",local);
+		if(msg.isEmpty()){
+			msg = isEasy4j?e.getMessage():I18nBean.getMessage(code,local);
+		}else{
+			code = msgKey;
 		}
 		EasyResult<T> easyResult = new EasyResult<T>();
 		easyResult.setError(SysConstant.ERRORCODE);
 		easyResult.setMessage(msg);
+		easyResult.setCode(code);
 		if(!(e instanceof EasyException)){
 			easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
 		}

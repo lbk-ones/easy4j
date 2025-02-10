@@ -21,7 +21,7 @@ public class I18nUtils {
     }
 
     public String getMessage(String msgKey) {
-        return messageSource.getMessage(msgKey, null, LocaleContextHolder.getLocale());
+        return messageSource.getMessage(msgKey, null,"", LocaleContextHolder.getLocale());
     }
 
    public String getSysMessage(String msgKey) {

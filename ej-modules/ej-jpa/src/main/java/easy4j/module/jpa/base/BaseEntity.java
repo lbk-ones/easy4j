@@ -32,9 +32,9 @@ import java.util.Date;
 @Slf4j
 public class BaseEntity implements Serializable {
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	@Column(name = "id", length = 128)
+//	@GeneratedValue(generator = "uuid")
+//	@GenericGenerator(name = "uuid", strategy = "uuid")
+//	@Column(name = "id", length = 128)
 	@Comment("主键ID")
 	private String id;
 

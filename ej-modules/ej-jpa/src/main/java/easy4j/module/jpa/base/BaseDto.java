@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.Id;
 import javax.persistence.Version;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -104,12 +105,8 @@ public abstract class BaseDto implements Serializable {
 	public abstract void toNewEntityValidate() throws EasyException;
 
 
-	public boolean checkIsModify(Object o1,Object o2){
-		Object o = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(o1, LambdaUtil.getFieldName(BaseEntity::getVersion)), "0");
-		int fieldValue = Integer.parseInt(o.toString());
-		Object oo2 = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(o2, LambdaUtil.getFieldName(BaseEntity::getVersion)), "0");
-		int fieldValue2 = Integer.parseInt(oo2.toString());
-		return fieldValue != fieldValue2;
+	public boolean checkIsModify(int o1,int o2){
+		return o1 != o2;
 	}
 
 
@@ -121,14 +118,18 @@ public abstract class BaseDto implements Serializable {
 	 * ！！！ 为空的属性不会被拷贝  ！！！
 	 * @param toObj
 	 */
-	public void copyPickPropertyToOtherObj(Object toObj){
+	public void copyPickPropertyToOtherObjToUpdate(Object toObj){
+		copyPickPropertyByAnnotation(toObj,AllowCopy.class);
+	}
+
+	public void copyPickPropertyByAnnotation(Object toObj, Class<? extends Annotation> annotation){
 		if(Objects.isNull(toObj)){
 			return;
 		}
 		Object obj = this;
 		Field[] fields = ReflectUtil.getFields(obj.getClass());
 		for (Field field : fields) {
-			if(field.isAnnotationPresent(AllowCopy.class)){
+			if(field.isAnnotationPresent(annotation)){
 				String fieldName = ReflectUtil.getFieldName(field);
 				Object fieldValue = ReflectUtil.getFieldValue(obj, field);
 				if(Objects.nonNull(fieldValue)){

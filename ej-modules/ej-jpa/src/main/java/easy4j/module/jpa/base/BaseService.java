@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.plugin.i18n.I18nBean;
 import easy4j.module.jpa.page.PageableTools;
 import easy4j.module.jpa.page.SortDto;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,7 @@ public class BaseService {
      * @date 2023/6/1
      */
     public <T extends BaseEntity,R extends BaseDto,N> String enableOrDisabled(JpaRepository<T,N> jpaRepository,List<N> id) throws EasyException {
-        String wt="操作成功";
+        String wt= I18nBean.getMessage("A00001");
         List<T> allById = jpaRepository.findAllById(id);
         boolean isSingle = false;
         if(CollUtil.isNotEmpty(allById) && allById.size()==1){
@@ -52,15 +53,18 @@ public class BaseService {
         }
         for (T t : allById) {
             int isEnabled = t.getIsEnabled();
+            if(isEnabled == -1){
+                throw new EasyException("A00012");
+            }
             if(isEnabled == 1){
                 t.setIsEnabled(0);
                 if(isSingle){
-                    wt = "禁用成功";
+                    wt = "A00010";
                 }
             }else if(isEnabled == 0){
                 t.setIsEnabled(1);
                 if(isSingle){
-                    wt = "启用成功";
+                    wt = "A00011";
                 }
             }
         }
@@ -75,20 +79,51 @@ public class BaseService {
      */
     public <T extends BaseEntity,R extends BaseDto,N> T updateBySelective(JpaRepository<T,N> jpaRepository,R r,N id,int version) throws EasyException{
         Optional<T> byId = jpaRepository.findById(id);
-        String wt = "";
-        T save = null;
+        T save;
         if (byId.isPresent()) {
             T t = byId.get();
-            if (r.checkIsModify(t.getVersion(),version)) {
-                throw new EasyException("数据已变更请再次提交");
+            int isEnabled = t.getIsEnabled();
+            if(isEnabled == -1){
+                throw new EasyException("A00012");
             }
-            r.copyPickPropertyToOtherObj(t);
+            int version1 = t.getVersion();
+            if (r.checkIsModify(version1,version)) {
+                throw new EasyException("A00008");
+            }
+            r.copyPickPropertyToOtherObjToUpdate(t);
+            version1++;
+            t.setVersion(version1);
             save = jpaRepository.save(t);
         }else{
-            throw new EasyException("没有可以更新的记录");
+            throw new EasyException("A00009");
         }
         return save;
     }
+
+    public <T extends BaseEntity,R extends BaseDto,N> T updateById(JpaRepository<T,String> jpaRepository,R r,String id,int version) throws EasyException{
+        Optional<T> byId = jpaRepository.findById(id);
+        T save;
+        if (byId.isPresent()) {
+            T t = byId.get();
+            int isEnabled = t.getIsEnabled();
+            if(isEnabled == -1){
+                throw new EasyException("A00012");
+            }
+            int version1 = t.getVersion();
+            if (r.checkIsModify(version1,version)) {
+                throw new EasyException("A00008");
+            }
+            BeanUtil.copyProperties(r,t);
+            version1++;
+            t.setVersion(version1);
+            t.setId(id);
+            save = jpaRepository.save(t);
+        }else{
+            throw new EasyException("A00009");
+        }
+        return save;
+    }
+
     /**
      * 批量删除
      * @author bokun.li
@@ -106,7 +141,14 @@ public class BaseService {
             }else{
                 // 假删除
                 List<T> allById = jpaRepository.findAllById(ids);
+                if(CollUtil.isEmpty(allById)){
+                    throw new EasyException("A00012");
+                }
                 for (T t : allById) {
+                    int isEnabled = t.getIsEnabled();
+                    if(isEnabled == -1){
+                        throw new EasyException("A00020");
+                    }
                     t.setIsEnabled(-1);
                 }
                 List<T> ts = jpaRepository.saveAll(allById);
@@ -175,10 +217,10 @@ public class BaseService {
             if(isEnabled == 1 || isEnabled == 0){
                 return t1;
             }else{
-                throw new EasyException("要查询的记录不存在,或者已经被删除");
+                throw new EasyException("A00012");
             }
         }else {
-            throw new EasyException("要查询的记录不存在");
+            throw new EasyException("A00013");
         }
 
     }
@@ -186,13 +228,13 @@ public class BaseService {
     public <T extends BaseDto> String getDtoId(T dto){
         Field[] fields = ReflectUtil.getFields(dto.getClass(), e -> e.isAnnotationPresent(Id.class));
         if(fields.length == 0){
-            throw new EasyException("dto没有Id注解");
+            throw new EasyException("A00014");
         }else{
             Field field = fields[0];
             String fieldName = ReflectUtil.getFieldName(field);
             Object fieldValue = ReflectUtil.getFieldValue(dto, fieldName);
             if (fieldValue == null){
-                throw new EasyException("主键为空");
+                throw new EasyException("A00015");
             }
             return fieldValue.toString();
         }
@@ -201,19 +243,19 @@ public class BaseService {
     public <T extends BaseDto> int getDtoVersion(T dto){
         Field[] fields = ReflectUtil.getFields(dto.getClass(), e -> e.isAnnotationPresent(Version.class));
         if(fields.length == 0){
-            throw new EasyException("dto没有Version注解");
+            throw new EasyException("A00016");
         }else{
             Field field = fields[0];
             String fieldName = ReflectUtil.getFieldName(field);
             Object fieldValue = ReflectUtil.getFieldValue(dto, fieldName);
             if(fieldValue == null){
-                throw new EasyException("版本号version为空");
+                throw new EasyException("A00017");
             }
             String string = fieldValue.toString();
             if (StrUtil.isNumeric(string)) {
                 return Integer.parseInt(string);
             }else{
-                throw new EasyException("版本号version非数字");
+                throw new EasyException("A00018");
             }
         }
     }

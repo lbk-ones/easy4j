@@ -1,6 +1,15 @@
 package easy4j.module.jpa.page;
 
-public class SortDto {
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
+
+@Setter
+@Getter
+@NoArgsConstructor
+public class SortDto implements Serializable {
     public static final String DESC = "desc";
     public static final String ASC = "asc";
 	//排序方式
@@ -8,22 +17,6 @@ public class SortDto {
 
     //排序字段
     private String orderField;
-
-    public String getOrderField() {
-        return orderField;
-    }
-
-    public void setOrderField(String orderField) {
-        this.orderField = orderField;
-    }
-
-    public String getOrderType() {
-        return orderType;
-    }
-
-    public void setOrderType(String orderType) {
-        this.orderType = orderType;
-    }
 
     public SortDto(String orderType, String orderField) {
         this.orderType = orderType;

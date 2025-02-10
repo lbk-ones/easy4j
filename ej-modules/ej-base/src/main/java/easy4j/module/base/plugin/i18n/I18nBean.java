@@ -1,5 +1,6 @@
 package easy4j.module.base.plugin.i18n;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,23 +30,31 @@ public class I18nBean implements InitializingBean {
 
 
     public static String getOperateSuccessStr(){
-        return i18nUtils.getSysMessage("A00001");
+        return clear(i18nUtils.getSysMessage("A00001"));
     }
 
     public static String getOperateErrorStr(){
-        return i18nUtils.getSysMessage("A00002");
+        return clear(i18nUtils.getSysMessage("A00002"));
     }
 
     public static String getSysErrorStr(){
-        return i18nUtils.getSysMessage("A00003");
+        return clear(i18nUtils.getSysMessage("A00003"));
     }
 
     public static String getMessage(String msgKey,String...paramster){
-        return i18nUtils.getMessage(msgKey,paramster);
+        return clear(i18nUtils.getMessage(msgKey,paramster));
+    }
+    public static String getMessageByKey(String msgKey){
+        return i18nUtils.getMessage(msgKey);
     }
 
     public static String getMessage(String msgKey, Locale locale, String...paramster){
-        return i18nUtils.getMessage(msgKey,locale,paramster);
+        return clear(i18nUtils.getMessage(msgKey,locale,paramster));
+    }
+
+    public static String clear(String msg){
+        // 去掉占位符
+        return StrUtil.isNotBlank(msg)?msg.replaceAll("\\{\\d+\\}", ""):msg;
     }
 
 
