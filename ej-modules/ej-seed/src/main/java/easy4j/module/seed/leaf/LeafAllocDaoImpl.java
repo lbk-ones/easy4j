@@ -39,7 +39,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
 
     public List<String> getAllTags() {
-        List<LeafAllocDomain> list = jdbcTemplate.queryForList("SELECT * FROM LEAF_ALLOC WHERE 1=1", LeafAllocDomain.class);
+        List<LeafAllocDomain> list = jdbcTemplate.queryForList("SELECT * FROM LEAF_ALLOC", LeafAllocDomain.class);
         List<String> tags = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(list)) {
             list.forEach(l -> tags.add(l.getBIZ_TAG()));

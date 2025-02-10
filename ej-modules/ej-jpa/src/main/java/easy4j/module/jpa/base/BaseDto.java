@@ -1,50 +1,63 @@
 package easy4j.module.jpa.base;
 
 
+import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.collect.Maps;
+import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.jpa.annotations.AllowCopy;
 import easy4j.module.jpa.annotations.FieldDesc;
 import easy4j.module.jpa.annotations.MapJsonToField;
+import easy4j.module.jpa.constant.Constant;
 import easy4j.module.jpa.helper.DtoHelper;
 import easy4j.module.jpa.helper.StringTrimHelper;
+import easy4j.module.jpa.page.SortDto;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.persistence.Id;
+import javax.persistence.Version;
+import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 /**
  * 所有继承这个dto的字段最好是包装类型的字段 按规范来 别取相关的字段
  * @author bokun.li
  */
-@EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
-public abstract class BaseDto extends ControllerDto {
+public abstract class BaseDto implements Serializable {
+
+	// 查询值
+	@Desc("界面搜索的key")
+	private String searchKey;
+
+	// 主键
+	@Id
+	@Desc("主键")
 	private String id;
 
-	// 创建人
-	private String createBy;
+	// 排序字段
+	@Desc("排序字段")
+	private List<SortDto> sortDtoList;
 
-	private Date createTime;
+	@Desc("数据状态值 -1已删除 0禁用 1启用 2禁用和启用 3全部")
+	private int recordStatus = 4;
 
-	// 最后更新的人
-	private String lastUpdateBy;
+	@Desc("每页多少条记录")
+	private Integer pageSize = Constant.PAGE_SIZE;
 
-	// 最后更新的时间
-	private Date lastUpdateTime;
+	@Desc("页码 从0开始")
+	private Integer pageNo = Constant.PAGE_NUMBER;
 
-	private Date delTime;
-
-
-	private Integer isEnabled = 1;	//-1表示记录删除、0表示记录禁用、1表示记录可用的
-
+	@Version
+	private int version;
 
 	public void trim() throws EasyException {
 		try {
@@ -90,16 +103,13 @@ public abstract class BaseDto extends ControllerDto {
 
 	public abstract void toNewEntityValidate() throws EasyException;
 
-	public void toModifyEntityValidate(Date modifyTime) throws EasyException{
-		this.checkModify(this,modifyTime);
-	};
 
-
-
-	public void checkModify(BaseDto thisObj,Date modifyTime) throws EasyException{
-		if(thisObj.lastUpdateTime == null || thisObj.lastUpdateTime.compareTo(modifyTime)!=0){
-			throw new EasyException("该数据已经被修改过,请刷新后重新提交");
-		}
+	public boolean checkIsModify(Object o1,Object o2){
+		Object o = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(o1, LambdaUtil.getFieldName(BaseEntity::getVersion)), "0");
+		int fieldValue = Integer.parseInt(o.toString());
+		Object oo2 = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(o2, LambdaUtil.getFieldName(BaseEntity::getVersion)), "0");
+		int fieldValue2 = Integer.parseInt(oo2.toString());
+		return fieldValue != fieldValue2;
 	}
 
 
@@ -152,12 +162,12 @@ public abstract class BaseDto extends ControllerDto {
 		return hashMap;
 	}
 
-	public String checkId() throws EasyException{
-		if (StrUtil.isBlank(this.id)) {
-			throw new EasyException("id不能为空");
-		}
-		return this.id;
-	}
+//	public String checkId() throws EasyException{
+//		if (StrUtil.isBlank(this.id)) {
+//			throw new EasyException("id不能为空");
+//		}
+//		return this.id;
+//	}
 
 	/**
 	 * 从json里面 去映射字段到obj 处理一些第三方映射性的东西

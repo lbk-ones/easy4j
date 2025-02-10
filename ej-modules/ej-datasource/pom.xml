@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <druid.version>1.2.15</druid.version>
+        <druid.version>1.2.24</druid.version>
     </properties>
 
     <dependencyManagement>

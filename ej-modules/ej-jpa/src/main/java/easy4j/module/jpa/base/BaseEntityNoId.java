@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+
 /**
  * 主键id
  * 创建时间
@@ -30,13 +31,7 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 @Data
 @Slf4j
-public class BaseEntity implements Serializable {
-	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	@Column(name = "id", length = 128)
-	@Comment("主键ID")
-	private String id;
+public abstract class BaseEntityNoId implements Serializable {
 
 	// 创建人
 	@CreatedBy
@@ -74,12 +69,6 @@ public class BaseEntity implements Serializable {
 	@Column(name = "is_enabled", nullable=false)
 	@Comment("-1删除、0禁用、1可用")
 	private int isEnabled = 1;	//-1表示记录删除、0表示记录禁用、1表示记录可用的
-
-
-	@Column(name = "version")
-	@Comment("版本号")
-	private int version;
-
 
 	protected void trim() throws EasyException {
 		try {

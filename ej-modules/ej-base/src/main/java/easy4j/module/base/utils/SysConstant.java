@@ -39,6 +39,7 @@ public class SysConstant {
      * 对应 Spring JPA 配置中数据库类型的配置项键
      */
     public static final String SPRING_JPA_DATABASE = "spring.jpa.database";
+    public static final String SPRING_JPA_DATABASE_PLATFORM = "spring.jpa.database-platform";
 
     /**
      * 对应 Spring JPA 配置中是否显示 SQL 语句的配置项键

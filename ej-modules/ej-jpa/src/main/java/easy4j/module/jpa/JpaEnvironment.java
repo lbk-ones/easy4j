@@ -81,6 +81,7 @@ public class JpaEnvironment extends AbstractEnvironmentForEj {
         properties.setProperty(SysConstant.SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE,"200");
         String s = DIALECT_MAP.get(currDataBaseEnum);
         properties.setProperty(SysConstant.SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT,s);
+        properties.setProperty(SysConstant.SPRING_JPA_DATABASE_PLATFORM,s);
         // 与spring事务管理起来 保证事务准确 支持spring申明式事务
         properties.setProperty(SysConstant.SPRING_JPA_PROPERTIES_HIBERNATE_CURRENT_SESSION_CONTEXT_CLASS, SpringSessionContext.class.getName());
         // 表结构自动生成

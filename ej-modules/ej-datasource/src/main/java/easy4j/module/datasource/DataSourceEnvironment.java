@@ -49,7 +49,10 @@ public class DataSourceEnvironment  extends AbstractEnvironmentForEj{
         String validateSql = SqlType.getValidateSql(dbType);
         properties.setProperty("spring.datasource.druid.aop-patterns", EnvironmentHolder.mainClassPath + SysConstant.DOT + "dao.*");
         properties.setProperty("spring.datasource.druid.driver-class-name",driverClassName);
-        properties.setProperty("spring.datasource.druid.filter.stat.db-type",dbType);
+        String lowerCase = dbType.toLowerCase();
+        properties.setProperty("spring.datasource.druid.filter.stat.db-type",lowerCase);
+        properties.setProperty("spring.datasource.druid.filter.wall.db-type",lowerCase);
+        properties.setProperty("spring.datasource.druid.filter.wall.config.select-all-column-allow","true");
         properties.setProperty("spring.datasource.druid.validationQuery",validateSql);
 
         try{

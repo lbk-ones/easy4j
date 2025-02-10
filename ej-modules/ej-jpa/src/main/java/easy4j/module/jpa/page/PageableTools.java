@@ -17,9 +17,7 @@ public class PageableTools {
         Sort sort = SortTools.basicSort(dtos);
         page = (page==null || page<0)?0:page;
         size = (size==null || size<=0)?15:size;
-        if(size > 50) throw new EasyException("每页最多只允许请求50条数据");
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return pageable;
+        return PageRequest.of(page, size, sort);
     }
 
     /**

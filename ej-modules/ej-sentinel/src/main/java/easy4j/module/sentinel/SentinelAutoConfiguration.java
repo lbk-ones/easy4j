@@ -2,6 +2,7 @@ package easy4j.module.sentinel;
 
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import easy4j.module.sentinel.annotation.FlowDegradeAspect;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(SentinelProperties.class)
-public class SentinelAutoConfiguration {
+public class SentinelAutoConfiguration implements InitializingBean {
 
     private final SentinelProperties sentinelProperties;
 
@@ -18,13 +19,10 @@ public class SentinelAutoConfiguration {
         this.sentinelProperties = sentinelProperties;
     }
 
-    // 初始化 Sentinel
-    @Bean
-    @ConditionalOnMissingBean
-    public void initSentinel() {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         // 初始化 Sentinel 核心
         InitExecutor.doInit();
-
         // 配置 Dashboard 地址（如果配置了）
 //        if (sentinelProperties.getDashboardServer() != null) {
 //            TransportConfig.setRuntimePort(sentinelProperties.getDashboardServer());
@@ -38,6 +36,7 @@ public class SentinelAutoConfiguration {
 //        if (sentinelProperties.isEager()) {
 //            // 这里可以添加连接 Dashboard 的逻辑（可选）
 //        }
+
     }
 
 
