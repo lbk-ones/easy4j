@@ -308,7 +308,7 @@ public class SysLog {
         }
         String s = stx.replaceAll("\\{\\}", "%s");
         String format = String.format(s, args);
-        return "*********"+format+"*********";
+        return "*********"+format;
     }
 
     public static String getStackTraceInfo(Throwable e){

@@ -1,5 +1,6 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-easy4j.module.base.starter.EnvironmentInitForEj
+easy4j.module.base.starter.EnvironmentInitForEj,\
+easy4j.module.base.plugin.doc.DocEnvironment
 
 
 org.springframework.boot.SpringApplicationRunListener=easy4j.module.base.starter.ApplicationRunListenerForEj
@@ -8,4 +9,5 @@ org.springframework.boot.SpringApplicationRunListener=easy4j.module.base.starter
 
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 easy4j.module.base.plugin.i18n.Config,\
-easy4j.module.base.properties.Config
+easy4j.module.base.properties.Config,\
+easy4j.module.base.plugin.doc.OpenAPIConfig

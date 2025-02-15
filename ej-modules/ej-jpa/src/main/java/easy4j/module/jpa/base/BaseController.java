@@ -1,13 +1,14 @@
 package easy4j.module.jpa.base;
 
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Setter;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
-@RestController
+
+@Setter
 public abstract class BaseController {
 
 	public BaseController(){
@@ -21,10 +22,6 @@ public abstract class BaseController {
         HttpServletRequest request = sra.getRequest();
         this.setRequest(request);
 		return request;
-	}
-
-	public void setRequest(HttpServletRequest request) {
-		this.request = request;
 	}
 
 }

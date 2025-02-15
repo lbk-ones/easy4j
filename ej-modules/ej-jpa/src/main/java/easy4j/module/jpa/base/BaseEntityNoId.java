@@ -3,6 +3,7 @@ package easy4j.module.jpa.base;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.jpa.Comment;
 import easy4j.module.jpa.helper.StringTrimHelper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.GenericGenerator;
@@ -37,6 +38,7 @@ public abstract class BaseEntityNoId implements Serializable {
 	@CreatedBy
 	@Column(name = "create_by",updatable = false)
 	@Comment("创建人 没有则为线程名称")
+	@Schema(description = "创建人")
 	private String createBy;
 
 
@@ -44,6 +46,7 @@ public abstract class BaseEntityNoId implements Serializable {
 	@Column(name = "create_time",updatable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	@Comment("创建时间")
+	@Schema(description = "创建时间")
 	private Date createTime;
 
 
@@ -51,6 +54,7 @@ public abstract class BaseEntityNoId implements Serializable {
 	@LastModifiedBy
 	@Column(name = "last_update_by")
 	@Comment("最后更新的人")
+	@Schema(description = "最后更新的人")
 	private String lastUpdateBy;
 
 	// 最后更新的时间
@@ -58,17 +62,26 @@ public abstract class BaseEntityNoId implements Serializable {
 	@Column(name = "last_update_time")
 	@Temporal(TemporalType.TIMESTAMP)
 	@Comment("最后更新的时间")
+	@Schema(description = "最后更新的时间")
 	private Date lastUpdateTime;
 
 	// 删除的时间
 	@Column(name = "del_time")
 	@Temporal(TemporalType.TIMESTAMP)
 	@Comment("删除的时间")
+	@Schema(description = "删除的时间")
 	private Date delTime;
-	
+
 	@Column(name = "is_enabled", nullable=false)
 	@Comment("-1删除、0禁用、1可用")
+	@Schema(description = "-1删除、0禁用、1可用")
 	private int isEnabled = 1;	//-1表示记录删除、0表示记录禁用、1表示记录可用的
+
+
+	@Column(name = "version")
+	@Comment("版本号")
+	@Schema(description = "版本号")
+	private int version;
 
 	protected void trim() throws EasyException {
 		try {

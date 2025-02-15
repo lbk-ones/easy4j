@@ -5,15 +5,19 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.plugin.doc.ControllerModule;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.jpa.Comment;
 import easy4j.module.jpa.base.BaseDto;
 import easy4j.module.jpa.base.BaseService;
+import easy4j.module.jpa.gen.annotations.GenDomainName;
 import easy4j.module.jpa.gen.domain.*;
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jodd.util.StringPool;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -99,17 +103,17 @@ public class JpaGen {
         genImpl(cfg, configJpaGen, classes, javaBaseUrl, interfaceImplPackageName, interfacePackageName, s2);
 
         // gen dao
-        genDao(cfg, classes, javaBaseUrl, daoPackageName, s3);
+        genDao(cfg,configJpaGen, classes, javaBaseUrl, daoPackageName, s3);
 
         // gen dto
         genDto(cfg, configJpaGen, classes, javaBaseUrl, dtoPackageName, s4);
 
         // gen controller
-        genController(cfg, classes, javaBaseUrl, controllerPackageName, workPath, s5);
+        genController(cfg,configJpaGen, classes, javaBaseUrl, controllerPackageName, workPath, s5);
 
     }
 
-    private static void genController(Configuration cfg, List<Class<?>> classes, String javaBaseUrl, String controllerPackageName, String workPath, String s5) throws IOException, TemplateException {
+    private static void genController(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String controllerPackageName, String workPath, String s5) throws IOException, TemplateException {
         Template template3 = cfg.getTemplate("controller.ftl");
         for (Class<?> aClass : classes) {
             String p = aClass.getName();
@@ -117,22 +121,43 @@ public class JpaGen {
             GenJpaController genInterface = new GenJpaController();
             genInterface.setBaseUrl(javaBaseUrl);
             genInterface.setPackageName(controllerPackageName);
-            genInterface.setFirstLowDomainName(StrUtil.lowerFirst(simpleName));
+            String s = StrUtil.lowerFirst(simpleName);
+            genInterface.setFirstLowDomainName(s);
             genInterface.setDomainName(simpleName);
+            GenDomainName annotation = aClass.getAnnotation(GenDomainName.class);
+            String aValue = null;
+            List<String> importList = ListTs.newArrayList();
+            if(null != annotation){
+                aValue = annotation.value();
+            }
+            List<String> objects = ListTs.newArrayList();
+            if(StrUtil.isBlank(aValue)){
+                aValue = simpleName;
+            }
+            importList.add(Tag.class.getName());
+            objects.add(Tag.class.getSimpleName()+"(name=\""+aValue+"\")");
+            if (configJpaGen.getGroupControllerModule()) {
+                objects.add(ControllerModule.class.getSimpleName()+"(name=\""+s+"\",description=\""+aValue+"\")");
+                importList.add(ControllerModule.class.getName());
+            }
+            genInterface.setAnnotationList(objects);
+            genInterface.setGenDomainName(aValue);
             genInterface.setControllerName(simpleName+"Controller");
 
-            List<String> importList = ListTs.newArrayList();
             importList.add(workPath +StringPool.DOT+"dto"+StringPool.DOT+simpleName+"Dto");
             importList.add(workPath +StringPool.DOT+"service"+StringPool.DOT+"I"+simpleName+"Service");
             genInterface.setImportList(importList);
 
 
-            genInterface.setLineList(
-                    ListTs.asList(
-                            "/**",
-                            " * by easy4j-gen auto generate",
-                            " */"
-                    ));
+            if(configJpaGen.getGenNote()){
+                genInterface.setLineList(
+                        ListTs.asList(
+                                "/**",
+                                " * by easy4j-gen auto generate",
+                                " */"
+                        ));
+            }
+
 
             String s1 = s5 + File.separator + genInterface.getControllerName() + ".java";
             File file = new File(s1);
@@ -163,12 +188,15 @@ public class JpaGen {
             importList.add(workPath +StringPool.DOT+"dto"+StringPool.DOT+simpleName+"Dto");
             genInterface.setImportList(importList);
 
-            genInterface.setLineList(
-                    ListTs.asList(
-                        "/**",
-                        " * by easy4j-gen auto generate",
-                        " */"
-            ));
+            if (configJpaGen.getGenNote()) {
+                genInterface.setLineList(
+                        ListTs.asList(
+                                "/**",
+                                " * by easy4j-gen auto generate",
+                                " */"
+                        ));
+            }
+
 
             String s1 = s + File.separator + genInterface.getInterfaceName() + ".java";
             File file = new File(s1);
@@ -199,13 +227,15 @@ public class JpaGen {
             String importInterface = interfacePackageName +"."+genInterface.getInterfaceName();
 
 
+            if (configJpaGen.getGenNote()) {
+                genInterface.setLineList(
+                        ListTs.asList(
+                                "/**",
+                                " * by easy4j-gen auto generate",
+                                " */"
+                        ));
+            }
 
-            genInterface.setLineList(
-                    ListTs.asList(
-                            "/**",
-                            " * by easy4j-gen auto generate",
-                            " */"
-                    ));
 
             List<String> annotationList = ListTs.newArrayList();
             annotationList.add(Service.class.getSimpleName());
@@ -236,7 +266,7 @@ public class JpaGen {
         }
     }
 
-    private static void genDao(Configuration cfg, List<Class<?>> classes, String javaBaseUrl, String daoPackageName, String s3) throws IOException, TemplateException {
+    private static void genDao(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String daoPackageName, String s3) throws IOException, TemplateException {
         Template template3 = cfg.getTemplate("dao.ftl");
         for (Class<?> aClass : classes) {
             String p = aClass.getName();
@@ -260,12 +290,14 @@ public class JpaGen {
 
             genInterface.setImportList(importList);
 
-            genInterface.setLineList(
-                    ListTs.asList(
-                            "/**",
-                            " * by easy4j-gen auto generate",
-                            " */"
-                    ));
+            if (configJpaGen.getGenNote()) {
+                genInterface.setLineList(
+                        ListTs.asList(
+                                "/**",
+                                " * by easy4j-gen auto generate",
+                                " */"
+                        ));
+            }
 
             String s1 = s3 + File.separator + genInterface.getDaoClassName() + ".java";
             File file = new File(s1);
@@ -314,24 +346,42 @@ public class JpaGen {
                 if(Objects.nonNull(annotation)){
                     String value = annotation.value();
                     genField.setFieldLine(ListTs.asList(
-                            "// "+value
+                            "// "+value,
+                            "@Schema(description = \""+value+"\")"
                     ));
                 }
                 fieldList.add(genField);
             }
+            fieldImportList.add(Schema.class.getName());
             String p = aClass.getName();
             String simpleName = aClass.getSimpleName();
+            String simpnameDto = simpleName + "Dto";
+            List<String> annotationList = ListTs.newArrayList();
             GenDto genInterface = new GenDto();
+            GenDomainName annotation = aClass.getAnnotation(GenDomainName.class);
+            String aValue = null;
+            if(null != annotation){
+                aValue = annotation.value();
+            }
+            if(StrUtil.isBlank(aValue)){
+                aValue = simpleName;
+            }
+            annotationList.add(Schema.class.getSimpleName()+"(description=\""+aValue+"\",name=\""+simpnameDto+"\")");
+            genInterface.setGenDomainName(aValue);
+
             genInterface.setBaseUrl(javaBaseUrl);
             genInterface.setPackageName(dtoPackageName);
-            genInterface.setDtoClassName( simpleName + "Dto");
+            genInterface.setDtoClassName(simpnameDto);
             genInterface.setFieldList(fieldList);
-            genInterface.setLineList(
-                    ListTs.asList(
-                            "/**",
-                            " * by easy4j-gen auto generate",
-                            " */"
-                    ));
+            if (configJpaGen.getGenNote()) {
+                genInterface.setLineList(
+                        ListTs.asList(
+                                "/**",
+                                " * by easy4j-gen auto generate",
+                                " */"
+                        ));
+            }
+
             fieldImportList.add(BaseDto.class.getName());
             fieldImportList.add(Data.class.getName());
             fieldImportList.add(EasyException.class.getName());
@@ -339,11 +389,9 @@ public class JpaGen {
             genInterface.setImportList(
                     ListTs.newArrayList(fieldImportList.iterator())
             );
-
-            genInterface.setAnnotationList(ListTs.asList(
-                    Data.class.getSimpleName(),
-                    EqualsAndHashCode.class.getSimpleName()+"(callSuper = true)"
-            ));
+            annotationList.add(Data.class.getSimpleName());
+            annotationList.add(EqualsAndHashCode.class.getSimpleName()+"(callSuper = true)");
+            genInterface.setAnnotationList(annotationList);
 
             String s1 = s4 + File.separator + genInterface.getDtoClassName() + ".java";
             File file = new File(s1);

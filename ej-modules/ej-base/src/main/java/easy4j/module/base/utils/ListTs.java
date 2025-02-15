@@ -309,4 +309,13 @@ public class ListTs {
             list.forEach(consumer);
         }
     }
+
+    @SafeVarargs
+    public static <T> List<T> concat(T[] ...value) {
+        Set<T> objects = new HashSet<>();
+        for (T[] ts : value) {
+            objects.addAll(Arrays.asList(ts));
+        }
+        return newArrayList(objects.iterator());
+    }
 }

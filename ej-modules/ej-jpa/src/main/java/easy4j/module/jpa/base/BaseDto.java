@@ -16,6 +16,7 @@ import easy4j.module.jpa.constant.Constant;
 import easy4j.module.jpa.helper.DtoHelper;
 import easy4j.module.jpa.helper.StringTrimHelper;
 import easy4j.module.jpa.page.SortDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,28 +37,29 @@ import java.util.Objects;
 public abstract class BaseDto implements Serializable {
 
 	// 查询值
-	@Desc("界面搜索的key")
+	@Schema(description = "界面搜索的key")
 	private String searchKey;
 
 	// 主键
 	@Id
-	@Desc("主键")
+	@Schema(description = "主键")
 	private String id;
 
 	// 排序字段
-	@Desc("排序字段")
+	@Schema(description = "排序字段集合")
 	private List<SortDto> sortDtoList;
 
-	@Desc("数据状态值 -1已删除 0禁用 1启用 2禁用和启用 3全部")
+	@Schema(description = "数据状态值 -1已删除 0禁用 1启用 2禁用和启用 3全部")
 	private int recordStatus = 4;
 
-	@Desc("每页多少条记录")
+	@Schema(description = "每页多少条记录")
 	private Integer pageSize = Constant.PAGE_SIZE;
 
-	@Desc("页码 从0开始")
+	@Schema(description = "页码 从0开始")
 	private Integer pageNo = Constant.PAGE_NUMBER;
 
 	@Version
+	@Schema(description = "乐观锁")
 	private int version;
 
 	public void trim() throws EasyException {

@@ -13,6 +13,8 @@ public class BaseGen {
 
     private String packageName;
 
+    private String genDomainName;
+
     public List<String> importList = new ArrayList<>();
 
     public List<String> annotationList = new ArrayList<>();

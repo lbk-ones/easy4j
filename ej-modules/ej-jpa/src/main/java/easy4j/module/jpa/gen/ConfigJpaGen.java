@@ -19,7 +19,13 @@ public class ConfigJpaGen {
     @Desc("模板文件 填类路径下的相对路径 默认 tmpl")
     private String classPathTmpl = "tmpl";
 
+    @Desc("是否生成 by easy4j-gen auto generate")
+    private Boolean genNote = true;
+
+    @Desc("生成Dto的时候是否将Date转为String")
     private Boolean genDtoDateToString = true;
+    @Desc("是否按模块生成Api接口文档")
+    private Boolean groupControllerModule = true;
 
     private Class<?> springMainClass;
 
@@ -37,6 +43,14 @@ public class ConfigJpaGen {
 
     public ConfigJpaGen javaBaseUrl(String javaBaseUrl) {
         this.javaBaseUrl = javaBaseUrl;
+        return this;
+    }
+    public ConfigJpaGen genNote(boolean genNote) {
+        this.genNote = genNote;
+        return this;
+    }
+    public ConfigJpaGen groupControllerModule(boolean groupControllerModule) {
+        this.groupControllerModule = groupControllerModule;
         return this;
     }
 

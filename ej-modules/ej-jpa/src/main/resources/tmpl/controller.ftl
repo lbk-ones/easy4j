@@ -14,6 +14,8 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 <#list lineList as line>
 ${line}
@@ -28,6 +30,7 @@ public class ${domainName}Controller extends BaseController {
     @Resource
     private I${domainName}Service i${domainName}Service;
 
+    @Operation(summary = "获取${genDomainName}列表")
     @PostMapping("get${domainName}List")
     @FlowDegradeResource(value = "get${domainName}List")
     public EasyResult<Map<String,Object>> get${domainName}List(@RequestBody ${domainName}Dto ${firstLowDomainName}Dto){
@@ -36,7 +39,7 @@ public class ${domainName}Controller extends BaseController {
         return EasyResult.ok(date,res);
     }
 
-
+    @Operation(summary = "保存${genDomainName}")
     @PostMapping("save${domainName}")
     @FlowDegradeResource(value = "save${domainName}")
     public EasyResult<List<${domainName}Dto>> save${domainName}(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
@@ -45,6 +48,7 @@ public class ${domainName}Controller extends BaseController {
         return EasyResult.ok(beginDate, resList);
     }
 
+    @Operation(summary = "修改${genDomainName}")
     @PostMapping("update${domainName}")
     @FlowDegradeResource(value = "update${domainName}")
     public EasyResult<List<${domainName}Dto>> update${domainName}(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
@@ -53,6 +57,7 @@ public class ${domainName}Controller extends BaseController {
         return EasyResult.ok(beginDate, resList);
     }
 
+    @Operation(summary = "删除${genDomainName}")
     @PostMapping("delete${domainName}")
     @FlowDegradeResource(value = "delete${domainName}")
     public EasyResult<List<String>> delete${domainName}(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
@@ -61,6 +66,7 @@ public class ${domainName}Controller extends BaseController {
         return EasyResult.ok(beginDate, resList);
     }
 
+    @Operation(summary = "启用和禁用${genDomainName}")
     @PostMapping("enableOrDisabled${domainName}")
     @FlowDegradeResource(value = "enableOrDisabled${domainName}")
     public EasyResult<List<String>> enableOrDisabled(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
@@ -68,7 +74,7 @@ public class ${domainName}Controller extends BaseController {
         List<String> resList = i${domainName}Service.enableOrDisabled(${firstLowDomainName}Dtos);
         return EasyResult.ok(beginDate, resList);
     }
-	
+    @Operation(summary = "根据主键集合获取${genDomainName}")
 	@PostMapping("get${domainName}ByIds")
     @FlowDegradeResource(value = "get${domainName}ByIds")
     public EasyResult<List<${domainName}Dto>> get${domainName}ByIds(@RequestBody List<String> ${firstLowDomainName}Ids){

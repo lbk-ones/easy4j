@@ -1,13 +1,17 @@
 package easy4j.module.base.starter;
 
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
+import jodd.util.StringPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.CommandLineRunner;
+
+import java.io.InputStream;
 
 /**
  * 启动结束
@@ -42,6 +46,28 @@ public class ApplicationStarterAfterForEj implements InitializingBean, CommandLi
             }
 
         }catch (Exception ignored){
+
+        }
+        // doc print
+        if (StringPool.TRUE.equals(EnvironmentHolder.getProperty(SysConstant.KNIFE4J_ENABLE))) {
+            logger.info(SysLog.compact("接口文档所在地址 http://127.0.0.1:"+EnvironmentHolder.getProperty(SysConstant.SERVER_PORT_STR)+"/doc.html"));
+
+            if (StringPool.TRUE.equals(EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_ENABLE))) {
+                logger.info(SysLog.compact("接口文档用户名:"+EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_USERNAME)+";密码:"+EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_PASSWORD)));
+            }
+        }
+
+        // println i18n
+        try{
+            logger.info(SysLog.compact("println i18n:"));
+            InputStream resourceAsStream = ApplicationStarterAfterForEj.class.getResourceAsStream("/i18n/sys_zh_CN.properties");
+            String s1 = IoUtil.readUtf8(resourceAsStream);
+            String[] split = s1.split("\r\n");
+            for (String string : split) {
+                logger.info(SysLog.compact(string));
+            }
+
+        }catch (Exception e){
 
         }
 

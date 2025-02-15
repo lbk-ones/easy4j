@@ -95,4 +95,37 @@ public class SysConstant {
      * 对应 H2 控制台路径配置项的键
      */
     public static final String SPRING_H2_CONSOLE_PATH = "spring.h2.console.path";
+
+
+    /**
+     * knife4j 整合相关
+     */
+    public static final String KNIFE4J_ENABLE = "knife4j.enable";
+    public static final String KNIFE4J_SETTING_LANGUAGE = "knife4j.setting.language";
+    public static final String KNIFE4J_SETTING_ENABLE_SWAGGER_MODELS = "knife4j.setting.enableSwaggerModels";
+    public static final String KNIFE4J_SETTING_ENABLE_DOCUMENT_MANAGE = "knife4j.setting.enableDocumentManage";
+    public static final String KNIFE4J_SETTING_SWAGGER_MODEL_NAME = "knife4j.setting.swaggerModelName";
+    public static final String KNIFE4J_SETTING_ENABLE_VERSION = "knife4j.setting.enableVersion";
+    public static final String KNIFE4J_SETTING_ENABLE_RELOAD_CACHE_PARAMETER = "knife4j.setting.enableReloadCacheParameter";
+    public static final String KNIFE4J_SETTING_ENABLE_AFTER_SCRIPT = "knife4j.setting.enableAfterScript";
+    public static final String KNIFE4J_SETTING_ENABLE_FILTER_MULTIPART_API_METHOD_TYPE = "knife4j.setting.enableFilterMultipartApiMethodType";
+    public static final String KNIFE4J_SETTING_ENABLE_FILTER_MULTIPART_APIS = "knife4j.setting.enableFilterMultipartApis";
+    public static final String KNIFE4J_SETTING_ENABLE_REQUEST_CACHE = "knife4j.setting.enableRequestCache";
+    public static final String KNIFE4J_SETTING_ENABLE_HOST = "knife4j.setting.enableHost";
+    public static final String KNIFE4J_SETTING_ENABLE_HOST_TEXT = "knife4j.setting.enableHostText";
+    public static final String KNIFE4J_SETTING_ENABLE_HOME_CUSTOM = "knife4j.setting.enableHomeCustom";
+    public static final String KNIFE4J_SETTING_HOME_CUSTOM_LOCATION = "knife4j.setting.homeCustomLocation";
+    public static final String KNIFE4J_SETTING_ENABLE_SEARCH = "knife4j.setting.enableSearch";
+    public static final String KNIFE4J_SETTING_ENABLE_FOOTER = "knife4j.setting.enableFooter";
+    public static final String KNIFE4J_SETTING_ENABLE_FOOTER_CUSTOM = "knife4j.setting.enableFooterCustom";
+    public static final String KNIFE4J_SETTING_FOOTER_CUSTOM_CONTENT = "knife4j.setting.footerCustomContent";
+    public static final String KNIFE4J_SETTING_ENABLE_DYNAMIC_PARAMETER = "knife4j.setting.enableDynamicParameter";
+    public static final String KNIFE4J_SETTING_ENABLE_DEBUG = "knife4j.setting.enableDebug";
+    public static final String KNIFE4J_SETTING_ENABLE_OPEN_API = "knife4j.setting.enableOpenApi";
+    public static final String KNIFE4J_SETTING_ENABLE_GROUP = "knife4j.setting.enableGroup";
+    public static final String KNIFE4J_CORS = "knife4j.cors";
+    public static final String KNIFE4J_PRODUCTION = "knife4j.production";
+    public static final String KNIFE4J_BASIC_ENABLE = "knife4j.basic.enable";
+    public static final String KNIFE4J_BASIC_USERNAME = "knife4j.basic.username";
+    public static final String KNIFE4J_BASIC_PASSWORD = "knife4j.basic.password";
 }

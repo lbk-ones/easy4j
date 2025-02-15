@@ -7,6 +7,7 @@ import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.base.plugin.i18n.I18nBean;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jodd.util.StringPool;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,26 +24,35 @@ import java.util.Locale;
  */
 @Setter
 @Getter
+@Schema(description = "通用信息返回实体",name = "EasyResult")
 public class EasyResult<T> implements Serializable {
 
 	private static final long serialVersionUID = 6095433538316185020L;
 	// 1 代表错误 0 代表正常返回
+	@Schema(description = "1 代表错误 0 代表正常返回")
 	private int error;
 
 	// 开始时间
+	@Schema(description = "开始时间戳")
 	private Long startTime;
 	// 结束时间
+	@Schema(description = "结束时间戳")
 	private Long endTime;
 	// 业务状态码
+	@Schema(description = "业务状态码")
 	private String code;
 
+	@Schema(description = "远程调用方法")
 	private String rpcMethod;
 
 	// 提示消息
+	@Schema(description = "提示消息")
 	private String message;
 	// 错误堆栈信息
+	@Schema(description = "错误堆栈信息")
 	private String errorInfo;
 	// 返回对象
+	@Schema(description = "返回对象")
 	private T data;
 
 

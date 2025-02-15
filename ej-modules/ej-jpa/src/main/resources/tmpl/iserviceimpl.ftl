@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import cn.hutool.core.collection.CollUtil;
+import easy4j.module.base.utils.ListTs;
+import easy4j.module.jpa.page.SortDto;
 
 <#list lineList as line>
 ${line}
@@ -43,14 +45,24 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
     public Map<String,Object> get${domainName}List(${domainName}Dto ${firstLowDomainName}Dto) {
         isEmptyThrow(${firstLowDomainName}Dto, "A00004");
         Map<String,Object> res = Maps.newHashMap();
-        String ordStr = "";
-        // from createTime
-        if (BaseEntity.class.isAssignableFrom(clazz)) {
-            ordStr = LambdaUtil.getFieldName(${domainName}::getCreateTime);
+        List<SortDto> sortDtoList = ListTs.newArrayList();
+        List<SortDto> ${firstLowDomainName}DtoSortDtoList = ${firstLowDomainName}Dto.getSortDtoList();
+        if(CollUtil.isNotEmpty(${firstLowDomainName}DtoSortDtoList)){
+            sortDtoList.addAll(${firstLowDomainName}DtoSortDtoList);
         }else{
-            // get id
-            Field[] fields = ReflectUtil.getFields(clazz, e -> e.isAnnotationPresent(Id.class));
-            ordStr = fields[0].getName();
+            String ordStr = "";
+            // from createTime
+            if (BaseEntity.class.isAssignableFrom(clazz)) {
+                ordStr = LambdaUtil.getFieldName(${domainName}::getCreateTime);
+            }else{
+                // get id
+                Field[] fields = ReflectUtil.getFields(clazz, e -> e.isAnnotationPresent(Id.class));
+                ordStr = fields[0].getName();
+            }
+            SortDto sortDto = new SortDto();
+            sortDto.setOrderField(ordStr);
+            sortDto.setOrderType("desc");
+            sortDtoList.add(sortDto);
         }
 
         String searchKey = ${firstLowDomainName}Dto.getSearchKey();
@@ -84,7 +96,7 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
                 return cb.and(predicates.toArray(pre));
             }
         };
-        Page<${domainName}Dto> byPage = this.findByPage(${firstLowDomainName}Dao, ${firstLowDomainName}Dto, specification, ${domainName}Dto.class, ordStr);
+        Page<${domainName}Dto> byPage = this.findByPage(${firstLowDomainName}Dao, ${firstLowDomainName}Dto, specification, ${domainName}Dto.class, sortDtoList.toArray(new SortDto[]{}));
         res.put("list",byPage.getContent());
         res.put("totals",byPage.getTotalElements());
         return res;
