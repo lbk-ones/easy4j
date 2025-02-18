@@ -5,10 +5,12 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson2.JSON;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.ListTs;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -145,37 +147,54 @@ public class CheckUtils {
         }
         return current;
     }
+    public static void checkParam(Object t,@NotNull String fieldName){
+        checkByPathWith(t,fieldName, "");
+    }
+    public static void checkByPath(Object t, String ...message) {
+        checkByPathWith(t,null,message);
+    }
     /**
      * 根据路径检查参数是否为空
      * @param t
      * @param message list.[].user.address.city 获取 list.[0].user.name.[].ahha
      */
-    public static void checkByPath(Object t, String ...message) {
+    private static void checkByPathWith(Object t,String fname, String ...message) {
+        if (ObjectUtil.isEmpty(t)) {
+            if(fname!= null){
+                throw new EasyException("A00004,"+fname);
+            }else{
+                throw new EasyException("A00004");
+            }
+        }
         Set<String> resultList = new HashSet<>();
         if (t instanceof Iterator) {
             Iterator<?> t1 = (Iterator<?>) t;
             while (t1.hasNext()) {
                 Object next = t1.next();
-                for (String fieldName : message) {
-                    fieldName = fieldName.replaceAll("^(\\[]\\.)+", "");
-                    Object valueByPath = getValueByPath(next, fieldName,true);
-                    if (ObjectUtil.isEmpty(valueByPath)) {
-                        resultList.add(fieldName);
-                    }
-                }
+                checkObj(resultList, next, message);
             }
         }else{
-            for (String s : message) {
-                s = s.replaceAll("^(\\[]\\.)+", "");
-                Object valueByPath = getValueByPath(t, s,true);
-                if (ObjectUtil.isEmpty(valueByPath)) {
-                    resultList.add(s);
-                }
-            }
+            checkObj(resultList, t, message);
         }
         if(!resultList.isEmpty()){
             String join = String.join("，", resultList);
             throw new EasyException("A00004,"+join);
+        }
+    }
+
+    private static void checkObj(Set<String> resultList, Object next, String[] message) {
+        if (Object.class.getName().equals(next.getClass().getName())) {
+            return;
+        }
+        for (String fieldName : message) {
+            if(StrUtil.isBlank(fieldName)){
+                continue;
+            }
+            fieldName = fieldName.replaceAll("^(\\[]\\.)+", "");
+            Object valueByPath = getValueByPath(next, fieldName,true);
+            if (ObjectUtil.isEmpty(valueByPath)) {
+                resultList.add(fieldName);
+            }
         }
     }
 
