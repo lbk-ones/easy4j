@@ -107,7 +107,12 @@ public class CheckUtils {
                             // 如果值是空的代表当前属性不存在
                             Object valueByPath = getValueByPath(item, s,fastError);
                             if(!ObjectUtil.isEmpty(valueByPath)){
-                                returnRe.add(valueByPath);
+                                if(valueByPath instanceof Collection){
+                                    Collection<?> valueByPath1 = (Collection<?>) valueByPath;
+                                    returnRe.addAll(valueByPath1);
+                                }else{
+                                    returnRe.add(valueByPath);
+                                }
                             }else{
                                 if(fastError){
                                     return null;
@@ -115,18 +120,18 @@ public class CheckUtils {
                             }
                         }
                         return returnRe;
-                    } else {
-                        // 处理 list.[0].wt 情况
-                        try {
-                            int index = Integer.parseInt(part.substring(1, part.length() - 1));
-                            if (index < list.size()) {
-                                current = list.get(index);
-                            } else {
-                                return null;
-                            }
-                        } catch (NumberFormatException e) {
+                    }
+
+                    // 处理 list.[0].wt 情况
+                    try {
+                        int index = Integer.parseInt(part.substring(1, part.length() - 1));
+                        if (index < list.size()) {
+                            current = list.get(index);
+                        } else {
                             return null;
                         }
+                    } catch (NumberFormatException e) {
+                        return null;
                     }
                 } else {
                     return null;
