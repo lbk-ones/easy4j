@@ -5,9 +5,6 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.ListTs;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -107,15 +104,15 @@ public class CheckUtils {
                 autoFix = true;
             }
             if (part.startsWith("[")) {
-                // not allow list.[].[].wt
+                // allow list.[].[].wt
                 if (current instanceof List) {
                     List<?> list = (List<?>) current;
                     if (part.equals("[]")) {
                         List<Object> returnRe = ListTs.newArrayList();
-                        // 处理 list.[].wt.yy.[].ht 情况
+                        // handler list.[].wt.yy.[].ht
                         for (Object item : list) {
                             String s = joinElementsAfterPosition(parts, i,autoFix);
-                            // 如果值是空的代表当前属性不存在
+                            // if the value is null then the property does not exist
                             Object valueByPath = getValueByPath(item, s,fastError);
                             if(!ObjectUtil.isEmpty(valueByPath)){
                                 if(valueByPath instanceof Collection){
@@ -133,7 +130,7 @@ public class CheckUtils {
                         return returnRe;
                     }
 
-                    // 处理 list.[0].wt 情况
+                    // handler list.[0].wt
                     try {
                         int index = Integer.parseInt(part.substring(1, part.length() - 1));
                         if (index < list.size()) {
@@ -205,7 +202,6 @@ public class CheckUtils {
             if(StrUtil.isBlank(fieldName)){
                 continue;
             }
-            fieldName = fieldName.replaceAll("^(\\[]\\.)+", "");
             Object valueByPath = getValueByPath(next, fieldName,true);
             if (ObjectUtil.isEmpty(valueByPath)) {
                 resultList.add(fieldName);
