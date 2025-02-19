@@ -6,6 +6,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.ListTs;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -51,18 +53,26 @@ public class CheckUtils {
         }
     }
 
-    public static String joinElementsAfterPosition(String[] array, int position) {
+    public static String joinElementsAfterPosition(String[] array, int position,boolean boundary) {
         if (array == null || position < 0 || position >= array.length) {
             return "";
         }
         StringBuilder result = new StringBuilder();
         for (int i = position; i < array.length; i++) {
-            if (i > position) {
+            if(boundary){
                 result.append(array[i]);
                 if(i<array.length-1){
                     result.append(".");
                 }
+            }else{
+                if (i > position) {
+                    result.append(array[i]);
+                    if(i<array.length-1){
+                        result.append(".");
+                    }
+                }
             }
+
         }
         return result.toString();
     }
@@ -85,25 +95,26 @@ public class CheckUtils {
         }
         String[] parts = path.split("\\.");
         Object current = obj;
-        boolean lastIsArray = false;
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
             if (current == null || StrUtil.isBlank(part)) {
                 return null;
             }
+            boolean autoFix = false;
+            // auto fix
+            if(current instanceof List && !StrUtil.startWith(part,"[")){
+                part = "[]";
+                autoFix = true;
+            }
             if (part.startsWith("[")) {
                 // not allow list.[].[].wt
-                if(lastIsArray){
-                    continue;
-                }
-                lastIsArray = true;
                 if (current instanceof List) {
                     List<?> list = (List<?>) current;
                     if (part.equals("[]")) {
                         List<Object> returnRe = ListTs.newArrayList();
                         // 处理 list.[].wt.yy.[].ht 情况
                         for (Object item : list) {
-                            String s = joinElementsAfterPosition(parts, i);
+                            String s = joinElementsAfterPosition(parts, i,autoFix);
                             // 如果值是空的代表当前属性不存在
                             Object valueByPath = getValueByPath(item, s,fastError);
                             if(!ObjectUtil.isEmpty(valueByPath)){
@@ -137,7 +148,6 @@ public class CheckUtils {
                     return null;
                 }
             } else {
-                lastIsArray = false;
                 try{
                     if(current instanceof Map){
                         Map<?, ?> current1 = (Map<?, ?>) current;
