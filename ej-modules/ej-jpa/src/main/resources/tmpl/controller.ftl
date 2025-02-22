@@ -69,9 +69,9 @@ public class ${domainName}Controller extends BaseController {
     @Operation(summary = "启用和禁用${genDomainName}")
     @PostMapping("enableOrDisabled${domainName}")
     @FlowDegradeResource(value = "enableOrDisabled${domainName}")
-    public EasyResult<List<String>> enableOrDisabled(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
+    public EasyResult<List<String>> enableOrDisabled${domainName}(@RequestBody List<${domainName}Dto> ${firstLowDomainName}Dtos){
         Date beginDate = new Date();
-        List<String> resList = i${domainName}Service.enableOrDisabled(${firstLowDomainName}Dtos);
+        List<String> resList = i${domainName}Service.enableOrDisabled${domainName}(${firstLowDomainName}Dtos);
         return EasyResult.ok(beginDate, resList);
     }
     @Operation(summary = "根据主键集合获取${genDomainName}")

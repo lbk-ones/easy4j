@@ -21,7 +21,7 @@ public interface ${interfaceName} {
 
     List<String> delete${domainName}(List<${domainName}Dto> ${firstLowDomainName}Dtos);
 
-    List<String> enableOrDisabled(List<${domainName}Dto> ${firstLowDomainName}Dtos);
+    List<String> enableOrDisabled${domainName}(List<${domainName}Dto> ${firstLowDomainName}Dtos);
 
     List<${domainName}Dto> get${domainName}ByIds(List<String> ${firstLowDomainName}Ids);
 }

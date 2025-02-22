@@ -6,6 +6,8 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.doc.ControllerModule;
+import easy4j.module.base.plugin.gen.AbstractCodeGen;
+import easy4j.module.jpa.gen.domain.GenField;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.jpa.Comment;
 import easy4j.module.jpa.base.BaseDto;
@@ -22,12 +24,6 @@ import jodd.util.StringPool;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -40,8 +36,6 @@ import java.io.Writer;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -50,18 +44,28 @@ import java.util.stream.Collectors;
  * @create 2018-06-06 15:07
  */
 @Desc("与 jpa 和 easy4j 深度耦合 根据 jpa entity 生成 service、ServiceImpl、dto、Cotnroller 代码 生成完成之后可以进行简单的增删改查")
-public class JpaGen {
+public class JpaGen extends AbstractCodeGen<ConfigJpaGen> {
+
+    private JpaGen(){
+
+    }
+
+    public static JpaGen build(ConfigJpaGen configJpaGen){
+        JpaGen jpaGen = new JpaGen();
+        jpaGen.setConfigGen(configJpaGen);
+        return jpaGen;
+    }
 
     /**
      * 扫描dao的实体类
      * 生成 dto dao层接口 业务接口 业务实现接口
-     * @param configJpaGen
      * @throws Exception
      */
-    public static void Gen(ConfigJpaGen configJpaGen) throws Exception{
+    protected void genTemplate() throws Exception{
+        ConfigJpaGen configJpaGen = this.getConfigGen();
         String baseUrl = configJpaGen.getJavaBaseUrl();
         String workPath = configJpaGen.getMainClassPackage();
-        String classPathTmpl = configJpaGen.getClassPathTmpl();
+        String classPathTmpl = configJpaGen.getTmplClassPath();
         String resourceBaseUrl = baseUrl + File.separator + "resources";
         ClassPathResource classPathResource = new ClassPathResource(classPathTmpl);
 
@@ -70,7 +74,7 @@ public class JpaGen {
 
 //        String realTmplPath = resourceBaseUrl+File.separator + classPathTmpl;
 //        checkDir(realTmplPath, "");
-        String scanpackage = StrUtil.blankToDefault(configJpaGen.getScanPackage(),"domain");
+        String scanpackage = StrUtil.blankToDefault(configJpaGen.getScanPackageName(),"domain");
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
         cfg.setTemplateLoader(new ClassTemplateLoader(JpaGen.class, StringPool.SLASH+classPathTmpl));
         //cfg.setDirectoryForTemplateLoading(file);
@@ -88,11 +92,11 @@ public class JpaGen {
 
 
         String javaBaseUrl = baseUrl+ File.separator+"java";
-        String s = checkDir(javaBaseUrl, interfacePackageName);
-        String s2 = checkDir(javaBaseUrl, interfaceImplPackageName);
-        String s3 = checkDir(javaBaseUrl, daoPackageName);
-        String s4 = checkDir(javaBaseUrl, dtoPackageName);
-        String s5 = checkDir(javaBaseUrl, controllerPackageName);
+        String s = checkDirReSolvePackageName(javaBaseUrl, interfacePackageName);
+        String s2 = checkDirReSolvePackageName(javaBaseUrl, interfaceImplPackageName);
+        String s3 = checkDirReSolvePackageName(javaBaseUrl, daoPackageName);
+        String s4 = checkDirReSolvePackageName(javaBaseUrl, dtoPackageName);
+        String s5 = checkDirReSolvePackageName(javaBaseUrl, controllerPackageName);
 
 
 
@@ -113,7 +117,7 @@ public class JpaGen {
 
     }
 
-    private static void genController(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String controllerPackageName, String workPath, String s5) throws IOException, TemplateException {
+    private void genController(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String controllerPackageName, String workPath, String s5) throws IOException, TemplateException {
         Template template3 = cfg.getTemplate("controller.ftl");
         for (Class<?> aClass : classes) {
             String p = aClass.getName();
@@ -159,7 +163,7 @@ public class JpaGen {
             }
 
 
-            String s1 = s5 + File.separator + genInterface.getControllerName() + ".java";
+            String s1 = combineUrlAndPackageName(s5,controllerPackageName) +File.separator + genInterface.getControllerName() + ".java";
             File file = new File(s1);
             if (file.exists()) {
                 continue;
@@ -171,7 +175,7 @@ public class JpaGen {
         }
     }
 
-    private static void genInterface(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String interfacePackageName, String s) throws IOException, TemplateException {
+    private void genInterface(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String interfacePackageName, String s) throws IOException, TemplateException {
         String workPath = configJpaGen.getMainClassPackage();
         Template template = cfg.getTemplate("iservice.ftl");
         for (Class<?> aClass : classes) {
@@ -197,8 +201,7 @@ public class JpaGen {
                         ));
             }
 
-
-            String s1 = s + File.separator + genInterface.getInterfaceName() + ".java";
+            String s1 = combineUrlAndPackageName(s,interfacePackageName)+ File.separator + genInterface.getInterfaceName() + ".java";
             File file = new File(s1);
             if (file.exists()) {
                 continue;
@@ -210,7 +213,7 @@ public class JpaGen {
         }
     }
 
-    private static void genImpl(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String interfaceImplPackageName, String interfacePackageName, String s2) throws IOException, TemplateException {
+    private void genImpl(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String interfaceImplPackageName, String interfacePackageName, String s2) throws IOException, TemplateException {
         String workPath = configJpaGen.getMainClassPackage();
         Template template2 = cfg.getTemplate("iserviceimpl.ftl");
         for (Class<?> aClass : classes) {
@@ -253,7 +256,7 @@ public class JpaGen {
             importList.add(workPath +StringPool.DOT+"dao"+StringPool.DOT+simpleName+"Dao");
 
             genInterface.setImportList(importList);
-            String s1 = s2 + File.separator + genInterface.getInterfaceImplName() + ".java";
+            String s1 = combineUrlAndPackageName(s2,interfaceImplPackageName) + File.separator + genInterface.getInterfaceImplName() + ".java";
             File file = new File(s1);
             if (file.exists()) {
                 continue;
@@ -266,7 +269,7 @@ public class JpaGen {
         }
     }
 
-    private static void genDao(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String daoPackageName, String s3) throws IOException, TemplateException {
+    private void genDao(Configuration cfg,ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String daoPackageName, String s3) throws IOException, TemplateException {
         Template template3 = cfg.getTemplate("dao.ftl");
         for (Class<?> aClass : classes) {
             String p = aClass.getName();
@@ -299,7 +302,7 @@ public class JpaGen {
                         ));
             }
 
-            String s1 = s3 + File.separator + genInterface.getDaoClassName() + ".java";
+            String s1 = combineUrlAndPackageName(s3,daoPackageName) + File.separator + genInterface.getDaoClassName() + ".java";
             File file = new File(s1);
             if (file.exists()) {
                 continue;
@@ -311,7 +314,7 @@ public class JpaGen {
         }
     }
 
-    private static void genDto(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String dtoPackageName, String s4) throws IOException, TemplateException {
+    private void genDto(Configuration cfg, ConfigJpaGen configJpaGen, List<Class<?>> classes, String javaBaseUrl, String dtoPackageName, String s4) throws IOException, TemplateException {
         Template template4 = cfg.getTemplate("dto.ftl");
         List<String> collect = Arrays.stream(ReflectUtil.getFields(BaseDto.class)).map(Field::getName).distinct().collect(Collectors.toList());
         for (Class<?> aClass : classes) {
@@ -393,7 +396,7 @@ public class JpaGen {
             annotationList.add(EqualsAndHashCode.class.getSimpleName()+"(callSuper = true)");
             genInterface.setAnnotationList(annotationList);
 
-            String s1 = s4 + File.separator + genInterface.getDtoClassName() + ".java";
+            String s1 = combineUrlAndPackageName(s4 , dtoPackageName) + File.separator + genInterface.getDtoClassName() + ".java";
             File file = new File(s1);
             if (file.exists()) {
                 continue;
@@ -405,73 +408,9 @@ public class JpaGen {
         }
     }
 
-    private final static Pattern pattern = Pattern.compile("^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$");
-
-    private static String getTypeName(Type type, Set<String> fieldImportList) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            // 获取原始类型，如 List
-            Type rawType = parameterizedType.getRawType();
-            // 获取泛型类型参数
-            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-            StringBuilder sb = new StringBuilder();
-            String typeName1 = rawType.getTypeName();
-            String lastDotName = getLastDotName(typeName1);
-            checkIsNeedImport(typeName1, fieldImportList);
-            sb.append(lastDotName);
-            sb.append("<");
-            for (int i = 0; i < actualTypeArguments.length; i++) {
-                if (i > 0) {
-                    sb.append(", ");
-                }
-                Type actualTypeArgument = actualTypeArguments[i];
-                checkIsNeedImport(actualTypeArgument.getTypeName(), fieldImportList);
-                String typeName = getTypeName(actualTypeArgument, fieldImportList);
-                // 递归处理泛型参数
-                sb.append(getLastDotName(typeName));
-            }
-            sb.append(">");
-            return sb.toString();
-        }else if (type instanceof GenericArrayType) {
-            GenericArrayType arrayType = (GenericArrayType) type;
-            // 递归处理数组元素的类型
-            String componentTypeName = getTypeName(arrayType.getGenericComponentType(),fieldImportList);
-            return componentTypeName + "[]";
-        }else {
-            String typeName = type.getTypeName();
-            checkIsNeedImport(typeName, fieldImportList);
-            return getLastDotName(typeName);
-        }
-    }
-    private static void checkIsNeedImport(String name, Set<String> fieldImportList) {
-        boolean contains = ListTs.asList(
-                "int",
-                "byte",
-                "short",
-                "long",
-                "boolean",
-                "float",
-                "double",
-                "char"
-        ).contains(name);
-
-        if(!StrUtil.startWith(name,"java.lang") && !contains){
-
-            Matcher matcher = pattern.matcher(name);
-            if (matcher.matches()) {
-                fieldImportList.add(name);
-            }
-        }
-    }
-    public static String getLastDotName(String name){
-        List<String> list = ListTs.asList(name.split("\\."));
-        if (list.size()>1) {
-            return list.get(list.size()-1);
-        }else{
-            return name;
-        }
-    }
-    public static String getSimpleName(ConfigJpaGen configJpaGen, Class<?> typeClass){
+    
+    
+    public String getSimpleName(ConfigJpaGen configJpaGen, Class<?> typeClass){
         String simpleName = typeClass.getSimpleName();
         Boolean genDtoDateToString = configJpaGen.getGenDtoDateToString();
         if(genDtoDateToString && "Date".equals(simpleName)){
@@ -480,44 +419,7 @@ public class JpaGen {
         return simpleName;
     }
 
-    public static String checkDir(String baseUrl, String packageName) {
-        String[] split = packageName.split("\\.");
-        String join = String.join(File.separator, split);
-        baseUrl += File.separator + join;
-        File file = new File(baseUrl);
-        if (!file.exists()) {
-            boolean mkdir = file.mkdir();
-            if (!mkdir) {
-                throw new RuntimeException("mkdir fail");
-            }
-        }
-        return baseUrl;
-
-    }
-
-    public static List<Class<?>> scanClasses(String basePackage) throws IOException, ClassNotFoundException {
-        List<Class<?>> classes = new ArrayList<>();
-        // 创建资源模式解析器
-        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-        // 创建元数据读取工厂
-        MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-        // 构建类路径资源模式
-        String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
-                basePackage.replace('.', '/') + "/**/*.class";
-        // 获取指定包下的所有类资源
-        Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
-        for (Resource resource : resources) {
-            if (resource.isReadable()) {
-                // 创建元数据读取器
-                MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                // 获取类名
-                String className = metadataReader.getClassMetadata().getClassName();
-                // 加载类
-                classes.add(Class.forName(className));
-            }
-        }
-        return classes;
-    }
+    
 
 
 

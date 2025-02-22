@@ -1,15 +1,20 @@
 package easy4j.module.jpa.gen;
 
 
+import easy4j.module.base.plugin.gen.BaseConfigCodeGen;
 
 public class GenTest {
     public static void test(String[] args) throws Exception {
-        ConfigJpaGen build = new ConfigJpaGen()
-//                .javaBaseUrl("D:\\\\IdeaProjects\\\\wd-server\\\\build-server\\\\src\\\\main")
-                .scanPackage("domain");
+        ConfigJpaGen build = new ConfigJpaGen.Builder()
+                .setOutAbsoluteUrl("")
+                .setGenNote(true)
+                .setScanPackageName("domain")
+                .setTmplClassPath("tmpl")
+                .setSpringMainClass(GenTest.class)
+                .build();
 //                .mainClassPackage("club.likunkun.buildserver")
 //                .springMainClass(App.class);
-        JpaGen.Gen(build);
+        JpaGen.build(build).gen();
     }
 
 

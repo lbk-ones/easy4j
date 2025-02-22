@@ -36,10 +36,8 @@ ${line}
 <#list annotationList as anno>
 @${anno}
 </#list>
-public class ${interfaceImplName} extends BaseService implements ${interfaceName} {
+public class ${interfaceImplName} extends BaseService<${domainName}Dao,String,${domainName}> implements ${interfaceName} {
     public static Class<${domainName}> clazz = ${domainName}.class;
-    @Resource
-    ${domainName}Dao ${firstLowDomainName}Dao;
 
     @Override
     public Map<String,Object> get${domainName}List(${domainName}Dto ${firstLowDomainName}Dto) {
@@ -96,7 +94,7 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
                 return cb.and(predicates.toArray(pre));
             }
         };
-        Page<${domainName}Dto> byPage = this.findByPage(${firstLowDomainName}Dao, ${firstLowDomainName}Dto, specification, ${domainName}Dto.class, sortDtoList.toArray(new SortDto[]{}));
+        Page<${domainName}Dto> byPage = this.findByPage(${firstLowDomainName}Dto, specification, ${domainName}Dto.class, sortDtoList.toArray(new SortDto[]{}));
         res.put("list",byPage.getContent());
         res.put("totals",byPage.getTotalElements());
         return res;
@@ -116,7 +114,7 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
             ${domainName}.setVersion(1);
             ${domainName}.setIsEnabled(1);
             ${domainName}.setCreateTime(new Date());
-            ${domainName}Dto ${firstLowDomainName}Dto1 = this.baseSave(${firstLowDomainName}Dao, ${firstLowDomainName}Dto, ${domainName});
+            ${domainName}Dto ${firstLowDomainName}Dto1 = this.baseSaveReturnDto(${domainName}, ${firstLowDomainName}Dto);
             res.add(${firstLowDomainName}Dto1);
         }
         return res;
@@ -129,7 +127,7 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
         for (${domainName}Dto ${firstLowDomainName}Dto : ${firstLowDomainName}Dtos) {
             String dtoId = getDtoId(${firstLowDomainName}Dto);
             int version = getDtoVersion(${firstLowDomainName}Dto);
-            ${domainName} ${firstLowDomainName} = this.updateById(${firstLowDomainName}Dao, ${firstLowDomainName}Dto, dtoId, version);
+            ${domainName} ${firstLowDomainName} = this.updateById(${firstLowDomainName}Dto, dtoId, version);
             BeanUtil.copyProperties(${firstLowDomainName},${firstLowDomainName}Dto);
         }
         return ${firstLowDomainName}Dtos;
@@ -140,23 +138,23 @@ public class ${interfaceImplName} extends BaseService implements ${interfaceName
     public List<String> delete${domainName}(List<${domainName}Dto> ${firstLowDomainName}Dtos) {
         isEmptyThrow(${firstLowDomainName}Dtos, "A00004");
         List<String> collect = ${firstLowDomainName}Dtos.stream().map(this::getDtoId).distinct().collect(Collectors.toList());
-        boolean b = deleteByIds(${firstLowDomainName}Dao, collect, false);
+        boolean b = deleteByIds(collect, false);
         isTrueThrow(!b, "A00019");
         return collect;
     }
 
     @Override
     @Transactional
-    public List<String> enableOrDisabled(List<${domainName}Dto> ${firstLowDomainName}Dtos) {
+    public List<String> enableOrDisabled${domainName}(List<${domainName}Dto> ${firstLowDomainName}Dtos) {
         isEmptyThrow(${firstLowDomainName}Dtos, "A00004");
         List<String> collect = ${firstLowDomainName}Dtos.stream().map(this::getDtoId).distinct().collect(Collectors.toList());
-        enableOrDisabled(${firstLowDomainName}Dao, collect);
+        enableOrDisabled(collect);
         return collect;
     }
 	
 	@Override
     public List<${domainName}Dto> get${domainName}ByIds(List<String> ${firstLowDomainName}Ids) {
-        List<${domainName}> allById = ${firstLowDomainName}Dao.findAllById(${firstLowDomainName}Ids);
+        List<${domainName}> allById = this.daoRepository.findAllById(${firstLowDomainName}Ids);
         if (CollUtil.isNotEmpty(allById)) {
             List<${domainName}Dto> ${firstLowDomainName}Dtos = new ArrayList<>();
             for (${domainName} ${firstLowDomainName} : allById) {
