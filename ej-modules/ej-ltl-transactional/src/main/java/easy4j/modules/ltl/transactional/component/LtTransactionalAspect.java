@@ -321,6 +321,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
             return null;
         }
         localMessage.setBusinessKey(s);
+        localMessage.setBusinessName(annotation.businessName());
         localMessage.setRetryCount(annotation.retryCount());
         String[] parameterNames = signature.getParameterNames();
         Map<String,String> paramMap = Maps.newHashMap();

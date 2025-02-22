@@ -27,6 +27,8 @@ public class LocalMessage implements Serializable {
     private String msgId;
     @Column("BUSINESS_KEY")
     private String businessKey;
+    @Column("BUSINESS_NAME")
+    private String businessName;
     @Column("CONTENT")
     private String content;
     @Column("BEAN_NAME")
