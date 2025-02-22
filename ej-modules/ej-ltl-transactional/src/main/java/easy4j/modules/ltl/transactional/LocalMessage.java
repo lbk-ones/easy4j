@@ -42,8 +42,9 @@ public class LocalMessage implements Serializable {
     @Column("UPDATE_DATE")
     private LocalDateTime updateDate;
 
+    @Column("ERROR_MESSAGE")
+    private String errorMessage;
 
-    @Transient
-    private Object object;
-
+    @Column("IS_FREEZE")
+    private String isFreeze;
 }

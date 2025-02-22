@@ -18,16 +18,6 @@
       <groupId>easy4j.module.base</groupId>
       <artifactId>ej-base</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-jdbc</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework.data</groupId>
-          <artifactId>spring-data-jdbc</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!--mapstruct-->
@@ -77,6 +67,11 @@
       <version>1.0-SNAPSHOT</version>
     </dependency>
 
+    <dependency>
+      <groupId>easy4j.modules.ltl.transactional</groupId>
+      <artifactId>ej-ltl-transactional</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
 </project>

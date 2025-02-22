@@ -37,11 +37,11 @@ public @interface LtTransactional {
 
 
     String businessKey() default "";
+    String businessName() default "";
 
     String baenName() default "";
     String beanMethod() default "";
-
-    String uniqueKey() default "";
-
     int retryCount() default 3;
+
+
 }
