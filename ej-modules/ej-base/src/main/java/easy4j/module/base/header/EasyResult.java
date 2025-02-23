@@ -1,6 +1,7 @@
 package easy4j.module.base.header;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson2.JSON;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.BusCode;
 import easy4j.module.base.utils.ListTs;
@@ -103,6 +104,24 @@ public class EasyResult<T> implements Serializable {
 		EasyResult<T> easyResult = new EasyResult<T>();
 		easyResult.setError(SysConstant.ERRORCODE);
 		easyResult.setMessage(message);
+		easyResult.setData(null);
+		return easyResult;
+	}
+	public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode,T data){
+
+		EasyResult<T> easyResult = new EasyResult<T>();
+		easyResult.setError(error);
+		easyResult.setCode(i18nCode);
+		easyResult.setMessage(I18nBean.getMessage(i18nCode));
+		easyResult.setData(data);
+		return easyResult;
+	}
+	public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode){
+
+		EasyResult<T> easyResult = new EasyResult<T>();
+		easyResult.setError(error);
+		easyResult.setCode(i18nCode);
+		easyResult.setMessage(I18nBean.getMessage(i18nCode));
 		easyResult.setData(null);
 		return easyResult;
 	}
@@ -231,5 +250,10 @@ public class EasyResult<T> implements Serializable {
 		this.error = error;
 		this.code = code;
 		this.message = message;
+	}
+
+	@Override
+	public String toString() {
+		return JSON.toJSONString(this);
 	}
 }

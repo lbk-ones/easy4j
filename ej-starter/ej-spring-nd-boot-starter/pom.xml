@@ -66,6 +66,12 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>easy4j.module.idempotent</groupId>
+            <artifactId>ej-idempotent</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
 
