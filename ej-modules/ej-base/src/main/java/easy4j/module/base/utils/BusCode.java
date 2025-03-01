@@ -57,4 +57,10 @@ public class BusCode {
     public static final String A00020 = "A00020";
     @Desc("不能重复请求")
     public static final String A00021 = "A00021";
+
+    @Desc("请求过于频繁，请稍后重试")
+    public static final String A00022 = "A00022";
+
+    @Desc("服务暂时不可用，已触发熔断")
+    public static final String A00023 = "A00023";
 }

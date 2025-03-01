@@ -3,6 +3,8 @@ package easy4j.module.sentinel.annotation;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import easy4j.module.base.annotations.Desc;
+import easy4j.module.base.exception.EasyException;
+import easy4j.module.sentinel.GlobalFallbackHandler;
 
 import java.lang.annotation.*;
 
@@ -55,7 +57,7 @@ public @interface FlowDegradeResource {
      * @return name of the default fallback method, empty by default
      * @since 1.6.0
      */
-    String defaultFallback() default "";
+    String defaultFallback() default "defaultFallback";
 
     /**
      * The {@code fallback} is located in the same class with the original method by default.
@@ -66,7 +68,7 @@ public @interface FlowDegradeResource {
      * @return the class where the fallback method is located (only single class)
      * @since 1.6.0
      */
-    Class<?>[] fallbackClass() default {};
+    Class<?>[] fallbackClass() default {GlobalFallbackHandler.class};
 
     /**
      * @return the list of exception classes to trace, {@link Throwable} by default
@@ -82,7 +84,7 @@ public @interface FlowDegradeResource {
      * @return the list of exception classes to ignore, empty by default
      * @since 1.6.0
      */
-    Class<? extends Throwable>[] exceptionsToIgnore() default {};
+    Class<? extends Throwable>[] exceptionsToIgnore() default {EasyException.class};
 
     @Desc("流控模式 0 代表线程数限流(RuleConstant.FLOW_GRADE_THREAD) 1代表qps(RuleConstant.FLOW_GRADE_QPS)")
     // 流控模式
