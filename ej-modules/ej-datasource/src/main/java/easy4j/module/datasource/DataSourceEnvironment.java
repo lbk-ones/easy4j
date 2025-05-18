@@ -27,7 +27,7 @@ import java.util.Properties;
  * @author bokun.li
  * @date 2023/11/20
  */
-@Order(value = 11)
+@Order(value = 16)  // 要在 h2 后面加载
 public class DataSourceEnvironment extends AbstractEnvironmentForEj {
 
     // 使用的是什么数据源
