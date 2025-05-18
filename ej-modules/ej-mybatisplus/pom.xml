@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mplus.version>3.5.1</mplus.version>
+        <mplus.version>3.5.4</mplus.version>
     </properties>
 
     <dependencies>

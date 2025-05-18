@@ -1,9 +1,9 @@
-package easy4j.module.spring.nd.boot;
+package easy4j.module.spring.boot;
 
-import easy4j.module.base.starter.Easy4JStarterNd;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@Easy4JStarterNd
+@SpringBootApplication
 public class EjSpringBootStarterApplication {
 
     public static void main(String[] args) {

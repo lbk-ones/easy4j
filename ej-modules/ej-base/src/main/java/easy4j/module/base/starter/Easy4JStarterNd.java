@@ -1,6 +1,7 @@
 package easy4j.module.base.starter;
 
 import cn.hutool.extra.spring.EnableSpringUtil;
+import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.starter.EasyStarterImport;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.boot.SpringBootConfiguration;
@@ -83,4 +84,8 @@ public @interface Easy4JStarterNd {
     boolean enableH2() default false;
 
     String h2Url() default "jdbc:h2:mem:testdb";
+
+
+    @Desc("示例  jdbc:mysql://localhost:3306/order@root:123456")
+    String ejDataSourceUrl() default "";
 }

@@ -2,6 +2,7 @@ package easy4j.module.base.starter;
 
 import cn.hutool.extra.spring.EnableSpringUtil;
 
+import easy4j.module.base.annotations.Desc;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.boot.SpringBootConfiguration;
@@ -34,7 +35,7 @@ import java.lang.annotation.*;
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
 @MapperScan
-public @interface Easy4JStarter{
+public @interface Easy4JStarter {
     @AliasFor(
             annotation = EnableAutoConfiguration.class
     )
@@ -69,6 +70,7 @@ public @interface Easy4JStarter{
     boolean proxyBeanMethods() default true;
 
     int serverPort() default 8080;
+
     String serverName() default "easy4j-service";
 
     String serviceDesc() default "";
@@ -76,5 +78,9 @@ public @interface Easy4JStarter{
     String author() default "";
 
     boolean enableH2() default false;
+
     String h2Url() default "jdbc:h2:mem:testdb";
+
+    @Desc("示例  jdbc:mysql://localhost:3306/order@root:123456")
+    String ejDataSourceUrl() default "";
 }
