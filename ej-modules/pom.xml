@@ -20,7 +20,6 @@
         <module>ej-nacos-dubbo3</module>
         <module>ej-flyway</module>
         <module>ej-sentinel-dubbo3</module>
-        <module>ej-datajdbc</module>
         <module>ej-dnspom</module>
         <module>ej-redis</module>
         <module>ej-ltl-transactional</module>

@@ -25,7 +25,7 @@ import java.util.UUID;
         serverName = "build-server",
         serviceDesc = "测试服务",
         author = "bokun.li",
-        enableH2 = false,
+        enableH2 = true,
         h2Url = "jdbc:h2:file:~/h2/testdb;DB_CLOSE_ON_EXIT=false"
         // 使用h2当数据库
 )

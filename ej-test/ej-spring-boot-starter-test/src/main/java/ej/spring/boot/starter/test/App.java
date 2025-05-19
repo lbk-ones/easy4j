@@ -3,7 +3,6 @@ package ej.spring.boot.starter.test;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Easy4JStarter(
         serverPort = 10001,
