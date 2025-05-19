@@ -1,6 +1,13 @@
 package easy4j.module.base.utils;
 
 public class SysConstant {
+
+    public static final String X_ACCESS_TOKEN = "X-Access-Token";
+    public static final String X_SIGN = "X-Sign";
+    public static final String X_TIMESTAMP = "X-TIMESTAMP";
+    public static final String TENANT_ID = "X-Tenant-Id";
+
+
     public static final String DOT = ".";
 
     public static final String DB_URL_STR = "spring.datasource.url";
@@ -12,10 +19,10 @@ public class SysConstant {
     public static final String SERVER_PORT = "server.port";
     public static final String SERVER_NAME = "spring.application.name";
     public static final String LOG_SAVE_PATH = "log.save.path";
-    public static final String  SERVER_PORT_STR = "server.port";
-    public static final String  DRUID_USER_NAME = "spring.datasource.druid.stat-view-servlet.login-username";
-    public static final String  DRUID_USER_PWD = "spring.datasource.druid.stat-view-servlet.login-password";
-    public static final String  DRUID_FILTER = "spring.datasource.druid.filters";
+    public static final String SERVER_PORT_STR = "server.port";
+    public static final String DRUID_USER_NAME = "spring.datasource.druid.stat-view-servlet.login-username";
+    public static final String DRUID_USER_PWD = "spring.datasource.druid.stat-view-servlet.login-password";
+    public static final String DRUID_FILTER = "spring.datasource.druid.filters";
 
 
     public static final int SUCCESSCODE = 0;
@@ -79,7 +86,6 @@ public class SysConstant {
     public static final String SPRING_JPA_PROPERTIES_HIBERNATE_HBM2DDL_AUTO = "spring.jpa.properties.hibernate.hbm2ddl.auto";
     public static final String SPRING_JPA_GENERATE_DDL = "spring.jpa.generate-ddl";
     public static final String SPRING_JPA_HIBERNATE_DDL_AUTO = "spring.jpa.hibernate.ddl-auto";
-
 
 
     // h2

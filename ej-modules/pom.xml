@@ -27,6 +27,7 @@
         <module>ej-h2</module>
         <module>ej-sentinel</module>
         <module>ej-idempotent</module>
+        <module>ej-sca</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>

@@ -1,14 +1,16 @@
 # Easy4J 框架底座
 
-Easy4J 是一个轻量级、高性能的 Java 基础框架，旨在为企业级应用开发提供稳固的基础架构支持。框架遵循“约定优于配置”的原则，通过简单易用的 API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的应用系统。
+Easy4J 是一个轻量级、高性能的 Java 基础框架，旨在为企业级应用开发提供稳固的基础架构支持。框架遵循“约定优于配置”的原则，通过简单易用的
+API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的应用系统。
 
 ## 支持
 
 - **java 8**
-- **springboot 2.7.16**
+- **springboot 2.7.18**
   目前只支持 java8 后面有计划支持 java 8+ 和 springboot 3+
 
 ## 特性
+
 - **模块化设计**：采用模块化架构，各组件可独立使用或按需组合
 - **简化开发**：提供常用工具类和基础服务，减少重复开发，极大极大减少配置量，可以0配置启动
 - **统一异常处理**：标准化的异常处理机制，提升系统稳定性
@@ -22,6 +24,7 @@ Easy4J 是一个轻量级、高性能的 Java 基础框架，旨在为企业级�
 Easy4J 框架包含以下核心模块：
 
 - **ej-base**：核心模块，提供基础功能和框架核心组件（异常处理，i18n，启动类，代码生成基础组件，knife4j文档整合，底层数据库操作引擎，以及其他模块使用到的接口、抽象类）
+- **ej-sca**：spring-cloud-alibaba 整合
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合
 - **ej-dubbo3**：dubbo3整合（默认配置，异常，jaeger链路整合）
@@ -47,11 +50,14 @@ Easy4J 框架包含以下核心模块：
 - **ej-starter/ej-spring-nd-boot-starter**：springboot体系无数据源整合starter
 - **ej-test**：starter的测试模块
 
-
 ## 快速开始
+
 ### 引入依赖
+
 在您的 Maven 项目中根据自己的需求选择依赖添加：
+
 ```xml
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -75,7 +81,7 @@ Easy4J 框架包含以下核心模块：
     </properties>
 
     <dependencies>
-        
+
         <!--按需选择-->
         <!--dubbo3 (dns体系) + mybatisplus 微服务-->
         <dependency>
@@ -83,7 +89,7 @@ Easy4J 框架包含以下核心模块：
             <version>1.0-SNAPSHOT</version>
             <packaging>jar</packaging>
         </dependency>
-        
+
         <!--springboot封装 微服务(带数据源)-->
         <dependency>
             <groupId>easy4j.module.boot</groupId>
@@ -147,7 +153,9 @@ Easy4J 框架包含以下核心模块：
 
 </project>
 ```
+
 ### 启动代码
+
 ```java
 
 package ej.spring.boot.starter.test;
@@ -155,9 +163,11 @@ package ej.spring.boot.starter.test;
  * 最简单的启动方式 可以使用配置文件去配置 也可以使用在启动注解里面写少量配置
  * @author bokun
  */
+
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import org.springframework.boot.SpringApplication;
+
 // @Easy4JNdStarterNd是无数据源注解
 @Easy4JStarter(
         serverPort = 10001,// 服务端口
@@ -175,7 +185,9 @@ public class App {
     }
 }
 ```
-###  测试模块代码
+
+### 测试模块代码
+
 ```java
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson2.JSON;
@@ -210,7 +222,7 @@ import java.util.UUID;
 // 需要标识启动类
 @SpringBootTest(classes = AppTest.class)
 public class AppTest {
-    
+
     @Autowired
     DataSource dataSource;
 
@@ -236,5 +248,6 @@ public class AppTest {
 }
 
 ```
+
 > 启动服务可以不用application.properties
 

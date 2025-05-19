@@ -101,7 +101,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-<!--            <optional>true</optional>-->
+            <!--            <optional>true</optional>-->
         </dependency>
 
         <dependency>
@@ -205,6 +205,6 @@
             <artifactId>commons-dbutils</artifactId>
             <version>1.8.1</version>
         </dependency>
-        
+
     </dependencies>
 </project>
