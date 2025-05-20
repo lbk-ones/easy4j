@@ -1,43 +1,62 @@
 package easy4j.modules.ltl.transactional.component;
+
+import cn.hutool.extra.spring.SpringUtil;
+import easy4j.module.base.plugin.dbaccess.DBAccess;
+import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.ListTs;
 import easy4j.modules.ltl.transactional.LocalMessage;
-import easy4j.modules.ltl.transactional.LtlTransactionMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.InitializingBean;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Component
-public class LtlTransactionService {
+public class LtlTransactionService implements InitializingBean {
+    private DBAccess dbAccess;
 
-    @Autowired
-    LtlTransactionMapper ltlTransactionMapper;
-
-    public void insertOrUpdateLocalMessage(LocalMessage localMessage){
-        ltlTransactionMapper.save(localMessage);
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        DBAccessFactory.INIT_DB_FILE_PATH.add("db/lt");
+        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
     }
 
-    public void delete(LocalMessage localMessage){
-        ltlTransactionMapper.delete(localMessage);
+    public void insertOrUpdateLocalMessage(LocalMessage localMessage) throws SQLException {
+        dbAccess.saveOne(localMessage, LocalMessage.class);
     }
 
-    public LocalMessage findById(String id){
-        Optional<LocalMessage> byId = ltlTransactionMapper.findById(id);
+    public void delete(LocalMessage localMessage) throws SQLException {
+        dbAccess.deleteByPrimaryKey(localMessage, LocalMessage.class);
+    }
+
+    public LocalMessage findById(String id) throws SQLException {
+        LocalMessage byId = dbAccess.getObjectByPrimaryKey(id, LocalMessage.class);
+        //Optional<LocalMessage> byId = ltlTransactionMapper.findById(id);
         AtomicReference<LocalMessage> res = new AtomicReference<>(null);
-        byId.ifPresent(res::set);
+        res.set(byId);
         return res.get();
     }
-    public List<LocalMessage> findAllFailed(){
-        Iterable<LocalMessage> all = ltlTransactionMapper.findLocalMessagesByIsFreezeIsNull();
-        return ListTs.newArrayList(all.iterator());
+
+    public List<LocalMessage> findAllFailed() {
+        LocalMessage localMessage = new LocalMessage();
+        localMessage.setIsFreeze("is null");
+        List<LocalMessage> all = ListTs.newArrayList();
+        try {
+            all = dbAccess.getObjectBy(localMessage, LocalMessage.class);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return all;
     }
 
-    public void freezeAll(List<LocalMessage> list){
+    public void freezeAll(List<LocalMessage> list) {
         for (LocalMessage localMessage : list) {
             localMessage.setIsFreeze("1");
         }
-        ltlTransactionMapper.saveAll(list);
+        try {
+            dbAccess.saveList(list, LocalMessage.class);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

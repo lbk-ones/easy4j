@@ -1,13 +1,10 @@
 package easy4j.module.seed.leaf;
 
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import easy4j.module.base.enums.DbType;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.SqlType;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,7 +42,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
         leafAllocDomain.setBIZ_TAG(bizTag);
         try {
-            return dbaccess.getObjectByPrimaryKey(LeafAllocDomain.class, leafAllocDomain);
+            return dbaccess.getObjectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -6,22 +6,17 @@ import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson2.JSON;
-import easy4j.module.base.enums.DbType;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.starter.EnvironmentHolder;
 import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.SqlFileExecute;
-import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysLog;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
@@ -97,7 +92,7 @@ public class CommonKey {
                         //jdbcTemplate.update("INSERT INTO WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
                     } else {
                         // k8s 重启 ip是不会延续原来的 但是这里兼容一下这种情况 万一不用 k8s捏 对吧
-                        WORK_IP workip = dbAccess.getObjectByPrimaryKey(WORK_IP.class, masterIp);
+                        WORK_IP workip = dbAccess.getObjectByPrimaryKey(masterIp, WORK_IP.class);
                         if (Objects.nonNull(workip)) {
                             workerId = workip.getNUM();
                         }

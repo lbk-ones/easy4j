@@ -1,5 +1,7 @@
 package easy4j.modules.ltl.transactional;
 
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import lombok.Data;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Table("LOCAL_MESSAGE")
+@JdbcTable(name = "LOCAL_MESSAGE")
 public class LocalMessage implements Serializable {
 
     // 正在发送
@@ -24,6 +27,7 @@ public class LocalMessage implements Serializable {
 
     @Id
     @Column("MSG_ID")
+    @JdbcColumn(name = "MSG_ID", isPrimaryKey = true)
     private String msgId;
     @Column("BUSINESS_KEY")
     private String businessKey;

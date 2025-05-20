@@ -127,24 +127,24 @@ public interface DBAccess {
     /**
      * 根据主键查询某对象
      *
-     * @param clazz
-     * @param arg
      * @param <T>
+     * @param arg
+     * @param clazz
      * @return
      * @throws SQLException
      */
-    <T> T getObjectByPrimaryKey(Class<T> clazz, Object arg) throws SQLException;
+    <T> T getObjectByPrimaryKey(Object arg, Class<T> clazz) throws SQLException;
 
     /**
      * 根据多个主键查询对象集合
      *
-     * @param clazz
-     * @param args
      * @param <T>
+     * @param args
+     * @param clazz
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectByPrimaryKeys(Class<T> clazz, List<Object> args) throws SQLException;
+    <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz) throws SQLException;
 
     /**
      * 根据条件查询数量
@@ -191,5 +191,7 @@ public interface DBAccess {
      * @throws SQLException
      */
     <T> int deleteByPrimaryKey(Object object, Class<T> easy4jKeyIdempotentClass) throws SQLException;
+
+    <T> List<T> getObjectBy(T localMessage, Class<T> localMessageClass) throws SQLException;
 
 }

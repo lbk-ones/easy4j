@@ -73,7 +73,7 @@ public class AppTest {
         sysLogRecord.setTraceId(s);
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
         System.out.println("更新条数---" + i);
-        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(SysLogRecord.class, sysLogRecord.getId());
+        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
         System.out.println(JSON.toJSONString(sysLogRecordById));
         String traceId = sysLogRecordById.getTraceId();
         System.out.println(traceId.equals(s));
@@ -98,7 +98,7 @@ public class AppTest {
         sysLogRecord.setTraceId(s);
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
 
-        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(SysLogRecord.class, sysLogRecord.getId());
+        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
         System.out.println("更新前--->" + JSON.toJSONString(sysLogRecordById));
         sysLogRecordById.setTraceId("123");
         sysLogRecordById.setProcessTime("8988");
@@ -135,7 +135,7 @@ public class AppTest {
             sysLogRecord.setErrorInfo(null);
         }
         int i = dbAccess.updateListByPrimaryKey(needUpdateList, SysLogRecord.class);
-        List<SysLogRecord> objectByPrimaryKeys = dbAccess.getObjectByPrimaryKeys(SysLogRecord.class, ListTs.mapList(needUpdateList, SysLogRecord::getId));
+        List<SysLogRecord> objectByPrimaryKeys = dbAccess.getObjectByPrimaryKeys(ListTs.mapList(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
         for (SysLogRecord sysLogRecord : objectByPrimaryKeys) {
             System.out.println(JSON.toJSONString(sysLogRecord, JSONWriter.Feature.WriteMapNullValue));
         }

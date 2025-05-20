@@ -365,7 +365,7 @@ public abstract class AbstractDBAccess implements DBAccess {
         int i = updateListByBean(ListTs.singletonList(logRecord), null, idMap, false, aClass);
         if (i > 0) {
             List<Object> idValue = getIdValue(logRecord, aClass);
-            return getObjectByPrimaryKey(aClass, idValue.get(0));
+            return getObjectByPrimaryKey(idValue.get(0), aClass);
         }
         return null;
     }
@@ -376,7 +376,7 @@ public abstract class AbstractDBAccess implements DBAccess {
         int i = updateListByBean(ListTs.singletonList(logRecord), null, idMap, true, aClass);
         if (i > 0) {
             List<Object> idValue = getIdValue(logRecord, aClass);
-            return getObjectByPrimaryKey(aClass, idValue.get(0));
+            return getObjectByPrimaryKey(idValue.get(0), aClass);
         }
         return null;
     }
@@ -427,8 +427,8 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> T getObjectByPrimaryKey(Class<T> clazz, Object arg) throws SQLException {
-        List<T> objectByIdList = getObjectByPrimaryKeys(clazz, ListTs.asList(arg));
+    public <T> T getObjectByPrimaryKey(Object arg, Class<T> clazz) throws SQLException {
+        List<T> objectByIdList = getObjectByPrimaryKeys(ListTs.asList(arg), clazz);
         if (ListTs.isEmpty(objectByIdList)) {
             return null;
         } else {
@@ -463,6 +463,17 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
+    public <T> List<T> getObjectBy(T localMessage, Class<T> localMessageClass) throws SQLException {
+
+        String tableName = this.getTableName(localMessageClass, null);
+        Map<String, Object> paramMap = BeanUtil.beanToMap(localMessage, true, false);
+        List<Object> args = ListTs.newLinkedList();
+        String sqlByObject = this.getSqlByObject(paramMap, args, true);
+        String sql = "select * from " + tableName + " where " + sqlByObject;
+        return this.getObjectList(sql, localMessageClass, args.toArray(new Object[]{}));
+    }
+
+    @Override
     public long countBy(Object object) throws SQLException {
         Class<?> aClass1 = object.getClass();
         String tableName = getTableName(aClass1, null);
@@ -482,7 +493,7 @@ public abstract class AbstractDBAccess implements DBAccess {
 
 
     @Override
-    public <T> List<T> getObjectByPrimaryKeys(Class<T> clazz, List<Object> args) throws SQLException {
+    public <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz) throws SQLException {
         if (args.isEmpty()) {
             throw new SQLException("id list is empty");
         } else {

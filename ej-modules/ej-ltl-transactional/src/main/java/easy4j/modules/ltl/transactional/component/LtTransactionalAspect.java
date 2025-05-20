@@ -9,6 +9,8 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.common.collect.Maps;
+import easy4j.module.base.plugin.dbaccess.DBAccess;
+import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.starter.EnvironmentHolder;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SqlFileExecute;
@@ -31,6 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Aspect
 @Slf4j
 public class LtTransactionalAspect implements InitializingBean, CommandLineRunner {
+    private DBAccess dbAccess;
     private static final ConcurrentLinkedDeque<LocalMessage> LINKED_DEQUE = new ConcurrentLinkedDeque<>();
 
     private static final List<LocalMessage> POLL_LIST = new CopyOnWriteArrayList<>();
@@ -50,38 +54,16 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
     private static final Object LOCK_OBJECT = new Object();
     private static final AtomicBoolean IS_ING = new AtomicBoolean(false);
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
-
     @Override
     public void run(String... args) throws Exception {
 
-        String dbType = EnvironmentHolder.getDbType().toLowerCase();
+        DBAccessFactory.INIT_DB_FILE_PATH.add("db/lt");
+        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
 
-        String classPathSqlName = "";
-        if(StrUtil.equals(dbType,"h2")){
-            classPathSqlName = "lt_h2.sql";
-        }else if(StrUtil.contains(dbType,"sqlserver")){
-            classPathSqlName = "lt_sqlserver.sql";
-        }else if(StrUtil.equals(dbType,"postgresql")){
-            classPathSqlName = "lt_postgresql.sql";
-        }else if(StrUtil.equals(dbType,"mysql")){
-            classPathSqlName = "lt_mysql.sql";
-        }else if(StrUtil.equals(dbType,"oracle")){
-            classPathSqlName = "lt_oracle.sql";
-        }
-        if(StrUtil.isNotBlank(classPathSqlName)){
-            try{
-                SqlFileExecute.executeSqlFile(jdbcTemplate,classPathSqlName);
-            }catch (Exception e){
-                log.info(SysLog.compact("本地消息表已创建"));
-            }
-        }
-        
-        try{
+        try {
             processFailedDatas();
-        }catch (Exception e){
-            log.error("本地消息表初始化任务失败",e);
+        } catch (Exception e) {
+            log.error("本地消息表初始化任务失败", e);
         }
     }
 
@@ -89,7 +71,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
     public void afterPropertiesSet() throws Exception {
         // scan queue for records to db
         Thread thread = new Thread(() -> {
-            while (true){
+            while (true) {
                 batchPoll();
                 try {
                     TimeUnit.SECONDS.sleep(5L);
@@ -103,11 +85,11 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
         thread.start();
 
         Thread thread2 = new Thread(() -> {
-            while (true){
+            while (true) {
                 boolean b = IS_ING.get();
-                if(!b){
+                if (!b) {
                     IS_ING.set(true);
-                    synchronized (LOCK_OBJECT){
+                    synchronized (LOCK_OBJECT) {
                         try {
                             LOCK_OBJECT.wait();
                         } catch (InterruptedException ignored) {
@@ -116,7 +98,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
                         batchPoll();
                         processFailedDatas();
                     }
-                }else{
+                } else {
                     try {
                         TimeUnit.SECONDS.sleep(5L);
                     } catch (InterruptedException ignored) {
@@ -134,89 +116,89 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
 
     private synchronized static void batchPoll() {
         LocalMessage poll = LINKED_DEQUE.poll();
-        if(null != poll){
+        if (null != poll) {
             POLL_LIST.add(poll);
-            if(POLL_LIST.size()>=100){
+            if (POLL_LIST.size() >= 100) {
                 pollProcessBatch();
             }
-        }else if(!POLL_LIST.isEmpty()){
+        } else if (!POLL_LIST.isEmpty()) {
             pollProcessBatch();
         }
     }
 
 
-    public static void processFailedDatas(){
-        try{
+    public static void processFailedDatas() {
+        try {
             if (!IS_ING.get()) {
                 IS_ING.set(true);
             }
             LtlTransactionService bean = SpringUtil.getBean(LtlTransactionService.class);
             List<LocalMessage> localMessages = bean.findAllFailed();
-            if(localMessages.isEmpty()){
+            if (localMessages.isEmpty()) {
                 return;
             }
-            log.info("本次补偿本地消息:"+localMessages.size()+"条");
+            log.info("本次补偿本地消息:" + localMessages.size() + "条");
             bean.freezeAll(localMessages);
             for (LocalMessage localMessage : localMessages) {
                 List<Object> objects = ListTs.newArrayList();
                 try {
                     String beanName = localMessage.getBeanName();
                     Object bean1 = SpringUtil.getBean(beanName);
-                    if(StrUtil.isBlank(beanName)){
-                        log.error("本地消息表补偿失败,beanName为空,msgId:"+localMessage.getMsgId());
+                    if (StrUtil.isBlank(beanName)) {
+                        log.error("本地消息表补偿失败,beanName为空,msgId:" + localMessage.getMsgId());
                         continue;
                     }
                     String content = localMessage.getContent();
-                    if(StrUtil.isNotBlank(content)){
+                    if (StrUtil.isNotBlank(content)) {
                         JSONObject jsonObject = JSON.parseObject(content);
                         for (String clazzKey : jsonObject.keySet()) {
                             Object o = jsonObject.get(clazzKey);
-                            if(o == null){
+                            if (o == null) {
                                 Class<?> aClass = Class.forName(clazzKey);
                                 Object o1 = ReflectUtil.newInstance(aClass);
                                 objects.add(o1);
-                            }else{
+                            } else {
                                 objects.add(o);
                             }
                         }
-                        ReflectUtil.invoke(bean1,localMessage.getBeanMethod(), objects.toArray(new Object[]{}));
-                    }else{
-                        ReflectUtil.invoke(bean1,localMessage.getBeanMethod());
+                        ReflectUtil.invoke(bean1, localMessage.getBeanMethod(), objects.toArray(new Object[]{}));
+                    } else {
+                        ReflectUtil.invoke(bean1, localMessage.getBeanMethod());
                     }
 
                     bean.delete(localMessage);
                 } catch (Throwable e) {
-                    log.error("本地消息补偿失败,调用参数:"+JSON.toJSONString(objects));
-                    log.error("本地消息补偿失败",e);
+                    log.error("本地消息补偿失败,调用参数:" + JSON.toJSONString(objects));
+                    log.error("本地消息补偿失败", e);
                 }
             }
-        }finally {
+        } finally {
             IS_ING.set(false);
         }
     }
 
     // batch flush to db
-    private static void pollProcessBatch(){
+    private static void pollProcessBatch() {
         if (POLL_LIST.isEmpty()) {
             return;
         }
         LtlTransactionService bean = SpringUtil.getBean(LtlTransactionService.class);
-        if(null == bean){
+        if (null == bean) {
             return;
         }
         for (LocalMessage localMessage : POLL_LIST) {
-            try{
+            try {
                 localMessage.setStatus(LocalMessage.FAILED);
                 bean.insertOrUpdateLocalMessage(localMessage);
-                POLL_LIST.removeIf(e-> e.getMsgId().equals(localMessage.getMsgId()));
-            }catch (DuplicateKeyException duplicateKeyException){
-                try{
+                POLL_LIST.removeIf(e -> e.getMsgId().equals(localMessage.getMsgId()));
+            } catch (DuplicateKeyException duplicateKeyException) {
+                try {
                     localMessage.setMsgId(CommonKey.gennerString());
                     bean.insertOrUpdateLocalMessage(localMessage);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }catch (Throwable e){
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
@@ -246,7 +228,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
     @Around("@annotation(easy4j.modules.ltl.transactional.LtTransactional)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         LocalMessage finalLocalMessage = preMessage((MethodInvocationProceedingJoinPoint) joinPoint);
-        if(null == finalLocalMessage){
+        if (null == finalLocalMessage) {
             return joinPoint.proceed();
         }
         boolean hasTransaction = false;
@@ -256,17 +238,17 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
             hasTransaction = true;
         }
         Object proceed = null;
-        try{
+        try {
             proceed = joinPoint.proceed();
             finalLocalMessage.setStatus(LocalMessage.SENT);
-        }catch (Throwable e){
+        } catch (Throwable e) {
             String message = e.getMessage();
             finalLocalMessage.setErrorMessage(message);
             Integer retryCount = finalLocalMessage.getRetryCount();
             finalLocalMessage.setStatus(LocalMessage.FAILED);
-            while (retryCount>0){
+            while (retryCount > 0) {
                 try {
-                    log.error(finalLocalMessage.getBeanMethod()+"开始重试----"+retryCount);
+                    log.error(finalLocalMessage.getBeanMethod() + "开始重试----" + retryCount);
                     proceed = joinPoint.proceed();
                     finalLocalMessage.setStatus(LocalMessage.SENT);
                     break;
@@ -275,9 +257,9 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
                     retryCount--;
                 }
             }
-            if(!hasTransaction && LocalMessage.FAILED.equals(finalLocalMessage.getStatus())){
+            if (!hasTransaction && LocalMessage.FAILED.equals(finalLocalMessage.getStatus())) {
                 LINKED_DEQUE.offer(finalLocalMessage);
-                synchronized (LOCK_OBJECT){
+                synchronized (LOCK_OBJECT) {
                     LOCK_OBJECT.notifyAll();
                 }
             }
@@ -294,7 +276,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
                 if (LocalMessage.FAILED.equals(finalLocalMessage.getStatus())) {
                     // 失败
                     LINKED_DEQUE.offer(finalLocalMessage);
-                    synchronized (LOCK_OBJECT){
+                    synchronized (LOCK_OBJECT) {
                         LOCK_OBJECT.notifyAll();
                     }
                 }
@@ -313,22 +295,22 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
         Method method = signature.getMethod();
         LtTransactional annotation = method.getAnnotation(LtTransactional.class);
         String s = annotation.businessKey();
-        if(
+        if (
                 StrUtil.isEmpty(s) ||
-                StrUtil.isEmpty(annotation.beanMethod()) ||
-                StrUtil.isEmpty(annotation.baenName())
-        ){
+                        StrUtil.isEmpty(annotation.beanMethod()) ||
+                        StrUtil.isEmpty(annotation.baenName())
+        ) {
             return null;
         }
         localMessage.setBusinessKey(s);
         localMessage.setBusinessName(annotation.businessName());
         localMessage.setRetryCount(annotation.retryCount());
         String[] parameterNames = signature.getParameterNames();
-        Map<String,String> paramMap = Maps.newHashMap();
+        Map<String, String> paramMap = Maps.newHashMap();
         for (int i = 0; i < parameterNames.length; i++) {
             Object arg = args[i];
             String name = arg.getClass().getName();
-            paramMap.put(name, ObjectUtil.isEmpty(arg)?null:JSON.toJSONString(arg));
+            paramMap.put(name, ObjectUtil.isEmpty(arg) ? null : JSON.toJSONString(arg));
         }
         localMessage.setContent(JSON.toJSONString(paramMap));
         localMessage.setStatus(LocalMessage.PENDING);
