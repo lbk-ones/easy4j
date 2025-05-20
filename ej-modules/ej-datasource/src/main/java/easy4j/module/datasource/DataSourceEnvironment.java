@@ -53,6 +53,10 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
         }
 
         String dbType = getDbType();
+        if ("other".equals(dbType)) {
+            System.err.println("请配置数据源和指定数据库类型！若不需要数据库，请在启动注解开启H2");
+            System.exit(1);
+        }
         String driverClassName = SqlType.getDriverClassName(dbType);
         String validateSql = SqlType.getValidateSql(dbType);
         properties.setProperty("spring.datasource.druid.aop-patterns", EnvironmentHolder.mainClassPath + SysConstant.DOT + "dao.*");

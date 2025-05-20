@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
  * 1. 有参数origin的时候走参数拦截规则
  * 2. 当参数为空时走ip拦截模式
  */
-@Component
 public class DefaultRequestOriginParser implements RequestOriginParser {
     @Override
     public String parseOrigin(HttpServletRequest request) {

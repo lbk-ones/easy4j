@@ -1,5 +1,7 @@
 package easy4j.module.sca.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +9,8 @@ import org.springframework.stereotype.Component;
 /**
  * 加载项目配置
  */
+@Setter
+@Getter
 @Component("Easy4jCloudBaseConfig")
 @ConfigurationProperties(prefix = "easy4j")
 public class Easy4jCloudBaseConfig {
@@ -21,19 +25,4 @@ public class Easy4jCloudBaseConfig {
      */
     private String signUrls;
 
-    public String getSignatureSecret() {
-        return signatureSecret;
-    }
-
-    public void setSignatureSecret(String signatureSecret) {
-        this.signatureSecret = signatureSecret;
-    }
-
-    public String getSignUrls() {
-        return signUrls;
-    }
-
-    public void setSignUrls(String signUrls) {
-        this.signUrls = signUrls;
-    }
 }

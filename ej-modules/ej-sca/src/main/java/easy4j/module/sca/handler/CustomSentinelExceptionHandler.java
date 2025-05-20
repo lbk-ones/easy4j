@@ -7,15 +7,19 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowException;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
+import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.header.EasyResult;
+import easy4j.module.base.utils.BusCode;
+import easy4j.module.base.utils.SysConstant;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 全局Sentinel自定义信息处理(需要启动Sentinel客户端)
+ * ej-sentinel 模块没有  BlockExceptionHandler 这个东东 所以那里的逻辑不动
+ * 全局Sentinel自定义信息处理
  */
-@Configuration
 public class CustomSentinelExceptionHandler implements BlockExceptionHandler {
 
     @Override
@@ -24,29 +28,29 @@ public class CustomSentinelExceptionHandler implements BlockExceptionHandler {
         String msg = null;
 
         if (ex instanceof FlowException) {
-            msg = "访问频繁，请稍候再试";
+            msg = BusCode.A00022;
 
         } else if (ex instanceof DegradeException) {
-            msg = "系统降级";
+            msg = BusCode.A00024;
 
         } else if (ex instanceof ParamFlowException) {
-            msg = "热点参数限流";
+            msg = BusCode.A00025;
 
         } else if (ex instanceof SystemBlockException) {
-            msg = "系统规则限流或降级";
+            msg = BusCode.A00026;
 
         } else if (ex instanceof AuthorityException) {
-            msg = "授权规则不通过";
+            msg = BusCode.A00027;
 
         } else {
-            msg = "未知限流降级";
+            msg = BusCode.A00028;
         }
-        // http状态码
         response.setStatus(200);
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-Type", "application/json;charset=utf-8");
         response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write("{\"code\":500,\"message\":" + msg + "}");
+        EasyResult<Object> result = EasyResult.parseFromI18n(500, msg);
+        response.getWriter().write(result.toString());
     }
 
 }

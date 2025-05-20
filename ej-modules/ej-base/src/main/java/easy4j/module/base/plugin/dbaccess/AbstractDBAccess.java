@@ -52,8 +52,6 @@ public abstract class AbstractDBAccess implements DBAccess {
     protected static final String BATCH_UPDATE = "BATCH_UPDATE";
     protected static final String DELETE = "DELETE";
 
-    public static final String INSERT_SYS_LOG_RECORD = "insert into sys_log_record() value()";
-
     public String getTableName(Class<?> clazz, Dialect dialect) throws SQLException {
         StringBuilder sb = new StringBuilder();
         if (dialect == null) {
@@ -64,8 +62,8 @@ public abstract class AbstractDBAccess implements DBAccess {
         JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
         if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
             String schema = StrUtil.blankToDefault(annotation.schema(), "");
-            String name = annotation.name();
-            String join = String.join(".", ListTs.asList(wrapper.wrap(schema), wrapper.wrap(name)));
+            List<String> list = ListTs.filter(ListTs.asList(wrapper.wrap(schema), wrapper.wrap(annotation.name())), StrUtil::isNotBlank);
+            String join = String.join(".", list);
             sb.append(join);
         } else {
             String simpleName = clazz.getSimpleName();

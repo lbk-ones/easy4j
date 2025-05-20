@@ -1,6 +1,6 @@
-package easy4j.module.sca.filter;
+package easy4j.module.base.web;
 
-
+import easy4j.module.base.module.Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -8,13 +8,12 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-/**
- * 跨域
- */
 @Configuration
-public class CorsFilter {
+public class Config {
+
 
     @Bean
+    @Module("cors.reject.enable")
     public CorsWebFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
@@ -27,4 +26,6 @@ public class CorsFilter {
         source.registerCorsConfiguration("/**", config);
         return new CorsWebFilter(source);
     }
+
+
 }

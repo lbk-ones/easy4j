@@ -1,28 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>easy4j.infra.all</groupId>
-        <artifactId>easy4j</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
 
-    <groupId>easy4j.infra.test</groupId>
-    <artifactId>ej-test</artifactId>
-    <packaging>pom</packaging>
+    <groupId>easy4j.sca.test</groupId>
+    <artifactId>ej-sca-order</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-    <name>ej-test</name>
+    <name>ej-sca-order</name>
     <url>http://maven.apache.org</url>
-    <modules>
-        <module>ej-spring-boot-starter-test</module>
-        <module>ej-sca-spring-boot-starter-test</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>easy4j.module.boot</groupId>
+            <artifactId>ej-sca-spring-boot-starter</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

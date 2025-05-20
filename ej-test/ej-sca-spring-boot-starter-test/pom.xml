@@ -1,19 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>easy4j.infra.starter</groupId>
-    <artifactId>ej-starter</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>easy4j.infra.test</groupId>
+        <artifactId>ej-test</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ej-sca-spring-boot-starter-test</artifactId>
     <packaging>pom</packaging>
-    <modules>
-        <module>ej-dubbo3-mp-starter</module>
-        <module>ej-spring-boot-starter</module>
-        <module>ej-spring-nd-boot-starter</module>
-        <module>ej-jpa-boot-starter</module>
-        <module>ej-sca-spring-boot-starter</module>
-    </modules>
-    <name>ej-starter</name>
+
+    <name>ej-sca-spring-boot-starter-test</name>
     <url>http://maven.apache.org</url>
+    <modules>
+        <module>ej-sca-order</module>
+        <module>ej-sca-acount</module>
+        <module>ej-sca-storage</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

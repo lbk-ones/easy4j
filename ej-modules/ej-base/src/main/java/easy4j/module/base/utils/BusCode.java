@@ -3,13 +3,13 @@ package easy4j.module.base.utils;
 import easy4j.module.base.annotations.Desc;
 
 /**
-     A00001=操作成功
-     A00002=操作失败
-     A00003=系统错误
-     A00004=参数{0}不能为空
-     A00005=HTTP请求参数异常,{0}
-     A00006=接口不接受当前的ContentType请求
-     A00007=不允许使用此HTTP方法请求接口数据
+ * A00001=操作成功
+ * A00002=操作失败
+ * A00003=系统错误
+ * A00004=参数{0}不能为空
+ * A00005=HTTP请求参数异常,{0}
+ * A00006=接口不接受当前的ContentType请求
+ * A00007=不允许使用此HTTP方法请求接口数据
  */
 public class BusCode {
 
@@ -63,4 +63,19 @@ public class BusCode {
 
     @Desc("服务暂时不可用，已触发熔断")
     public static final String A00023 = "A00023";
+
+    @Desc("系统降级")
+    public static final String A00024 = "A00024";
+
+    @Desc("热点参数限流")
+    public static final String A00025 = "A00025";
+
+    @Desc("系统规则限流或降级")
+    public static final String A00026 = "A00026";
+
+    @Desc("授权规则不通过")
+    public static final String A00027 = "A00027";
+
+    @Desc("未知限流降级")
+    public static final String A00028 = "A00028";
 }

@@ -6,6 +6,8 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import easy4j.module.base.properties.EjProperties;
 import easy4j.module.base.utils.SysConstant;
+import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
+import easy4j.module.sca.interceptor.DefaultRequestOriginParser;
 import easy4j.module.sca.util.HttpUtils;
 import easy4j.module.sca.util.PathMatcherUtil;
 import easy4j.module.sca.context.TenantContext;
@@ -193,6 +195,18 @@ public class FeignConfig {
         converter.setFastJsonConfig(config);
 
         return converter;
+    }
+
+    // 全局Sentinel自定义信息处理
+    @Bean
+    public CustomSentinelExceptionHandler customSentinelExceptionHandler() {
+        return new CustomSentinelExceptionHandler();
+    }
+
+
+    @Bean
+    public DefaultRequestOriginParser defaultRequestOriginParser() {
+        return new DefaultRequestOriginParser();
     }
 
 }

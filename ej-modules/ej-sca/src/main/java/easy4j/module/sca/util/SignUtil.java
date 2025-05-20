@@ -35,7 +35,7 @@ public class SignUtil {
         }
         // 把参数加密
         String paramsSign = getParamsSign(params);
-        log.info("【微服务】Param Sign : {}", paramsSign);
+        log.info("Param Sign : {}", paramsSign);
         return !StrUtil.isEmpty(paramsSign) && headerSign.equals(paramsSign);
     }
 
@@ -53,7 +53,7 @@ public class SignUtil {
         String signatureSecret = easy4jCloudBaseConfig.getSignatureSecret();
         String curlyBracket = SignUtil.DOLLAR + SignUtil.LEFT_CURLY_BRACKET;
         if (StrUtil.isEmpty(signatureSecret) || signatureSecret.contains(curlyBracket)) {
-            log.error("【微服务】签名密钥 ${easy4j.signatureSecret} 未配置 ！");
+            log.error("签名密钥 ${easy4j.signatureSecret} 未配置 ！");
             throw new EasyException("签名密钥 ${easy4j.signatureSecret} 未配置 ！");
         }
         return DigestUtils.md5DigestAsHex((paramsJsonStr + signatureSecret).getBytes()).toUpperCase();
