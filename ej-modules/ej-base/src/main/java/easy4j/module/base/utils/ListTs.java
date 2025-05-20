@@ -375,6 +375,14 @@ public class ListTs {
         return obj_.stream().map(convertFunction).collect(Collectors.toList());
     }
 
+    public static <T> List<String> mapListStr(List<T> obj_, Function<T, String> convertFunction) {
+        List<String> mapResultList = ListTs.newArrayList();
+        if (CollUtil.isEmpty(obj_)) {
+            return mapResultList;
+        }
+        return obj_.stream().map(convertFunction).collect(Collectors.toList());
+    }
+
     public static <T> List<T> singletonList(T object) {
         List<T> arrayList = new ArrayList<>();
         arrayList.add(object);

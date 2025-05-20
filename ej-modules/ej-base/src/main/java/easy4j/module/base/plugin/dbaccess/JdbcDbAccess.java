@@ -2,6 +2,7 @@ package easy4j.module.base.plugin.dbaccess;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
@@ -21,6 +22,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,9 +65,20 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     @Override
     public int saveOrUpdate(Map<String, Object> map) throws SQLException {
         Object o = map.get(KEY_SQL);
-        Object[] args = (Object[]) map.get(KEY_ARGS);
+        if (ObjectUtil.isEmpty(o)) {
+            return 0;
+        }
+        Object args = map.get(KEY_ARGS);
+        if (Objects.nonNull(args)) {
+            args = (Object[]) args;
+        }
         final String sql = (String) o;
-        return runner.update(getConnection(), sql, args);
+        if (ObjectUtil.isNotEmpty(args)) {
+            return runner.update(getConnection(), sql, args);
+        } else {
+            return runner.update(getConnection(), sql);
+        }
+
     }
 
 

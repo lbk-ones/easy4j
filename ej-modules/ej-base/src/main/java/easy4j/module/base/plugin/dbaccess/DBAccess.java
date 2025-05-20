@@ -83,6 +83,9 @@ public interface DBAccess {
      */
     <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) throws SQLException;
 
+
+    <T> List<T> getAll(Class<T> clazz) throws SQLException;
+
     /**
      * 根据sql分页查询某一个对象
      *
@@ -141,4 +144,13 @@ public interface DBAccess {
      * @throws SQLException
      */
     Connection getConnection() throws SQLException;
+
+    /**
+     * 删除所有
+     *
+     * @param workIpClass
+     * @param <T>
+     * @return
+     */
+    <T> int deleteAll(Class<T> workIpClass) throws SQLException;
 }

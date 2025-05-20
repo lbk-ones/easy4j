@@ -2,16 +2,14 @@ package easy4j.module.base.plugin.dbaccess;
 
 
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
+import easy4j.module.base.utils.ListTs;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.sql.DataSource;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Setter
@@ -19,13 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class DBAccessFactory {
     public static final Set<String> INIT_DB_FILE_TYPE = new HashSet<>();
-    public static final String[] INIT_DB_FILE_PATH = new String[]{
-            "db/log",
-    };
+    public static final Set<String> INIT_DB_FILE_PATH = new HashSet<>();
 
-    private DBAccess access;
+    static {
+        INIT_DB_FILE_PATH.add("db/log");
+    }
 
     public static DBAccess getDBAccess(DataSource dataSource, boolean mixTransaction) {
+
         JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
         jdbcDbAccess.init(dataSource);
         jdbcDbAccess.setInTransaction(mixTransaction);

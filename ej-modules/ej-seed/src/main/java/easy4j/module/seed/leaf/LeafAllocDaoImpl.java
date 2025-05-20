@@ -2,7 +2,10 @@ package easy4j.module.seed.leaf;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.enums.DbType;
+import easy4j.module.base.plugin.dbaccess.DBAccess;
+import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SqlType;
 import org.springframework.beans.factory.InitializingBean;
@@ -11,15 +14,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
-import java.util.ArrayList;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
+    public static final String LEAF_PATH = "db/leaf";
+    public static final String SNOWIP_PATH = "db/snowip";
+
+    private DBAccess dbaccess;
+
     public JdbcTemplate jdbcTemplate;
-    private boolean isOracle;
 
     @Autowired
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
@@ -28,23 +36,29 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DbType dbType = SqlType.getDbType();
-        isOracle = ListTs.asList(DbType.ORACLE,DbType.ORACLE_12C).contains(dbType.getDb());
+        DBAccessFactory.INIT_DB_FILE_PATH.add(LEAF_PATH);
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SNOWIP_PATH);
+        dbaccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
     }
 
-    private LeafAllocDomain getByBizTag(String bizTag){
-        String format = String.format("SELECT * FROM LEAF_ALLOC WHERE BIZ_TAG = %s", bizTag);
-        return jdbcTemplate.queryForObject(format,LeafAllocDomain.class);
+    private LeafAllocDomain getByBizTag(String bizTag) {
+        LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
+        leafAllocDomain.setBIZ_TAG(bizTag);
+        try {
+            return dbaccess.getObjectByPrimaryKey(LeafAllocDomain.class, leafAllocDomain);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 
     public List<String> getAllTags() {
-        List<LeafAllocDomain> list = jdbcTemplate.queryForList("SELECT * FROM LEAF_ALLOC", LeafAllocDomain.class);
-        List<String> tags = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(list)) {
-            list.forEach(l -> tags.add(l.getBIZ_TAG()));
+        try {
+            return ListTs.mapListStr(dbaccess.getAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return tags;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -52,19 +66,27 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public LeafAllocDomain updateMaxIdAndGetLeafAlloc(String bizTag) {
         LeafAllocDomain domain = getByBizTag(bizTag);
         domain.setMAX_ID(domain.getMAX_ID() + domain.getSTEP());
-        if(isOracle){
-            jdbcTemplate.update("UPDATE LEAF_ALLOC SET UPDATE_TIME = SYSDATE, MAX_ID = TO_NUMBER(MAX_ID) + TO_NUMBER(STEP) WHERE BIZ_TAG = ?",domain.getBIZ_TAG());
-        }else{
-            jdbcTemplate.update("UPDATE LEAF_ALLOC SET UPDATE_TIME = SYSDATE, MAX_ID = MAX_ID + STEP WHERE BIZ_TAG = ?",domain.getBIZ_TAG());
+        try {
+            return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return getByBizTag(bizTag);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public LeafAllocDomain updateMaxIdByCustomStepAndGetLeafAlloc(LeafAllocDomain domain) {
-        jdbcTemplate.update("UPDATE LEAF_ALLOC SET UPDATE_TIME = ?, MAX_ID =  MAX_ID + CONVERT(?, UNSIGNED) WHERE BIZ_TAG = ?",new Date(System.currentTimeMillis()),domain.getSTEP(),domain.getBIZ_TAG());
-        return this.getByBizTag(domain.getBIZ_TAG());
+
+        LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
+        leafAllocDomain.setBIZ_TAG(domain.getBIZ_TAG());
+        long maxId = domain.getSTEP() + domain.getMAX_ID();
+        leafAllocDomain.setMAX_ID(maxId);
+        leafAllocDomain.setUPDATE_TIME(new Date());
+        try {
+            return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

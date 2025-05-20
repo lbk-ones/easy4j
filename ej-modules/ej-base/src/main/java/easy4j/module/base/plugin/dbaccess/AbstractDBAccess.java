@@ -428,6 +428,21 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
+    public <T> List<T> getAll(Class<T> clazz) throws SQLException {
+        String tableName = this.getTableName(clazz, null);
+        return getObjectList("select * from " + tableName, clazz);
+    }
+
+    @Override
+    public <T> int deleteAll(Class<T> workIpClass) throws SQLException {
+
+        String tableName = this.getTableName(workIpClass, null);
+        String sql = "delete from " + tableName;
+        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, null);
+        return this.saveOrUpdate(stringObjectMap);
+    }
+
+    @Override
     public long countBy(Object object) throws SQLException {
         Class<?> aClass1 = object.getClass();
         String tableName = getTableName(aClass1, null);

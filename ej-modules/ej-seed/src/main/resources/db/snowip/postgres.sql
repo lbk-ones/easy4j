@@ -2,7 +2,8 @@
 CREATE TABLE WORK_IP
 (
     IP  VARCHAR(100),
-    NUM INT
+    NUM INT,
+    CONSTRAINT PK_WORK_IP PRIMARY KEY (IP)
 );
 
 -- 添加表注释
