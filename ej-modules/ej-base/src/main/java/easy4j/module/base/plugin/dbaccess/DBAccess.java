@@ -9,8 +9,26 @@ import java.util.List;
 public interface DBAccess {
     void init(Object object);
 
+    /**
+     * 保存一个
+     *
+     * @param record
+     * @param aClass
+     * @param <T>
+     * @return
+     * @throws SQLException
+     */
     <T> int saveOne(T record, Class<T> aClass) throws SQLException;
 
+    /**
+     * 批量保存
+     *
+     * @param record
+     * @param aClass
+     * @param <T>
+     * @return
+     * @throws SQLException
+     */
     <T> int saveList(List<T> record, Class<T> aClass) throws SQLException;
 
     /**
@@ -84,6 +102,14 @@ public interface DBAccess {
     <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) throws SQLException;
 
 
+    /**
+     * 全部查询
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws SQLException
+     */
     <T> List<T> getAll(Class<T> clazz) throws SQLException;
 
     /**
@@ -153,4 +179,17 @@ public interface DBAccess {
      * @return
      */
     <T> int deleteAll(Class<T> workIpClass) throws SQLException;
+
+
+    /**
+     * 根据主键删除
+     *
+     * @param object
+     * @param easy4jKeyIdempotentClass
+     * @param <T>
+     * @return
+     * @throws SQLException
+     */
+    <T> int deleteByPrimaryKey(Object object, Class<T> easy4jKeyIdempotentClass) throws SQLException;
+
 }

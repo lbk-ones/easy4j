@@ -168,6 +168,15 @@ public abstract class AbstractDBAccess implements DBAccess {
 
     }
 
+    /**
+     * 获取带占位符的sql
+     *
+     * @param recordMap    要拼接的实体bean
+     * @param newArgsList  占位符所对于的参数会放到这个集合后面
+     * @param isThrowError 如果参数为空那么是否会抛出异常
+     * @return
+     * @throws SQLException
+     */
     public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError) throws SQLException {
         Dialect dialect = JdbcHelper.getDialect(getConnection());
         assert dialect != null;
@@ -182,14 +191,14 @@ public abstract class AbstractDBAccess implements DBAccess {
      * id = ? and name = ? and grade in (?,?) and age > ? and content like ?
      *
      * @param recordMap
-     * @param newArgsList
+     * @param _newArgsList
      * @param wrapper
      * @return
      * @throws SQLException
      */
-    public static String getSelectByMap(Map<String, Object> recordMap, List<Object> newArgsList, Wrapper wrapper, boolean isThrowError) throws SQLException {
+    public static String getSelectByMap(Map<String, Object> recordMap, List<Object> _newArgsList, Wrapper wrapper, boolean isThrowError) throws SQLException {
         Set<String> keySet = recordMap.keySet();
-
+        List<Object> newArgsList = _newArgsList == null ? ListTs.newArrayList() : _newArgsList;
         String collect = keySet.stream().map(e -> {
                     Object o = recordMap.get(e);
                     e = StrUtil.toUnderlineCase(e);
@@ -439,6 +448,17 @@ public abstract class AbstractDBAccess implements DBAccess {
         String tableName = this.getTableName(workIpClass, null);
         String sql = "delete from " + tableName;
         Map<String, Object> stringObjectMap = buildMap(sql, DELETE, null);
+        return this.saveOrUpdate(stringObjectMap);
+    }
+
+    @Override
+    public <T> int deleteByPrimaryKey(Object object, Class<T> easy4jKeyIdempotentClass) throws SQLException {
+        String tableName = this.getTableName(easy4jKeyIdempotentClass, null);
+        Map<String, Object> idMap = this.getIdMap(object);
+        List<Object> args = ListTs.newLinkedList();
+        String sqlByObject = this.getSqlByObject(idMap, args, true);
+        String sql = "delete from " + tableName + " where " + sqlByObject;
+        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, args.toArray(new Object[]{}));
         return this.saveOrUpdate(stringObjectMap);
     }
 

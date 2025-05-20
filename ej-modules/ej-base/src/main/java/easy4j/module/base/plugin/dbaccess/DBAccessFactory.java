@@ -23,6 +23,13 @@ public class DBAccessFactory {
         INIT_DB_FILE_PATH.add("db/log");
     }
 
+    /**
+     * get的时候顺带初始化
+     *
+     * @param dataSource
+     * @param mixTransaction
+     * @return
+     */
     public static DBAccess getDBAccess(DataSource dataSource, boolean mixTransaction) {
 
         JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
@@ -32,6 +39,12 @@ public class DBAccessFactory {
         return jdbcDbAccess;
     }
 
+    /**
+     * 这个也是一样顺带初始化
+     *
+     * @param dataSource
+     * @return
+     */
     public static DBAccess getDBAccess(DataSource dataSource) {
         JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
         jdbcDbAccess.init(dataSource);

@@ -20,10 +20,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
@@ -58,7 +55,7 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     @Override
     public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) throws SQLException {
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
-        return runner.query(getConnection(), sql, tBeanListHandler, args);
+        return ObjectUtil.defaultIfNull(runner.query(getConnection(), sql, tBeanListHandler, args), new ArrayList<>());
     }
 
     // 更新 插入 删除

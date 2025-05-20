@@ -1,5 +1,7 @@
 package easy4j.module.idempotent.rules.datajdbc;
 
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -10,6 +12,7 @@ import java.util.Date;
 
 @Data
 @Table("KEY_IDEMPOTENT")
+@JdbcTable(name = "KEY_IDEMPOTENT")
 public class Easy4jKeyIdempotent implements Serializable {
 
     // 正在发送
@@ -22,6 +25,7 @@ public class Easy4jKeyIdempotent implements Serializable {
 
     @Id
     @Column("IDE_KEY")
+    @JdbcColumn(name = "IDE_KEY", isPrimaryKey = true)
     private String ideKey;
 
     @Column("EXPIRE_DATE")
