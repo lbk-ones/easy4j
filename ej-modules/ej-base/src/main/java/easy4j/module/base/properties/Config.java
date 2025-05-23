@@ -7,18 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.core.annotation.Order;
-
-
-import javax.sql.DataSource;
 
 
 import static easy4j.module.base.log.DefLog.*;
 
 
-@EnableConfigurationProperties({EjProperties.class})
+@EnableConfigurationProperties({EjSysProperties.class})
 @Slf4j
 @AutoConfigureBefore({SpringApplicationAdminJmxAutoConfiguration.class})
 public class Config implements InitializingBean {

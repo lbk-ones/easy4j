@@ -27,44 +27,16 @@ public class EnvironmentInitForEj extends AbstractEnvironmentForEj {
 
     @Override
     public Properties getProperties() {
-        Properties properties = new Properties();
-        handlerDefaultAnnotationValues(properties);
-        return properties;
-    }
-
-    private void handlerDefaultAnnotationValues(Properties properties) {
-        Class<?> mainClass = EnvironmentHolder.mainClass;
-        if(Objects.nonNull(mainClass)){
-            Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);
-            if(Objects.nonNull(annotation)){
-                handlerDefaultValue(properties,  annotation.serverPort(), annotation.serverName());
-            }
-            Easy4JStarterNd annotation2 = mainClass.getAnnotation(Easy4JStarterNd.class);
-            if(Objects.nonNull(annotation2)){
-                handlerDefaultValue(properties, annotation2.serverPort(), annotation2.serverName());
-            }
-        }else{
-            System.err.println("not found mainClass...please check");
-        }
+        return handlerDefaultAnnotationValues();
     }
 
 
-
-    private void handlerDefaultValue(Properties properties, int serverPort, String serverName) {
-        if(StrUtil.isNotBlank(serverName)){
-            properties.setProperty(SysConstant.SERVER_NAME, serverName);
-        }
-        if(serverPort >0){
-            properties.setProperty(SysConstant.SERVER_PORT,String.valueOf(serverPort));
-        }
-    }
 
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
-        EnvironmentHolder.environment = environment;
-        EnvironmentHolder.springApplication = application;
-        String name = SystemUtil.getHostInfo().getName();
-        System.setProperty("LOG_FILE_NAME",this.getProperty("spring.application.name")+"-"+name.toLowerCase());
+        initEnv(environment,application);
+        //String name = SystemUtil.getHostInfo().getName();
+        //System.setProperty("LOG_FILE_NAME",this.getProperty("spring.application.name")+"-"+name.toLowerCase());
     }
 
 }

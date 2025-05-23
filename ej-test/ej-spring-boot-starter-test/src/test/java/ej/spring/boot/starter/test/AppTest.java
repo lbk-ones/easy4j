@@ -16,9 +16,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Easy4JStarter(
         serverPort = 10001,
@@ -26,6 +30,7 @@ import java.util.UUID;
         serviceDesc = "测试服务",
         author = "bokun.li",
         enableH2 = true,
+        ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
         h2Url = "jdbc:h2:file:~/h2/testdb;DB_CLOSE_ON_EXIT=false"
         // 使用h2当数据库
 )
@@ -158,5 +163,28 @@ public class AppTest {
         long l3 = dbAccess.countBy(sysLogRecord2);
         System.out.println("测试新增总共多少条--->" + l3);
 
+    }
+
+    @Test
+    public void testDuplicate() throws SQLException {
+        DBAccess dbAccess = DBAccessFactory.getDBAccess(dataSource);
+
+
+        SysLogRecord sysLogRecord = new SysLogRecord();
+        sysLogRecord.setId(CommonKey.gennerString());
+        sysLogRecord.setRemark("this is the remark");
+        sysLogRecord.setParams("this is the params");
+        sysLogRecord.setTag("测试新增和查询");
+        sysLogRecord.setTagDesc("这是" + DateUtil.formatDate(new Date()) + "的测试用例");
+        sysLogRecord.setStatus("1");
+        sysLogRecord.setErrorInfo("cause by this is a error info list.....");
+        sysLogRecord.setCreateDate(new Date());
+        String s = UUID.randomUUID().toString().replaceAll("-", "");
+        sysLogRecord.setTraceId(s);
+        int i1 = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
+
+        assertThatThrownBy(()->{
+            dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
+        }).isInstanceOf(SQLIntegrityConstraintViolationException.class);
     }
 }

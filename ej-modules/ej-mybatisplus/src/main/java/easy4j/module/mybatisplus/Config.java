@@ -17,15 +17,13 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -76,7 +74,7 @@ public class Config implements EnvironmentAware {
         // 数据源
         sqlSessionFactory.setDataSource(dataSource);
 
-        String enumPath = EnvironmentHolder.mainClassPath + SysConstant.DOT + SysConstant.ENUMS;
+        String enumPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.ENUMS;
         // 枚举扫描
         sqlSessionFactory.setTypeEnumsPackage(enumPath);
         String xmlLocation = "classpath*:/"+db+"/**/*.xml";
@@ -86,7 +84,7 @@ public class Config implements EnvironmentAware {
                 .getResources(xmlLocation));
 
         // 扫描 typeHandler
-        String domainPath = EnvironmentHolder.mainClassPath + SysConstant.DOT + SysConstant.DOMAINS;
+        String domainPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.DOMAINS;
         log.info(SysLog.compact("实体domain路径,{}",domainPath));
         sqlSessionFactory.setTypeHandlersPackage(domainPath);
         MybatisConfiguration configuration = new MybatisConfiguration();

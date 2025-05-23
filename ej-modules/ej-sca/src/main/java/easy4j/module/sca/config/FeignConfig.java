@@ -4,7 +4,7 @@ import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import easy4j.module.base.properties.EjProperties;
+import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
 import easy4j.module.sca.interceptor.DefaultRequestOriginParser;
@@ -50,7 +50,7 @@ import java.util.SortedMap;
 @Configuration
 public class FeignConfig {
     @Resource
-    EjProperties ejProperties;
+    EjSysProperties ejSysProperties;
 
 
     /**
@@ -100,7 +100,7 @@ public class FeignConfig {
             //针对特殊接口，进行加签验证 ——根据URL地址过滤请求 【字典表参数签名验证】
 
             //1.查询需要进行签名拦截的接口 signUrls
-            String signUrls = ejProperties.getSignUrls();
+            String signUrls = ejSysProperties.getSignUrls();
             List<String> signUrlsArray = null;
             if (StringUtils.isNotBlank(signUrls)) {
                 signUrlsArray = Arrays.asList(signUrls.split(","));

@@ -15,7 +15,7 @@ public class EasyStarterImport implements InitializingBean, ImportSelector {
 
         return new String[]{
                 ApplicationStarterAfterForEj.class.getName(),
-                EnvironmentHolder.class.getName(),
+                Easy4j.class.getName(),
                 GlobalExceptionHandler.class.getName()
         };
     }

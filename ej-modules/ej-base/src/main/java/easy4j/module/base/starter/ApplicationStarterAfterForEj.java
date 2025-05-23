@@ -29,18 +29,18 @@ public class ApplicationStarterAfterForEj implements InitializingBean, CommandLi
         SysLog.settingLog();
 
         try{
-
+            // dont delete the line code
             Class<?> aClass = this.getClass().getClassLoader().loadClass("com.alibaba.druid.pool.DruidDataSource");
-            String port = EnvironmentHolder.getProperty(SysConstant.SERVER_PORT_STR);
-            String userName = EnvironmentHolder.getProperty(SysConstant.DRUID_USER_NAME);
-            String pwd = EnvironmentHolder.getProperty(SysConstant.DRUID_USER_PWD);
+            String port = Easy4j.getProperty(SysConstant.SERVER_PORT_STR);
+            String userName = Easy4j.getProperty(SysConstant.DRUID_USER_NAME);
+            String pwd = Easy4j.getProperty(SysConstant.DRUID_USER_PWD);
             logger.info(SysLog.compact("DRUID 监控地址 http://127.0.0.1:"+port+"/druid/login.html 用户名:"+userName+" 密码"+pwd));
 
-            String dbUrl = EnvironmentHolder.getProperty(SysConstant.DB_URL_STR);
-            String h2Enabled = EnvironmentHolder.getProperty(SysConstant.SPRING_H2_CONSOLE_ENABLED);
-            String h2Path = EnvironmentHolder.getProperty(SysConstant.SPRING_H2_CONSOLE_PATH);
-            String h2u = EnvironmentHolder.getProperty(SysConstant.DB_USER_NAME);
-            String h2p = EnvironmentHolder.getProperty(SysConstant.DB_USER_PASSWORD);
+            String dbUrl = Easy4j.getProperty(SysConstant.DB_URL_STR);
+            String h2Enabled = Easy4j.getProperty(SysConstant.SPRING_H2_CONSOLE_ENABLED);
+            String h2Path = Easy4j.getProperty(SysConstant.SPRING_H2_CONSOLE_PATH);
+            String h2u = Easy4j.getProperty(SysConstant.DB_USER_NAME);
+            String h2p = Easy4j.getProperty(SysConstant.DB_USER_PASSWORD);
             if(StrUtil.equals(h2Enabled,"true")){
                 logger.info(SysLog.compact("h2 数据库管理地址 http://127.0.0.1:"+port+h2Path+"用户名:"+h2u+";密码:"+h2p+";数据库地址:"+dbUrl));
             }
@@ -49,11 +49,11 @@ public class ApplicationStarterAfterForEj implements InitializingBean, CommandLi
 
         }
         // doc print
-        if (StringPool.TRUE.equals(EnvironmentHolder.getProperty(SysConstant.KNIFE4J_ENABLE))) {
-            logger.info(SysLog.compact("接口文档所在地址 http://127.0.0.1:"+EnvironmentHolder.getProperty(SysConstant.SERVER_PORT_STR)+"/doc.html"));
+        if (StringPool.TRUE.equals(Easy4j.getProperty(SysConstant.KNIFE4J_ENABLE))) {
+            logger.info(SysLog.compact("接口文档所在地址 http://127.0.0.1:"+ Easy4j.getProperty(SysConstant.SERVER_PORT_STR)+"/doc.html"));
 
-            if (StringPool.TRUE.equals(EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_ENABLE))) {
-                logger.info(SysLog.compact("接口文档用户名:"+EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_USERNAME)+";密码:"+EnvironmentHolder.getProperty(SysConstant.KNIFE4J_BASIC_PASSWORD)));
+            if (StringPool.TRUE.equals(Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_ENABLE))) {
+                logger.info(SysLog.compact("接口文档用户名:"+ Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_USERNAME)+";密码:"+ Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_PASSWORD)));
             }
         }
 

@@ -8,12 +8,13 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
 
+import static easy4j.module.base.utils.SysConstant.GLOBAL_CORS_ENABLE;
+
 @Configuration
 public class Config {
 
-
     @Bean
-    @Module("cors.reject.enable")
+    @Module(GLOBAL_CORS_ENABLE+":true")
     public CorsWebFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);

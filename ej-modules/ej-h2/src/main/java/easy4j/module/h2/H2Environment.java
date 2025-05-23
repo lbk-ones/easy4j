@@ -5,7 +5,7 @@ import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.starter.Easy4JStarterNd;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
 import org.h2.Driver;
 import org.springframework.boot.SpringApplication;
@@ -29,7 +29,7 @@ public class H2Environment extends AbstractEnvironmentForEj {
         String dbType = getDbType();
         if("other".equals(dbType)){
             Properties properties = new Properties();
-            Class<?> mainClass = EnvironmentHolder.mainClass;
+            Class<?> mainClass = Easy4j.mainClass;
             boolean enabledH2 = false;
             String h2Url = "";
             if(Objects.nonNull(mainClass)){

@@ -1,6 +1,10 @@
 package easy4j.module.base.utils;
 
+import jodd.util.StringPool;
+
 public class SysConstant {
+
+    public static final String PARAM_PREFIX = "easy4j";
 
     public static final String X_ACCESS_TOKEN = "X-Access-Token";
     public static final String X_SIGN = "X-Sign";
@@ -15,16 +19,25 @@ public class SysConstant {
     public static final String DB_URL_DRIVER_CLASS_NAME = "spring.datasource.driver-class-name";
     public static final String DB_USER_NAME = "spring.datasource.username";
     public static final String DB_USER_PASSWORD = "spring.datasource.password";
-    public static final String DB_URL_STR_NEW = "ej.datasource.url";
     public static final String SERVER_PORT = "server.port";
     public static final String SERVER_NAME = "spring.application.name";
-    public static final String LOG_SAVE_PATH = "log.save.path";
     public static final String SERVER_PORT_STR = "server.port";
     public static final String DRUID_USER_NAME = "spring.datasource.druid.stat-view-servlet.login-username";
     public static final String DRUID_USER_PWD = "spring.datasource.druid.stat-view-servlet.login-password";
     public static final String DRUID_FILTER = "spring.datasource.druid.filters";
 
+    // -------------------------EASY4j PROPERTIES----------------------------------------
 
+    public static final String DB_URL_STR_NEW = PARAM_PREFIX + StringPool.DOT + "data-source-url";
+
+    public static final String LOG_SAVE_PATH = PARAM_PREFIX + StringPool.DOT + "log-save-path";
+    public static final String SIGNATURE_SECRET = PARAM_PREFIX + StringPool.DOT + "signature-secret";
+    public static final String SIGN_URLS = PARAM_PREFIX + StringPool.DOT + "sign-urls";
+    public static final String GLOBAL_CORS_ENABLE = PARAM_PREFIX + StringPool.DOT + "cors-reject-enable";
+    public static final String SEED_IP_SEGMENT = PARAM_PREFIX + StringPool.DOT + "seed-ip-segment";
+
+
+    // -------------------------EASY4j PROPERTIES----------------------------------------
     public static final int SUCCESSCODE = 0;
 
     public static final int ERRORCODE = 1;
@@ -134,4 +147,5 @@ public class SysConstant {
     public static final String KNIFE4J_BASIC_ENABLE = "knife4j.basic.enable";
     public static final String KNIFE4J_BASIC_USERNAME = "knife4j.basic.username";
     public static final String KNIFE4J_BASIC_PASSWORD = "knife4j.basic.password";
+
 }

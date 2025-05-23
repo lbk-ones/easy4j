@@ -7,7 +7,7 @@ import com.alibaba.druid.util.JdbcUtils;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.starter.Easy4JStarterNd;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SP;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
@@ -59,7 +59,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
         }
         String driverClassName = SqlType.getDriverClassName(dbType);
         String validateSql = SqlType.getValidateSql(dbType);
-        properties.setProperty("spring.datasource.druid.aop-patterns", EnvironmentHolder.mainClassPath + SysConstant.DOT + "dao.*");
+        properties.setProperty("spring.datasource.druid.aop-patterns", Easy4j.mainClassPath + SysConstant.DOT + "dao.*");
         properties.setProperty("spring.datasource.druid.driver-class-name", driverClassName);
         String lowerCase = dbType.toLowerCase();
         properties.setProperty("spring.datasource.druid.filter.stat.db-type", lowerCase);
@@ -98,7 +98,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
     private String getEjDataSrouceUrl() {
         String ejDataSrouceUrl = getProperty(SysConstant.DB_URL_STR_NEW);
 
-        Class<?> mainClass = EnvironmentHolder.mainClass;
+        Class<?> mainClass = Easy4j.mainClass;
 
         // 配置文件没有配置数据源url，则从mainClass中获取
         if (Objects.nonNull(mainClass) && StrUtil.isBlank(ejDataSrouceUrl)) {

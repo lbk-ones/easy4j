@@ -3,6 +3,7 @@ package easy4j.module.base.plugin.dbaccess;
 
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
+import easy4j.module.base.utils.SysLog;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -70,9 +71,9 @@ public class DBAccessFactory {
                     s1 = s + "/" + databaseType;
                     ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
                     jdbcDbAccess.runScript(classPathResource);
-                    log.info("the " + s1 + ".sql db initialization succeeded");
+                    log.info(SysLog.compact("the " + s1 + ".sql db initialization succeeded"));
                 } catch (Exception e) {
-                    log.info("the " + s1 + ".sql db has been initialized");
+                    log.info(SysLog.compact("the " + s1 + ".sql db has been initialized"));
                 } finally {
                     INIT_DB_FILE_TYPE.add(s);
                 }

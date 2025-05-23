@@ -10,12 +10,11 @@ import easy4j.module.base.utils.SysLog;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +98,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
             easy4jKeyIdempotent.setExpireDate(da);
             dbAccess.saveOne(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
             cache.add(easy4jKeyIdempotent);
-        } catch (DuplicateKeyException e) {
+        } catch (SQLIntegrityConstraintViolationException e) {
             return false;
         } catch (SQLException e) {
             return true;

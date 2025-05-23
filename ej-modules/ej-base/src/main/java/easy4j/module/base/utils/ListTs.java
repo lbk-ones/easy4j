@@ -301,7 +301,7 @@ public class ListTs {
             if (CollUtil.isNotEmpty(reqs)) {
                 return reqs.get(i);
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         if (Objects.isNull(clazz)) {
@@ -315,7 +315,7 @@ public class ListTs {
             if (CollUtil.isNotEmpty(reqs)) {
                 return reqs.get(i);
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         return null;

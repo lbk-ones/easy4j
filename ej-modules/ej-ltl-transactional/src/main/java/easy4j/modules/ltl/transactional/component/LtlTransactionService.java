@@ -21,7 +21,7 @@ public class LtlTransactionService implements InitializingBean {
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
     }
 
-    public void insertOrUpdateLocalMessage(LocalMessage localMessage) throws SQLException {
+    public void insertLocalMessage(LocalMessage localMessage) throws SQLException {
         dbAccess.saveOne(localMessage, LocalMessage.class);
     }
 
@@ -54,7 +54,7 @@ public class LtlTransactionService implements InitializingBean {
             localMessage.setIsFreeze("1");
         }
         try {
-            dbAccess.saveList(list, LocalMessage.class);
+            dbAccess.updateListByPrimaryKey(list, LocalMessage.class);
         } catch (SQLException e) {
             e.printStackTrace();
         }

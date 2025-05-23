@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 其实这里挺混乱的 最刚开始是抄的mybatis-plus 的枚举 但是后来再封装jdbc引擎的时候 又是单独搞得一套枚举 后面找个机会优化一下
  * MybatisPlus 支持的数据库类型,主要用于分页方言
  *
  * @author hubin

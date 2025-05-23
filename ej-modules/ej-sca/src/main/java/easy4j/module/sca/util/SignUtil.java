@@ -1,10 +1,10 @@
 package easy4j.module.sca.util;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import easy4j.module.base.exception.EasyException;
-import easy4j.module.sca.config.Easy4jCloudBaseConfig;
+import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.starter.Easy4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
 
@@ -48,9 +48,11 @@ public class SignUtil {
         params.remove("_t");
         String paramsJsonStr = JSONObject.toJSONString(params);
         log.info("Param paramsJsonStr : {}", paramsJsonStr);
+        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+        String signatureSecret = ejSysProperties.getSignatureSecret();
         //设置签名秘钥
-        Easy4jCloudBaseConfig easy4jCloudBaseConfig = SpringUtil.getBean(Easy4jCloudBaseConfig.class);
-        String signatureSecret = easy4jCloudBaseConfig.getSignatureSecret();
+        //Easy4jCloudBaseConfig easy4jCloudBaseConfig = SpringUtil.getBean(Easy4jCloudBaseConfig.class);
+        //String signatureSecret = easy4jCloudBaseConfig.getSignatureSecret();
         String curlyBracket = SignUtil.DOLLAR + SignUtil.LEFT_CURLY_BRACKET;
         if (StrUtil.isEmpty(signatureSecret) || signatureSecret.contains(curlyBracket)) {
             log.error("签名密钥 ${easy4j.signatureSecret} 未配置 ！");

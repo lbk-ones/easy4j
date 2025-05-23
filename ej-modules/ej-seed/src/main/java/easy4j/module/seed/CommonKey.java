@@ -10,7 +10,7 @@ import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class CommonKey {
     private static long getWorkerId() {
         LinkedHashSet<String> localIpList = NetUtil.localIpv4s();
         long workerId = 0L;
-        String ipSegment = EnvironmentHolder.environment.getProperty("seed.ip.segment");
+        String ipSegment = Easy4j.getEjSysProperties().getSeedIpSegment();
         log.info(SysLog.compact("分布式雪花主键策略IP前缀为：" + ipSegment));
 
         DBAccess dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));

@@ -11,9 +11,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.common.collect.Maps;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.starter.EnvironmentHolder;
 import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.SqlFileExecute;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.seed.leaf.LeafGenIdService;
@@ -29,12 +27,12 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -189,12 +187,12 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
         for (LocalMessage localMessage : POLL_LIST) {
             try {
                 localMessage.setStatus(LocalMessage.FAILED);
-                bean.insertOrUpdateLocalMessage(localMessage);
+                bean.insertLocalMessage(localMessage);
                 POLL_LIST.removeIf(e -> e.getMsgId().equals(localMessage.getMsgId()));
-            } catch (DuplicateKeyException duplicateKeyException) {
+            } catch (SQLIntegrityConstraintViolationException duplicateKeyException) {
                 try {
                     localMessage.setMsgId(CommonKey.gennerString());
-                    bean.insertOrUpdateLocalMessage(localMessage);
+                    bean.insertLocalMessage(localMessage);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

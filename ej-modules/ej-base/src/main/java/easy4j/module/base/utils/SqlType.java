@@ -3,7 +3,7 @@ package easy4j.module.base.utils;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.enums.DbType;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 
 import java.util.*;
 
@@ -149,10 +149,10 @@ public final class SqlType {
     }
 
     private static DbType getDbType1() {
-        String url = EnvironmentHolder.environment.getRequiredProperty(SysConstant.DB_URL_STR);
+        String url = Easy4j.environment.getRequiredProperty(SysConstant.DB_URL_STR);
 
         if(StrUtil.isBlank(url)){
-            String url2 = EnvironmentHolder.environment.getProperty(SysConstant.DB_URL_STR_NEW);
+            String url2 = Easy4j.environment.getProperty(SysConstant.DB_URL_STR_NEW);
             if(StrUtil.isNotBlank(url2)){
                 String[] split = url2.split("@");
                 url = split[0];

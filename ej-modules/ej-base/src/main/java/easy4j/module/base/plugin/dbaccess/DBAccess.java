@@ -34,13 +34,16 @@ public interface DBAccess {
     /**
      * 通用型单个跟新 (过滤空值，空值不更新)
      *
-     * @param logRecord
-     * @param aClass
      * @param <T>
+     * @param beanObject
+     * @param aClass
      * @return
      * @throws SQLException
      */
-    <T> T updateByPrimaryKey(T logRecord, Class<T> aClass) throws SQLException;
+    <T> T updateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException;
+
+    <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException;
+
 
     /**
      * 通用型单个跟新 (过滤空值，空值不更新)

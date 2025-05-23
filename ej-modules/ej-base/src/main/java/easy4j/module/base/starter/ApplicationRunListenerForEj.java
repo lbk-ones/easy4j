@@ -20,7 +20,7 @@ public class ApplicationRunListenerForEj implements SpringApplicationRunListener
     List<ApplicationListenerForEj> applicationListenerForEj =  ServiceLoaderUtils.load(ApplicationListenerForEj.class);
 
     public ApplicationRunListenerForEj(SpringApplication application, String[]  args){
-        System.setProperty("log4j.skipJansi", "false");
+        //System.setProperty("log4j.skipJansi", "false");
         for (ApplicationListenerForEj applicationListener : applicationListenerForEj) {
             applicationListener.construct(application,args);
         }

@@ -3,7 +3,7 @@ package easy4j.module.base.plugin.doc;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.EnvironmentHolder;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysConstant;
 import jodd.util.StringPool;
@@ -14,7 +14,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -66,9 +65,9 @@ public class DocEnvironment extends AbstractEnvironmentForEj
         properties.setProperty(SysConstant.KNIFE4J_BASIC_USERNAME, "easy4j");
         properties.setProperty(SysConstant.KNIFE4J_BASIC_PASSWORD, "easy123");
 
-        Set<Class<?>> classes = scanPackageByAnnotation(EnvironmentHolder.mainClass.getPackage().getName(), ControllerModule.class);
+        Set<Class<?>> classes = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), ControllerModule.class);
 
-        Set<Class<?>> restControllers = scanPackageByAnnotation(EnvironmentHolder.mainClass.getPackage().getName(), Controller.class);
+        Set<Class<?>> restControllers = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), Controller.class);
         Map<String, Object> controllerMap = new HashMap<>();
         for (Class<?> restController : restControllers) {
             RequestMapping annotation = restController.getAnnotation(RequestMapping.class);

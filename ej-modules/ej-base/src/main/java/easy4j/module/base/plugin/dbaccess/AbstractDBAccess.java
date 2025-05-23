@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import com.google.common.collect.Maps;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
@@ -19,9 +20,8 @@ import org.apache.commons.dbutils.DbUtils;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.lang.reflect.Modifier;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,6 +73,19 @@ public abstract class AbstractDBAccess implements DBAccess {
         return sb.toString();
     }
 
+    public boolean skipColumn(Field field){
+        int modifiers = field.getModifiers();
+
+        if (
+                Modifier.isStatic(modifiers) ||
+                        Modifier.isFinal(modifiers) ||
+                        Modifier.isTransient(modifiers)
+        ) {
+            return true;
+        }
+        return field.isAnnotationPresent(JdbcIgnore.class);
+    }
+
     public List<String> getColumns(Class<?> aClass, String sqlType) {
         List<String> nameList = ListTs.newArrayList();
         //Wrapper wrapper = dialect.getWrapper();
@@ -84,6 +97,9 @@ public abstract class AbstractDBAccess implements DBAccess {
             if (null != writeMethod && null != getReadMethod) {
                 String name = value.getName();
                 Field field = ReflectUtil.getField(aClass, name);
+                if (skipColumn(field)) {
+                    continue;
+                }
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 if (null != annotation) {
                     if (SAVE.equals(sqlType)) {
@@ -106,6 +122,11 @@ public abstract class AbstractDBAccess implements DBAccess {
         return nameList;
     }
 
+    /**
+     * 获取主键对应的值
+     * @param object_
+     * @return
+     */
     public Map<String, Object> getIdMap(Object object_) {
 
         Map<String, Object> map = Maps.newHashMap();
@@ -142,6 +163,49 @@ public abstract class AbstractDBAccess implements DBAccess {
         });
 
         return map;
+
+    }
+
+    /**
+     * 将对象转为beanMap
+     * @param object
+     * @param isToUnderline 转为下划线
+     * @param isIgnoreNull 是否忽略控制
+     * @return
+     */
+    public Map<String,Object> castBeanMap(Object object, boolean isToUnderline, boolean isIgnoreNull){
+        Map<String, Object> resMap = Maps.newHashMap();
+        if(null == object){
+            return resMap;
+        }
+
+        Class<?> aClass = object.getClass();
+        Field[] fields = ReflectUtil.getFields(aClass);
+
+        for (Field field : fields) {
+            if (skipColumn(field)) {
+                continue;
+            }
+            String name = field.getName();
+            boolean annotationPresent = field.isAnnotationPresent(JdbcColumn.class);
+            if(annotationPresent){
+                JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
+                String name1 = annotation.name();
+                name = StrUtil.isBlank(name1)?name:name1;
+            }
+            if(isToUnderline){
+                name = StrUtil.toUnderlineCase(name);
+            }
+            Object fieldValue = ReflectUtil.getFieldValue(object, field);
+            if(isIgnoreNull){
+                if(ObjectUtil.isEmpty(fieldValue)){
+                   continue;
+                }
+            }
+            resMap.put(name,fieldValue);
+        }
+
+        return resMap;
 
     }
 
@@ -259,16 +323,17 @@ public abstract class AbstractDBAccess implements DBAccess {
         Connection connection = getConnection();
         Dialect dialect = getDialect(connection);
         assert dialect != null;
-        List<Map<String, Object>> collect = object.stream().map(e -> BeanUtil.beanToMap(e, false, false)).collect(Collectors.toList());
+        List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
         PreparedStatement batchInsertSql = dialect.psForBatchInsert(
                 getTableName(aClass, dialect),
                 getColumns(aClass, SAVE).toArray(new String[]{}),
                 collect, connection
         );
-        int i = batchInsertSql.executeUpdate();
-        DbUtils.close(batchInsertSql);
-
-        return i;
+        try{
+            return batchInsertSql.executeUpdate();
+        }finally {
+            DbUtils.close(batchInsertSql);
+        }
     }
 
     /**
@@ -284,14 +349,15 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @throws SQLException
      */
     public <T> int updateListByBean(List<T> object, List<String> columns, Map<String, Object> updateCondition, boolean updateIgnoreNull, Class<T> aClass) throws SQLException {
-        if (ObjectUtil.isEmpty(object) || Object.class.getName().equals(object.getClass().getName()) || ObjectUtil.isEmpty(aClass)) {
+        if (ObjectUtil.isEmpty(object) || ObjectUtil.isEmpty(aClass)) {
             return 0;
         }
-        List<Map<String, Object>> collect = object.stream().map(e -> BeanUtil.beanToMap(e, false, false)).collect(Collectors.toList());
+        List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
 
         Connection connection = getConnection();
         Dialect dialect = getDialect(connection);
         assert dialect != null;
+        // 获取参数列表就不考虑sql注入了
         if (CollUtil.isEmpty(columns)) {
             columns = getColumns(aClass, UPDATE);
         }
@@ -300,10 +366,12 @@ public abstract class AbstractDBAccess implements DBAccess {
                 columns.toArray(new String[]{}),
                 collect, updateCondition, updateIgnoreNull, connection
         );
-        int i = batchInsertSql.executeUpdate();
-        DbUtils.close(batchInsertSql);
+        try{
+            return batchInsertSql.executeUpdate();
+        } finally {
+            DbUtils.close(batchInsertSql);
+        }
 
-        return i;
     }
 
     public abstract int saveOrUpdate(Map<String, Object> map) throws SQLException;
@@ -358,14 +426,25 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> T updateByPrimaryKey(T logRecord, Class<T> aClass) throws SQLException {
-        Map<String, Object> idMap = getIdMap(logRecord);
-        int i = updateListByBean(ListTs.singletonList(logRecord), null, idMap, false, aClass);
+    public <T> T updateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException {
+        Map<String, Object> idMap = getIdMap(beanObject);
+        int i = updateListByBean(ListTs.singletonList(beanObject), null, idMap, false, aClass);
         if (i > 0) {
-            List<Object> idValue = getIdValue(logRecord, aClass);
+            List<Object> idValue = getIdValue(beanObject, aClass);
             return getObjectByPrimaryKey(idValue.get(0), aClass);
         }
         return null;
+    }
+
+    @Override
+    public <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException {
+        T objectByPrimaryKey = getObjectByPrimaryKey(beanObject, aClass);
+        if(Objects.nonNull(objectByPrimaryKey)){
+            Map<String, Object> idMap = getIdMap(beanObject);
+            return updateListByBean(ListTs.singletonList(beanObject), null, idMap, false, aClass);
+        }else{
+            return saveOne(beanObject, aClass);
+        }
     }
 
     @Override
@@ -461,10 +540,10 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> List<T> getObjectBy(T localMessage, Class<T> localMessageClass) throws SQLException {
+    public <T> List<T> getObjectBy(T recordData, Class<T> localMessageClass) throws SQLException {
 
         String tableName = this.getTableName(localMessageClass, null);
-        Map<String, Object> paramMap = BeanUtil.beanToMap(localMessage, true, false);
+        Map<String, Object> paramMap = castBeanMap(recordData, true, false);
         List<Object> args = ListTs.newLinkedList();
         String sqlByObject = this.getSqlByObject(paramMap, args, true);
         String sql = "select * from " + tableName + " where " + sqlByObject;
@@ -476,7 +555,7 @@ public abstract class AbstractDBAccess implements DBAccess {
         Class<?> aClass1 = object.getClass();
         String tableName = getTableName(aClass1, null);
         if (StrUtil.isNotBlank(tableName)) {
-            Map<String, Object> stringObjectMap = BeanUtil.beanToMap(object, true, false);
+            Map<String, Object> stringObjectMap = castBeanMap(object, true, false);
             StringBuilder sql = new StringBuilder("select count(*) from " + tableName);
             List<Object> newArgsList = ListTs.newLinkedList();
             String sqlByObject = getSqlByObject(stringObjectMap, newArgsList, false);

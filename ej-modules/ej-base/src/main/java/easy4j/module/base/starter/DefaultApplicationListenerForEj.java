@@ -20,8 +20,8 @@ public class DefaultApplicationListenerForEj implements ApplicationListenerForEj
     @Override
     public void construct(SpringApplication application, String[] args) {
         Class<?> mainApplicationClass = application.getMainApplicationClass();
-        EnvironmentHolder.mainClass = mainApplicationClass;
-        EnvironmentHolder.mainClassPath = mainApplicationClass.getPackage().getName();
+        Easy4j.mainClass = mainApplicationClass;
+        Easy4j.mainClassPath = mainApplicationClass.getPackage().getName();
     }
 
     @Override
