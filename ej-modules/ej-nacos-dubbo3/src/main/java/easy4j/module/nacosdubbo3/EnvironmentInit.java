@@ -8,6 +8,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.NacosConfigService;
 import easy4j.module.base.log.DefLog;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
+import easy4j.module.base.starter.Easy4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.logging.DeferredLog;
@@ -61,8 +62,7 @@ public class EnvironmentInit extends AbstractEnvironmentForEj {
                 @Override
                 public void receiveConfigInfo(String configInfo) {
 
-                    ConfigurableEnvironment environment = getEnvironment();
-                    MutablePropertySources propertySources = environment.getPropertySources();
+                    MutablePropertySources propertySources = ((ConfigurableEnvironment)Easy4j.environment).getPropertySources();
 
                     if(StrUtil.isBlank(configInfo)){
                         propertySources.remove(APP_CONFIG_FILE_NAME);
@@ -137,8 +137,7 @@ public class EnvironmentInit extends AbstractEnvironmentForEj {
 
                 @Override
                 public void receiveConfigInfo(String configInfo) {
-                    ConfigurableEnvironment environment = getEnvironment();
-                    MutablePropertySources propertySources = environment.getPropertySources();
+                    MutablePropertySources propertySources = ((ConfigurableEnvironment)Easy4j.environment).getPropertySources();
 
                     if(StrUtil.isBlank(configInfo)){
                         propertySources.remove(CONFIG_NAME);

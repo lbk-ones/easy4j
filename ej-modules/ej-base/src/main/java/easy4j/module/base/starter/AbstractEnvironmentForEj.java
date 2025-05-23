@@ -3,6 +3,7 @@ package easy4j.module.base.starter;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.log.DefLog;
 import easy4j.module.base.utils.*;
+import lombok.Getter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.YamlPropertySourceLoader;
@@ -19,6 +20,7 @@ import java.util.Properties;
  * @author bokun.li
  * @date 2023/10/30
  */
+@Getter
 public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcessor {
 
 
@@ -28,6 +30,7 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
 //    public void onApplicationEvent(ApplicationEvent event) {
 //        LOGGER.replayTo(AbstractEnvironmentForEj.class);
 //    }
+    public ConfigurableEnvironment environment;
 
     public abstract String getName();
 
