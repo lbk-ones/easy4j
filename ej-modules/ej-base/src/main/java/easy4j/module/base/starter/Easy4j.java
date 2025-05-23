@@ -1,20 +1,25 @@
 package easy4j.module.base.starter;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.enums.DbType;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SP;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
+import jodd.util.PropertiesUtil;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.properties.bind.BindResult;
-import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.bind.*;
+import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.Environment;
+import org.springframework.core.env.*;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -100,36 +105,85 @@ public class Easy4j implements ApplicationContextAware {
         if (extProperties == null) {
             synchronized (Easy4j.class){
                 if (extProperties == null) {
-                    Properties properties2 = new Properties();
+                    Map<String,Object> extMap = new HashMap<>();
                     Class<?> mainClass = Easy4j.mainClass;
                     if(Objects.nonNull(mainClass)){
                         String serverName = null;
                         int serverPort = 0;
                         String ejDataSource = null;
+                        boolean enableH2 = false;
+                        String h2Url = "";
+                        String h2ConsoleUsername = "sa";
+                        String h2ConsolePassword = "password";
+                        String author = "";
+                        String serviceDesc = "";
                         Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);
                         Easy4JStarterNd annotation2 = mainClass.getAnnotation(Easy4JStarterNd.class);
+                        Easy4JStarterTest annotation3 = mainClass.getAnnotation(Easy4JStarterTest.class);
                         if(Objects.nonNull(annotation)){
                             serverName = annotation.serverName();
                             serverPort = annotation.serverPort();
                             ejDataSource = annotation.ejDataSourceUrl();
+                            enableH2 = annotation.enableH2();
+                            h2Url = annotation.h2Url();
+                            author = annotation.author();
+                            serviceDesc = annotation.serviceDesc();
+                            h2ConsoleUsername = annotation.h2ConsoleUsername();
+                            h2ConsolePassword = annotation.h2ConsolePassword();
                         }else if(Objects.nonNull(annotation2)){
                             serverName = annotation2.serverName();
                             serverPort = annotation2.serverPort();
                             ejDataSource = annotation2.ejDataSourceUrl();
+                            enableH2 = annotation2.enableH2();
+                            h2Url = annotation2.h2Url();
+                            author = annotation2.author();
+                            serviceDesc = annotation2.serviceDesc();
+                            h2ConsoleUsername = annotation2.h2ConsoleUsername();
+                            h2ConsolePassword = annotation2.h2ConsolePassword();
+                        }else if(Objects.nonNull(annotation3)){
+                            serverName = annotation3.serverName();
+                            serverPort = annotation3.serverPort();
+                            ejDataSource = annotation3.ejDataSourceUrl();
+                            enableH2 = annotation3.enableH2();
+                            h2Url = annotation3.h2Url();
+                            author = annotation3.author();
+                            serviceDesc = annotation3.serviceDesc();
+                            h2ConsoleUsername = annotation3.h2ConsoleUsername();
+                            h2ConsolePassword = annotation3.h2ConsolePassword();
                         }
                         if(StrUtil.isNotBlank(serverName)){
-                            properties2.setProperty(SysConstant.SERVER_NAME, serverName);
+                            extMap.put(SysConstant.SERVER_NAME, serverName);
+                        }
+                        extMap.put(SysConstant.H2_ENABLE,enableH2);
+                        if(StrUtil.isNotBlank(h2Url)){
+                            extMap.put(SysConstant.H2_URL, h2Url);
+                        }
+                        if(StrUtil.isNotBlank(author)){
+                            extMap.put(SysConstant.AUTHOR, author);
+                        }
+                        if(StrUtil.isNotBlank(serviceDesc)){
+                            extMap.put(SysConstant.SERVICE_DESC, serviceDesc);
+                        }
+                        if(StrUtil.isNotBlank(h2ConsoleUsername)){
+                            extMap.put(SysConstant.H2_USER_NAME, h2ConsoleUsername);
+                        }
+                        if(StrUtil.isNotBlank(h2ConsolePassword)){
+                            extMap.put(SysConstant.H2_PASSWORD, h2ConsolePassword);
                         }
                         if(StrUtil.isNotBlank(ejDataSource)){
-                            properties2.setProperty(SysConstant.DB_URL_STR_NEW, ejDataSource);
+                            extMap.put(SysConstant.DB_URL_STR_NEW, ejDataSource);
                         }
                         if(serverPort >0){
-                            properties2.setProperty(SysConstant.SERVER_PORT,String.valueOf(serverPort));
+                            extMap.put(SysConstant.SERVER_PORT,serverPort);
                         }
                     }else{
                         System.err.println("not found mainClass...please check");
                     }
-                    extProperties = properties2;
+                    // append ext properties to spring env
+                    MutablePropertySources propertySources = ((ConfigurableEnvironment) Easy4j.environment).getPropertySources();
+                    MapPropertySource propertiesPropertySource = new MapPropertySource("easy4j-ext-properties", extMap);
+                    propertySources.addLast(propertiesPropertySource);
+                    extProperties = Convert.convert(Properties.class, extMap);
                 }
             }
         }

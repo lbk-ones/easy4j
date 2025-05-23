@@ -35,6 +35,13 @@ public class SysConstant {
     public static final String SIGN_URLS = PARAM_PREFIX + StringPool.DOT + "sign-urls";
     public static final String GLOBAL_CORS_ENABLE = PARAM_PREFIX + StringPool.DOT + "cors-reject-enable";
     public static final String SEED_IP_SEGMENT = PARAM_PREFIX + StringPool.DOT + "seed-ip-segment";
+    public static final String H2_ENABLE = PARAM_PREFIX + StringPool.DOT + "h2-enable";
+    public static final String H2_URL = PARAM_PREFIX + StringPool.DOT + "h2-url";
+    public static final String H2_USER_NAME = PARAM_PREFIX + StringPool.DOT + "h2-console-username";
+    public static final String H2_PASSWORD = PARAM_PREFIX + StringPool.DOT + "h2-console-password";
+    public static final String AUTHOR = PARAM_PREFIX + StringPool.DOT + "author";
+
+    public static final String SERVICE_DESC = PARAM_PREFIX + StringPool.DOT + "service-desc";
 
 
     // -------------------------EASY4j PROPERTIES----------------------------------------

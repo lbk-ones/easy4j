@@ -23,8 +23,7 @@ public class ModuleCondition implements Condition {
         for (Object value : attributes.get("value")) {
             String[] moduleName = (String[]) value;
             for (String module : moduleName) {
-                String s1 = SysConstant.PARAM_PREFIX + StringPool.DOT + module;
-                String s = environment.resolvePlaceholders(s1);
+                String s = environment.resolvePlaceholders(module);
                 List<String> list = ListTs.asList(s.split(":"));
                 String s2 = ListTs.get(list, 0);
                 String s3 = ListTs.get(list, 1);

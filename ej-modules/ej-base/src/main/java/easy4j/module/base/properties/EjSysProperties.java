@@ -36,4 +36,26 @@ public class EjSysProperties {
      */
     private String corsRejectEnable;
 
+    private boolean h2Enable;
+
+    private String h2Url;
+
+    /**
+     * 系统负责人作者
+     */
+    private String author;
+
+    /**
+     * 服务描述
+     */
+    private String serviceDesc;
+    /**
+     * h2控制台用户名 默认 easy4j
+     */
+    private String h2ConsoleUsername;
+    /**
+     * H2 控制台密码 默认 easy4j
+     */
+    private String h2ConsolePassword;
+
 }

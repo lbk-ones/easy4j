@@ -88,4 +88,8 @@ public @interface Easy4JStarterNd {
 
     @Desc("示例  jdbc:mysql://localhost:3306/order@root:123456")
     String ejDataSourceUrl() default "";
+
+
+    String h2ConsoleUsername() default "easy4j";
+    String h2ConsolePassword() default "easy4j";
 }

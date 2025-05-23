@@ -1,4 +1,4 @@
-package ej.spring.boot.starter.test;
+package ej.springboot.starter.test;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson2.JSON;
@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         serviceDesc = "测试服务",
         author = "bokun.li",
         enableH2 = true,
-        ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
+        //ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
         h2Url = "jdbc:h2:file:~/h2/testdb;DB_CLOSE_ON_EXIT=false"
         // 使用h2当数据库
 )

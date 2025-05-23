@@ -2,6 +2,7 @@ package easy4j.module.h2;
 
 
 import easy4j.module.base.annotations.Desc;
+import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.starter.Easy4JStarterNd;
@@ -29,27 +30,10 @@ public class H2Environment extends AbstractEnvironmentForEj {
         String dbType = getDbType();
         if("other".equals(dbType)){
             Properties properties = new Properties();
-            Class<?> mainClass = Easy4j.mainClass;
-            boolean enabledH2 = false;
-            String h2Url = "";
-            if(Objects.nonNull(mainClass)){
-                Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);
-                if(Objects.nonNull(annotation)){
-                    enabledH2 = annotation.enableH2();
-                    h2Url = annotation.h2Url();
-                }else{
-                    Easy4JStarterNd annotation2 = mainClass.getAnnotation(Easy4JStarterNd.class);
-                    if(Objects.nonNull(annotation2)){
-                        enabledH2 = annotation2.enableH2();
-                        h2Url = annotation2.h2Url();
-                    }
-                }
-
-            }
-            // jdbc:h2:file:/path/to/your/h2db;DB_CLOSE_ON_EXIT=false
-            // jdbc:h2:mem:testdb
-            if(enabledH2){
-                properties.setProperty(SysConstant.DB_URL_STR,h2Url);
+            EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+            boolean enableH2 = ejSysProperties.isH2Enable();
+            if(enableH2){
+                properties.setProperty(SysConstant.DB_URL_STR,ejSysProperties.getH2Url());
                 String name = Driver.class.getName();
                 properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME,name);
                 properties.setProperty(SysConstant.DB_USER_NAME,"sa");

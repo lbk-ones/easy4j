@@ -1,4 +1,4 @@
-package ej.spring.boot.starter.test;
+package ej.springboot.starter.test;
 
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
