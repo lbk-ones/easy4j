@@ -24,12 +24,6 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     private DBAccess dbaccess;
 
-    public JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public void afterPropertiesSet() throws Exception {

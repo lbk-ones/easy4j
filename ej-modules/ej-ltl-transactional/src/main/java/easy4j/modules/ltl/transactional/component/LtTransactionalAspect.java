@@ -6,13 +6,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
+import easy4j.module.base.utils.json.JacksonUtil;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.seed.leaf.LeafGenIdService;
 import easy4j.modules.ltl.transactional.LocalMessage;
@@ -148,9 +148,10 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
                     }
                     String content = localMessage.getContent();
                     if (StrUtil.isNotBlank(content)) {
-                        JSONObject jsonObject = JSON.parseObject(content);
-                        for (String clazzKey : jsonObject.keySet()) {
-                            Object o = jsonObject.get(clazzKey);
+                        Map<String, Object> map = JacksonUtil.toObject(content, new TypeReference<Map<String, Object>>() {
+                        });
+                        for (String clazzKey : map.keySet()) {
+                            Object o = map.get(clazzKey);
                             if (o == null) {
                                 Class<?> aClass = Class.forName(clazzKey);
                                 Object o1 = ReflectUtil.newInstance(aClass);
@@ -166,7 +167,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
 
                     bean.delete(localMessage);
                 } catch (Throwable e) {
-                    log.error("本地消息补偿失败,调用参数:" + JSON.toJSONString(objects));
+                    log.error("本地消息补偿失败,调用参数:" + JacksonUtil.toJson(objects));
                     log.error("本地消息补偿失败", e);
                 }
             }
@@ -308,9 +309,9 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
         for (int i = 0; i < parameterNames.length; i++) {
             Object arg = args[i];
             String name = arg.getClass().getName();
-            paramMap.put(name, ObjectUtil.isEmpty(arg) ? null : JSON.toJSONString(arg));
+            paramMap.put(name, ObjectUtil.isEmpty(arg) ? null : JacksonUtil.toJson(arg));
         }
-        localMessage.setContent(JSON.toJSONString(paramMap));
+        localMessage.setContent(JacksonUtil.toJson(paramMap));
         localMessage.setStatus(LocalMessage.PENDING);
         localMessage.setBeanName(annotation.baenName());
         localMessage.setBeanMethod(annotation.beanMethod());

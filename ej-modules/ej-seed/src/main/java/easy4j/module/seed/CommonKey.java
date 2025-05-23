@@ -5,7 +5,6 @@ import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import com.alibaba.fastjson2.JSON;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
@@ -13,6 +12,7 @@ import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
+import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class CommonKey {
             if (isEable) {
                 List<String> collect = notHhIpList.stream().filter(e -> StrUtil.isNotBlank(ipSegment) && e.startsWith(ipSegment)).collect(Collectors.toList());
                 if (CollUtil.isNotEmpty(collect) && collect.size() >= 2) {
-                    log.info(SysLog.compact("符合分布式雪花主键策略的IP为：" + JSON.toJSONString(collect)));
+                    log.info(SysLog.compact("符合分布式雪花主键策略的IP为：" + JacksonUtil.toJson(collect)));
                 }
                 String masterIp = notHhIpList.size() == 1 ? notHhIpList.get(0) : ListTs.get(collect, 0);
                 if (Objects.nonNull(masterIp)) {

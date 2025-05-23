@@ -1,9 +1,6 @@
 package easy4j.module.sca.config;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
@@ -160,41 +157,6 @@ public class FeignConfig {
     @Scope("prototype")
     public Encoder multipartFormEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
         return new SpringFormEncoder(new SpringEncoder(messageConverters));
-    }
-
-    @Bean
-    public Encoder feignEncoder() {
-        return new SpringEncoder(feignHttpMessageConverter());
-    }
-
-    @Bean
-    public Decoder feignDecoder() {
-        return new SpringDecoder(feignHttpMessageConverter());
-    }
-
-    /**
-     * 设置解码器为fastjson
-     *
-     * @return
-     */
-    private ObjectFactory<HttpMessageConverters> feignHttpMessageConverter() {
-        final HttpMessageConverters httpMessageConverters = new HttpMessageConverters(this.getFastJsonConverter());
-        return () -> httpMessageConverters;
-    }
-
-    private FastJsonHttpMessageConverter getFastJsonConverter() {
-        FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-
-        List<MediaType> supportedMediaTypes = new ArrayList<>();
-        MediaType mediaTypeJson = MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE);
-        supportedMediaTypes.add(mediaTypeJson);
-        converter.setSupportedMediaTypes(supportedMediaTypes);
-        FastJsonConfig config = new FastJsonConfig();
-//        config.getSerializeConfig().put(JSON.class, new SwaggerJsonSerializer());
-        config.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect);
-        converter.setFastJsonConfig(config);
-
-        return converter;
     }
 
     // 全局Sentinel自定义信息处理

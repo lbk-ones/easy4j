@@ -1,7 +1,7 @@
 package easy4j.module.base.utils;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
+import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.PrintStream;
@@ -29,46 +29,48 @@ public class SysLog {
         ignoreDbPrintLog.addAll(SqlType.getIgnoreStateMent());
     }
 
-    public static void addIgnoreException(String exStr){
-        if(StrUtil.isNotBlank(exStr)){
+    public static void addIgnoreException(String exStr) {
+        if (StrUtil.isNotBlank(exStr)) {
             try {
                 if (writeLock.tryLock() || writeLock.tryLock(3, TimeUnit.SECONDS)) {
                     ignorePrintException.add(exStr);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
-            }finally {
+            } finally {
                 writeLock.unlock();
             }
         }
     }
-    public static void addIgnoreDbException(String exStr){
-        if(StrUtil.isNotBlank(exStr)){
+
+    public static void addIgnoreDbException(String exStr) {
+        if (StrUtil.isNotBlank(exStr)) {
             try {
-                if (writeLock.tryLock() || writeLock.tryLock(3,TimeUnit.SECONDS)) {
+                if (writeLock.tryLock() || writeLock.tryLock(3, TimeUnit.SECONDS)) {
                     ignoreDbPrintLog.add(exStr);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
-            }finally {
+            } finally {
                 writeLock.unlock();
             }
         }
     }
-    public static boolean checkDbPrintException(String message,boolean isContain){
+
+    public static boolean checkDbPrintException(String message, boolean isContain) {
         boolean isExists = false;
-        if(StrUtil.isBlank(message)){
+        if (StrUtil.isBlank(message)) {
             return isExists;
         }
         try {
             if (readLock.tryLock() || readLock.tryLock(3, TimeUnit.SECONDS)) {
                 for (String s : ignoreDbPrintLog) {
-                    if(StrUtil.isNotBlank(s)){
-                        if(isContain && message.contains(s)){
+                    if (StrUtil.isNotBlank(s)) {
+                        if (isContain && message.contains(s)) {
                             isExists = true;
                             break;
                         }
-                        if(!isContain && message.equals(s)){
+                        if (!isContain && message.equals(s)) {
                             isExists = true;
                             break;
                         }
@@ -77,27 +79,27 @@ public class SysLog {
                 }
             }
         } catch (InterruptedException ignored) {
-        }finally {
+        } finally {
             readLock.unlock();
         }
         return isExists;
     }
 
 
-    public static boolean checkPrintException(String message,boolean isContain){
+    public static boolean checkPrintException(String message, boolean isContain) {
         boolean isExists = false;
-        if(StrUtil.isBlank(message)){
+        if (StrUtil.isBlank(message)) {
             return isExists;
         }
         try {
             if (readLock.tryLock() || readLock.tryLock(3, TimeUnit.SECONDS)) {
                 for (String s : ignorePrintException) {
-                    if(StrUtil.isNotBlank(s)){
-                        if(isContain && message.contains(s)){
+                    if (StrUtil.isNotBlank(s)) {
+                        if (isContain && message.contains(s)) {
                             isExists = true;
                             break;
                         }
-                        if(!isContain && message.equals(s)){
+                        if (!isContain && message.equals(s)) {
                             isExists = true;
                             break;
                         }
@@ -106,12 +108,11 @@ public class SysLog {
                 }
             }
         } catch (InterruptedException ignored) {
-        }finally {
+        } finally {
             readLock.unlock();
         }
         return isExists;
     }
-
 
 
     // JSON 最大打印长度
@@ -121,11 +122,12 @@ public class SysLog {
      * <p>总有些憨憨 喜欢写 System.out.println之类的语法 这里统一替换掉</p>
      * <p>支持 e.printTraceInfo()</p>
      * <p>将错误堆栈写入日志</p>
+     *
      * @author bokun.li
      * @date 2023/5/27
      */
-    public static void settingLog(){
-        if(IS_SETTING.get()){
+    public static void settingLog() {
+        if (IS_SETTING.get()) {
             return;
         }
         IS_SETTING.set(true);
@@ -144,7 +146,7 @@ public class SysLog {
 //                //logErrorObjToJson(x);
 //            }
 //        });
-        System.setOut(new PrintStream(System.out){
+        System.setOut(new PrintStream(System.out) {
             @Override
             public void print(boolean b) {
                 log.info(getString(String.valueOf(b)));
@@ -254,47 +256,52 @@ public class SysLog {
 
         log.info(SysLog.compact("已完成系统日志转换，现标准输出流也能记录到日志去"));
     }
-    private static void logObjToJson(Object o){
+
+    private static void logObjToJson(Object o) {
         log.info(getJSONorStack(o));
     }
-    private static void logErrorObjToJson(Object o){
+
+    private static void logErrorObjToJson(Object o) {
         log.error(getJSONorStack(o));
     }
-    private static String getString(String _w){
+
+    private static String getString(String _w) {
         String w = _w;
-        if(StrUtil.isNotEmpty(w)){
+        if (StrUtil.isNotEmpty(w)) {
             int length = w.length();
-            if(MAX_STRING_LENGTH!=-1 && length>MAX_STRING_LENGTH){
-                w = w.substring(0,MAX_STRING_LENGTH);
+            if (MAX_STRING_LENGTH != -1 && length > MAX_STRING_LENGTH) {
+                w = w.substring(0, MAX_STRING_LENGTH);
             }
         }
         return w;
     }
+
     /**
      * 拿取对象json字符串或者堆栈信息
+     *
      * @author bokun.li
      * @date 2023/5/27
      */
-    private static String getJSONorStack(Object o){
+    private static String getJSONorStack(Object o) {
         String w = getString(String.valueOf(o));
-        if(Objects.nonNull(o)){
+        if (Objects.nonNull(o)) {
             String name = o.getClass().getName();
             String name1 = Object.class.getName();
             String name2 = String.class.getName();
-            if(!name1.equals(name) && !name2.equals(name) && !(o instanceof Throwable)){
-                try{
-                    String s = JSONUtil.toJsonStr(o);
-                    if(MAX_STRING_LENGTH!=-1 && s.length()> MAX_STRING_LENGTH){
+            if (!name1.equals(name) && !name2.equals(name) && !(o instanceof Throwable)) {
+                try {
+                    String s = JacksonUtil.toJson(o);
+                    if (MAX_STRING_LENGTH != -1 && s.length() > MAX_STRING_LENGTH) {
                         String substring = s.substring(0, MAX_STRING_LENGTH);
-                        substring+="...";
+                        substring += "...";
                         w = substring;
-                    }else{
+                    } else {
                         w = s;
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     // TODO
                 }
-            }else if(o instanceof Throwable){
+            } else if (o instanceof Throwable) {
                 Throwable o1 = (Throwable) o;
                 w = getStackTraceInfo(o1);
             }
@@ -302,29 +309,28 @@ public class SysLog {
         return w;
     }
 
-    public static String compact(String stx, String ...args){
-        if(StrUtil.isBlank(stx)){
+    public static String compact(String stx, String... args) {
+        if (StrUtil.isBlank(stx)) {
             return "";
         }
         String s = stx.replaceAll("\\{\\}", "%s");
         String format = String.format(s, args);
-        return "*********"+format;
+        return "*********" + format;
     }
 
-    public static String getStackTraceInfo(Throwable e){
+    public static String getStackTraceInfo(Throwable e) {
         String resultException = "";
-        StringWriter sw  = new StringWriter();
+        StringWriter sw = new StringWriter();
         try (PrintWriter pw = new PrintWriter(sw)) {
             e.printStackTrace(pw);
         } catch (Throwable e2) {
             resultException = e2.getMessage();
         }
-        if(StrUtil.isEmpty(resultException)){
+        if (StrUtil.isEmpty(resultException)) {
             resultException = sw.toString();
         }
         return resultException;
     }
-
 
 
 }

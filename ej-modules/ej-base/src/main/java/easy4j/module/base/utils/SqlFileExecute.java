@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 不用它暂时废弃
+ */
+@Deprecated
 public class SqlFileExecute {
     public static void executeSqlFile(JdbcTemplate jdbcTemplate, String filePath) {
         try {
@@ -70,10 +74,10 @@ public class SqlFileExecute {
         for (int i = 0; i < sqlContent.length(); i++) {
             char c = sqlContent.charAt(i);
             if (c == '\'') {
-                inSingleQuote =!inSingleQuote;
+                inSingleQuote = !inSingleQuote;
             } else if (c == '"') {
-                inDoubleQuote =!inDoubleQuote;
-            } else if (c == ';' &&!inSingleQuote &&!inDoubleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+            } else if (c == ';' && !inSingleQuote && !inDoubleQuote) {
                 statements.add(currentStatement.toString().trim());
                 currentStatement.setLength(0);
                 continue;

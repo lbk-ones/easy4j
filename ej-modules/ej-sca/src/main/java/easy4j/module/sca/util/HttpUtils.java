@@ -1,7 +1,8 @@
 package easy4j.module.sca.util;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 
@@ -106,7 +107,7 @@ public class HttpUtils {
             wholeStr.append(str);
         }
         // 转化成json对象
-        return JSONObject.parseObject(wholeStr.toString(), Map.class);
+        return JacksonUtil.toMap(wholeStr.toString(), String.class, String.class);
     }
 
     /**
@@ -118,7 +119,8 @@ public class HttpUtils {
         }
         String wholeStr = new String(body);
         // 转化成json对象
-        return JSONObject.parseObject(wholeStr.toString(), Map.class);
+        return JacksonUtil.toObject(wholeStr, new TypeReference<Map<String, String>>() {
+        });
     }
 
     /**

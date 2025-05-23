@@ -1,13 +1,12 @@
 package ej.springboot.starter.test;
 
 import cn.hutool.core.date.DateUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONWriter;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.utils.ListTs;
+import easy4j.module.base.utils.json.JacksonUtil;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import org.junit.jupiter.api.Test;
@@ -29,9 +28,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         serverName = "build-server",
         serviceDesc = "测试服务",
         author = "bokun.li",
-        enableH2 = true,
+        enableH2 = true
         //ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
-        h2Url = "jdbc:h2:file:~/h2/testdb;DB_CLOSE_ON_EXIT=false"
         // 使用h2当数据库
 )
 @EnableFlowDegrade
@@ -79,7 +77,7 @@ public class AppTest {
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
         System.out.println("更新条数---" + i);
         SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
-        System.out.println(JSON.toJSONString(sysLogRecordById));
+        System.out.println(JacksonUtil.toJson(sysLogRecordById));
         String traceId = sysLogRecordById.getTraceId();
         System.out.println(traceId.equals(s));
 
@@ -104,11 +102,11 @@ public class AppTest {
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
 
         SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
-        System.out.println("更新前--->" + JSON.toJSONString(sysLogRecordById));
+        System.out.println("更新前--->" + JacksonUtil.toJson(sysLogRecordById));
         sysLogRecordById.setTraceId("123");
         sysLogRecordById.setProcessTime("8988");
         SysLogRecord sysLogRecord1 = dbAccess.updateByPrimaryKeySelective(sysLogRecordById, SysLogRecord.class);
-        System.out.println("更新后--->" + JSON.toJSONString(sysLogRecord1));
+        System.out.println("更新后--->" + JacksonUtil.toJson(sysLogRecord1));
 
     }
 
@@ -142,7 +140,7 @@ public class AppTest {
         int i = dbAccess.updateListByPrimaryKey(needUpdateList, SysLogRecord.class);
         List<SysLogRecord> objectByPrimaryKeys = dbAccess.getObjectByPrimaryKeys(ListTs.mapList(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
         for (SysLogRecord sysLogRecord : objectByPrimaryKeys) {
-            System.out.println(JSON.toJSONString(sysLogRecord, JSONWriter.Feature.WriteMapNullValue));
+            System.out.println(JacksonUtil.toJson(sysLogRecord));
         }
         System.out.println("更新" + i + "条数据");
 
@@ -183,7 +181,7 @@ public class AppTest {
         sysLogRecord.setTraceId(s);
         int i1 = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
 
-        assertThatThrownBy(()->{
+        assertThatThrownBy(() -> {
             dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
         }).isInstanceOf(SQLIntegrityConstraintViolationException.class);
     }

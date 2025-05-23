@@ -15,10 +15,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.Objects;
 import java.util.Properties;
+
 @Order(value = 14)
 public class H2Environment extends AbstractEnvironmentForEj {
 
     public static final String H2_SERVER_NAME = "EASY4j_H2_ENV_NAME";
+
     @Override
     public String getName() {
         return H2_SERVER_NAME;
@@ -28,18 +30,18 @@ public class H2Environment extends AbstractEnvironmentForEj {
     @Override
     public Properties getProperties() {
         String dbType = getDbType();
-        if("other".equals(dbType)){
+        if ("other".equals(dbType)) {
             Properties properties = new Properties();
             EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
             boolean enableH2 = ejSysProperties.isH2Enable();
-            if(enableH2){
-                properties.setProperty(SysConstant.DB_URL_STR,ejSysProperties.getH2Url());
+            if (enableH2) {
+                properties.setProperty(SysConstant.DB_URL_STR, ejSysProperties.getH2Url());
                 String name = Driver.class.getName();
-                properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME,name);
-                properties.setProperty(SysConstant.DB_USER_NAME,"sa");
-                properties.setProperty(SysConstant.DB_USER_PASSWORD,"password");
-                properties.setProperty(SysConstant.SPRING_H2_CONSOLE_ENABLED,"true");
-                properties.setProperty(SysConstant.SPRING_H2_CONSOLE_PATH,"/h2-console");
+                properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME, name);
+                properties.setProperty(SysConstant.DB_USER_NAME, ejSysProperties.getH2ConsoleUsername());
+                properties.setProperty(SysConstant.DB_USER_PASSWORD, ejSysProperties.getH2ConsolePassword());
+                properties.setProperty(SysConstant.SPRING_H2_CONSOLE_ENABLED, "true");
+                properties.setProperty(SysConstant.SPRING_H2_CONSOLE_PATH, "/h2-console");
                 return properties;
             }
         }

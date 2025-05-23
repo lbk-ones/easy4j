@@ -1,10 +1,10 @@
 package easy4j.module.sca.util;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONObject;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
 
@@ -46,7 +46,7 @@ public class SignUtil {
     public static String getParamsSign(SortedMap<String, String> params) {
         //去掉 Url 里的时间戳
         params.remove("_t");
-        String paramsJsonStr = JSONObject.toJSONString(params);
+        String paramsJsonStr = JacksonUtil.toJson(params);
         log.info("Param paramsJsonStr : {}", paramsJsonStr);
         EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
         String signatureSecret = ejSysProperties.getSignatureSecret();

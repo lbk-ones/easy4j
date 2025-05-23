@@ -12,9 +12,7 @@ import org.springframework.core.env.Environment;
         serverName = "build-server",
         serviceDesc = "测试服务",
         author = "bokun.li",
-        enableH2 = true,
-        ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
-        h2Url = "jdbc:h2:file:~/h2/testdb;DB_CLOSE_ON_EXIT=false"
+        enableH2 = true
         // 使用h2当数据库
 )
 @EnableFlowDegrade
@@ -25,7 +23,7 @@ public class TestProperties {
     Environment environment;
 
     @Test
-    void testProfile(){
+    void testProfile() {
         String[] activeProfiles = environment.getActiveProfiles();
         String[] defaultProfiles = environment.getDefaultProfiles();
         System.out.println(activeProfiles);
