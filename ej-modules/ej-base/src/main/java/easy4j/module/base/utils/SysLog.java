@@ -315,7 +315,7 @@ public class SysLog {
         }
         String s = stx.replaceAll("\\{\\}", "%s");
         String format = String.format(s, args);
-        return "*********" + format;
+        return "【EASY4J】" + format;
     }
 
     public static String getStackTraceInfo(Throwable e) {

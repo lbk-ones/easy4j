@@ -25,6 +25,8 @@ public class SysConstant {
     public static final String DRUID_USER_NAME = "spring.datasource.druid.stat-view-servlet.login-username";
     public static final String DRUID_USER_PWD = "spring.datasource.druid.stat-view-servlet.login-password";
     public static final String DRUID_FILTER = "spring.datasource.druid.filters";
+    public static final String SPRING_PROFILE_ACTIVE = "spring.profiles.active";
+    public static final String SPRING_PROFILE_INCLUDES = "spring.profiles.include";
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
 
@@ -41,7 +43,28 @@ public class SysConstant {
     public static final String H2_PASSWORD = PARAM_PREFIX + StringPool.DOT + "h2-console-password";
     public static final String AUTHOR = PARAM_PREFIX + StringPool.DOT + "author";
 
-    public static final String SERVICE_DESC = PARAM_PREFIX + StringPool.DOT + "service-desc";
+    public static final String EASY4J_SERVER_PORT = PARAM_PREFIX + StringPool.DOT + "server-port";
+    public static final String EASY4J_SERVER_NAME = PARAM_PREFIX + StringPool.DOT + "server-name";
+    public static final String EASY4J_SERVICE_DESC = PARAM_PREFIX + StringPool.DOT + "server-desc";
+    public static final String EASY4J_SCA_ENABLE = PARAM_PREFIX + StringPool.DOT + "enable-sca";
+    public static final String EASY4J_SCA_ENV = PARAM_PREFIX + StringPool.DOT + "env";
+
+
+    public static final String EASY4J_SCA_NACOS_URL = PARAM_PREFIX + StringPool.DOT + "nacos-url";
+    public static final String EASY4J_SCA_NACOS_USERNAME = PARAM_PREFIX + StringPool.DOT + "nacos-username";
+    public static final String EASY4J_SCA_NACOS_PASSWORD = PARAM_PREFIX + StringPool.DOT + "nacos-password";
+    public static final String EASY4J_SCA_NACOS_CONFIG_URL = PARAM_PREFIX + StringPool.DOT + "nacos-config-url";
+    public static final String EASY4J_SCA_NACOS_CONFIG_USERNAME = PARAM_PREFIX + StringPool.DOT + "nacos-config-username";
+    public static final String EASY4J_SCA_NACOS_CONFIG_PASSWORD = PARAM_PREFIX + StringPool.DOT + "nacos-config-password";
+    public static final String EASY4J_SCA_NACOS_CONFIG_GOURP = PARAM_PREFIX + StringPool.DOT + "nacos-config-group";
+    public static final String EASY4J_SCA_NACOS_CONFIG_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-config-namespace";
+    public static final String EASY4J_SCA_NACOS_DISCOVERY_URL = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-url";
+    public static final String EASY4J_SCA_NACOS_DISCOVERY_USERNAME = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-username";
+    public static final String EASY4J_SCA_NACOS_DISCOVERY_PASSWORD = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-password";
+    public static final String EASY4J_SCA_NACOS_DISCOVERY_GROUP = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-group";
+    public static final String EASY4J_SCA_NACOS_DISCOVERY_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-namespace";
+    public static final String EASY4J_SCA_FILE_EXTENSION = PARAM_PREFIX + StringPool.DOT + "nacos-config-file-extension";
+    public static final String EASY4J_SPRING_CONFIG_IMPORT = PARAM_PREFIX + StringPool.DOT + "data-ids";
 
 
     // -------------------------EASY4j PROPERTIES----------------------------------------

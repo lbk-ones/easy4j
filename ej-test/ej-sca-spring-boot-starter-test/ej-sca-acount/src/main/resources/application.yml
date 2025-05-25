@@ -8,11 +8,22 @@ spring:
   cloud:
     nacos:
       discovery:
-        namespace: public  # 命名空间（可选）
         group: DEFAULT_GROUP          # 配置组（可选）
+        namespace: public
       config:
         namespace: public  # 命名空间（可选）
         group: DEFAULT_GROUP          # 配置组（可选）
       server-addr: 127.0.0.1:8848
       username: nacos
       password: nacos
+
+
+easy4j:
+  author: bokun.li
+  server-port: 1700
+  server-name: 999-service
+  server-desc: 这是测试服务
+  enable-sca: true
+  env: dev
+  h2-enable: true
+

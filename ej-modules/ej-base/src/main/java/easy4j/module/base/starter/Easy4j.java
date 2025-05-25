@@ -2,22 +2,18 @@ package easy4j.module.base.starter;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import easy4j.module.base.enums.DbType;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SP;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
-import jodd.util.PropertiesUtil;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.bind.*;
-import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.*;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,6 +97,7 @@ public class Easy4j implements ApplicationContextAware {
 
     // load ext properties
     // 1、load bootstrap class annotation metadata
+    // 2、load prefix custom parameter transform to springboot properties
     public static void initExtProperties() {
         if (extProperties == null) {
             synchronized (Easy4j.class) {
@@ -162,7 +159,7 @@ public class Easy4j implements ApplicationContextAware {
                             extMap.put(SysConstant.AUTHOR, author);
                         }
                         if (StrUtil.isNotBlank(serviceDesc)) {
-                            extMap.put(SysConstant.SERVICE_DESC, serviceDesc);
+                            extMap.put(SysConstant.EASY4J_SERVICE_DESC, serviceDesc);
                         }
                         if (StrUtil.isNotBlank(h2ConsoleUsername)) {
                             extMap.put(SysConstant.H2_USER_NAME, h2ConsoleUsername);
