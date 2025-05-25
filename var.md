@@ -38,3 +38,5 @@
 - **easy4j.nacos-discovery-group**: nacos 注册中心group
 - **easy4j.nacos-discovery-namespace**: nacos 注册中心命名空间
 - **easy4j.data-ids**: nacos配置中心data-ids
+- **easy4j.nacos-group**: nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group
+- **easy4j.nacos-name-space**: nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace
