@@ -27,6 +27,7 @@ public class SysConstant {
     public static final String DRUID_FILTER = "spring.datasource.druid.filters";
     public static final String SPRING_PROFILE_ACTIVE = "spring.profiles.active";
     public static final String SPRING_PROFILE_INCLUDES = "spring.profiles.include";
+    public static final String SPRING_CONFIG_IMPORT = "spring.config.import";
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
 
@@ -64,7 +65,9 @@ public class SysConstant {
     public static final String EASY4J_SCA_NACOS_DISCOVERY_GROUP = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-group";
     public static final String EASY4J_SCA_NACOS_DISCOVERY_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-discovery-namespace";
     public static final String EASY4J_SCA_FILE_EXTENSION = PARAM_PREFIX + StringPool.DOT + "nacos-config-file-extension";
-    public static final String EASY4J_SPRING_CONFIG_IMPORT = PARAM_PREFIX + StringPool.DOT + "data-ids";
+    public static final String EASY4J_NACOS_DATA_IDS = PARAM_PREFIX + StringPool.DOT + "data-ids";
+    public static final String EASY4J_NACOS_GROUP = PARAM_PREFIX + StringPool.DOT + "nacos-group";
+    public static final String EASY4J_NACOS_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-namespace";
 
 
     // -------------------------EASY4j PROPERTIES----------------------------------------

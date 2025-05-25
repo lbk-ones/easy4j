@@ -9,6 +9,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * 驼峰转短横线
  * 这个类的所有前缀都是 easy4j开头的
+ * <p>
+ * 这些参数有两种配置形式
+ * 1、使用注解 注解只能配置一部分并不能完全配置
+ * 2、使用配置文件
+ * 3、远程配置的参数
+ * <p>
+ * 优先级如下：
+ * 远程配置的参数 > 配置文件 > 注解
+ * <p>
+ * 如果两个意义一样的参数都在配置文件中存在那么 easy4j开头的参数优先级最高 如果只是配置了但是又没设置值 那还是以原来的配置为准
  */
 @ConfigurationProperties(
         prefix = SysConstant.PARAM_PREFIX
@@ -188,5 +198,17 @@ public class EjSysProperties {
      */
     @Desc("nacos配置中心data-ids")
     private String dataIds;
+
+    /**
+     * nacos配置中心group
+     */
+    @Desc("nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group")
+    private String nacosGroup;
+
+    /**
+     * nacos配置中心namespace
+     */
+    @Desc("nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace")
+    private String nacosNameSpace;
 
 }

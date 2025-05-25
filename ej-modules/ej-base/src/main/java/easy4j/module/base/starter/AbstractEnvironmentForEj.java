@@ -292,4 +292,10 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
         }
         return loadPropertySource;
     }
+
+    public void setProperties(Properties properties, String proName, String value) {
+        if (StrUtil.isNotBlank(value) && StrUtil.isNotBlank(proName)) {
+            properties.setProperty(proName, value);
+        }
+    }
 }

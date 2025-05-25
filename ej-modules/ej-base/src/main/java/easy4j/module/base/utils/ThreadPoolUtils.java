@@ -22,7 +22,17 @@ public class ThreadPoolUtils {
         return threadPoolTaskExecutorMap.computeIfAbsent(poolName, ThreadPoolUtils::createThreadPoolTaskExecutor);
     }
 
+    public static ThreadPoolTaskExecutor getThreadPoolTaskExecutor(String poolName, int corePoolSize, int maxPoolSize, int queueCapacity) {
+        return threadPoolTaskExecutorMap.computeIfAbsent(poolName, e -> {
+            return createThreadPoolTaskExecutorBy(e, corePoolSize, maxPoolSize, queueCapacity);
+        });
+    }
+
     public static ThreadPoolTaskExecutor createThreadPoolTaskExecutor(String poolName) {
+        return createThreadPoolTaskExecutorBy(poolName, 8, 16, 500);
+    }
+
+    public static ThreadPoolTaskExecutor createThreadPoolTaskExecutorBy(String poolName, int corePoolSize, int maxPoolSize, int queueCapacity) {
         log.info("初始化名称为：{}的线程池", poolName);
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //核心线程数目

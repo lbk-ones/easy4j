@@ -1,29 +1,4 @@
-spring:
-  application:
-    name: my-service
-  profiles:
-    active: dev
-  config:
-    import: "optional:nacos:${spring.application.name}-${spring.profiles.active}.yml"
-  cloud:
-    nacos:
-      discovery:
-        group: DEFAULT_GROUP          # 配置组（可选）
-        namespace: public
-      config:
-        namespace: public  # 命名空间（可选）
-        group: DEFAULT_GROUP          # 配置组（可选）
-      server-addr: 127.0.0.1:8848
-      username: nacos
-      password: nacos
-
-
 easy4j:
-  author: bokun.li
-  server-port: 1700
   server-name: 999-service
-  server-desc: 这是测试服务
-  enable-sca: true
-  env: dev
-  h2-enable: true
-
+  nacos-url: 127.0.0.1:8848@nacos:nacos
+  data-source-url: jdbc:postgresql://localhost:5432/test@root:123456

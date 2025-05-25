@@ -321,6 +321,17 @@ public class ListTs {
         return null;
     }
 
+    public static <T> T get(List<T> reqs, int i, T defaultValue) {
+        try {
+            if (CollUtil.isNotEmpty(reqs)) {
+                return reqs.get(i);
+            }
+        } catch (Exception ignored) {
+
+        }
+        return defaultValue;
+    }
+
     public static <T> void foreach(List<T> list, Consumer<T> consumer) {
         if (CollUtil.isNotEmpty(list) && Objects.nonNull(consumer)) {
             list.forEach(consumer);

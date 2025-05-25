@@ -28,6 +28,8 @@ import java.util.Properties;
  */
 public class Easy4j implements ApplicationContextAware {
 
+    public static final String EJ_SYS_ANNOTATION_PROPERTIES = "ej-sys-annotation-properties";
+
     public static ApplicationContext applicationContext;
 
 
@@ -96,8 +98,7 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     // load ext properties
-    // 1、load bootstrap class annotation metadata
-    // 2、load prefix custom parameter transform to springboot properties
+    // load bootstrap class annotation metadata
     public static void initExtProperties() {
         if (extProperties == null) {
             synchronized (Easy4j.class) {
@@ -178,7 +179,7 @@ public class Easy4j implements ApplicationContextAware {
                     }
                     // append ext properties to spring env
                     MutablePropertySources propertySources = ((ConfigurableEnvironment) Easy4j.environment).getPropertySources();
-                    MapPropertySource propertiesPropertySource = new MapPropertySource("easy4j-ext-properties", extMap);
+                    MapPropertySource propertiesPropertySource = new MapPropertySource(EJ_SYS_ANNOTATION_PROPERTIES, extMap);
                     propertySources.addLast(propertiesPropertySource);
                     extProperties = Convert.convert(Properties.class, extMap);
                 }

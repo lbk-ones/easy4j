@@ -5,6 +5,7 @@ import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
 import easy4j.module.sca.interceptor.DefaultRequestOriginParser;
+import easy4j.module.sca.runner.ScaRunner;
 import easy4j.module.sca.util.HttpUtils;
 import easy4j.module.sca.util.PathMatcherUtil;
 import easy4j.module.sca.context.TenantContext;
@@ -169,6 +170,11 @@ public class FeignConfig {
     @Bean
     public DefaultRequestOriginParser defaultRequestOriginParser() {
         return new DefaultRequestOriginParser();
+    }
+
+    @Bean
+    public ScaRunner scaRunner() {
+        return new ScaRunner();
     }
 
 }

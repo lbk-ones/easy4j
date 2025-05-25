@@ -1,5 +1,7 @@
 package easy4j.scaaccount.test;
 
+import com.alibaba.cloud.nacos.NacosConfigManager;
+import com.alibaba.nacos.api.config.ConfigService;
 import easy4j.module.base.starter.Easy4JStarter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +25,16 @@ import java.util.List;
 @SpringBootTest
 public class StartApp {
 
-   @Autowired
-   DiscoveryClient discoveryClient;
+    @Autowired
+    DiscoveryClient discoveryClient;
+
+    @Autowired
+    NacosConfigManager nacosConfigManager;
 
     @Test
-    void testDiscoveryClient(){
+    void testDiscoveryClient() {
+        ConfigService configService = nacosConfigManager.getConfigService();
+
         List<ServiceInstance> instances = discoveryClient.getInstances("my-service");
         for (ServiceInstance instance : instances) {
             String host = instance.getHost() + ":" + instance.getPort();
