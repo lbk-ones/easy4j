@@ -66,7 +66,7 @@ Easy4J 框架包含以下核心模块：
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.16</version>
+        <version>2.7.18</version>
         <relativePath/>
     </parent>
 

@@ -1,38 +1,43 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>easy4j.infra.ejmodules</groupId>
+        <artifactId>ej-modules</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-  <groupId>easy4j.module.dnspom</groupId>
-  <artifactId>ej-dnspom</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+    <groupId>easy4j.module.dnspom</groupId>
+    <artifactId>ej-dnspom</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-  <name>ej-dnspom</name>
-  <url>http://maven.apache.org</url>
+    <name>ej-dnspom</name>
+    <url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <dependencies>
-    <!--dubbo-->
-    <dependency>
-      <groupId>easy4j.module.dubbo3</groupId>
-      <artifactId>ej-dubbo3</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <!--naocs-->
-    <dependency>
-      <groupId>easy4j.module.nacosdubbo3</groupId>
-      <artifactId>ej-nacos-dubbo3</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <!--sentinel-->
-    <dependency>
-      <groupId>easy4j.module.sentineldubbo3</groupId>
-      <artifactId>ej-sentinel-dubbo3</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
+    <dependencies>
+        <!--dubbo-->
+        <dependency>
+            <groupId>easy4j.module.dubbo3</groupId>
+            <artifactId>ej-dubbo3</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--naocs-->
+        <dependency>
+            <groupId>easy4j.module.nacosdubbo3</groupId>
+            <artifactId>ej-nacos-dubbo3</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--sentinel-->
+        <dependency>
+            <groupId>easy4j.module.sentineldubbo3</groupId>
+            <artifactId>ej-sentinel-dubbo3</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-  </dependencies>
+    </dependencies>
 </project>
