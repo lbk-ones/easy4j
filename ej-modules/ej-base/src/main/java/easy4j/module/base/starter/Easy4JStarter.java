@@ -79,7 +79,7 @@ public @interface Easy4JStarter {
 
     boolean enableH2() default false;
 
-    String h2Url() default "jdbc:h2:mem:testdb";
+    String h2Url() default "jdbc:h2:mem:testdb@easy4j:easy4j";
 
     @Desc("示例  jdbc:mysql://localhost:3306/order@root:123456")
     String ejDataSourceUrl() default "";

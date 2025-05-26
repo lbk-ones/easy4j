@@ -34,8 +34,7 @@
 - **easy4j.nacos-discovery-password**: nacos 注册中心密码
 - **easy4j.nacos-discovery-group**: nacos 注册中心group
 - **easy4j.nacos-discovery-namespace**: nacos 注册中心命名空间
-- **easy4j.config-import**: SpringBoot 2.4之后引入的：配置导入
-- **easy4j.data-ids**: nacos配置中心data-ids
+- **easy4j.data-ids**: nacos配置中心data-ids 多个,逗号分割如果属于不同组那么就 data-id?group=XXX_GROUP
 - **easy4j.nacos-group**: nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group
 - **easy4j.nacos-name-space**: nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace
 - **easy4j.signature-secret**: 签名密钥串(字典等敏感接口)

@@ -9,6 +9,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -89,7 +90,7 @@ public class EjSysProperties {
      */
     @SpringVs(desc = "是否启用h2数据库"
     )
-    private boolean h2Enable;
+    private boolean h2Enable = false;
 
     /**
      * h2 数据库地址
@@ -98,7 +99,7 @@ public class EjSysProperties {
             desc = "h2 数据库地址",
             vs = SysConstant.DB_URL_STR
     )
-    private String h2Url;
+    private String h2Url = "jdbc:h2:mem:testdb@easy4j:easy4j";
 
 
 
@@ -109,7 +110,7 @@ public class EjSysProperties {
             desc = "h2控制台用户名 默认 easy4j",
             vs = SysConstant.DB_USER_NAME
     )
-    private String h2ConsoleUsername;
+    private String h2ConsoleUsername = "easy4j";
     /**
      * H2 控制台密码 默认 easy4j
      */
@@ -117,7 +118,7 @@ public class EjSysProperties {
             desc = "H2 控制台密码 默认 easy4j",
             vs = SysConstant.DB_USER_PASSWORD
     )
-    private String h2ConsolePassword;
+    private String h2ConsolePassword = "easy4j";
 
 
 
@@ -210,7 +211,7 @@ public class EjSysProperties {
             desc = "nacos配置中心严格模式",
             vs = SysConstant.SPRING_CLOUD_NACOS_CONFIG_NAMESPACE
     )
-    private boolean nacosConfigStrict;
+    private boolean nacosConfigStrict = false;
 
     /**
      * nacos 远程配置文件后缀默认为 properties
@@ -261,17 +262,12 @@ public class EjSysProperties {
     )
     private String nacosDiscoveryNamespace;
 
-    @SpringVs(
-            desc = "SpringBoot 2.4之后引入的：配置导入",
-            vs = SysConstant.SPRING_CONFIG_IMPORT
-    )
-    private String configImport;
 
     /**
-     * nacos配置中心data-ids
+     * nacos配置中心data-ids 多个,逗号分割
      */
     @SpringVs(
-            desc = "nacos配置中心data-ids"
+            desc = "nacos配置中心data-ids 多个,逗号分割如果属于不同组那么就 data-id?group=XXX_GROUP"
     )
     private String dataIds;
 

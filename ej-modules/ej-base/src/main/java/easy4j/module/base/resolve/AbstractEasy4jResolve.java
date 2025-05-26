@@ -1,0 +1,110 @@
+package easy4j.module.base.resolve;
+
+import cn.hutool.core.util.StrUtil;
+import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.ListTs;
+import easy4j.module.base.utils.SP;
+import easy4j.module.base.utils.SysConstant;
+import jodd.util.StringPool;
+import org.springframework.boot.context.properties.bind.Binder;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Properties;
+
+public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
+
+    List<String> splitUrl(String p){
+        String[] split = p.split(SP.AT);
+        String s = split[1];
+        String[] split1 = s.split(SP.COLON);
+        String url = split[0];
+        String userName = split1[0];
+        String password = split1[1];
+        return ListTs.asList(url,userName,password);
+    }
+
+    public String getUrl(String p){
+        List<String> strings = splitUrl(p);
+        return ListTs.get(strings,0);
+    }
+    public String getUsername(String p){
+        List<String> strings = splitUrl(p);
+        return ListTs.get(strings,1);
+    }
+    public String getPassword(String p){
+        List<String> strings = splitUrl(p);
+        return ListTs.get(strings,2);
+    }
+
+
+    public String getDbType() {
+        return Easy4j.getDbType();
+    }
+
+    public String getDbUrl() {
+        return Easy4j.getDbUrl();
+    }
+
+    public String getProperty(String name) {
+        return Easy4j.getProperty(name);
+    }
+
+
+    public void setProperties(Properties properties, String proName, String value) {
+        if (StrUtil.isNotBlank(value) && StrUtil.isNotBlank(proName)) {
+            properties.setProperty(proName, value);
+        }
+    }
+    public void setPropertiesArr(Properties properties, String[] proName, String value) {
+        if (StrUtil.isNotBlank(value) && proName != null) {
+            for (String s : proName) {
+                properties.setProperty(s, value);
+            }
+        }
+    }
+
+
+    public static String getEjSysPropertyName(Field field){
+        int modifiers = field.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
+            return null;
+        }
+        String name = field.getName();
+        String underlineCase = StrUtil.toUnderlineCase(name);
+        String lowerCase = underlineCase.toLowerCase();
+        String s = lowerCase.replaceAll(StringPool.UNDERSCORE, StringPool.DASH);
+        return SysConstant.PARAM_PREFIX + StringPool.DOT + s;
+    }
+
+
+
+    public static List<String> getConfigImports() {
+
+        return Binder.get(Easy4j.environment)
+                .bind(SysConstant.SPRING_CONFIG_IMPORT, String[].class)
+                .map(ListTs::asList)
+                .orElse(ListTs.newArrayList());
+    }
+
+    public List<String> splitDataId(String dataId){
+        List<String> list = ListTs.newArrayList();
+        if(dataId.contains("?")){
+            String[] split = dataId.split("\\?group=");
+            list = ListTs.asList(split);
+        }else{
+            list.add(dataId);
+        }
+        return list;
+    }
+    public String getDataId(String dataId){
+        List<String> strings = splitDataId(dataId);
+        return ListTs.get(strings, 0);
+    }
+    public String getGroup(String dataId,String group){
+        List<String> strings = splitDataId(dataId);
+        return StrUtil.blankToDefault(ListTs.get(strings, 1),group);
+    }
+
+}

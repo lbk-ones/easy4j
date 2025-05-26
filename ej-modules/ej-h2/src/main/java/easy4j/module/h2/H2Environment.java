@@ -3,6 +3,7 @@ package easy4j.module.h2;
 
 import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.resolve.DataSourceUrlResolve;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.starter.Easy4JStarterNd;
@@ -35,13 +36,17 @@ public class H2Environment extends AbstractEnvironmentForEj {
             EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
             boolean enableH2 = ejSysProperties.isH2Enable();
             if (enableH2) {
-                properties.setProperty(SysConstant.DB_URL_STR, ejSysProperties.getH2Url());
                 String name = Driver.class.getName();
+                String h2Url = ejSysProperties.getH2Url();
+
                 properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME, name);
-                properties.setProperty(SysConstant.DB_USER_NAME, ejSysProperties.getH2ConsoleUsername());
-                properties.setProperty(SysConstant.DB_USER_PASSWORD, ejSysProperties.getH2ConsolePassword());
                 properties.setProperty(SysConstant.SPRING_H2_CONSOLE_ENABLED, "true");
                 properties.setProperty(SysConstant.SPRING_H2_CONSOLE_PATH, "/h2-console");
+                DataSourceUrlResolve dataSourceUrlResolve = new DataSourceUrlResolve();
+                properties.setProperty(SysConstant.DB_USER_NAME, ejSysProperties.getH2ConsoleUsername());
+                properties.setProperty(SysConstant.DB_USER_PASSWORD, ejSysProperties.getH2ConsolePassword());
+                dataSourceUrlResolve.handler(properties,h2Url);
+
                 return properties;
             }
         }

@@ -1,6 +1,7 @@
 package easy4j.module.sca.runner;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.cloud.nacos.NacosConfigManager;
@@ -8,6 +9,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.google.common.collect.Maps;
 import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.starter.Easy4jEnvironmentFirst;
@@ -36,7 +38,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 @Slf4j
-public class ScaRunner implements InitializingBean, CommandLineRunner, DisposableBean {
+public class ScaRunner extends StandAbstractEasy4jResolve implements InitializingBean, CommandLineRunner, DisposableBean {
     @Autowired
     NacosConfigManager nacosConfigManager;
 
@@ -64,65 +66,70 @@ public class ScaRunner implements InitializingBean, CommandLineRunner, Disposabl
         String nacosConfigFileExtension = ejSysProperties.getNacosConfigFileExtension();
 
         ConfigService configService = nacosConfigManager.getConfigService();
-        configService.addListener(dataIds, group, new Listener() {
-            @Override
-            public Executor getExecutor() {
-                return ThreadPoolUtils.getThreadPoolTaskExecutor("sca-runner-listener-nacos-config", 2, 4, 10);
-            }
-
-            @Override
-            public void receiveConfigInfo(String configInfo) {
-                log.info(SysLog.compact("receiveConfigInfo---->   " + configInfo));
-                try {
-                    ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
-                    MutablePropertySources propertySources = environment.getPropertySources();
-                    PropertySource<?> propertySourceEnv = propertySources.get(AbstractEnvironmentForEj.FIRST_ENV_NAME);
-                    if(Objects.isNull(propertySourceEnv)){
-                        log.info(SysLog.compact("not get "+AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
-                        return;
-                    }
-                    String trim = StrUtil.trim(configInfo);
-                    Map<String, @Nullable Object> map = Maps.newHashMap();
-                    if (StrUtil.equals("properties", nacosConfigFileExtension)) {
-                        Properties properties1 = new Properties();
-                        StringReader stringReader = new StringReader(trim);
-                        properties1.load(stringReader);
-                        // only pick properties start with "easy4j."
-                        for (Object o : properties1.keySet()) {
-                            String str = Convert.toStr(o);
-                            if (StrUtil.startWith(str, SysConstant.PARAM_PREFIX)) {
-                                map.put(str, properties1.get(str));
-                            }
-                        }
-
-                    } else if (nacosConfigFileExtension != null && ("yml".endsWith(nacosConfigFileExtension) || "yaml".endsWith(nacosConfigFileExtension))) {
-                        Resource byteArrayResource = new ByteArrayResource(trim.getBytes());
-                        PropertySource<?> propertySource = new YamlPropertySourceLoader().load(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, byteArrayResource).get(0);
-                        Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
-                        Arrays.stream(fields).filter(e -> {
-                            int modifiers = e.getModifiers();
-                            return !(Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers));
-                        }).map(e -> {
-                            String replace = StrUtil.replace(StrUtil.toUnderlineCase(e.getName()).toLowerCase(), StringPool.UNDERSCORE, StringPool.DASH);
-                            return SysConstant.PARAM_PREFIX + StringPool.DOT + replace;
-                        }).forEach(e -> {
-
-                            Object source = propertySource.getProperty(e);
-                            map.put(e, source);
-                        });
-
-                    }
-                    if (!map.isEmpty()) {
-                        MapPropertySource propertiesPropertySource = new MapPropertySource(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, map);
-                        propertySources.replace(AbstractEnvironmentForEj.FIRST_ENV_NAME, propertiesPropertySource);
-                    }
-                } catch (Exception e) {
-                    log.error(SysLog.compact("nacos config receiveConfigInfo error--->"), e);
+        for (String dataId : dataIds.split(StringPool.COMMA)) {
+            String dataId1 = getDataId(dataId);
+            String group1 = getGroup(dataId,group);
+            configService.addListener(dataId1, group1, new Listener() {
+                @Override
+                public Executor getExecutor() {
+                    return ThreadPoolUtils.getThreadPoolTaskExecutor("sca-runner-listener-nacos-config", 2, 4, 10);
                 }
 
+                @Override
+                public void receiveConfigInfo(String configInfo) {
+                    log.info(SysLog.compact("receiveConfigInfo---->   " + configInfo));
+                    try {
+                        ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
+                        MutablePropertySources propertySources = environment.getPropertySources();
+                        PropertySource<?> propertySourceEnv = propertySources.get(AbstractEnvironmentForEj.FIRST_ENV_NAME);
+                        if(Objects.isNull(propertySourceEnv)){
+                            log.info(SysLog.compact("not get "+AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
+                            return;
+                        }
+                        String trim = StrUtil.trim(configInfo);
+                        Map<String, @Nullable Object> map = Maps.newHashMap();
+                        if (StrUtil.equals("properties", nacosConfigFileExtension)) {
+                            Properties properties1 = new Properties();
+                            StringReader stringReader = new StringReader(trim);
+                            properties1.load(stringReader);
+                            // only pick properties start with "easy4j."
+                            for (Object o : properties1.keySet()) {
+                                String str = Convert.toStr(o);
+                                if (StrUtil.startWith(str, SysConstant.PARAM_PREFIX)) {
+                                    map.put(str, properties1.get(str));
+                                }
+                            }
 
-            }
-        });
+                        } else if (nacosConfigFileExtension != null && ("yml".endsWith(nacosConfigFileExtension) || "yaml".endsWith(nacosConfigFileExtension))) {
+                            Resource byteArrayResource = new ByteArrayResource(trim.getBytes());
+                            PropertySource<?> propertySource = new YamlPropertySourceLoader().load(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, byteArrayResource).get(0);
+                            Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
+                            Arrays.stream(fields).filter(e -> {
+                                int modifiers = e.getModifiers();
+                                return !(Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers));
+                            }).map(e -> {
+                                String replace = StrUtil.replace(StrUtil.toUnderlineCase(e.getName()).toLowerCase(), StringPool.UNDERSCORE, StringPool.DASH);
+                                return SysConstant.PARAM_PREFIX + StringPool.DOT + replace;
+                            }).forEach(e -> {
+                                Object source = propertySource.getProperty(e);
+                                if(ObjectUtil.isNotEmpty(source)){
+                                    map.put(e, source);
+                                }
+                            });
+                        }
+                        if (!map.isEmpty()) {
+                            MapPropertySource propertiesPropertySource = new MapPropertySource(AbstractEnvironmentForEj.FIRST_ENV_NAME, map);
+                            propertySources.replace(AbstractEnvironmentForEj.FIRST_ENV_NAME, propertiesPropertySource);
+                        }
+                    } catch (Exception e) {
+                        log.error(SysLog.compact("nacos config receiveConfigInfo error--->"), e);
+                    }
+
+
+                }
+            });
+        }
+
 
         log.info(SysLog.compact("nacos config " + SysConstant.PARAM_PREFIX + " has been listen... "));
     }

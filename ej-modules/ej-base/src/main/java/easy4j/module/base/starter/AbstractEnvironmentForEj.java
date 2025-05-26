@@ -8,6 +8,9 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.module.base.log.DefLog;
 import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.resolve.AbstractEasy4jResolve;
+import easy4j.module.base.resolve.BootStrapSpecialVsResolve;
+import easy4j.module.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.module.base.utils.*;
 import jodd.util.StringPool;
 import lombok.Getter;
@@ -21,10 +24,10 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * 抽象处理配置
@@ -34,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2023/10/30
  */
 @Getter
-public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcessor {
+public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolve implements EnvironmentPostProcessor {
 
 
     //    private static final DeferredLog LOGGER = new DeferredLog();
@@ -108,19 +111,6 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
         if (atomicBoolean.compareAndSet(false, true)) {
             Easy4j.isInitPreLoadApplication.put(name,atomicBoolean);
         }
-    }
-
-    public String getDbType() {
-        return Easy4j.getDbType();
-    }
-
-    public String getDbUrl() {
-        return Easy4j.getDbUrl();
-    }
-
-
-    public String getProperty(String name) {
-        return Easy4j.getProperty(name);
     }
 
     public Properties handlerDefaultAnnotationValues() {
@@ -214,25 +204,23 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
             }
         }
 
-        Set<String> sysNames = new HashSet<>();
+        // Set<String> sysNames = new HashSet<>();
         Map<String, Object> mapProperties = Maps.newConcurrentMap();
+
         Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
-        for (Field field : fields) {
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
-                continue;
-            }
-            String name = field.getName();
-            String lowerCase = StrUtil.toUnderlineCase(name).toLowerCase();
-            String replace = lowerCase.replace(StringPool.UNDERSCORE, StringPool.DASH);
-            String s = SysConstant.PARAM_PREFIX + StringPool.DOT + replace;
-            sysNames.add(s);
-        }
+        Set<String> sysNames = Arrays.stream(fields).map(AbstractEasy4jResolve::getEjSysPropertyName).filter(Objects::nonNull).collect(Collectors.toSet());
+
         // server name
         // remote config name
         // remote config env name
         // only read parameters starting with easy4j
         sysNames.forEach(e -> {
+            // once again from env take property
+            String property1 = System.getProperty(e);
+            if(StrUtil.isNotBlank(property1)){
+                mapProperties.put(e,property1);
+                return;
+            }
             // loop all properties order by sort
             allProperties.forEach(e2 -> {
                 if (ObjectUtil.isNotEmpty(mapProperties.get(e))) {
@@ -240,36 +228,14 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
                 }
                 Object property = e2.getProperty(e);
                 if (property != null) {
-                    // 这里 不能使用 Easy4j.getProperty 这个方法
-                    String property1 = Easy4j.environment.getProperty(e);
-                    System.out.println("env--->"+e+":--->"+property1);
                     mapProperties.put(e, property);
                 }
             });
         });
         // unnecessary parameters need not be converted here during early loading
         if (!mapProperties.isEmpty()) {
-            Set<String> setCopy = new HashSet<>(mapProperties.keySet());
-            // transform
-            for (String key : setCopy) {
-                Object o = mapProperties.get(key);
-                switch (key) {
-                    case SysConstant.EASY4J_SERVER_PORT:
-                        try {
-                            Integer port = Integer.parseInt(o.toString());
-                            mapProperties.put(SysConstant.SPRING_SERVER_PORT, port);
-                        } catch (Exception e) {
-                            throw new InvalidParameterException("invalid port:" + o);
-                        }
-                        break;
-                    case SysConstant.EASY4J_SERVER_NAME:
-                        mapProperties.put(SysConstant.SPRING_SERVER_NAME, Convert.toStr(o));
-                        break;
-                    default:
-                        break;
-                }
-            }
-
+            BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
+            bootStrapSpecialVsResolve.handler(mapProperties,null);
             propertySources.addLast(new MapPropertySource(FIRST_ENV_NAME, mapProperties));
         }
     }
@@ -305,16 +271,5 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
         return loadPropertySource;
     }
 
-    public void setProperties(Properties properties, String proName, String value) {
-        if (StrUtil.isNotBlank(value) && StrUtil.isNotBlank(proName)) {
-            properties.setProperty(proName, value);
-        }
-    }
-    public void setPropertiesArr(Properties properties, String[] proName, String value) {
-        if (StrUtil.isNotBlank(value) && proName != null) {
-            for (String s : proName) {
-                properties.setProperty(s, value);
-            }
-        }
-    }
+
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.druid.DbType;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.util.JdbcUtils;
+import easy4j.module.base.resolve.DataSourceUrlResolve;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.starter.Easy4JStarterNd;
@@ -71,18 +72,11 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
             String ejDataSrouceUrl = getEjDataSrouceUrl();
 
             if (StrUtil.isNotBlank(ejDataSrouceUrl)) {
-                String[] split = ejDataSrouceUrl.split(SP.AT);
-                String s = split[1];
-                String[] split1 = s.split(SP.COLON);
-                String url = split[0];
-                String userName = split1[0];
-                String password = split1[1];
                 //String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(url);
                 properties.setProperty(SysConstant.DB_DATASOURCE_TYPE, DATA_SOURCE_CLASS.getName());
                 properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME, driverClassName);
-                properties.setProperty(SysConstant.DB_URL_STR, url);
-                properties.setProperty(SysConstant.DB_USER_NAME, userName);
-                properties.setProperty(SysConstant.DB_USER_PASSWORD, password);
+                DataSourceUrlResolve dataSourceUrlResolve = new DataSourceUrlResolve();
+                dataSourceUrlResolve.handler(properties,ejDataSrouceUrl);
                 return properties;
             } else {
 
@@ -100,6 +94,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
 
         Class<?> mainClass = Easy4j.mainClass;
 
+        // 再迭代几次之后下面这段代码没用了已经
         // 配置文件没有配置数据源url，则从mainClass中获取
         if (Objects.nonNull(mainClass) && StrUtil.isBlank(ejDataSrouceUrl)) {
             Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);

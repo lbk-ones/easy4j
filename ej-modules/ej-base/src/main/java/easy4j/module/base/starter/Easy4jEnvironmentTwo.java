@@ -1,14 +1,9 @@
 package easy4j.module.base.starter;
 
-import ch.qos.logback.classic.PatternLayout;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.system.SystemUtil;
-import easy4j.module.base.utils.SysConstant;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -17,7 +12,7 @@ import java.util.Properties;
  * @date 2023/10/30
  */
 @Order(value = 13)
-public class EnvironmentInitForEj extends AbstractEnvironmentForEj {
+public class Easy4jEnvironmentTwo extends AbstractEnvironmentForEj {
     public static final String EASY4j_ENV_NAME = "easy4j-init-environment";
 
     @Override

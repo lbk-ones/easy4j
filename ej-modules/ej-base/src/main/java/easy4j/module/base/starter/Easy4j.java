@@ -9,6 +9,7 @@ import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SP;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
+import jodd.util.StringPool;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +18,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.*;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -212,6 +215,18 @@ public class Easy4j implements ApplicationContextAware {
 //
 //
 //    }
+
+    public static String getEjSysPropertyName(Field field){
+        int modifiers = field.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
+            return null;
+        }
+        String name = field.getName();
+        String underlineCase = StrUtil.toUnderlineCase(name);
+        String lowerCase = underlineCase.toLowerCase();
+        String s = lowerCase.replaceAll("_", "-");
+        return SysConstant.PARAM_PREFIX + StringPool.DOT + s;
+    }
 
 
 }
