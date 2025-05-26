@@ -13,29 +13,40 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Properties;
 
-public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
+public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R> {
 
-    List<String> splitUrl(String p){
+    List<String> splitUrl(String p) {
         String[] split = p.split(SP.AT);
-        String s = split[1];
-        String[] split1 = s.split(SP.COLON);
-        String url = split[0];
-        String userName = split1[0];
-        String password = split1[1];
-        return ListTs.asList(url,userName,password);
+
+        String url = null;
+        String userName = null;
+        String password = null;
+        try {
+            url = split[0];
+            String s = split[1];
+            String[] split1 = s.split(SP.COLON);
+            userName = split1[0];
+            password = split1[1];
+        } catch (Exception e) {
+
+        }
+        return ListTs.asList(url, userName, password);
+
     }
 
-    public String getUrl(String p){
+    public String getUrl(String p) {
         List<String> strings = splitUrl(p);
-        return ListTs.get(strings,0);
+        return ListTs.get(strings, 0);
     }
-    public String getUsername(String p){
+
+    public String getUsername(String p) {
         List<String> strings = splitUrl(p);
-        return ListTs.get(strings,1);
+        return ListTs.get(strings, 1);
     }
-    public String getPassword(String p){
+
+    public String getPassword(String p) {
         List<String> strings = splitUrl(p);
-        return ListTs.get(strings,2);
+        return ListTs.get(strings, 2);
     }
 
 
@@ -57,6 +68,7 @@ public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
             properties.setProperty(proName, value);
         }
     }
+
     public void setPropertiesArr(Properties properties, String[] proName, String value) {
         if (StrUtil.isNotBlank(value) && proName != null) {
             for (String s : proName) {
@@ -66,7 +78,7 @@ public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
     }
 
 
-    public static String getEjSysPropertyName(Field field){
+    public static String getEjSysPropertyName(Field field) {
         int modifiers = field.getModifiers();
         if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
             return null;
@@ -79,7 +91,6 @@ public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
     }
 
 
-
     public static List<String> getConfigImports() {
 
         return Binder.get(Easy4j.environment)
@@ -88,23 +99,25 @@ public abstract class AbstractEasy4jResolve<T,R> implements Easy4jResolve<T,R>{
                 .orElse(ListTs.newArrayList());
     }
 
-    public List<String> splitDataId(String dataId){
+    public List<String> splitDataId(String dataId) {
         List<String> list = ListTs.newArrayList();
-        if(dataId.contains("?")){
+        if (dataId.contains("?")) {
             String[] split = dataId.split("\\?group=");
             list = ListTs.asList(split);
-        }else{
+        } else {
             list.add(dataId);
         }
         return list;
     }
-    public String getDataId(String dataId){
+
+    public String getDataId(String dataId) {
         List<String> strings = splitDataId(dataId);
         return ListTs.get(strings, 0);
     }
-    public String getGroup(String dataId,String group){
+
+    public String getGroup(String dataId, String group) {
         List<String> strings = splitDataId(dataId);
-        return StrUtil.blankToDefault(ListTs.get(strings, 1),group);
+        return StrUtil.blankToDefault(ListTs.get(strings, 1), group);
     }
 
 }

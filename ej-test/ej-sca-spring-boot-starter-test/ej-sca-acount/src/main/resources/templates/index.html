@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-900 to-indigo-600 min-h-screen flex items-center justify-center p-4">
+<div class="login-container bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-all duration-500 ease-in-out transform hover:shadow-xl">
+    <div class="login-header p-8 text-center">
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 mb-2">欢迎回来</h1>
+        <p class="text-gray-500 mb-6">请登录您的账户</p>
+    </div>
+
+    <div class="login-body p-8">
+        <form id="loginForm" class="space-y-5">
+            <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fa fa-user"></i>
+                    </span>
+                <input type="text" id="username" placeholder="用户名或邮箱"
+                       class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 outline-none"
+                       required>
+            </div>
+
+            <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fa fa-lock"></i>
+                    </span>
+                <input type="password" id="password" placeholder="密码"
+                       class="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 outline-none"
+                       required>
+                <button type="button" id="togglePassword"
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa fa-eye-slash"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="flex items-center">
+                    <input type="checkbox" class="rounded text-blue-600 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-gray-600">记住我</span>
+                </label>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">忘记密码?</a>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                登录
+            </button>
+
+            <div class="flex items-center justify-center pt-4">
+                <span class="text-gray-500">还没有账户?</span>
+                <a href="#" class="ml-2 text-blue-600 hover:text-blue-800 font-medium transition-colors">立即注册</a>
+            </div>
+
+            <div class="or-separator flex items-center my-6">
+                <div class="flex-grow h-px bg-gray-300"></div>
+                <span class="px-4 text-gray-500 text-sm">或者使用</span>
+                <div class="flex-grow h-px bg-gray-300"></div>
+            </div>
+
+            <div class="flex justify-center space-x-4">
+                <button type="button"
+                        class="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-300">
+                    <i class="fa fa-weixin text-xl"></i>
+                </button>
+                <button type="button"
+                        class="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-300">
+                    <i class="fa fa-qq text-xl"></i>
+                </button>
+                <button type="button"
+                        class="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-300">
+                    <i class="fa fa-weibo text-xl"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

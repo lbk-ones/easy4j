@@ -12,6 +12,7 @@ import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SP;
 import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
+import easy4j.module.base.utils.SysLog;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -55,7 +56,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
 
         String dbType = getDbType();
         if ("other".equals(dbType)) {
-            System.err.println("请配置数据源和指定数据库类型！若不需要数据库，请在启动注解开启H2");
+            System.err.println(SysLog.compact("未发现数据源！请配置(" + SysConstant.DB_URL_STR_NEW + ")，或者检查配置中心是否处于可访问状态，若不需要数据库，请在启动注解开启H2"));
             System.exit(1);
         }
         String driverClassName = SqlType.getDriverClassName(dbType);
@@ -76,7 +77,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
                 properties.setProperty(SysConstant.DB_DATASOURCE_TYPE, DATA_SOURCE_CLASS.getName());
                 properties.setProperty(SysConstant.DB_URL_DRIVER_CLASS_NAME, driverClassName);
                 DataSourceUrlResolve dataSourceUrlResolve = new DataSourceUrlResolve();
-                dataSourceUrlResolve.handler(properties,ejDataSrouceUrl);
+                dataSourceUrlResolve.handler(properties, ejDataSrouceUrl);
                 return properties;
             } else {
 

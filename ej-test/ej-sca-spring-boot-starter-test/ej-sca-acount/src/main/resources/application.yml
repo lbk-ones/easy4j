@@ -8,3 +8,5 @@ easy4j:
   # 999-service-prod.yaml
   # group namespace data-id
 #  data-source-url: jdbc:postgresql://localhost:5432/test@root:123456
+
+

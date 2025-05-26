@@ -1,0 +1,71 @@
+/* 基础样式 */
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* 登录容器样式 */
+.login-container {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* 输入框样式 */
+input:focus {
+    transform: translateY(-2px);
+}
+
+/* 按钮样式 */
+button {
+    cursor: pointer;
+}
+
+/* 密码可见性切换按钮 */
+#togglePassword {
+    transition: all 0.3s ease;
+}
+
+#togglePassword:hover {
+    transform: scale(1.1);
+}
+
+/* 分隔线样式 */
+.or-separator {
+    position: relative;
+}
+
+/* 社交媒体按钮 */
+.social-btn {
+    transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+    .login-container {
+        max-width: 100%;
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-container {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+input, button {
+    transition: all 0.3s ease;
+}
+    
