@@ -1,7 +1,9 @@
 package easy4j.module.base.starter;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.map.multi.CollectionValueMap;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import easy4j.module.base.enums.DbType;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SP;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 环境持有者
@@ -42,6 +45,7 @@ public class Easy4j implements ApplicationContextAware {
 
     public static String mainClassPath = "";
     public static Class<?> mainClass;
+    public final static Map<String,AtomicBoolean> isInitPreLoadApplication = Maps.newHashMap();
 
 
     @Getter
@@ -150,7 +154,7 @@ public class Easy4j implements ApplicationContextAware {
                             h2ConsolePassword = annotation3.h2ConsolePassword();
                         }
                         if (StrUtil.isNotBlank(serverName)) {
-                            extMap.put(SysConstant.SERVER_NAME, serverName);
+                            extMap.put(SysConstant.SPRING_SERVER_NAME, serverName);
                         }
                         extMap.put(SysConstant.H2_ENABLE, enableH2);
                         if (StrUtil.isNotBlank(h2Url)) {
@@ -172,7 +176,7 @@ public class Easy4j implements ApplicationContextAware {
                             extMap.put(SysConstant.DB_URL_STR_NEW, ejDataSource);
                         }
                         if (serverPort > 0) {
-                            extMap.put(SysConstant.SERVER_PORT, serverPort);
+                            extMap.put(SysConstant.SPRING_SERVER_PORT, serverPort);
                         }
                     } else {
                         System.err.println("not found mainClass...please check");

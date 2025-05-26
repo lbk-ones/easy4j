@@ -8,6 +8,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.google.common.collect.Maps;
 import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.starter.Easy4jEnvironmentFirst;
 import easy4j.module.base.utils.SysConstant;
@@ -30,6 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
@@ -74,6 +76,11 @@ public class ScaRunner implements InitializingBean, CommandLineRunner, Disposabl
                 try {
                     ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
                     MutablePropertySources propertySources = environment.getPropertySources();
+                    PropertySource<?> propertySourceEnv = propertySources.get(AbstractEnvironmentForEj.FIRST_ENV_NAME);
+                    if(Objects.isNull(propertySourceEnv)){
+                        log.info(SysLog.compact("not get "+AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
+                        return;
+                    }
                     String trim = StrUtil.trim(configInfo);
                     Map<String, @Nullable Object> map = Maps.newHashMap();
                     if (StrUtil.equals("properties", nacosConfigFileExtension)) {
@@ -81,17 +88,14 @@ public class ScaRunner implements InitializingBean, CommandLineRunner, Disposabl
                         StringReader stringReader = new StringReader(trim);
                         properties1.load(stringReader);
                         // only pick properties start with "easy4j."
-                        PropertySource<?> propertySource = propertySources.get(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME);
                         for (Object o : properties1.keySet()) {
                             String str = Convert.toStr(o);
                             if (StrUtil.startWith(str, SysConstant.PARAM_PREFIX)) {
-                                Object property = propertySource.getProperty(str);
-                                if (property == null) {
-                                    map.put(str, properties1.get(str));
-                                }
+                                map.put(str, properties1.get(str));
                             }
                         }
-                    } else if ("yml".endsWith(nacosConfigFileExtension) || "yaml".endsWith(nacosConfigFileExtension)) {
+
+                    } else if (nacosConfigFileExtension != null && ("yml".endsWith(nacosConfigFileExtension) || "yaml".endsWith(nacosConfigFileExtension))) {
                         Resource byteArrayResource = new ByteArrayResource(trim.getBytes());
                         PropertySource<?> propertySource = new YamlPropertySourceLoader().load(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, byteArrayResource).get(0);
                         Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
@@ -110,7 +114,7 @@ public class ScaRunner implements InitializingBean, CommandLineRunner, Disposabl
                     }
                     if (!map.isEmpty()) {
                         MapPropertySource propertiesPropertySource = new MapPropertySource(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, map);
-                        propertySources.replace(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, propertiesPropertySource);
+                        propertySources.replace(AbstractEnvironmentForEj.FIRST_ENV_NAME, propertiesPropertySource);
                     }
                 } catch (Exception e) {
                     log.error(SysLog.compact("nacos config receiveConfigInfo error--->"), e);

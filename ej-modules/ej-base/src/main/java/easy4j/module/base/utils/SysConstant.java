@@ -19,8 +19,8 @@ public class SysConstant {
     public static final String DB_URL_DRIVER_CLASS_NAME = "spring.datasource.driver-class-name";
     public static final String DB_USER_NAME = "spring.datasource.username";
     public static final String DB_USER_PASSWORD = "spring.datasource.password";
-    public static final String SERVER_PORT = "server.port";
-    public static final String SERVER_NAME = "spring.application.name";
+    public static final String SPRING_SERVER_PORT = "server.port";
+    public static final String SPRING_SERVER_NAME = "spring.application.name";
     public static final String SERVER_PORT_STR = "server.port";
     public static final String DRUID_USER_NAME = "spring.datasource.druid.stat-view-servlet.login-username";
     public static final String DRUID_USER_PWD = "spring.datasource.druid.stat-view-servlet.login-password";
@@ -28,6 +28,25 @@ public class SysConstant {
     public static final String SPRING_PROFILE_ACTIVE = "spring.profiles.active";
     public static final String SPRING_PROFILE_INCLUDES = "spring.profiles.include";
     public static final String SPRING_CONFIG_IMPORT = "spring.config.import";
+    // ------spring cloud alibaba begin
+    public static final String SPRING_CLOUD_NACOS_URL = "spring.cloud.nacos.server-addr";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY = "spring.cloud.nacos.discovery";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY_GROUP = "spring.cloud.nacos.discovery.group";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE = "spring.cloud.nacos.discovery.namespace";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY_URL = "spring.cloud.nacos.discovery.server-addr";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY_USERNAME = "spring.cloud.nacos.discovery.username";
+    public static final String SPRING_CLOUD_NACOS_DISCOVERY_PASSWORD = "spring.cloud.nacos.discovery.password";
+    public static final String SPRING_CLOUD_NACOS_CONFIG = "spring.cloud.nacos.config";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_GROUP = "spring.cloud.nacos.config.group";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_NAMESPACE = "spring.cloud.nacos.config.namespace";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_URL = "spring.cloud.nacos.config.server-addr";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_USERNAME = "spring.cloud.nacos.config.username";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_PASSWORD = "spring.cloud.nacos.config.password";
+    public static final String SPRING_CLOUD_NACOS_CONFIG_FILE_EXTENSION = "spring.cloud.nacos.config.file-extension";
+    public static final String SPRING_CLOUD_NACOS_USERNAME = "spring.cloud.nacos.username";
+    public static final String SPRING_CLOUD_NACOS_PASSWORD= "spring.cloud.nacos.password";
+    public static final String SPRING_CLOUD_NACOS_SERVER_ADDR= "spring.cloud.nacos.server-addr";
+    // ------spring cloud alibaba end
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
 
@@ -47,6 +66,7 @@ public class SysConstant {
     public static final String EASY4J_SERVER_PORT = PARAM_PREFIX + StringPool.DOT + "server-port";
     public static final String EASY4J_SERVER_NAME = PARAM_PREFIX + StringPool.DOT + "server-name";
     public static final String EASY4J_SERVICE_DESC = PARAM_PREFIX + StringPool.DOT + "server-desc";
+    public static final String EASY4J_CONFIG_IMPORT = PARAM_PREFIX + StringPool.DOT + "config-import";
     public static final String EASY4J_SCA_ENABLE = PARAM_PREFIX + StringPool.DOT + "enable-sca";
     public static final String EASY4J_SCA_ENV = PARAM_PREFIX + StringPool.DOT + "env";
 

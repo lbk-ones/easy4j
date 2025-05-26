@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 抽象处理配置
@@ -71,10 +72,15 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
 
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        String name = getName();
+        // avoid repeat load This is necessary
+        AtomicBoolean atomicBoolean = Easy4j.isInitPreLoadApplication.getOrDefault(name,new AtomicBoolean(false));
+        if (atomicBoolean.get()) {
+            return;
+        }
         initEnv(environment, application);
         MutablePropertySources propertySources = environment.getPropertySources();
         Properties properties = getProperties();
-        String name = getName();
         if (StrUtil.isNotBlank(name)) {
             if (name.endsWith(".yml") || name.endsWith(".yaml")) {
                 YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
@@ -98,6 +104,10 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
         }
 
         handlerEnvironMent(environment, application);
+
+        if (atomicBoolean.compareAndSet(false, true)) {
+            Easy4j.isInitPreLoadApplication.put(name,atomicBoolean);
+        }
     }
 
     public String getDbType() {
@@ -155,7 +165,6 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
     public void preLoadApplicationProfile() {
 
         MutablePropertySources propertySources = configEnvironment.getPropertySources();
-        // avoid repeat load
         PropertySource<?> propertySource = propertySources.get(FIRST_ENV_NAME);
         if (ObjectUtil.isNotEmpty(propertySource)) {
             return;
@@ -231,7 +240,10 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
                 }
                 Object property = e2.getProperty(e);
                 if (property != null) {
-                    mapProperties.put(e, Convert.toStr(property));
+                    // 这里 不能使用 Easy4j.getProperty 这个方法
+                    String property1 = Easy4j.environment.getProperty(e);
+                    System.out.println("env--->"+e+":--->"+property1);
+                    mapProperties.put(e, property);
                 }
             });
         });
@@ -245,13 +257,13 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
                     case SysConstant.EASY4J_SERVER_PORT:
                         try {
                             Integer port = Integer.parseInt(o.toString());
-                            mapProperties.put(SysConstant.SERVER_PORT, port);
+                            mapProperties.put(SysConstant.SPRING_SERVER_PORT, port);
                         } catch (Exception e) {
                             throw new InvalidParameterException("invalid port:" + o);
                         }
                         break;
                     case SysConstant.EASY4J_SERVER_NAME:
-                        mapProperties.put(SysConstant.SERVER_NAME, Convert.toStr(o));
+                        mapProperties.put(SysConstant.SPRING_SERVER_NAME, Convert.toStr(o));
                         break;
                     default:
                         break;
@@ -296,6 +308,13 @@ public abstract class AbstractEnvironmentForEj implements EnvironmentPostProcess
     public void setProperties(Properties properties, String proName, String value) {
         if (StrUtil.isNotBlank(value) && StrUtil.isNotBlank(proName)) {
             properties.setProperty(proName, value);
+        }
+    }
+    public void setPropertiesArr(Properties properties, String[] proName, String value) {
+        if (StrUtil.isNotBlank(value) && proName != null) {
+            for (String s : proName) {
+                properties.setProperty(s, value);
+            }
         }
     }
 }

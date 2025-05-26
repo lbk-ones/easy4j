@@ -2,8 +2,8 @@ package easy4j.module.base.console;
 
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.annotations.Desc;
 import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.properties.SpringVs;
 import easy4j.module.base.utils.SysConstant;
 import jodd.util.StringPool;
 
@@ -17,8 +17,8 @@ public class GenSysVarDesc {
         Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
         for (Field field : fields) {
             String name = field.getName();
-            Desc annotation = field.getAnnotation(Desc.class);
-            String value = annotation.value();
+            SpringVs annotation = field.getAnnotation(SpringVs.class);
+            String value = annotation.desc();
             String lowerCase = StrUtil.toUnderlineCase(name).toLowerCase();
             String replace = SysConstant.PARAM_PREFIX + StringPool.DOT + lowerCase.replace(StringPool.UNDERSCORE, StringPool.DASH);
             String print = "- **" + replace + "**: " + value;

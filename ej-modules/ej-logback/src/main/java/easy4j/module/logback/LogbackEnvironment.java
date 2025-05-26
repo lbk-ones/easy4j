@@ -1,12 +1,10 @@
 package easy4j.module.logback;
 
 import ch.qos.logback.classic.PatternLayout;
-import cn.hutool.core.net.NetUtil;
 import easy4j.module.base.starter.AbstractEnvironmentForEj;
 import easy4j.module.base.utils.SysConstant;
 import jodd.util.SystemUtil;
 import org.springframework.boot.SpringApplication;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.Properties;
@@ -48,7 +46,7 @@ public class LogbackEnvironment extends AbstractEnvironmentForEj {
     public Properties getProperties() {
         Properties properties = new Properties();
         properties.setProperty("logging.level.root","INFO");
-        String property = getProperty(SysConstant.SERVER_NAME);
+        String property = getProperty(SysConstant.SPRING_SERVER_NAME);
         properties.setProperty("logging.pattern.console","%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%-5level) %clr(${PID:- }){magenta} ["+property+"] [%thread] %clr(%-37.37logger{36}){cyan} %traceId- %msg%n");
         properties.setProperty("logging.pattern.file","%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } ["+property+"] [%thread] %-37.37logger{36} %traceId- %msg%n");
         String hostName = SystemUtil.info().getHostName();

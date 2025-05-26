@@ -40,25 +40,30 @@ public class ScaEnvConfig extends AbstractEnvironmentForEj {
             classLoader.loadClass("easy4j.module.boot.sca.Enable");
 
             Properties properties = new Properties();
-            EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-            String serverName = ejSysProperties.getServerName();
+            EjSysProperties ejSys = Easy4j.getEjSysProperties();
+            String serverName = ejSys.getServerName();
             if (StrUtil.isBlank(serverName)) {
-                log.info(SysConstant.EASY4J_SERVER_NAME + "is not set,so skip sca config setting....");
+                log.info(SysLog.compact(SysConstant.EASY4J_SERVER_NAME + "is not set,so skip sca config setting...."));
                 return null;
             }
-            String env = ejSysProperties.getEnv();
-            String nacosConfigFileExtension = StrUtil.blankToDefault(ejSysProperties.getNacosConfigFileExtension(), "properties");
-            String dataids = "optional:nacos:" + serverName;
+            String env = ejSys.getEnv();
+            String nacosConfigFileExtension = StrUtil.blankToDefault(ejSys.getNacosConfigFileExtension(), "properties");
+            String dataids = "nacos:" + serverName;
+            if(!ejSys.isNacosConfigStrict()){
+                dataids = "optional:"+dataids;
+            }
             if (StrUtil.isNotBlank(env)) {
-                dataids += "-" + env + "." + nacosConfigFileExtension;
+                dataids += StringPool.DASH + env + StringPool.DOT + nacosConfigFileExtension;
             } else {
-                dataids += "." + nacosConfigFileExtension;
+                dataids += StringPool.DOT + nacosConfigFileExtension;
             }
             List<String> list = ListTs.asList(dataids.split(StringPool.COLON));
             properties.setProperty(SysConstant.EASY4J_NACOS_DATA_IDS, ListTs.get(list, list.size() - 1, ""));
             properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT, dataids);
 
-            String nacosUrl = ejSysProperties.getNacosUrl();
+            String nacosUrl = ejSys.getNacosUrl();
+            String username = "";
+            String password = "";
             if (StrUtil.isNotBlank(nacosUrl)) {
                 List<String> split = ListTs.asList(nacosUrl.split(StringPool.AT));
                 String url = ListTs.get(split, 0);
@@ -66,34 +71,34 @@ public class ScaEnvConfig extends AbstractEnvironmentForEj {
                     throw new RuntimeException("nacos url format is error !" + nacosUrl);
                 }
                 List<String> up = ListTs.asList(split.get(1).split(":"));
-                String username = ListTs.get(up, 0, "");
-                String password = ListTs.get(up, 1, "");
-                properties.setProperty(SysConstant.EASY4J_SCA_NACOS_URL, url);
-                properties.setProperty(SysConstant.EASY4J_SCA_NACOS_USERNAME, username);
-                properties.setProperty(SysConstant.EASY4J_SCA_NACOS_PASSWORD, password);
+                username = ListTs.get(up, 0, "");
+                password = ListTs.get(up, 1, "");
+                setPropertiesArr(properties,ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_URL),url);
+                setPropertiesArr(properties,ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_USERNAME), username);
+                setPropertiesArr(properties,ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_PASSWORD), password);
             }
-            String nacosGroup = StrUtil.blankToDefault(ejSysProperties.getNacosGroup(), "DEFAULT_GROUP");
-            String nacosNameSpace = StrUtil.blankToDefault(ejSysProperties.getNacosNameSpace(), "public");
-            String nacosConfigUrl = ejSysProperties.getNacosConfigUrl();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_CONFIG_URL, nacosConfigUrl);
-            String nacosConfigUsername = ejSysProperties.getNacosConfigUsername();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_CONFIG_USERNAME, nacosConfigUsername);
-            String configPassword = ejSysProperties.getNacosConfigPassword();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_CONFIG_PASSWORD, configPassword);
-            String configGroup = ejSysProperties.getNacosConfigGroup();
-            properties.setProperty(SysConstant.EASY4J_SCA_NACOS_CONFIG_GOURP, StrUtil.blankToDefault(configGroup, nacosGroup));
-            String configNamespace = ejSysProperties.getNacosConfigNamespace();
-            properties.setProperty(SysConstant.EASY4J_SCA_NACOS_CONFIG_NAMESPACE, StrUtil.blankToDefault(configNamespace, nacosNameSpace));
-            String nacosDiscoveryUrl = ejSysProperties.getNacosDiscoveryUrl();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_DISCOVERY_URL, nacosDiscoveryUrl);
-            String discoveryUsername = ejSysProperties.getNacosDiscoveryUsername();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_DISCOVERY_USERNAME, discoveryUsername);
-            String discoveryPassword = ejSysProperties.getNacosDiscoveryPassword();
-            setProperties(properties, SysConstant.EASY4J_SCA_NACOS_DISCOVERY_PASSWORD, discoveryPassword);
-            String discoveryGroup = ejSysProperties.getNacosDiscoveryGroup();
-            properties.setProperty(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_GROUP, StrUtil.blankToDefault(discoveryGroup, nacosGroup));
-            String discoveryNamespace = ejSysProperties.getNacosDiscoveryNamespace();
-            properties.setProperty(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_NAMESPACE, StrUtil.blankToDefault(discoveryNamespace, nacosGroup));
+            String nacosGroup = StrUtil.blankToDefault(ejSys.getNacosGroup(), "DEFAULT_GROUP");
+            String nacosNameSpace = StrUtil.blankToDefault(ejSys.getNacosNameSpace(), "public");
+            String nacosConfigUrl = ejSys.getNacosConfigUrl();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_CONFIG_URL), nacosConfigUrl);
+            String nacosConfigUsername = ejSys.getNacosConfigUsername();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_CONFIG_USERNAME), nacosConfigUsername);
+            String configPassword = ejSys.getNacosConfigPassword();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_CONFIG_PASSWORD), configPassword);
+            String configGroup = ejSys.getNacosConfigGroup();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_CONFIG_GOURP), StrUtil.blankToDefault(configGroup, nacosGroup));
+            String configNamespace = ejSys.getNacosConfigNamespace();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_CONFIG_NAMESPACE), StrUtil.blankToDefault(configNamespace, nacosNameSpace));
+            String nacosDiscoveryUrl = ejSys.getNacosDiscoveryUrl();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_URL), nacosDiscoveryUrl);
+            String discoveryUsername = ejSys.getNacosDiscoveryUsername();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_USERNAME), StrUtil.blankToDefault(discoveryUsername,username));
+            String discoveryPassword = ejSys.getNacosDiscoveryPassword();
+            setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_PASSWORD), StrUtil.blankToDefault(discoveryPassword,password));
+            String discoveryGroup = ejSys.getNacosDiscoveryGroup();
+            setPropertiesArr(properties,ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_GROUP), StrUtil.blankToDefault(discoveryGroup, nacosGroup));
+            String discoveryNamespace = ejSys.getNacosDiscoveryNamespace();
+            setPropertiesArr(properties,ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_NAMESPACE), StrUtil.blankToDefault(discoveryNamespace, nacosGroup));
             return properties;
         } catch (ClassNotFoundException e) {
             System.out.println(SysLog.compact("未引用sca-starter模块sca配置不生效!"));
