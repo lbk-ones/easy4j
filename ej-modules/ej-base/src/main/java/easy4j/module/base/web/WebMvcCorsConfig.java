@@ -2,18 +2,25 @@ package easy4j.module.base.web;
 
 
 import easy4j.module.base.module.Module;
+import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 import static easy4j.module.base.utils.SysConstant.GLOBAL_CORS_ENABLE;
 
 @Slf4j
 @Configuration
-@Module(GLOBAL_CORS_ENABLE+":true")
+@Module(GLOBAL_CORS_ENABLE + ":true")
 public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
 
     @Override
@@ -29,5 +36,11 @@ public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
                 .allowedHeaders("*")  // 允许所有请求头
                 .allowCredentials(false) // 允许携带 Cookie（需与前端配合，域名需一致）
                 .maxAge(3600); // 预检请求的有效期（秒）
+    }
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        // 移除默认转换器
+        converters.removeIf(converter -> converter instanceof MappingJackson2XmlHttpMessageConverter);
     }
 }
