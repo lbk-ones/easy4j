@@ -29,6 +29,8 @@
         <module>ej-sentinel</module>
         <module>ej-idempotent</module>
         <module>ej-sca</module>
+        <module>ej-security</module>
+        <module>ej-sauth</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>

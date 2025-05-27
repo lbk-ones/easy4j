@@ -89,6 +89,8 @@ public class SysConstant {
     public static final String EASY4J_NACOS_GROUP = PARAM_PREFIX + StringPool.DOT + "nacos-group";
     public static final String EASY4J_NACOS_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-namespace";
 
+    public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX+StringPool.DOT+"security-old-school-enable";
+
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
     public static final int SUCCESSCODE = 0;

@@ -1,0 +1,1 @@
+SpringSecurity 5.7.11 + JWT 实现无session保持前后端分离架构 + 认证授权
