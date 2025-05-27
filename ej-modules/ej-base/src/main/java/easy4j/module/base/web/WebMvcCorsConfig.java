@@ -37,10 +37,4 @@ public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
                 .allowCredentials(false) // 允许携带 Cookie（需与前端配合，域名需一致）
                 .maxAge(3600); // 预检请求的有效期（秒）
     }
-
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // 移除默认转换器
-        converters.removeIf(converter -> converter instanceof MappingJackson2XmlHttpMessageConverter);
-    }
 }

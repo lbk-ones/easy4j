@@ -91,24 +91,7 @@ public class DataSourceEnvironment extends AbstractEnvironmentForEj {
     }
 
     private String getEjDataSrouceUrl() {
-        String ejDataSrouceUrl = getProperty(SysConstant.DB_URL_STR_NEW);
-
-        Class<?> mainClass = Easy4j.mainClass;
-
-        // 再迭代几次之后下面这段代码没用了已经
-        // 配置文件没有配置数据源url，则从mainClass中获取
-        if (Objects.nonNull(mainClass) && StrUtil.isBlank(ejDataSrouceUrl)) {
-            Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);
-            if (Objects.nonNull(annotation)) {
-                ejDataSrouceUrl = annotation.ejDataSourceUrl();
-            } else {
-                Easy4JStarterNd annotation2 = mainClass.getAnnotation(Easy4JStarterNd.class);
-                if (Objects.nonNull(annotation2)) {
-                    ejDataSrouceUrl = annotation2.ejDataSourceUrl();
-                }
-            }
-        }
-        return ejDataSrouceUrl;
+        return getProperty(SysConstant.DB_URL_STR_NEW);
     }
 
     @Override
