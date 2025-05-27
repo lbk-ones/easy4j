@@ -4,6 +4,7 @@ import easy4j.module.security.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -18,6 +19,7 @@ public class SecurityConfig {
     // 前后端分离
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        User user = new User("admin", "admin", null);
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 禁用Session
                 .and()

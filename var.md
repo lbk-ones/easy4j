@@ -11,7 +11,8 @@
 - **easy4j.server-name**: 服务名称 等同于 spring.application.name
 - **easy4j.server-desc**: 服务描述
 - **easy4j.data-source-url**: 数据源简写，例如：“jdbc:postgresql://localhost:5432/postgres@root:123456”
-- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID 分布式系统则不会主键重复”
+- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID
+  分布式系统则不会主键重复”
 - **easy4j.cors-reject-enable**: 是否开启全局允许跨域 默认true 但是可以关闭
 - **easy4j.h2-enable**: 是否启用h2数据库
 - **easy4j.h2-url**: h2 数据库地址
@@ -38,4 +39,7 @@
 - **easy4j.nacos-group**: nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group
 - **easy4j.nacos-name-space**: nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace
 - **easy4j.signature-secret**: 签名密钥串(字典等敏感接口)
+- **easy4j.jwt-secret**: jwt签名密钥串
 - **easy4j.sign-urls**: 需要加强校验的接口清单
+- **easy4j.simple-auth-enable**: 简单权限认证 默认没开启 true为开启
+- **easy4j.session-expire-time-seconds**: 会话过期时间 默认3个小时

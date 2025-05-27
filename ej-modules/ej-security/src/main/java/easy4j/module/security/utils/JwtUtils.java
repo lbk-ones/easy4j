@@ -1,5 +1,7 @@
 package easy4j.module.security.utils;
 
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,13 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+    public static final JwtParser jwtParser = null;
+
+    static {
+        JwtParserBuilder jwtParserBuilder = Jwts.parserBuilder();
+
+    }
+
     @Value("${jwt.secret}")
     private String secret;
 
@@ -23,7 +32,7 @@ public class JwtUtils {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;

@@ -1,22 +1,65 @@
 package easy4j.module.security.core;
 
-import easy4j.module.sauth.core.Easy4jAuth;
-import easy4j.module.sauth.user.BaseUser;
+import easy4j.module.sauth.core.AbstractSecurityService;
+import easy4j.module.sauth.core.SecurityService;
+import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 @Service
-public class SecurityEasy4jAuth implements Easy4jAuth {
+public class SpringSecurityService extends AbstractSecurityService {
 
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    SessionStrategy sessionStrategy;
 
     @Override
-    public void login(String username, String password) {
+    public SessionStrategy getSessionStrategy() {
+        return sessionStrategy;
+    }
+
+    @Override
+    public SecurityUserInfo getOnlineUser() {
+        return null;
+    }
+
+    @Override
+    public SecurityUserInfo getOnlineUser(String token) {
+        return null;
+    }
+
+    @Override
+    public boolean isOnline(String token) {
+        return false;
+    }
+
+    @Override
+    public SecurityUserInfo logout() {
+        return null;
+    }
+
+    @Override
+    public String getToken() {
+        return null;
+    }
+
+    @Override
+    public String refreshToken(int expireTime, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public SecurityUserInfo login(SecurityUserInfo securityUser) {
+        String username = securityUser.getUsername();
+        String password = securityUser.getPassword();
         // 1. 创建认证请求
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -36,10 +79,6 @@ public class SecurityEasy4jAuth implements Easy4jAuth {
 //        List<String> roles = userDetails.getAuthorities().stream()
 //                .map(GrantedAuthority::getAuthority)
 //                .collect(Collectors.toList());
-    }
-
-    @Override
-    public BaseUser getCurrentUser() {
         return null;
     }
 }

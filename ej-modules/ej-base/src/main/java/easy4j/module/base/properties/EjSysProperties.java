@@ -102,7 +102,6 @@ public class EjSysProperties {
     private String h2Url = "jdbc:h2:mem:testdb@easy4j:easy4j";
 
 
-
     /**
      * h2控制台用户名 默认 easy4j
      */
@@ -119,7 +118,6 @@ public class EjSysProperties {
             vs = SysConstant.DB_USER_PASSWORD
     )
     private String h2ConsolePassword = "easy4j";
-
 
 
     /**
@@ -294,10 +292,29 @@ public class EjSysProperties {
     private String signatureSecret = "33a9gkqjqnxiqnaoqnsdj187sa56h5a856adf5a8";
 
     /**
+     * jwt签名密钥串
+     */
+    @SpringVs(desc = "jwt签名密钥串")
+    private String jwtSecret = "31a9gquinkaywjlxuhtlailg7sa56h5a856adf7i38";
+
+    /**
      * 需要加强校验的接口清单
      */
     @SpringVs(desc = "需要加强校验的接口清单")
     private String signUrls;
+
+    /**
+     * 简单权限认证
+     */
+    @SpringVs(desc = "简单权限认证 默认没开启 true为开启")
+    private boolean simpleAuthEnable = false;
+
+    /**
+     * 会话过期时间
+     */
+    @SpringVs(desc = "会话过期时间 默认3个小时")
+    private int sessionExpireTimeSeconds = 60 * 60 * 3;
+
 
     /**
      * 根据常量获取 对应的springboot变量

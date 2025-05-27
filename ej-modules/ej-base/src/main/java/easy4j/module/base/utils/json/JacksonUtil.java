@@ -35,19 +35,29 @@ import java.util.Map;
 public class JacksonUtil {
 
     private static final ObjectMapper mapper;
+    private static final ObjectMapper mapper2;
 
     static {
         mapper = new ObjectMapper();
         // 配置序列化选项
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // 忽略null值
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false); // 空对象不报错
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // 日期不转时间戳
+        extracted(mapper);
+
+        mapper2 = new ObjectMapper();
+        // 配置序列化选项
+        //mapper2.setSerializationInclusion(JsonInclude.Include.NON_NULL); // 保留null值
+        extracted(mapper2);
+    }
+
+    private static void extracted(ObjectMapper objectMapper) {
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false); // 空对象不报错
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // 日期不转时间戳
 
         // 配置反序列化选项
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 忽略未知属性
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 忽略未知属性
 
         // 日期时间格式化
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
         // Java 8日期时间支持
         JavaTimeModule timeModule = new JavaTimeModule();
@@ -59,7 +69,7 @@ public class JacksonUtil {
         timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         timeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
-        mapper.registerModule(timeModule);
+        objectMapper.registerModule(timeModule);
     }
 
     /**
@@ -71,6 +81,14 @@ public class JacksonUtil {
     public static String toJson(Object obj) {
         try {
             return mapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON序列化失败: " + e.getMessage(), e);
+        }
+    }
+
+    public static String toJsonContainNull(Object obj) {
+        try {
+            return mapper2.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON序列化失败: " + e.getMessage(), e);
         }

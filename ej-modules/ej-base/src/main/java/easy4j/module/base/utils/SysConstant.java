@@ -44,8 +44,8 @@ public class SysConstant {
     public static final String SPRING_CLOUD_NACOS_CONFIG_PASSWORD = "spring.cloud.nacos.config.password";
     public static final String SPRING_CLOUD_NACOS_CONFIG_FILE_EXTENSION = "spring.cloud.nacos.config.file-extension";
     public static final String SPRING_CLOUD_NACOS_USERNAME = "spring.cloud.nacos.username";
-    public static final String SPRING_CLOUD_NACOS_PASSWORD= "spring.cloud.nacos.password";
-    public static final String SPRING_CLOUD_NACOS_SERVER_ADDR= "spring.cloud.nacos.server-addr";
+    public static final String SPRING_CLOUD_NACOS_PASSWORD = "spring.cloud.nacos.password";
+    public static final String SPRING_CLOUD_NACOS_SERVER_ADDR = "spring.cloud.nacos.server-addr";
     // ------spring cloud alibaba end
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
@@ -89,8 +89,8 @@ public class SysConstant {
     public static final String EASY4J_NACOS_GROUP = PARAM_PREFIX + StringPool.DOT + "nacos-group";
     public static final String EASY4J_NACOS_NAMESPACE = PARAM_PREFIX + StringPool.DOT + "nacos-namespace";
 
-    public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX+StringPool.DOT+"security-old-school-enable";
-
+    public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX + StringPool.DOT + "security-old-school-enable";
+    public static final String EASY4J_SAUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
     public static final int SUCCESSCODE = 0;
@@ -202,5 +202,6 @@ public class SysConstant {
     public static final String KNIFE4J_BASIC_ENABLE = "knife4j.basic.enable";
     public static final String KNIFE4J_BASIC_USERNAME = "knife4j.basic.username";
     public static final String KNIFE4J_BASIC_PASSWORD = "knife4j.basic.password";
+
 
 }
