@@ -45,22 +45,31 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
 
     // 查单个
     @Override
-    public <T> T getObject(String sql, Class<T> clazz, Object... args) throws SQLException {
+    public <T> T getObject(String sql, Class<T> clazz, Object... args) {
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
-        List<T> query = runner.query(getConnection(), sql, tBeanListHandler, args);
+        List<T> query = null;
+        try {
+            query = runner.query(getConnection(), sql, tBeanListHandler, args);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getObject", sql, e);
+        }
         return JdbcHelper.requiredSingleResult(query);
     }
 
     // 查多个
     @Override
-    public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) throws SQLException {
+    public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) {
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
-        return ObjectUtil.defaultIfNull(runner.query(getConnection(), sql, tBeanListHandler, args), new ArrayList<>());
+        try {
+            return ObjectUtil.defaultIfNull(runner.query(getConnection(), sql, tBeanListHandler, args), new ArrayList<>());
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getObjectList", sql, e);
+        }
     }
 
     // 更新 插入 删除
     @Override
-    public int saveOrUpdate(Map<String, Object> map) throws SQLException {
+    public int saveOrUpdate(Map<String, Object> map) {
         Object o = map.get(KEY_SQL);
         if (ObjectUtil.isEmpty(o)) {
             return 0;
@@ -70,32 +79,47 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
             args = (Object[]) args;
         }
         final String sql = (String) o;
-        if (ObjectUtil.isNotEmpty(args)) {
-            return runner.update(getConnection(), sql, args);
-        } else {
-            return runner.update(getConnection(), sql);
+        try {
+            if (ObjectUtil.isNotEmpty(args)) {
+                return runner.update(getConnection(), sql, args);
+            } else {
+                return runner.update(getConnection(), sql);
+            }
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
         }
+
 
     }
 
 
     // 执行脚本、执行sql文件
     @Override
-    public void runScript(Resource resource) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        EncodedResource encodedResource = new EncodedResource(resource, StandardCharsets.UTF_8);
-        executeSqlScript(connection, encodedResource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
-                DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+    public void runScript(Resource resource) {
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            EncodedResource encodedResource = new EncodedResource(resource, StandardCharsets.UTF_8);
+            executeSqlScript(connection, encodedResource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
+                    DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("saveOrUpdate", null, e);
+        }
+
     }
 
     // 拿取Connection连接
     @Override
-    public Connection getConnection() throws SQLException {
-        Assert.notNull(dataSource);
-        if (this.inTransaction) {
-            return DataSourceUtils.getConnection(dataSource);
-        } else {
-            return dataSource.getConnection();
+    public Connection getConnection() {
+        try {
+            Assert.notNull(dataSource);
+            if (this.inTransaction) {
+                return DataSourceUtils.getConnection(dataSource);
+            } else {
+                return dataSource.getConnection();
+            }
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getConnection", null, e);
         }
     }
 
@@ -107,22 +131,21 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
      * @param params 查询参数
      * @return 指定列的结果对象
      */
-    public Object query(int column, String sql, Object... params) throws SQLException {
+    public Object query(int column, String sql, Object... params) {
         Object result;
         try {
             if (log.isDebugEnabled()) {
                 log.debug("查询单列数据=\n" + sql);
             }
             result = runner.query(getConnection(), sql, new ScalarHandler<>(column), params);
+            return result;
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw e;
+            throw JdbcHelper.translateSqlException("query", sql, e);
         }
-        return result;
     }
 
     @Override
-    protected Object queryCount(String sql, Object... args) throws SQLException {
+    protected Object queryCount(String sql, Object... args) {
         return query(1, sql, args);
     }
 }

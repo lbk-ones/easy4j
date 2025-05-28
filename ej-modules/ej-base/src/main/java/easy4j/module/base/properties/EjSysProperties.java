@@ -326,6 +326,12 @@ public class EjSysProperties {
     @SpringVs(desc = "是否打印简单的请求日志，默认不打印，true为打印")
     private boolean printRequestLog = false;
 
+    /**
+     * 权限session存储类型：db代表数据库，redis代表redis
+     */
+    @SpringVs(desc = "权限session存储类型：db代表数据库，redis代表redis")
+    private String authSessionStorageType = "db";
+
 
     /**
      * 根据常量获取 对应的springboot变量

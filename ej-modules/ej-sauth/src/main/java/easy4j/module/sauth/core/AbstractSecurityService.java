@@ -1,5 +1,10 @@
 package easy4j.module.sauth.core;
 
+import easy4j.module.base.context.Easy4jContext;
+import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.BusCode;
+import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -8,17 +13,28 @@ public abstract class AbstractSecurityService extends StandardResolve implements
 
     public abstract SessionStrategy getSessionStrategy();
 
+    public abstract SecurityContext getSecurityContext();
+
 
     @Override
     public SecurityUserInfo logoutByUserName(String userName) {
-
-
-        return null;
+        SessionStrategy sessionStrategy = getSessionStrategy();
+        SecuritySession sessionByUserName = sessionStrategy.getSessionByUserName(userName);
+        if (sessionByUserName != null) {
+            sessionStrategy.deleteSession(sessionByUserName.getShaToken());
+            return sessionToSecurityUserInfo(sessionByUserName);
+        } else {
+            throw new EasyException(BusCode.A00037);
+        }
     }
 
     @Override
     public SecurityUserInfo getOnlineUser() {
-
+        SecurityContext securityContext = getSecurityContext();
+        SecuritySession session = securityContext.getSession();
+        if (session != null && session.isNotTampered() && session.isNotExpired()) {
+            return sessionToSecurityUserInfo(session);
+        }
         return null;
     }
 

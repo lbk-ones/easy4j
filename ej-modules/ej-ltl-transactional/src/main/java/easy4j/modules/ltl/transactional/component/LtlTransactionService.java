@@ -41,11 +41,8 @@ public class LtlTransactionService implements InitializingBean {
         LocalMessage localMessage = new LocalMessage();
         localMessage.setIsFreeze("is null");
         List<LocalMessage> all = ListTs.newArrayList();
-        try {
-            all = dbAccess.getObjectBy(localMessage, LocalMessage.class);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        all = dbAccess.getObjectBy(localMessage, LocalMessage.class);
+
         return all;
     }
 
@@ -53,10 +50,7 @@ public class LtlTransactionService implements InitializingBean {
         for (LocalMessage localMessage : list) {
             localMessage.setIsFreeze("1");
         }
-        try {
-            dbAccess.updateListByPrimaryKey(list, LocalMessage.class);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        dbAccess.updateListByPrimaryKey(list, LocalMessage.class);
+
     }
 }

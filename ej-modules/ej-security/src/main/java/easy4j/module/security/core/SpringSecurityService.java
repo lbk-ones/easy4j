@@ -1,6 +1,7 @@
 package easy4j.module.security.core;
 
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
+import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.AbstractSecurityService;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -15,18 +16,34 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class SpringSecurityService extends AbstractSecurityService {
 
-    @Autowired
     AuthenticationManager authenticationManager;
 
-    @Autowired
     SessionStrategy sessionStrategy;
 
 
+    SecurityAuthorization authorizationStrategy;
+    SecurityContext securityContext;
+
     @Autowired
-    AuthorizationStrategy authorizationStrategy;
+    public SpringSecurityService(
+            AuthenticationManager authenticationManager,
+            SessionStrategy sessionStrategy,
+            SecurityAuthorization authorizationStrategy,
+            SecurityContext securityContext
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.sessionStrategy = sessionStrategy;
+        this.authorizationStrategy = authorizationStrategy;
+        this.securityContext = securityContext;
+    }
 
     @Override
-    public AuthorizationStrategy getAuthorizationStrategy() {
+    public SecurityContext getSecurityContext() {
+        return securityContext;
+    }
+
+    @Override
+    public SecurityAuthorization getAuthorizationStrategy() {
         return authorizationStrategy;
     }
 

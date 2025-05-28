@@ -28,79 +28,84 @@ import java.util.Map;
  * 数据库差异的方言接口
  */
 public interface Dialect {
-	/**
-	 * 根据分页对象获取分页sql语句
-	 * @param sql 未分页sql语句
-	 * @param page 分页对象
-	 * @return
-	 */
-	String getPageSql(String sql, Page<?> page);
+    /**
+     * 根据分页对象获取分页sql语句
+     *
+     * @param sql  未分页sql语句
+     * @param page 分页对象
+     * @return
+     */
+    String getPageSql(String sql, Page<?> page);
 
-	/**
-	 * 转义字符
-	 * @return
-	 */
-	Wrapper getWrapper();
+    /**
+     * 转义字符
+     *
+     * @return
+     */
+    Wrapper getWrapper();
 
-	/**
-	 * 批量写入
-	 * @param tableName
-	 * @param columns
-	 * @param recordList
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) throws SQLException;
+    /**
+     * 批量写入
+     *
+     * @param tableName
+     * @param columns
+     * @param recordList
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection);
 
-	/**
-	 * 单个写入
-	 * @param tableName
-	 * @param columns
-	 * @param record
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection) throws SQLException;
+    /**
+     * 单个写入
+     *
+     * @param tableName
+     * @param columns
+     * @param record
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection);
 
-	/**
-	 * 根据主键更新
-	 * @param tableName
-	 * @param recordList
-	 * @param aClass
-	 * @param ignoreNull
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	PreparedStatement psForUpdateById(String tableName, Object recordList, Class<?> aClass, boolean ignoreNull, Connection connection) throws SQLException;
+    /**
+     * 根据主键更新
+     *
+     * @param tableName
+     * @param recordList
+     * @param aClass
+     * @param ignoreNull
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    PreparedStatement psForUpdateById(String tableName, Object recordList, Class<?> aClass, boolean ignoreNull, Connection connection);
 
-	/**
-	 * 根据条件单个更新
-	 *
-	 * @param tableName
-	 * @param recordList      要更新的bean(必须要是Map<String,Object>)
-	 * @param aClass          实体class
-	 * @param updateCondition 更新条件
-	 * @param ignoreNull      是否忽略空值
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	PreparedStatement psForUpdateBy(String tableName, Map<String, Object> recordList, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) throws SQLException;
+    /**
+     * 根据条件单个更新
+     *
+     * @param tableName
+     * @param recordList      要更新的bean(必须要是Map<String,Object>)
+     * @param aClass          实体class
+     * @param updateCondition 更新条件
+     * @param ignoreNull      是否忽略空值
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    PreparedStatement psForUpdateBy(String tableName, Map<String, Object> recordList, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 
-	/**
-	 * 多个批量更新
-	 *
-	 * @param tableName
-	 * @param columns
-	 * @param recordList
-	 * @param updateCondition
-	 * @param ignoreNull
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) throws SQLException;
+    /**
+     * 多个批量更新
+     *
+     * @param tableName
+     * @param columns
+     * @param recordList
+     * @param updateCondition
+     * @param ignoreNull
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 }

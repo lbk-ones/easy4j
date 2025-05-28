@@ -26,4 +26,9 @@ public abstract class AbstractSessionStrategy implements SessionStrategy {
     public void clearInValidSession() {
 
     }
+
+    @Override
+    public SecuritySession getSessionByUserName(String userName) {
+        return null;
+    }
 }

@@ -12,6 +12,14 @@ public interface SessionStrategy {
     SecuritySession getSession(String token);
 
     /**
+     * 根据用户名获取会话信息
+     *
+     * @param userName
+     * @return
+     */
+    SecuritySession getSessionByUserName(String userName);
+
+    /**
      * 保存会话信息
      *
      * @param securitySession
@@ -24,9 +32,8 @@ public interface SessionStrategy {
      * 删除会话信息
      *
      * @param token
-     * @return
      */
-    SecuritySession deleteSession(String token);
+    void deleteSession(String token);
 
     /**
      * 刷新会话信息

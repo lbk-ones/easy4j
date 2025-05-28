@@ -44,7 +44,7 @@ public class SecuritySession {
     private String nickName;
 
     /**
-     * jwt加密之后的短token
+     * jwt加密之后的短token 索引 IDX_SYS_SECURITY_SESSION_SHA_TOKEN
      */
     private String shaToken;
 
@@ -89,6 +89,18 @@ public class SecuritySession {
      * 过期时间（秒为单位）
      */
     private int expireTimeSeconds;
+
+
+    /**
+     * 当前部门代码
+     */
+    private String deptCode;
+
+    /**
+     * 当前部门名称
+     */
+    private String deptName;
+
 
     /**
      * 额外信息 存入 长文本 json 字符串

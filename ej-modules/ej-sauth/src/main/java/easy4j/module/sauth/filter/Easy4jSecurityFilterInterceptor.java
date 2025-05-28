@@ -2,10 +2,11 @@ package easy4j.module.sauth.filter;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.utils.BusCode;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -26,12 +27,12 @@ public class Easy4jSecurityFilterInterceptor implements HandlerInterceptor {
 
     SecurityContext securityContext;
 
-    AuthorizationStrategy authorizationStrategy;
+    SecurityAuthorization authorizationStrategy;
 
 
     SecurityAuthentication securityAuthentication;
 
-    public Easy4jSecurityFilterInterceptor(SessionStrategy sessionStrategy, SecurityContext securityContext, AuthorizationStrategy authorizationStrategy, SecurityAuthentication securityAuthentication) {
+    public Easy4jSecurityFilterInterceptor(SessionStrategy sessionStrategy, SecurityContext securityContext, SecurityAuthorization authorizationStrategy, SecurityAuthentication securityAuthentication) {
         this.sessionStrategy = sessionStrategy;
         this.securityContext = securityContext;
         this.authorizationStrategy = authorizationStrategy;
@@ -47,6 +48,7 @@ public class Easy4jSecurityFilterInterceptor implements HandlerInterceptor {
             if (method.isAnnotationPresent(OpenApi.class)) {
                 OpenApi annotation = method.getAnnotation(OpenApi.class);
                 String xApiKey = request.getHeader(SysConstant.X_API_KEY);
+                // TODO  api key
             } else {
                 // take session
                 String token = request.getHeader(SysConstant.X_ACCESS_TOKEN);
@@ -55,14 +57,13 @@ public class Easy4jSecurityFilterInterceptor implements HandlerInterceptor {
                 SecurityUserInfo securityUserInfo = null;
                 if (b1) {
                     if (StrUtil.isBlank(token)) {
-                        throw new EasyException("缺少请求头" + SysConstant.X_ACCESS_TOKEN);
+                        throw new EasyException(BusCode.A00029 + "," + SysConstant.X_ACCESS_TOKEN);
                     }
                     securityUserInfo = securityAuthentication.tokenAuthentication(token);
                     if (
-                            StrUtil.isNotBlank(securityUserInfo.getErrorCode()) ||
-                                    StrUtil.isNotBlank(securityUserInfo.getErrorMsg())
+                            StrUtil.isNotBlank(securityUserInfo.getErrorCode())
                     ) {
-                        throw new EasyException(securityUserInfo.getErrorMsg());
+                        throw new EasyException(securityUserInfo.getErrorCode());
                     }
                 } else {
                     // 如果不需要token鉴权 改用

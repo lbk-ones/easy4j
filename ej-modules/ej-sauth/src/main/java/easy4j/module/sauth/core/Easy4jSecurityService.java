@@ -5,9 +5,10 @@ import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.plugin.i18n.I18nBean;
+import easy4j.module.base.utils.BusCode;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
+import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -24,14 +25,26 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
 
 
     SessionStrategy sessionStrategy;
+    SecurityContext securityContext;
 
 
-    AuthorizationStrategy authorizationStrategy;
+    SecurityAuthorization authorizationStrategy;
 
-    public Easy4jSecurityService(SecurityAuthentication securityAuthentication, SessionStrategy sessionStrategy, AuthorizationStrategy authorizationStrategy) {
+    public Easy4jSecurityService(
+            SecurityAuthentication securityAuthentication,
+            SessionStrategy sessionStrategy,
+            SecurityAuthorization authorizationStrategy,
+            SecurityContext securityContext
+    ) {
         this.securityAuthentication = securityAuthentication;
         this.sessionStrategy = sessionStrategy;
         this.authorizationStrategy = authorizationStrategy;
+        this.securityContext = securityContext;
+    }
+
+    @Override
+    public SecurityContext getSecurityContext() {
+        return securityContext;
     }
 
     private static DBAccess dbAccess;
@@ -53,7 +66,7 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
     }
 
     @Override
-    public AuthorizationStrategy getAuthorizationStrategy() {
+    public SecurityAuthorization getAuthorizationStrategy() {
         return authorizationStrategy;
     }
 
@@ -67,15 +80,11 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
     public SecurityUserInfo login(SecurityUserInfo securityUser) {
         SecurityUserInfo securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser);
         String errorCode = securityUserInfo.getErrorCode();
-        if (StrUtil.isNotBlank(securityUserInfo.getErrorMsg()) || StrUtil.isNotBlank(errorCode)) {
-            String message = securityUserInfo.getErrorMsg();
-            if (StrUtil.isNotBlank(errorCode)) {
-                message = I18nBean.getMessage(errorCode);
-            }
-            throw new EasyException(message);
+        if (StrUtil.isNotBlank(errorCode)) {
+            throw new EasyException(errorCode);
         }
         if (!securityAuthentication.checkUser(securityUser)) {
-            throw new EasyException("用户检查不通过");
+            throw new EasyException(BusCode.A00036);
         }
         SecuritySession init = new SecuritySession().init(securityUser);
         saveSession(init);

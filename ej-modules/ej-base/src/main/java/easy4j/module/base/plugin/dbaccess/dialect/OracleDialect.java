@@ -17,6 +17,7 @@ package easy4j.module.base.plugin.dbaccess.dialect;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.plugin.dbaccess.Page;
 import easy4j.module.base.plugin.dbaccess.helper.OracleTypeConverter;
@@ -65,9 +66,9 @@ public class OracleDialect extends AbstractDialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) throws SQLException {
+    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
         if (recordList.isEmpty()) {
-            throw new SQLException("recordList is empty!");
+            throw new EasyException("recordList is empty!");
         }
         // 单条不走批量
         if (recordList.size() == 1) {
@@ -114,6 +115,11 @@ public class OracleDialect extends AbstractDialect {
             stringBuilder.append(insSql);
         }
         stringBuilder.append(")");
-        return connection.prepareStatement(stringBuilder.toString());
+        String string = stringBuilder.toString();
+        try {
+            return connection.prepareStatement(string);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("psForBatchInsert", string, e);
+        }
     }
 }

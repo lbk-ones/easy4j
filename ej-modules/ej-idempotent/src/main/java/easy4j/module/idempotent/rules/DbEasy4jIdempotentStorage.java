@@ -10,6 +10,7 @@ import easy4j.module.base.utils.SysLog;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -98,10 +99,8 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
             easy4jKeyIdempotent.setExpireDate(da);
             dbAccess.saveOne(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
             cache.add(easy4jKeyIdempotent);
-        } catch (SQLIntegrityConstraintViolationException e) {
+        } catch (DuplicateKeyException e) {
             return false;
-        } catch (SQLException e) {
-            return true;
         }
         return true;
     }
@@ -109,11 +108,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
     @Override
     public void releaseLock(String key) {
         if (StrUtil.isEmpty(key)) return;
-        try {
-            dbAccess.deleteByPrimaryKey(key, Easy4jKeyIdempotent.class);
-            cache.removeIf(e -> e.getIdeKey().equals(key));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        dbAccess.deleteByPrimaryKey(key, Easy4jKeyIdempotent.class);
+        cache.removeIf(e -> e.getIdeKey().equals(key));
     }
 }

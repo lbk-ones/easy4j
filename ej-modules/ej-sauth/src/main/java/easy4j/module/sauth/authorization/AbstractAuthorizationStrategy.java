@@ -12,8 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Set;
 
-public abstract class AbstractAuthorizationStrategy implements AuthorizationStrategy {
+public abstract class AbstractAuthorizationStrategy implements SecurityAuthorization {
 
+
+    @Override
+    public Set<SecurityAuthority> getAuthorizationByUsername(String userName) {
+        return null;
+    }
 
     @Override
     public boolean checkMethod(HandlerMethod handlerMethod) {

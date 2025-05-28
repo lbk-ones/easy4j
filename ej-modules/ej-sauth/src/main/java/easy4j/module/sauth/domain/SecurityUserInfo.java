@@ -51,6 +51,16 @@ public class SecurityUserInfo {
     private String usernameEn;
 
     /**
+     * 当前部门代码
+     */
+    private String deptCode;
+
+    /**
+     * 当前部门名称
+     */
+    private String deptName;
+
+    /**
      * 昵称
      */
     private String nickName;
@@ -99,12 +109,8 @@ public class SecurityUserInfo {
     private Map<String, Object> extMap;
 
     /**
-     * 错误代码
-     */
-    private String errorCode;
-    /**
      * 错误信息
      */
-    private String errorMsg;
+    private String errorCode;
 
 }

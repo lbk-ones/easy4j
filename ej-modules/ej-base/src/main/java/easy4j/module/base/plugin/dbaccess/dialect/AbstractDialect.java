@@ -5,8 +5,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
 import cn.hutool.db.sql.Wrapper;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.Page;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
 
@@ -48,11 +48,11 @@ public class AbstractDialect implements Dialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) throws SQLException {
+    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
         return preparedBatchInsertAnsi(tableName, columns, recordList, connection);
     }
 
-    private PreparedStatement preparedBatchInsertAnsi(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) throws SQLException {
+    private PreparedStatement preparedBatchInsertAnsi(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
         StringBuilder stringBuilder = new StringBuilder("insert into");
         stringBuilder.append(" ");
         stringBuilder.append(tableName);
@@ -83,32 +83,37 @@ public class AbstractDialect implements Dialect {
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         String string = stringBuilder.toString();
         String trim = StrUtil.trim(string);
-        PreparedStatement preparedStatement = connection.prepareStatement(trim);
-        StatementUtil.fillParams(preparedStatement, objects);
-        return preparedStatement;
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(trim);
+            StatementUtil.fillParams(preparedStatement, objects);
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("preparedBatchInsertAnsi", trim, e);
+        }
+
     }
 
     // 单个添加
     @Override
-    public PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection) throws SQLException {
+    public PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection) {
         List<Map<String, Object>> list = new ArrayList<>();
         list.add(record);
         return preparedBatchInsertAnsi(tableName, columns, list, connection);
     }
 
     @Override
-    public PreparedStatement psForUpdateById(String tableName, Object recordList, Class<?> aClass, boolean ignoreNull, Connection connection) throws SQLException {
+    public PreparedStatement psForUpdateById(String tableName, Object recordList, Class<?> aClass, boolean ignoreNull, Connection connection) {
         return null;
     }
 
     // 单个跟新
     @Override
-    public PreparedStatement psForUpdateBy(String tableName, Map<String, Object> recordList, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) throws SQLException {
+    public PreparedStatement psForUpdateBy(String tableName, Map<String, Object> recordList, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
 
         return psForUpdateByCondition(tableName, recordList, updateCondition, ignoreNull, connection);
     }
 
-    private PreparedStatement psForUpdateByCondition(String tableName, Map<String, Object> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) throws SQLException {
+    private PreparedStatement psForUpdateByCondition(String tableName, Map<String, Object> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
         StringBuilder stringBuilder = new StringBuilder("update");
         stringBuilder.append(" ");
         stringBuilder.append(tableName);
@@ -133,9 +138,9 @@ public class AbstractDialect implements Dialect {
         return preparedStatement(updateCondition, connection, stringBuilder, objects, nameList);
     }
 
-    private void unionWhere(Map<String, Object> updateCondition, StringBuilder stringBuilder, List<Object> objects) throws SQLException {
+    private void unionWhere(Map<String, Object> updateCondition, StringBuilder stringBuilder, List<Object> objects) {
         if (updateCondition.isEmpty() || updateCondition.values().stream().allMatch(ObjectUtil::isEmpty)) {
-            throw new SQLException("update condition is empty , refuse update!");
+            throw new EasyException("update condition is empty , refuse update!");
         }
         stringBuilder.append(" where ");
         stringBuilder.append(getSelectByMap(updateCondition, objects, getWrapper(), true));
@@ -167,9 +172,9 @@ public class AbstractDialect implements Dialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) throws SQLException {
+    public PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
         if (recordList.isEmpty()) {
-            throw new SQLException("No recordList need to be updated!");
+            throw new EasyException("No recordList need to be updated!");
         }
         // 单条不走批量
         if (recordList.size() == 1) {
@@ -221,17 +226,22 @@ public class AbstractDialect implements Dialect {
             segmentList.add(StrUtil.trim(var0.toString()));
         }
         if (CollUtil.isEmpty(segmentList)) {
-            throw new SQLException("No columns need to be updated!");
+            throw new EasyException("No columns need to be updated!");
         }
         return preparedStatement(updateCondition, connection, stringBuilder, objects, segmentList);
     }
 
-    private PreparedStatement preparedStatement(Map<String, Object> updateCondition, Connection connection, StringBuilder stringBuilder, List<Object> objects, List<String> segmentList) throws SQLException {
+    private PreparedStatement preparedStatement(Map<String, Object> updateCondition, Connection connection, StringBuilder stringBuilder, List<Object> objects, List<String> segmentList) {
         stringBuilder.append(String.join(",", segmentList));
         unionWhere(updateCondition, stringBuilder, objects);
         String string = StrUtil.trim(stringBuilder.toString());
-        PreparedStatement preparedStatement = connection.prepareStatement(string);
-        StatementUtil.fillParams(preparedStatement, objects);
-        return preparedStatement;
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(string);
+            StatementUtil.fillParams(preparedStatement, objects);
+            return preparedStatement;
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("prepareStatement", string, e);
+        }
+
     }
 }

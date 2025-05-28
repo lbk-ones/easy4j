@@ -2,6 +2,7 @@ package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.utils.BusCode;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.core.StandardResolve;
@@ -37,24 +38,24 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
     public SecurityUserInfo verifyLoginAuthentication(SecurityUserInfo user) {
         if (null == user) {
             SecurityUserInfo securityUserInfo = new SecurityUserInfo();
-            securityUserInfo.setErrorMsg("用户信息不能为null");
+            securityUserInfo.setErrorCode(BusCode.A00004 + ",user");
             return securityUserInfo;
         }
         HttpServletRequest servletRequest = getServletRequest();
         String method = servletRequest.getMethod();
         if ("POST".equalsIgnoreCase(method)) {
-            user.setErrorMsg("请使用POST方式提交");
+            user.setErrorCode(BusCode.A00030);
             return user;
         }
         String username = user.getUsername();
         String password = user.getPassword();
         if (StrUtil.isBlank(username)) {
-            user.setErrorMsg("用户名不能为空");
+            user.setErrorCode(BusCode.A00031);
             return user;
         }
         boolean isSkip = user.isSkipPassword();
         if (StrUtil.isBlank(password) && !isSkip) {
-            user.setErrorMsg("密码不能为空");
+            user.setErrorCode(BusCode.A00032);
             return user;
         }
         SecurityUserInfo userByUserName = getUserByUserName(username);
@@ -65,10 +66,9 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         if (!isSkip) {
             String encryptPwd = getEncryptionService().encrypt(password, user);
             if (StrUtil.equals(encryptPwd, userByUserName.getPassword())) {
-                user.setErrorMsg("认证成功");
                 return userByUserName;
             } else {
-                user.setErrorMsg("认证失败");
+                user.setErrorCode(BusCode.A00033);
             }
         }
 
@@ -103,11 +103,11 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         SessionStrategy securitySession = getSessionStrategy();
         SecuritySession session = securitySession.getSession(token);
         if (session == null) {
-            securityUserInfo.setErrorMsg("鉴权失败，非法token");
+            securityUserInfo.setErrorCode(BusCode.A00034);
             return securityUserInfo;
         }
         if (session.isNotExpired()) {
-            securityUserInfo.setErrorMsg("token过期");
+            securityUserInfo.setErrorCode(BusCode.A00035);
             return securityUserInfo;
         }
         securityUserInfo = sessionToSecurityUserInfo(session);

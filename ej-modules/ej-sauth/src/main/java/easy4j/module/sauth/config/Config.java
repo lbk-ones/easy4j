@@ -2,11 +2,13 @@ package easy4j.module.sauth.config;
 
 
 import easy4j.module.base.module.Module;
+import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
@@ -14,9 +16,11 @@ import easy4j.module.sauth.core.DefaultEncryptionService;
 import easy4j.module.sauth.core.Easy4jSecurityService;
 import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.core.SecurityService;
+import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.filter.Easy4jSecurityFilterInterceptor;
 import easy4j.module.sauth.filter.FilterConfig;
 import easy4j.module.sauth.session.DbSessionStrategy;
+import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,7 +37,7 @@ public class Config implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        log.info(SysLog.compact("初始化sauth模块成功"));
+        log.info(SysLog.compact("sauth module inited "));
 
     }
 
@@ -44,16 +48,20 @@ public class Config implements InitializingBean {
     }
 
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(SessionStrategy.class)
     public SessionStrategy sessionStrategy() {
-        return new DbSessionStrategy();
+        String property = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_STORAGE_TYPE);
+        if (SecuritySessionType.DB.name().equalsIgnoreCase(property)) {
+            return new DbSessionStrategy();
+        } else {
+            return new RedisSessionStrategy();
+        }
     }
 
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnMissingBean(AuthorizationStrategy.class)
-    public AuthorizationStrategy authorizationStrategy() {
+    @ConditionalOnMissingBean(SecurityAuthorization.class)
+    public SecurityAuthorization authorizationStrategy() {
         return new DefaultAuthorizationStrategy();
     }
 
@@ -64,7 +72,8 @@ public class Config implements InitializingBean {
         return new Easy4jSecurityService(
                 securityAuthentication(),
                 sessionStrategy(),
-                authorizationStrategy()
+                authorizationStrategy(),
+                securityContext()
         );
     }
 

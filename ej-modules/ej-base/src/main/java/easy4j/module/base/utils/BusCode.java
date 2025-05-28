@@ -19,11 +19,11 @@ public class BusCode {
     public static final String A00002 = "A00002";
     @Desc("系统错误")
     public static final String A00003 = "A00003";
-    @Desc("带错误信息的系统错误")
+    @Desc("系统错误 {0}")
     public static final String A000031 = "A000031";
-    @Desc("参数不能为空")
+    @Desc("参数{0}不能为空")
     public static final String A00004 = "A00004";
-    @Desc("HTTP请求参数异常")
+    @Desc("HTTP请求参数异常,{0}")
     public static final String A00005 = "A00005";
     @Desc("接口不接受当前的ContentType请求")
     public static final String A00006 = "A00006";
@@ -78,4 +78,33 @@ public class BusCode {
 
     @Desc("未知限流降级")
     public static final String A00028 = "A00028";
+
+    @Desc("缺少请求头{0}")
+    public static final String A00029 = "A00029";
+
+    @Desc("请使用POST方式提交")
+    public static final String A00030 = "A00030";
+
+    @Desc("用户名不能为空")
+    public static final String A00031 = "A00031";
+    @Desc("密码不能为空")
+    public static final String A00032 = "A00032";
+
+    @Desc("认证失败")
+    public static final String A00033 = "A00033";
+
+    @Desc("鉴权失败，非法token")
+    public static final String A00034 = "A00034";
+
+    @Desc("会话过期")
+    public static final String A00035 = "A00035";
+
+    @Desc("用户检查未通过")
+    public static final String A00036 = "A00036";
+
+    @Desc("用户不存在")
+    public static final String A00037 = "A00037";
+
+    @Desc("SQL条件不能为空")
+    public static final String A00038 = "A00038";
 }

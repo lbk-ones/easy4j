@@ -2,7 +2,7 @@ package easy4j.module.sauth.core;
 
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Sets;
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
@@ -11,13 +11,13 @@ import java.util.Set;
 
 public abstract class StandardResolve {
 
-    public abstract AuthorizationStrategy getAuthorizationStrategy();
+    public abstract SecurityAuthorization getAuthorizationStrategy();
 
 
     public SecurityUserInfo sessionToSecurityUserInfo(SecuritySession session) {
         String userName = session.getUserName();
         SecurityUserInfo securityUser = new SecurityUserInfo();
-        AuthorizationStrategy authorizationStrategy = getAuthorizationStrategy();
+        SecurityAuthorization authorizationStrategy = getAuthorizationStrategy();
         if (null != authorizationStrategy) {
             Set<SecurityAuthority> authorizationByUsername = authorizationStrategy.getAuthorizationByUsername(userName);
             securityUser.setAuthorities(CollUtil.isEmpty(authorizationByUsername) ? Sets.newHashSet() : authorizationByUsername);

@@ -1,6 +1,6 @@
 package easy4j.module.sauth.authentication;
 
-import easy4j.module.sauth.authorization.AuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.domain.SecurityUserInfo;
@@ -8,7 +8,7 @@ import easy4j.module.sauth.session.SessionStrategy;
 
 public class DefaultSecurityAuthentication extends AbstractSecurityAuthentication {
 
-    AuthorizationStrategy authorizationStrategy;
+    SecurityAuthorization authorizationStrategy;
 
     EncryptionService encryptionService;
 
@@ -17,7 +17,7 @@ public class DefaultSecurityAuthentication extends AbstractSecurityAuthenticatio
 
     SecurityContext securityContext;
 
-    public DefaultSecurityAuthentication(AuthorizationStrategy authorizationStrategy, EncryptionService encryptionService, SessionStrategy sessionStrategy, SecurityContext securityContext) {
+    public DefaultSecurityAuthentication(SecurityAuthorization authorizationStrategy, EncryptionService encryptionService, SessionStrategy sessionStrategy, SecurityContext securityContext) {
         this.authorizationStrategy = authorizationStrategy;
         this.encryptionService = encryptionService;
         this.sessionStrategy = sessionStrategy;
@@ -25,7 +25,7 @@ public class DefaultSecurityAuthentication extends AbstractSecurityAuthenticatio
     }
 
     @Override
-    public AuthorizationStrategy getAuthorizationStrategy() {
+    public SecurityAuthorization getAuthorizationStrategy() {
         return authorizationStrategy;
     }
 

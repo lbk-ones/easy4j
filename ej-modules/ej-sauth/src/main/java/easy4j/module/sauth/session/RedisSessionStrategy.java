@@ -15,8 +15,9 @@ public class RedisSessionStrategy extends AbstractSessionStrategy {
     }
 
     @Override
-    public SecuritySession deleteSession(String token) {
-        return null;
+    public void deleteSession(String token) {
+
+
     }
 
 

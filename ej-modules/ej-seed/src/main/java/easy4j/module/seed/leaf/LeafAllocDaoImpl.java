@@ -35,21 +35,13 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     private LeafAllocDomain getByBizTag(String bizTag) {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
         leafAllocDomain.setBIZ_TAG(bizTag);
-        try {
-            return dbaccess.getObjectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return dbaccess.getObjectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
 
     }
 
 
     public List<String> getAllTags() {
-        try {
-            return ListTs.mapListStr(dbaccess.getAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return ListTs.mapListStr(dbaccess.getAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -57,11 +49,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public LeafAllocDomain updateMaxIdAndGetLeafAlloc(String bizTag) {
         LeafAllocDomain domain = getByBizTag(bizTag);
         domain.setMAX_ID(domain.getMAX_ID() + domain.getSTEP());
-        try {
-            return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -73,11 +61,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
         long maxId = domain.getSTEP() + domain.getMAX_ID();
         leafAllocDomain.setMAX_ID(maxId);
         leafAllocDomain.setUPDATE_TIME(new Date());
-        try {
-            return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
     }
 
 

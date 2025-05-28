@@ -10,7 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Set;
 
-public interface AuthorizationStrategy {
+/**
+ * 授权相关
+ */
+public interface SecurityAuthorization {
 
     /**
      * 根据方法来拦截是否该过

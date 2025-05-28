@@ -3,16 +3,19 @@ package easy4j.module.base.plugin.dbaccess;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import com.google.common.collect.Maps;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
+import easy4j.module.base.utils.BusCode;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -55,10 +58,11 @@ public abstract class AbstractDBAccess implements DBAccess {
     protected static final String BATCH_UPDATE = "BATCH_UPDATE";
     protected static final String DELETE = "DELETE";
 
-    public String getTableName(Class<?> clazz, Dialect dialect) throws SQLException {
+
+    public String getTableName(Class<?> clazz, Dialect dialect) {
         StringBuilder sb = new StringBuilder();
         if (dialect == null) {
-            dialect = JdbcHelper.getDialect(getConnection());
+            dialect = getDialect(getConnection());
         }
         assert dialect != null;
         Wrapper wrapper = dialect.getWrapper();
@@ -252,8 +256,8 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @return
      * @throws SQLException
      */
-    public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError) throws SQLException {
-        Dialect dialect = JdbcHelper.getDialect(getConnection());
+    public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError) {
+        Dialect dialect = getDialect(getConnection());
         assert dialect != null;
         Wrapper wrapper = dialect.getWrapper();
 
@@ -271,7 +275,7 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @return
      * @throws SQLException
      */
-    public static String getSelectByMap(Map<String, Object> recordMap, List<Object> _newArgsList, Wrapper wrapper, boolean isThrowError) throws SQLException {
+    public static String getSelectByMap(Map<String, Object> recordMap, List<Object> _newArgsList, Wrapper wrapper, boolean isThrowError) {
         Set<String> keySet = recordMap.keySet();
         List<Object> newArgsList = _newArgsList == null ? ListTs.newArrayList() : _newArgsList;
         String collect = keySet.stream().map(e -> {
@@ -315,7 +319,7 @@ public abstract class AbstractDBAccess implements DBAccess {
                 .filter(e -> !StrUtil.isEmpty(e))
                 .collect(Collectors.joining(" and "));
         if (StrUtil.isBlank(StrUtil.trim(collect)) && isThrowError) {
-            throw new SQLException("Incomplete SQL where conditions");
+            throw new EasyException("Incomplete SQL where conditions");
         }
         return collect;
     }
@@ -329,7 +333,7 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @return
      * @throws SQLException
      */
-    public <T> int saveListByBean(List<T> object, Class<T> aClass) throws SQLException {
+    public <T> int saveListByBean(List<T> object, Class<T> aClass) {
         if (ObjectUtil.isEmpty(object) || Object.class.getName().equals(object.getClass().getName()) || ObjectUtil.isEmpty(aClass)) {
             return 0;
         }
@@ -337,16 +341,21 @@ public abstract class AbstractDBAccess implements DBAccess {
         Dialect dialect = getDialect(connection);
         assert dialect != null;
         List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
-        PreparedStatement batchInsertSql = dialect.psForBatchInsert(
-                getTableName(aClass, dialect),
-                getColumns(aClass, SAVE).toArray(new String[]{}),
-                collect, connection
-        );
+        PreparedStatement batchInsertSql = null;
         try {
+            batchInsertSql = dialect.psForBatchInsert(
+                    getTableName(aClass, dialect),
+                    getColumns(aClass, SAVE).toArray(new String[]{}),
+                    collect, connection
+            );
             return batchInsertSql.executeUpdate();
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("saveListByBean", null, e);
+
         } finally {
-            DbUtils.close(batchInsertSql);
+            JdbcHelper.close(batchInsertSql);
         }
+
     }
 
     /**
@@ -361,7 +370,7 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @return
      * @throws SQLException
      */
-    public <T> int updateListByBean(List<T> object, List<String> columns, Map<String, Object> updateCondition, boolean updateIgnoreNull, Class<T> aClass) throws SQLException {
+    public <T> int updateListByBean(List<T> object, List<String> columns, Map<String, Object> updateCondition, boolean updateIgnoreNull, Class<T> aClass) {
         if (ObjectUtil.isEmpty(object) || ObjectUtil.isEmpty(aClass)) {
             return 0;
         }
@@ -374,20 +383,24 @@ public abstract class AbstractDBAccess implements DBAccess {
         if (CollUtil.isEmpty(columns)) {
             columns = getColumns(aClass, UPDATE);
         }
-        PreparedStatement batchInsertSql = dialect.psForBatchUpdate(
-                getTableName(aClass, dialect),
-                columns.toArray(new String[]{}),
-                collect, updateCondition, updateIgnoreNull, connection
-        );
+        PreparedStatement batchInsertSql = null;
         try {
+            batchInsertSql = dialect.psForBatchUpdate(
+                    getTableName(aClass, dialect),
+                    columns.toArray(new String[]{}),
+                    collect, updateCondition, updateIgnoreNull, connection
+            );
+
             return batchInsertSql.executeUpdate();
+        } catch (SQLException sqlException) {
+            throw JdbcHelper.translateSqlException("updateListByBean", null, sqlException);
         } finally {
-            DbUtils.close(batchInsertSql);
+            JdbcHelper.close(batchInsertSql);
         }
 
     }
 
-    public abstract int saveOrUpdate(Map<String, Object> map) throws SQLException;
+    public abstract int saveOrUpdate(Map<String, Object> map);
 
 
     /**
@@ -397,7 +410,7 @@ public abstract class AbstractDBAccess implements DBAccess {
      * @param args 参数数组
      * @return 总记录数
      */
-    protected abstract Object queryCount(String sql, Object... args) throws SQLException;
+    protected abstract Object queryCount(String sql, Object... args);
 
     public Map<String, Object> buildMap(String sql, String su, Object[] args) {
         Map<String, Object> pMap = Maps.newHashMap();
@@ -413,19 +426,19 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> int saveOne(T record, Class<T> aClass) throws SQLException {
+    public <T> int saveOne(T record, Class<T> aClass) {
         return saveListByBean(ListTs.singletonList(record), aClass);
     }
 
     @Override
-    public <T> int saveList(List<T> record, Class<T> aClass) throws SQLException {
+    public <T> int saveList(List<T> record, Class<T> aClass) {
         return saveListByBean(record, aClass);
     }
 
-    public <T> List<Object> getIdValue(T record, Class<T> aclass) throws SQLException {
+    public <T> List<Object> getIdValue(T record, Class<T> aclass) {
         List<String> idNames = this.getIdNames(aclass);
         if (idNames.isEmpty()) {
-            throw new SQLException("There must be a primary key");
+            throw new EasyException("There must be a primary key");
         }
         List<Object> newArgsList = ListTs.newLinkedList();
         for (String idName : idNames) {
@@ -439,7 +452,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> T updateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException {
+    public <T> T updateByPrimaryKey(T beanObject, Class<T> aClass) {
         Map<String, Object> idMap = getIdMap(beanObject);
         int i = updateListByBean(ListTs.singletonList(beanObject), null, idMap, false, aClass);
         if (i > 0) {
@@ -450,7 +463,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException {
+    public <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass) {
         T objectByPrimaryKey = getObjectByPrimaryKey(beanObject, aClass);
         if (Objects.nonNull(objectByPrimaryKey)) {
             Map<String, Object> idMap = getIdMap(beanObject);
@@ -461,7 +474,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass) throws SQLException {
+    public <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass) {
         Map<String, Object> idMap = getIdMap(logRecord);
         int i = updateListByBean(ListTs.singletonList(logRecord), null, idMap, true, aClass);
         if (i > 0) {
@@ -472,19 +485,19 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> int updateListByPrimaryKey(List<T> objectList, Class<T> aClass) throws SQLException {
+    public <T> int updateListByPrimaryKey(List<T> objectList, Class<T> aClass) {
         Map<String, Object> idMap = getIdMap(objectList);
         return updateListByBean(objectList, null, idMap, false, aClass);
     }
 
     @Override
-    public <T> int updateListByPrimaryKeySelective(List<T> objectList, Class<T> tClass) throws SQLException {
+    public <T> int updateListByPrimaryKeySelective(List<T> objectList, Class<T> tClass) {
         Map<String, Object> idMap = getIdMap(objectList);
         return updateListByBean(objectList, null, idMap, true, tClass);
     }
 
     // 分页查询实现
-    public <T> List<T> getObjectListByPage(Page<T> page, QueryFilter filter, Class<T> clazz, String sql, Object... args) throws SQLException {
+    public <T> List<T> getObjectListByPage(Page<T> page, QueryFilter filter, Class<T> clazz, String sql, Object... args) {
         String orderby = JdbcHelper.buildPageOrder(filter.getOrder(), filter.getOrderBy());
         String querySQL = sql + orderby;
         if (page == null) {
@@ -517,7 +530,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> T getObjectByPrimaryKey(Object arg, Class<T> clazz) throws SQLException {
+    public <T> T getObjectByPrimaryKey(Object arg, Class<T> clazz) {
         List<T> objectByIdList = getObjectByPrimaryKeys(ListTs.asList(arg), clazz);
         if (ListTs.isEmpty(objectByIdList)) {
             return null;
@@ -527,23 +540,23 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> List<T> getAll(Class<T> clazz) throws SQLException {
+    public <T> List<T> getAll(Class<T> clazz) {
         String tableName = this.getTableName(clazz, null);
         return getObjectList("select * from " + tableName, clazz);
     }
 
     @Override
-    public <T> int deleteAll(Class<T> workIpClass) throws SQLException {
+    public <T> int deleteAll(Class<T> tClass) {
 
-        String tableName = this.getTableName(workIpClass, null);
+        String tableName = this.getTableName(tClass, null);
         String sql = "delete from " + tableName;
         Map<String, Object> stringObjectMap = buildMap(sql, DELETE, null);
         return this.saveOrUpdate(stringObjectMap);
     }
 
     @Override
-    public <T> int deleteByPrimaryKey(Object object, Class<T> easy4jKeyIdempotentClass) throws SQLException {
-        String tableName = this.getTableName(easy4jKeyIdempotentClass, null);
+    public <T> int deleteByPrimaryKey(Object object, Class<T> tClass) {
+        String tableName = this.getTableName(tClass, null);
         Map<String, Object> idMap = this.getIdMap(object);
         List<Object> args = ListTs.newLinkedList();
         String sqlByObject = this.getSqlByObject(idMap, args, true);
@@ -553,18 +566,49 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> List<T> getObjectBy(T recordData, Class<T> localMessageClass) throws SQLException {
+    public <T> int deleteByMap(Dict dict, Class<T> tClass) {
+        if (dict.isEmpty()) {
+            throw new EasyException(BusCode.A00038);
+        }
+        String tableName = this.getTableName(tClass, null);
+        List<Object> args = ListTs.newLinkedList();
+        String sqlByObject = this.getSqlByObject(dict, args, true);
+        String sql = "delete from " + tableName + " where " + sqlByObject;
+        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, args.toArray(new Object[]{}));
+        return this.saveOrUpdate(stringObjectMap);
+    }
 
-        String tableName = this.getTableName(localMessageClass, null);
+    @Override
+    public <T> List<T> getObjectBy(T recordData, Class<T> tClass) {
+
+        String tableName = this.getTableName(tClass, null);
         Map<String, Object> paramMap = castBeanMap(recordData, true, false);
         List<Object> args = ListTs.newLinkedList();
         String sqlByObject = this.getSqlByObject(paramMap, args, true);
         String sql = "select * from " + tableName + " where " + sqlByObject;
-        return this.getObjectList(sql, localMessageClass, args.toArray(new Object[]{}));
+        return this.getObjectList(sql, tClass, args.toArray(new Object[]{}));
     }
 
     @Override
-    public long countBy(Object object) throws SQLException {
+    public <T> List<T> getObjectByMap(Dict params, Class<T> tClass) {
+        String tableName = this.getTableName(tClass, null);
+        List<Object> args = ListTs.newLinkedList();
+        String sqlByObject = this.getSqlByObject(params, args, true);
+        String sql = "select * from " + tableName + " where " + sqlByObject;
+        return this.getObjectList(sql, tClass, args.toArray(new Object[]{}));
+    }
+
+    @Override
+    public <T> T getObjectOneByMap(Dict dict, Class<T> tClass) {
+        String tableName = this.getTableName(tClass, null);
+        List<Object> args = ListTs.newLinkedList();
+        String sqlByObject = this.getSqlByObject(dict, args, true);
+        String sql = "select * from " + tableName + " where " + sqlByObject;
+        return ListTs.get(this.getObjectList(sql, tClass, args.toArray(new Object[]{})), 0);
+    }
+
+    @Override
+    public long countBy(Object object) {
         Class<?> aClass1 = object.getClass();
         String tableName = getTableName(aClass1, null);
         if (StrUtil.isNotBlank(tableName)) {
@@ -583,23 +627,23 @@ public abstract class AbstractDBAccess implements DBAccess {
 
 
     @Override
-    public <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz) throws SQLException {
+    public <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz) {
         if (args.isEmpty()) {
-            throw new SQLException("id list is empty");
+            throw new EasyException("id list is empty");
         } else {
             if (!BeanUtil.isBean(clazz)) {
-                throw new SQLException("Please pass in the bytecode object of the java bean");
+                throw new EasyException("Please pass in the bytecode object of the java bean");
             }
             List<String> idNames = this.getIdNames(clazz);
             if (idNames.size() > 1) {
-                throw new SQLException("There can only be one primary key");
+                throw new EasyException("There can only be one primary key");
             } else if (idNames.isEmpty()) {
-                throw new SQLException("There must be a primary key");
+                throw new EasyException("There must be a primary key");
             }
             String s = idNames.get(0);
             Map<String, Object> idMap = Maps.newHashMap();
             idMap.put(s, args);
-            Dialect dialect = JdbcHelper.getDialect(getConnection());
+            Dialect dialect = getDialect(getConnection());
             assert dialect != null;
             String sql = "select * from " + getTableName(clazz, null) + " where ";
             List<Object> newArgsList = ListTs.newLinkedList();
