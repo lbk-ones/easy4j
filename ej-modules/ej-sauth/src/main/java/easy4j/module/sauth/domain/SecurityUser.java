@@ -1,7 +1,6 @@
 package easy4j.module.sauth.domain;
 
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import lombok.Data;
 
@@ -15,7 +14,7 @@ public class SecurityUser {
      * userId 长号 (主键)
      */
     @JdbcColumn(isPrimaryKey = true)
-    long userId;
+    private long userId;
 
     /**
      * 用户名 短号 唯一索引 IDX_SYS_SECURITY_USER_USERNAME
@@ -68,7 +67,7 @@ public class SecurityUser {
     /**
      * 加密随机数
      */
-    private String shalt;
+    private String pwdSalt;
 
 
     /**

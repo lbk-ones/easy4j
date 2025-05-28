@@ -1,7 +1,7 @@
 package easy4j.module.security.core;
 
+import easy4j.module.sauth.authorization.AuthorizationStrategy;
 import easy4j.module.sauth.core.AbstractSecurityService;
-import easy4j.module.sauth.core.SecurityService;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,15 @@ public class SpringSecurityService extends AbstractSecurityService {
 
     @Autowired
     SessionStrategy sessionStrategy;
+
+
+    @Autowired
+    AuthorizationStrategy authorizationStrategy;
+
+    @Override
+    public AuthorizationStrategy getAuthorizationStrategy() {
+        return authorizationStrategy;
+    }
 
     @Override
     public SessionStrategy getSessionStrategy() {

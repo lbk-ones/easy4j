@@ -1,6 +1,5 @@
 package easy4j.module.sauth.domain;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
@@ -9,28 +8,40 @@ import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.starter.Easy4j;
+import easy4j.module.seed.CommonKey;
 import lombok.Data;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 
 @Data
 @JdbcTable(name = "sys_security_session")
 public class SecuritySession {
 
     /**
-     * 主键ID  索引 IDX_SYS_SECURITY_SESSION_ID
+     * 主键ID
      */
     @JdbcColumn(isPrimaryKey = true)
     private long id;
 
     /**
-     * 用户ID 索引 IDX_SYS_SECURITY_SESSION_USER_ID
+     * 用户名 索引 IDX_SYS_SECURITY_SESSION_USER_NAME
      */
     private String userName;
 
+    /**
+     * 用户ID(长) 索引 IDX_SYS_SECURITY_SESSION_USER_ID
+     */
+    private long userId;
+
     private String userNameCn;
     private String userNameEn;
+
+    /**
+     * 昵称
+     */
+    private String nickName;
 
     /**
      * jwt加密之后的短token
@@ -79,6 +90,12 @@ public class SecuritySession {
      */
     private int expireTimeSeconds;
 
+    /**
+     * 额外信息 存入 长文本 json 字符串
+     */
+    @JdbcColumn(toJson = true)
+    private Map<String, Object> extMap;
+
 
     /**
      * 校验是否被篡改
@@ -91,7 +108,7 @@ public class SecuritySession {
 
     public String getShaToken() {
         if (StrUtil.hasBlank(this.jwtToken, this.salt)) return "";
-        return DigestUtil.sha1Hex(DigestUtil.sha1Hex(jwtToken + this.salt), this.salt);
+        return DigestUtil.sha1Hex(jwtToken + this.salt);
     }
 
     public boolean isNotExpired() {
@@ -113,8 +130,8 @@ public class SecuritySession {
     public SecuritySession init(SecurityUserInfo securityUser) {
         String username = securityUser.getUsername();
         String usernameCn = securityUser.getUsernameCn();
-        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-        String signatureSecret = ejSysProperties.getSignatureSecret();
+        String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
+        String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
         this.jwtToken = JWT.create()
                 .setPayload("un", username)
                 .setPayload("cn", usernameCn)
@@ -127,7 +144,8 @@ public class SecuritySession {
         this.loginDateTime = new Date();
         this.isInvalid = 1;
         this.userName = securityUser.getUsername();
-        this.id = IdUtil.getSnowflakeNextId();
+        this.userId = securityUser.getUserId();
+        this.id = CommonKey.gennerLong();
 
         return this;
     }

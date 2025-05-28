@@ -1,9 +1,15 @@
 package easy4j.module.base.starter;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.map.multi.CollectionValueMap;
+import cn.hutool.core.lang.func.Func1;
+import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import easy4j.module.base.context.DefaultEasy4jContext;
+import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.enums.DbType;
 import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.SP;
@@ -13,10 +19,14 @@ import jodd.util.StringPool;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.properties.bind.*;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.*;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -48,7 +58,7 @@ public class Easy4j implements ApplicationContextAware {
 
     public static String mainClassPath = "";
     public static Class<?> mainClass;
-    public final static Map<String,AtomicBoolean> isInitPreLoadApplication = Maps.newHashMap();
+    public final static Map<String, AtomicBoolean> isInitPreLoadApplication = Maps.newHashMap();
 
 
     @Getter
@@ -56,6 +66,18 @@ public class Easy4j implements ApplicationContextAware {
 
     @Getter
     private static final EjSysProperties defaultEjSysProperties = new EjSysProperties();
+    private static final Map<String, Object> defaultMap = new HashMap<>();
+
+
+    // 提取初始值 不想去用反射拿影响性能
+    static {
+        Map<String, Object> stringObjectMap = BeanUtil.beanToMap(defaultEjSysProperties, true, false);
+        for (String key : stringObjectMap.keySet()) {
+            Object o = stringObjectMap.get(key);
+            String s = SysConstant.PARAM_PREFIX + StringPool.DOT + key.replaceAll(StringPool.UNDERSCORE, StringPool.DASH);
+            defaultMap.put(s, o);
+        }
+    }
 
 
     @Override
@@ -64,10 +86,20 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static String getProperty(String name) {
-        String property = environment.getProperty(name);
-        if (StrUtil.isBlank(property)) {
+        return getProperty(name, String.class);
+    }
+
+    public static <T> T getProperty(String name, Class<T> aclass) {
+        T property = environment.getProperty(name, aclass);
+        if (ObjectUtil.isEmpty(property)) {
             initExtProperties();
-            return extProperties.getProperty(name);
+            property = aclass.cast(extProperties.getProperty(name));
+        }
+        if (ObjectUtil.isEmpty(property) && name.startsWith(SysConstant.PARAM_PREFIX + StringPool.DOT)) {
+            Object orDefault = defaultMap.get(name);
+            if (null != orDefault) {
+                return aclass.cast(orDefault);
+            }
         }
         return property;
     }
@@ -156,7 +188,7 @@ public class Easy4j implements ApplicationContextAware {
                             serviceDesc = annotation3.serviceDesc();
                             h2ConsoleUsername = annotation3.h2ConsoleUsername();
                             h2ConsolePassword = annotation3.h2ConsolePassword();
-                        }else if (Objects.nonNull(annotation4)) {
+                        } else if (Objects.nonNull(annotation4)) {
                             serverName = annotation4.serverName();
                             serverPort = annotation4.serverPort();
                             ejDataSource = annotation4.ejDataSourceUrl();
@@ -206,17 +238,20 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     /**
-     * 获取系统参数
+     * 获取系统参数 系统启动阶段使用 最好不在下游服务调用 他是有一定消耗的
      *
      * @return
      */
     public static EjSysProperties getEjSysProperties() {
+        long begin = System.currentTimeMillis();
         Binder binder = Binder.get(environment);
         BindResult<EjSysProperties> easy4j = binder.bind(SysConstant.PARAM_PREFIX, EjSysProperties.class);
         try {
             return easy4j.get();
         } catch (Exception e) {
             return defaultEjSysProperties;
+        } finally {
+            System.out.println("绑定耗时:" + (System.currentTimeMillis() - begin));
         }
     }
 
@@ -227,7 +262,7 @@ public class Easy4j implements ApplicationContextAware {
 //
 //    }
 
-    public static String getEjSysPropertyName(Field field){
+    public static String getEjSysPropertyName(Field field) {
         int modifiers = field.getModifiers();
         if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
             return null;
@@ -237,6 +272,15 @@ public class Easy4j implements ApplicationContextAware {
         String lowerCase = underlineCase.toLowerCase();
         String s = lowerCase.replaceAll("_", "-");
         return SysConstant.PARAM_PREFIX + StringPool.DOT + s;
+    }
+
+    public static <T> String getEjSysPropertyName(Func1<T, ?> func) {
+        Field field = ReflectUtil.getField(EjSysProperties.class, LambdaUtil.getFieldName(func));
+        return getEjSysPropertyName(field);
+    }
+
+    public static Easy4jContext getContext() {
+        return DefaultEasy4jContext.getContext();
     }
 
 

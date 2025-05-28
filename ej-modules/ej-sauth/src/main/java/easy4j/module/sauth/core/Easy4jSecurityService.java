@@ -1,15 +1,17 @@
 package easy4j.module.sauth.core;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.sauth.domain.SecurityUser;
+import easy4j.module.base.plugin.i18n.I18nBean;
+import easy4j.module.sauth.authentication.SecurityAuthentication;
+import easy4j.module.sauth.authorization.AuthorizationStrategy;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -17,11 +19,20 @@ import java.util.concurrent.TimeUnit;
 
 public class Easy4jSecurityService extends AbstractSecurityService implements InitializingBean {
 
-    @Autowired
+
     SecurityAuthentication securityAuthentication;
 
-    @Autowired
+
     SessionStrategy sessionStrategy;
+
+
+    AuthorizationStrategy authorizationStrategy;
+
+    public Easy4jSecurityService(SecurityAuthentication securityAuthentication, SessionStrategy sessionStrategy, AuthorizationStrategy authorizationStrategy) {
+        this.securityAuthentication = securityAuthentication;
+        this.sessionStrategy = sessionStrategy;
+        this.authorizationStrategy = authorizationStrategy;
+    }
 
     private static DBAccess dbAccess;
 
@@ -42,6 +53,11 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
     }
 
     @Override
+    public AuthorizationStrategy getAuthorizationStrategy() {
+        return authorizationStrategy;
+    }
+
+    @Override
     public SecurityUserInfo getOnlineUser(String token) {
         return null;
     }
@@ -49,23 +65,22 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
 
     @Override
     public SecurityUserInfo login(SecurityUserInfo securityUser) {
-        if (!securityAuthentication.verifyAuthentication(securityUser)) {
-            throw new EasyException("权限认证异常");
+        SecurityUserInfo securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser);
+        String errorCode = securityUserInfo.getErrorCode();
+        if (StrUtil.isNotBlank(securityUserInfo.getErrorMsg()) || StrUtil.isNotBlank(errorCode)) {
+            String message = securityUserInfo.getErrorMsg();
+            if (StrUtil.isNotBlank(errorCode)) {
+                message = I18nBean.getMessage(errorCode);
+            }
+            throw new EasyException(message);
         }
         if (!securityAuthentication.checkUser(securityUser)) {
             throw new EasyException("用户检查不通过");
         }
-        SecurityUserInfo userByUserName = securityAuthentication.getUserByUserName(securityUser.getUsername());
-        if (userByUserName == null) {
-            throw new EasyException("用户不存在");
-        }
-
         SecuritySession init = new SecuritySession().init(securityUser);
-
         saveSession(init);
-
-        userByUserName.setPassword(null);
-        return null;
+        securityUserInfo.setPassword(null);
+        return securityUserInfo;
     }
 
     /**

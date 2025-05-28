@@ -14,6 +14,7 @@ import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
+import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 
@@ -21,7 +22,9 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,7 +76,7 @@ public abstract class AbstractDBAccess implements DBAccess {
         return sb.toString();
     }
 
-    public boolean skipColumn(Field field){
+    public boolean skipColumn(Field field) {
         int modifiers = field.getModifiers();
 
         if (
@@ -124,6 +127,7 @@ public abstract class AbstractDBAccess implements DBAccess {
 
     /**
      * 获取主键对应的值
+     *
      * @param object_
      * @return
      */
@@ -168,14 +172,15 @@ public abstract class AbstractDBAccess implements DBAccess {
 
     /**
      * 将对象转为beanMap
+     *
      * @param object
      * @param isToUnderline 转为下划线
-     * @param isIgnoreNull 是否忽略控制
+     * @param isIgnoreNull  是否忽略控制
      * @return
      */
-    public Map<String,Object> castBeanMap(Object object, boolean isToUnderline, boolean isIgnoreNull){
+    public Map<String, Object> castBeanMap(Object object, boolean isToUnderline, boolean isIgnoreNull) {
         Map<String, Object> resMap = Maps.newHashMap();
-        if(null == object){
+        if (null == object) {
             return resMap;
         }
 
@@ -188,21 +193,29 @@ public abstract class AbstractDBAccess implements DBAccess {
             }
             String name = field.getName();
             boolean annotationPresent = field.isAnnotationPresent(JdbcColumn.class);
-            if(annotationPresent){
+            boolean toJson = false;
+            if (annotationPresent) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 String name1 = annotation.name();
-                name = StrUtil.isBlank(name1)?name:name1;
+                name = StrUtil.isBlank(name1) ? name : name1;
+
+                toJson = annotation.toJson();
+
             }
-            if(isToUnderline){
+            if (isToUnderline) {
                 name = StrUtil.toUnderlineCase(name);
             }
             Object fieldValue = ReflectUtil.getFieldValue(object, field);
-            if(isIgnoreNull){
-                if(ObjectUtil.isEmpty(fieldValue)){
-                   continue;
+            if (isIgnoreNull) {
+                if (ObjectUtil.isEmpty(fieldValue)) {
+                    continue;
                 }
             }
-            resMap.put(name,fieldValue);
+            // force convert to json text
+            if (toJson) {
+                fieldValue = JacksonUtil.toJson(fieldValue);
+            }
+            resMap.put(name, fieldValue);
         }
 
         return resMap;
@@ -329,9 +342,9 @@ public abstract class AbstractDBAccess implements DBAccess {
                 getColumns(aClass, SAVE).toArray(new String[]{}),
                 collect, connection
         );
-        try{
+        try {
             return batchInsertSql.executeUpdate();
-        }finally {
+        } finally {
             DbUtils.close(batchInsertSql);
         }
     }
@@ -366,7 +379,7 @@ public abstract class AbstractDBAccess implements DBAccess {
                 columns.toArray(new String[]{}),
                 collect, updateCondition, updateIgnoreNull, connection
         );
-        try{
+        try {
             return batchInsertSql.executeUpdate();
         } finally {
             DbUtils.close(batchInsertSql);
@@ -439,10 +452,10 @@ public abstract class AbstractDBAccess implements DBAccess {
     @Override
     public <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass) throws SQLException {
         T objectByPrimaryKey = getObjectByPrimaryKey(beanObject, aClass);
-        if(Objects.nonNull(objectByPrimaryKey)){
+        if (Objects.nonNull(objectByPrimaryKey)) {
             Map<String, Object> idMap = getIdMap(beanObject);
             return updateListByBean(ListTs.singletonList(beanObject), null, idMap, false, aClass);
-        }else{
+        } else {
             return saveOne(beanObject, aClass);
         }
     }

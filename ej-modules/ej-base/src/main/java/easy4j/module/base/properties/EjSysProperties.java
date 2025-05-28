@@ -9,7 +9,6 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -314,6 +313,18 @@ public class EjSysProperties {
      */
     @SpringVs(desc = "会话过期时间 默认3个小时")
     private int sessionExpireTimeSeconds = 60 * 60 * 3;
+
+    /**
+     * 单服务简单链路追踪
+     */
+    @SpringVs(desc = "单服务简单链路追踪，默认未开启，true为开启")
+    private boolean simpleLinkTracking = false;
+
+    /**
+     * 是否打印简单的请求日志，默认不打印，true为打印
+     */
+    @SpringVs(desc = "是否打印简单的请求日志，默认不打印，true为打印")
+    private boolean printRequestLog = false;
 
 
     /**

@@ -9,9 +9,19 @@ import java.util.concurrent.TimeUnit;
  * 权限接口
  */
 public interface SecurityService {
-
+    /**
+     * 从上下文中获取当前在线用户
+     *
+     * @return
+     */
     SecurityUserInfo getOnlineUser();
 
+    /**
+     * 根据token获取在线用户
+     *
+     * @param token
+     * @return
+     */
     SecurityUserInfo getOnlineUser(String token);
 
     boolean isOnline(String token);

@@ -1,10 +1,9 @@
 package easy4j.module.sauth.domain;
 
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -14,7 +13,6 @@ public class SecurityUserInfo {
     /**
      * 权限
      */
-    @JdbcIgnore
     private Set<SecurityAuthority> authorities;
 
     /**
@@ -35,6 +33,11 @@ public class SecurityUserInfo {
      * 密码（加密之后的）
      */
     private String password;
+
+    /**
+     * 是否跳过密码
+     */
+    private boolean isSkipPassword = false;
 
 
     /**
@@ -90,5 +93,18 @@ public class SecurityUserInfo {
      */
     private Date updateDate;
 
+    /**
+     * 额外信息 不会存入数据库
+     */
+    private Map<String, Object> extMap;
+
+    /**
+     * 错误代码
+     */
+    private String errorCode;
+    /**
+     * 错误信息
+     */
+    private String errorMsg;
 
 }

@@ -15,4 +15,7 @@ public @interface JdbcColumn {
 
     // 主键自动递增
     boolean autoIncrement() default false;
+
+    // 转为json字符串
+    boolean toJson() default false;
 }

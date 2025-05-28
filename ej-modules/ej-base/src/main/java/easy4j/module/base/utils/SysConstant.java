@@ -10,6 +10,15 @@ public class SysConstant {
     public static final String X_SIGN = "X-Sign";
     public static final String X_TIMESTAMP = "X-TIMESTAMP";
     public static final String TENANT_ID = "X-Tenant-Id";
+    public static final String TRACE_ID_NAME = "X-Trace-Id";
+
+    public static final String X_API_KEY = "X-API-Key";
+    public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";
+
+
+    public static final String EASY4J_SECURITY_CONTEXT_KEY = PARAM_PREFIX + StringPool.DOT + "security-session-context-key";
+
+    public static final String EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY = PARAM_PREFIX + StringPool.DOT + "security-context-key-session";
 
 
     public static final String DOT = ".";
@@ -91,6 +100,7 @@ public class SysConstant {
 
     public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX + StringPool.DOT + "security-old-school-enable";
     public static final String EASY4J_SAUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
+    public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
     public static final int SUCCESSCODE = 0;

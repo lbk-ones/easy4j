@@ -2,8 +2,7 @@ package easy4j.module.sca.interceptor;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
-import easy4j.module.sca.util.IpUtils;
-import org.springframework.stereotype.Component;
+import easy4j.module.base.web.IpUtils;
 
 import javax.servlet.http.HttpServletRequest;
 

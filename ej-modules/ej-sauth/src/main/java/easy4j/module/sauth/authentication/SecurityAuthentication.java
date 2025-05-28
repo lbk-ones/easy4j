@@ -1,8 +1,13 @@
-package easy4j.module.sauth.core;
+package easy4j.module.sauth.authentication;
 
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 
+/**
+ * 登录权限认证
+ * token认证
+ * 查询用户信息
+ */
 public interface SecurityAuthentication {
 
     /**
@@ -11,7 +16,16 @@ public interface SecurityAuthentication {
      * @param user
      * @return
      */
-    boolean verifyAuthentication(SecurityUserInfo user) throws EasyException;
+    SecurityUserInfo verifyLoginAuthentication(SecurityUserInfo user) throws EasyException;
+
+    /**
+     * token授权 给登录之后拦截器使用
+     *
+     * @param token
+     * @return
+     * @throws EasyException
+     */
+    SecurityUserInfo tokenAuthentication(String token) throws EasyException;
 
     /**
      * 权限检查 (黑白名单，是否过期，是否锁定，用户是否存在)
