@@ -11,7 +11,8 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 
 ## 特性
 
-- **自带ORM框架**：拜托对于mybatis，jpa,hiberate等orm框架的依赖 支持MySql、Oracle、H2、SqlServer、DB2、PostgreSql
+- **自带ORM框架**：摆脱对于mybatis，jpa,hiberate等orm框架的依赖 支持MySql、Oracle、H2、SqlServer、DB2、PostgreSql
+- **支持jpa和mybatis-plus框架**：上游服务可以有选择性的使用orm框架
 - **规范化参数注入和管理**：默认参数，系统参数，注解参数，远程参数多维度注入
 - **集成化权限认证，授权**：有两种方式：1、基于Easy4j的权限认证授权，2、基于spring-security
 - **模块化设计**：采用模块化架构，各组件可独立使用或按需组合

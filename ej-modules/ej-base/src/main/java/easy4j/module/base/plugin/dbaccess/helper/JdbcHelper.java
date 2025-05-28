@@ -99,12 +99,16 @@ public abstract class JdbcHelper {
      * @return
      * @throws SQLException
      */
-    public static Connection getConnection() throws SQLException {
+    public static Connection getConnection() {
         //通过ThreadLocale中获取Connection，如果为空，则通过dataSource返回新的连接对象
 //    	Connection conn = (Connection)TransactionObjectHolder.get();
 //    	if(conn != null) return conn;
 //		if(ds != null) return ds.getConnection();
-        return getDataSource().getConnection();
+        try {
+            return getDataSource().getConnection();
+        } catch (SQLException e) {
+            throw translateSqlException("getConnection", null, e);
+        }
     }
 
     /**
