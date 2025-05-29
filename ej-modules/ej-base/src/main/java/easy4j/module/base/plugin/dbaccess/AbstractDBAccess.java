@@ -19,7 +19,6 @@ import easy4j.module.base.utils.BusCode;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.DbUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -310,6 +309,27 @@ public abstract class AbstractDBAccess implements DBAccess {
                                 return wrapper.wrap(e) + " is not null";
                             } else if (StrUtil.startWithIgnoreCase(o1, "is null")) {
                                 return wrapper.wrap(e) + " is null";
+                            }
+                        } else if (o2 instanceof Iterable) {
+                            Iterable<?> o21 = (Iterable<?>) o2;
+                            Iterator<?> iterator = o21.iterator();
+                            List<Object> objects = ListTs.newArrayList();
+                            while (iterator.hasNext()) {
+                                Object next = iterator.next();
+                                if (ObjectUtil.isNotEmpty(next)) {
+                                    objects.add(next);
+                                }
+                            }
+                            if (objects.size() == 2) {
+                                Object o1 = objects.get(0);
+                                newArgsList.add(objects.get(1));
+                                return wrapper.wrap(e) + " " + o1 + " " + "?";
+                            } else if (objects.size() == 3) {
+                                Object var1 = objects.get(0);
+                                Object var2 = objects.get(1);
+                                Object var3 = objects.get(2);
+                                newArgsList.add(var3);
+                                return wrapper.wrap(var1.toString()) + " " + var2 + " " + "?";
                             }
                         }
                         newArgsList.addAll(map);
@@ -625,6 +645,23 @@ public abstract class AbstractDBAccess implements DBAccess {
         return 0;
     }
 
+    @Override
+    public long countByMap(Map<String, Object> object, Class<?> aClass) {
+        Class<?> aClass1 = object.getClass();
+        String tableName = getTableName(aClass1, null);
+        if (StrUtil.isNotBlank(tableName)) {
+            //Map<String, Object> stringObjectMap = castBeanMap(object, true, false);
+            StringBuilder sql = new StringBuilder("select count(*) from " + tableName);
+            List<Object> newArgsList = ListTs.newLinkedList();
+            String sqlByObject = getSqlByObject(object, newArgsList, false);
+            if (StrUtil.isNotBlank(sqlByObject)) {
+                sql.append(" where ");
+            }
+            sql.append(sqlByObject);
+            return (long) queryCount(sql.toString(), newArgsList.toArray(new Object[]{}));
+        }
+        return 0;
+    }
 
     @Override
     public <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz) {

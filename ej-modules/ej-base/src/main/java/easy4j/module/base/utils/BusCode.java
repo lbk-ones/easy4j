@@ -107,4 +107,7 @@ public class BusCode {
 
     @Desc("SQL条件不能为空")
     public static final String A00038 = "A00038";
+
+    @Desc("该资源【{0}】已经被锁定，备注：{0}")
+    public static final String A00039 = "A00039";
 }

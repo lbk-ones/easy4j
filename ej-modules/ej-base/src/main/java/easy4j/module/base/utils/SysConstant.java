@@ -16,11 +16,6 @@ public class SysConstant {
     public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";
 
 
-    public static final String EASY4J_SECURITY_CONTEXT_KEY = PARAM_PREFIX + StringPool.DOT + "security-session-context-key";
-
-    public static final String EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY = PARAM_PREFIX + StringPool.DOT + "security-context-key-session";
-
-
     public static final String DOT = ".";
 
     public static final String DB_URL_STR = "spring.datasource.url";
@@ -103,7 +98,14 @@ public class SysConstant {
     public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
     public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "auth-session-storage-type";
 
-    // -------------------------EASY4j PROPERTIES----------------------------------------
+    // -------------------------EASY4j PROPERTIES end----------------------------------------
+
+    // -------------------------EASY4j CONTEXT begin----------------------------------------
+    public static final String EASY4J_SECURITY_CONTEXT_KEY = PARAM_PREFIX + StringPool.DOT + "security-session-context-key";
+
+    public static final String EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY = PARAM_PREFIX + StringPool.DOT + "security-context-key-session";
+
+    // -------------------------EASY4j CONTEXT end----------------------------------------
     public static final int SUCCESSCODE = 0;
 
     public static final int ERRORCODE = 1;

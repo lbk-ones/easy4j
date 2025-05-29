@@ -1,5 +1,5 @@
 -- 创建消息表
-CREATE TABLE `LOCAL_MESSAGE`
+CREATE TABLE `SYS_LOCAL_MESSAGE`
 (
     -- 消息 ID，唯一标识一条消息，作为主键
     `MSG_ID`        VARCHAR(255) NOT NULL COMMENT '消息 ID',

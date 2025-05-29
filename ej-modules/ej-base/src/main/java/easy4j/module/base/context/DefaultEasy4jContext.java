@@ -3,17 +3,25 @@ package easy4j.module.base.context;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.google.common.collect.Maps;
+import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.utils.BusCode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * 全局上下文注入
+ * webmvc 全局本地线程注入
+ */
 public final class DefaultEasy4jContext implements Easy4jContext {
+
+    public static final String DEFAULT_KEY = "default";
 
     private static final ThreadLocal<Map<String, Map<String, Object>>> contextThreadLocal = new TransmittableThreadLocal<>();
 
-    private static final Map<Class<?>, Object> contextSingleton = Maps.newConcurrentMap();
-    private static final Map<String, Object> contextSingletonNameMap = Maps.newConcurrentMap();
+    private static final Map<String, Map<String, Object>> contextSingletonNameMap = Maps.newConcurrentMap();
 
     private DefaultEasy4jContext() {
     }
@@ -55,30 +63,67 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     @Override
-    public void registerSingleton(Class<?> aclass, Object t) {
-        contextSingleton.putIfAbsent(aclass, t);
+    public <T, R extends T> void set(Class<T> aclass, R t) {
+        set(aclass.getName(), t);
     }
 
     @Override
-    public <T> T getSingleton(Class<T> aclass) {
-        Object o = contextSingleton.get(aclass);
-        if (null == o) {
-            return null;
+    public <T> T get(Class<T> aclass) {
+        String name = aclass.getName();
+
+        return get(name, aclass);
+    }
+
+    @Override
+    public void set(String name, Object t) {
+        setWith(DEFAULT_KEY, name, t);
+    }
+
+    private static void setWith(String type, String name, Object t) {
+        Map<String, Object> aDefault = contextSingletonNameMap.getOrDefault(type, new HashMap<>());
+        if (Objects.isNull(aDefault)) {
+            contextSingletonNameMap.put(type, aDefault);
         }
-        return aclass.cast(o);
+        aDefault.put(name, t);
     }
 
     @Override
-    public void registerSingleton(String name, Object t) {
-        contextSingletonNameMap.putIfAbsent(name, t);
+    public <T> T get(String name, Class<T> aclass) {
+        return getT(DEFAULT_KEY, name, aclass);
     }
 
-    @Override
-    public <T> T getSingleton(String name, Class<T> aclass) {
-        Object o = contextSingletonNameMap.get(name);
+    private static <T> T getT(String type, String name, Class<T> aclass) {
+        Map<String, Object> o = contextSingletonNameMap.get(type);
         if (null != o) {
-            return aclass.cast(o);
+            Object o1 = o.get(name);
+            if (Objects.nonNull(o1)) {
+                return aclass.cast(o1);
+            }
         }
-        return null;
+        throw EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class");
+    }
+
+    @Override
+    public void setType(String type, Class<?> aclass, Object t) {
+        if (StrUtil.isNotBlank(type) && Objects.nonNull(aclass) && Objects.nonNull(t)) {
+            setWith(type, aclass.getName(), t);
+        }
+    }
+
+    @Override
+    public void setType(String type, String name, Object t) {
+        if (StrUtil.isNotBlank(type) && StrUtil.isNotBlank(name) && Objects.nonNull(t)) {
+            setWith(type, name, t);
+        }
+    }
+
+    @Override
+    public <T> T getType(String type, Class<T> aclass) {
+        return getT(type, aclass.getName(), aclass);
+    }
+
+    @Override
+    public <T> T getType(String type, String name, Class<T> t) {
+        return getT(type, name, t);
     }
 }

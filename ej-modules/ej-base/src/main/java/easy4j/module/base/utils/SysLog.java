@@ -22,7 +22,7 @@ public class SysLog {
     private static final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private static final List<String> ignorePrintException = ListTs.asList("");
     private static final List<String> ignoreDbPrintLog = ListTs.asList(
-            "Table 'work_ip' already exists"
+            "Table 'sys_work_ip' already exists"
     );
 
     static {

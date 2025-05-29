@@ -19,7 +19,7 @@ public class EasyStarterImport implements InitializingBean, ImportSelector {
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 
         return new String[]{
-                ApplicationStarterAfterForEj.class.getName(),
+                ApplicationRuner.class.getName(),
                 Easy4j.class.getName(),
                 GlobalExceptionHandler.class.getName(),
                 WebMvcCorsConfig.class.getName(),

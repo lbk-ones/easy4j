@@ -1,18 +1,15 @@
 package easy4j.module.seed.leaf;
 
 
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.ListTs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -24,12 +21,14 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     private DBAccess dbaccess;
 
+    @Autowired
+    DataSource dataSource;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         DBAccessFactory.INIT_DB_FILE_PATH.add(LEAF_PATH);
         DBAccessFactory.INIT_DB_FILE_PATH.add(SNOWIP_PATH);
-        dbaccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        dbaccess = DBAccessFactory.getDBAccess(dataSource);
     }
 
     private LeafAllocDomain getByBizTag(String bizTag) {

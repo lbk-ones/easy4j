@@ -9,6 +9,7 @@ import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
+import easy4j.module.base.plugin.seed.Easy4jSeed;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  * @author bokun.li
  * @date 2023/11/19
  */
-public class CommonKey {
+public class CommonKey implements Easy4jSeed {
 
     public static final Logger log = LoggerFactory.getLogger(CommonKey.class);
     public static final String HH_IP = InetAddress.getLoopbackAddress().getHostAddress();
@@ -43,6 +44,18 @@ public class CommonKey {
         // 判定workerId
         long workerId = getWorkerId();
         snowflake = new Snowflake(workerId, 2L);
+    }
+
+    private CommonKey() {
+
+    }
+
+    private static class CommonKeyHolder {
+        private static final CommonKey INSTANCE = new CommonKey();
+    }
+
+    public static CommonKey getCommonKey() {
+        return CommonKeyHolder.INSTANCE;
     }
 
 
@@ -58,8 +71,8 @@ public class CommonKey {
         // 所有节点的 ip num 不能一样
         List<String> notHhIpList = localIpList.stream().filter(e -> !HH_IP.equals(e)).collect(Collectors.toList());
         try {
-            List<WORK_IP> allWorkIpList = dbAccess.getAll(WORK_IP.class);
-            //List<WORK_IP> allWorkIpList = jdbcTemplate.query("SELECT * FROM WORK_IP", BeanPropertyRowMapper.newInstance(WORK_IP.class));
+            List<SYS_WORK_IP> allWorkIpList = dbAccess.getAll(SYS_WORK_IP.class);
+            //List<SYS_WORK_IP> allWorkIpList = jdbcTemplate.query("SELECT * FROM SYS_WORK_IP", BeanPropertyRowMapper.newInstance(SYS_WORK_IP.class));
             ListTs.foreach(allWorkIpList, e -> {
                 if (Objects.isNull(e.getNUM())) {
                     e.setNUM(0);
@@ -78,21 +91,21 @@ public class CommonKey {
                     // 如果超过31了 删了重来 这个时候 极端情况下 workIp 可能会出现重复的这种情况
                     if ("32".equals(nextNum)) {
 
-                        dbAccess.deleteAll(WORK_IP.class);
+                        dbAccess.deleteAll(SYS_WORK_IP.class);
 
-                        //jdbcTemplate.update("DELETE FROM WORK_IP WHERE 1=1");
+                        //jdbcTemplate.update("DELETE FROM SYS_WORK_IP WHERE 1=1");
                         return getWorkerId();
                     }
                     workerId = Long.parseLong(nextNum);
                     if (allWorkIpList.stream().noneMatch(e -> masterIp.equals(e.getIP()))) {
-                        WORK_IP workIp = new WORK_IP();
+                        SYS_WORK_IP workIp = new SYS_WORK_IP();
                         workIp.setIP(masterIp);
                         workIp.setNUM(Integer.parseInt(nextNum));
-                        int i = dbAccess.saveOne(workIp, WORK_IP.class);
-                        //jdbcTemplate.update("INSERT INTO WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
+                        int i = dbAccess.saveOne(workIp, SYS_WORK_IP.class);
+                        //jdbcTemplate.update("INSERT INTO SYS_WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
                     } else {
                         // k8s 重启 ip是不会延续原来的 但是这里兼容一下这种情况 万一不用 k8s捏 对吧
-                        WORK_IP workip = dbAccess.getObjectByPrimaryKey(masterIp, WORK_IP.class);
+                        SYS_WORK_IP workip = dbAccess.getObjectByPrimaryKey(masterIp, SYS_WORK_IP.class);
                         if (Objects.nonNull(workip)) {
                             workerId = workip.getNUM();
                         }
@@ -132,8 +145,8 @@ public class CommonKey {
 
     @Setter
     @Getter
-    @JdbcTable(name = "work_ip")
-    static class WORK_IP implements Serializable {
+    @JdbcTable(name = "SYS_WORK_IP")
+    static class SYS_WORK_IP implements Serializable {
 
         @JdbcColumn(name = "ip", isPrimaryKey = true)
         private String IP;
@@ -141,4 +154,13 @@ public class CommonKey {
 
     }
 
+    @Override
+    public String nextIdStr() {
+        return gennerString();
+    }
+
+    @Override
+    public long nextIdLong() {
+        return gennerLong();
+    }
 }

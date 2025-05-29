@@ -6,6 +6,7 @@ import org.springframework.core.io.Resource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public interface DBAccess {
     void init(Object object);
@@ -158,6 +159,14 @@ public interface DBAccess {
      * @throws SQLException
      */
     long countBy(Object object);
+
+    /**
+     * 根据条件map
+     *
+     * @param object
+     * @return
+     */
+    long countByMap(Map<String, Object> object, Class<?> aClass);
 
     /**
      * 执行sql脚本

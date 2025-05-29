@@ -11,8 +11,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@Table("KEY_IDEMPOTENT")
-@JdbcTable(name = "KEY_IDEMPOTENT")
+@Table("SYS_KEY_IDEMPOTENT")
+@JdbcTable(name = "SYS_KEY_IDEMPOTENT")
 public class Easy4jKeyIdempotent implements Serializable {
 
     // 正在发送

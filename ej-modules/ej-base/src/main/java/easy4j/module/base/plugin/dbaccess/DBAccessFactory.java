@@ -2,7 +2,6 @@ package easy4j.module.base.plugin.dbaccess;
 
 
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
-import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.sql.DataSource;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -22,6 +21,7 @@ public class DBAccessFactory {
 
     static {
         INIT_DB_FILE_PATH.add("db/log");
+        INIT_DB_FILE_PATH.add("db/simplelock");
     }
 
     /**

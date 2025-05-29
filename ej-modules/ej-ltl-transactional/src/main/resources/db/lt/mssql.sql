@@ -1,5 +1,5 @@
 -- 创建消息表
-CREATE TABLE LOCAL_MESSAGE
+CREATE TABLE SYS_LOCAL_MESSAGE
 (
     -- 消息 ID，唯一标识一条消息，作为主键
     MSG_ID       NVARCHAR(255) NOT NULL,
@@ -25,22 +25,22 @@ CREATE TABLE LOCAL_MESSAGE
     -- 标记消息是否被冻结，使用字符串表示冻结状态
     IS_FREEZE NVARCHAR(255),
     -- 设置 MSG_ID 为主键
-    CONSTRAINT PK_LOCAL_MESSAGE PRIMARY KEY (MSG_ID)
+    CONSTRAINT PK_SYS_LOCAL_MESSAGE PRIMARY KEY (MSG_ID)
 );
 
 -- 添加字段注释
-EXEC sp_addextendedproperty 'MS_Description', '消息 ID', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'MSG_ID';
-EXEC sp_addextendedproperty 'MS_Description', '业务键', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'BUSINESS_KEY';
-EXEC sp_addextendedproperty 'MS_Description', '业务描述', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'BUSINESS_NAME';
-EXEC sp_addextendedproperty 'MS_Description', '消息内容', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'CONTENT';
-EXEC sp_addextendedproperty 'MS_Description', 'Bean 名称', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'BEAN_NAME';
-EXEC sp_addextendedproperty 'MS_Description', 'Bean 方法', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'BEAN_METHOD';
-EXEC sp_addextendedproperty 'MS_Description', '重试次数', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'RETRY_COUNT';
-EXEC sp_addextendedproperty 'MS_Description', '消息状态', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'STATUS';
-EXEC sp_addextendedproperty 'MS_Description', '创建日期', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'CREATE_DATE';
-EXEC sp_addextendedproperty 'MS_Description', '更新日期', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'UPDATE_DATE';
-EXEC sp_addextendedproperty 'MS_Description', '错误消息', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'ERROR_MESSAGE';
-EXEC sp_addextendedproperty 'MS_Description', '是否冻结', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE', 'COLUMN', 'IS_FREEZE';
+EXEC sp_addextendedproperty 'MS_Description', '消息 ID', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'MSG_ID';
+EXEC sp_addextendedproperty 'MS_Description', '业务键', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'BUSINESS_KEY';
+EXEC sp_addextendedproperty 'MS_Description', '业务描述', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'BUSINESS_NAME';
+EXEC sp_addextendedproperty 'MS_Description', '消息内容', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'CONTENT';
+EXEC sp_addextendedproperty 'MS_Description', 'Bean 名称', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'BEAN_NAME';
+EXEC sp_addextendedproperty 'MS_Description', 'Bean 方法', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'BEAN_METHOD';
+EXEC sp_addextendedproperty 'MS_Description', '重试次数', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'RETRY_COUNT';
+EXEC sp_addextendedproperty 'MS_Description', '消息状态', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'STATUS';
+EXEC sp_addextendedproperty 'MS_Description', '创建日期', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'CREATE_DATE';
+EXEC sp_addextendedproperty 'MS_Description', '更新日期', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'UPDATE_DATE';
+EXEC sp_addextendedproperty 'MS_Description', '错误消息', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'ERROR_MESSAGE';
+EXEC sp_addextendedproperty 'MS_Description', '是否冻结', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE', 'COLUMN', 'IS_FREEZE';
 
 -- 添加表注释
-EXEC sp_addextendedproperty 'MS_Description', '本地信息表', 'SCHEMA', 'dbo', 'TABLE', 'LOCAL_MESSAGE';
+EXEC sp_addextendedproperty 'MS_Description', '本地信息表', 'SCHEMA', 'dbo', 'TABLE', 'SYS_LOCAL_MESSAGE';

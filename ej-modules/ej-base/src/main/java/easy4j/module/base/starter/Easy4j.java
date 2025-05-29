@@ -28,7 +28,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -244,15 +243,12 @@ public class Easy4j implements ApplicationContextAware {
      * @return
      */
     public static EjSysProperties getEjSysProperties() {
-        long begin = System.currentTimeMillis();
         Binder binder = Binder.get(environment);
         BindResult<EjSysProperties> easy4j = binder.bind(SysConstant.PARAM_PREFIX, EjSysProperties.class);
         try {
             return easy4j.get();
         } catch (Exception e) {
             return defaultEjSysProperties;
-        } finally {
-            System.out.println("绑定耗时:" + (System.currentTimeMillis() - begin));
         }
     }
 

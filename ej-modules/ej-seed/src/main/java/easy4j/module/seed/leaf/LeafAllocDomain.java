@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@JdbcTable(name = "leaf_alloc")
+@JdbcTable(name = "SYS_LEAF_ALLOC")
 public class LeafAllocDomain implements Serializable {
 
     @JdbcColumn(name = "biz_tag", isPrimaryKey = true)

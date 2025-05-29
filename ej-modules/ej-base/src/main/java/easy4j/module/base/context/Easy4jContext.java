@@ -12,13 +12,33 @@ public interface Easy4jContext {
 
     void clearHash();
 
-    void registerSingleton(Class<?> aclass, Object t);
+    /**
+     * 以 aclass 全类名作为default类型的key t作为值
+     *
+     * @param aclass
+     * @param t
+     */
+    <T, R extends T> void set(Class<T> aclass, R t);
 
-    void registerSingleton(String name, Object t);
+    /**
+     * 以 aclass 全类名作为type类型的key t作为值
+     *
+     * @param aclass
+     * @param t
+     */
+    void setType(String type, Class<?> aclass, Object t);
 
-    <T> T getSingleton(Class<T> aclass);
+    <T> T getType(String type, Class<T> aclass);
 
-    <T> T getSingleton(String name, Class<T> aclass);
+    void set(String name, Object t);
+
+    void setType(String type, String name, Object t);
+
+    <T> T getType(String type, String name, Class<T> t);
+
+    <T> T get(Class<T> aclass);
+
+    <T> T get(String name, Class<T> aclass);
 
 
 }
