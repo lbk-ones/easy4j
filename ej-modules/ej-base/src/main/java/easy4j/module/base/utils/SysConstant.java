@@ -29,8 +29,14 @@ public class SysConstant {
     public static final String X_ACCESS_TOKEN = "X-Access-Token";
     public static final String X_SIGN = "X-Sign";
     public static final String X_TIMESTAMP = "X-TIMESTAMP";
-    public static final String TENANT_ID = "X-Tenant-Id";
+    public static final String X_TENANT_ID = "X-Tenant-Id";
     public static final String TRACE_ID_NAME = "traceId";
+
+    // OpenTracing协议: uber-trace-id
+    // W3C Trace Context协议: traceparent
+    // B3 协议: 	X-B3-TraceId	X-B3-SpanId	X-B3-ParentSpanId	X-B3-Sampled
+    // Jaeger 协议: uber-b3-id
+    public static final String SERVER_TRACE_NAME = "uber-trace-id";
 
     public static final String X_API_KEY = "X-API-Key";
     public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";

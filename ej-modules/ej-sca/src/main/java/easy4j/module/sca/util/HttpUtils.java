@@ -17,6 +17,7 @@ package easy4j.module.sca.util;
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.module.base.utils.json.JacksonUtil;
+import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 
@@ -36,10 +37,6 @@ import java.util.TreeMap;
  */
 @Slf4j
 public class HttpUtils {
-    /**
-     * 符号：逗号
-     */
-    private static final String COMMA = ",";
 
     /**
      * 将URL的参数和body参数合并
@@ -49,17 +46,15 @@ public class HttpUtils {
         SortedMap<String, String> result = new TreeMap<>();
         // 获取URL上最后带逗号的参数变量 sys/dict/getDictItems/sys_user,realname,username
         String pathVariable = request.getRequestURI().substring(request.getRequestURI().lastIndexOf("/") + 1);
-        if (pathVariable.contains(HttpUtils.COMMA)) {
-            log.info(" pathVariable: {}", pathVariable);
+        if (pathVariable.contains(StringPool.COMMA)) {
+            log.info("pathVariable: {}", pathVariable);
             String deString = URLDecoder.decode(pathVariable, "UTF-8");
-            log.info(" pathVariable decode: {}", deString);
+            log.info("pathVariable decode: {}", deString);
             result.put(SignUtil.X_PATH_VARIABLE, deString);
         }
         // 获取URL上的参数
         Map<String, String> urlParams = getUrlParams(request);
-        for (Map.Entry<String, String> entry : urlParams.entrySet()) {
-            result.put((String) entry.getKey(), (String) entry.getValue());
-        }
+        result.putAll(urlParams);
         Map<String, String> allRequestParam = new HashMap<>(16);
         // get请求不需要拿body参数
         if (!HttpMethod.GET.name().equals(request.getMethod())) {
@@ -67,9 +62,7 @@ public class HttpUtils {
         }
         // 将URL的参数和body参数进行合并
         if (allRequestParam != null) {
-            for (Map.Entry<String, String> entry : allRequestParam.entrySet()) {
-                result.put((String) entry.getKey(), (String) entry.getValue());
-            }
+            result.putAll(allRequestParam);
         }
         return result;
     }
@@ -83,7 +76,7 @@ public class HttpUtils {
         SortedMap<String, String> result = new TreeMap<>();
         // 获取URL上最后带逗号的参数变量 sys/dict/getDictItems/sys_user,realname,username
         String pathVariable = url.substring(url.lastIndexOf("/") + 1);
-        if (pathVariable.contains(HttpUtils.COMMA)) {
+        if (pathVariable.contains(StringPool.COMMA)) {
             log.info(" pathVariable: {}", pathVariable);
             String deString = URLDecoder.decode(pathVariable, "UTF-8");
             log.info(" pathVariable decode: {}", deString);
@@ -91,9 +84,7 @@ public class HttpUtils {
         }
         // 获取URL上的参数
         Map<String, String> urlParams = getUrlParams(queryString);
-        for (Map.Entry<String, String> entry : urlParams.entrySet()) {
-            result.put((String) entry.getKey(), (String) entry.getValue());
-        }
+        result.putAll(urlParams);
         Map<String, String> allRequestParam = new HashMap<>(16);
         // get请求不需要拿body参数
         if (!HttpMethod.GET.name().equals(method)) {
@@ -101,9 +92,7 @@ public class HttpUtils {
         }
         // 将URL的参数和body参数进行合并
         if (allRequestParam != null) {
-            for (Map.Entry entry : allRequestParam.entrySet()) {
-                result.put((String) entry.getKey(), (String) entry.getValue());
-            }
+            result.putAll(allRequestParam);
         }
         return result;
     }

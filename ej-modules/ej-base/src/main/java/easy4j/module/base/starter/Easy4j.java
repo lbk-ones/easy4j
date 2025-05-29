@@ -31,6 +31,7 @@ import easy4j.module.base.utils.SqlType;
 import easy4j.module.base.utils.SysConstant;
 import jodd.util.StringPool;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.bind.BindResult;
@@ -56,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author bokun.li
  * @date 2023/10/30
  */
+@Slf4j
 public class Easy4j implements ApplicationContextAware {
 
     public static final String EJ_SYS_ANNOTATION_PROPERTIES = "ej-sys-annotation-properties";
@@ -292,6 +294,23 @@ public class Easy4j implements ApplicationContextAware {
 
     public static Easy4jContext getContext() {
         return DefaultEasy4jContext.getContext();
+    }
+
+
+    public static void info(String msg, Object... objects) {
+        log.info(msg, objects);
+    }
+
+    public static void error(String msg, Object... objects) {
+        log.error(msg, objects);
+    }
+
+    public static void debug(String msg, Object... objects) {
+        log.debug(msg, objects);
+    }
+
+    public static void warn(String msg, Object... objects) {
+        log.warn(msg, objects);
     }
 
 

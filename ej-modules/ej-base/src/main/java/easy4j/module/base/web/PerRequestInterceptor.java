@@ -75,7 +75,7 @@ public class PerRequestInterceptor implements HandlerInterceptor {
     }
 
     private static void setAttribute(HttpServletRequest request, HttpServletResponse response) {
-        String requestId = request.getHeader(SysConstant.TRACE_ID_NAME);
+        String requestId = request.getHeader(SysConstant.SERVER_TRACE_NAME);
         // 标记已拦截
         request.setAttribute(INTERCEPTOR_MARK, true);
         if (StrUtil.isBlank(requestId)) {

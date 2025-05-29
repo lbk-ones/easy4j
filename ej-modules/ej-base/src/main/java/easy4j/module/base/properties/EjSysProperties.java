@@ -320,7 +320,7 @@ public class EjSysProperties {
      * 需要加强校验的接口清单
      */
     @SpringVs(desc = "需要加强校验的接口清单")
-    private String signUrls;
+    private String signUrls = "";
 
     /**
      * 简单权限认证
