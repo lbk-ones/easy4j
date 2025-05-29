@@ -11,6 +11,12 @@ import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * IdempotentToolFactory
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Component
 public class IdempotentToolFactory {
     private static final AtomicInteger hasRedis = new AtomicInteger(0);

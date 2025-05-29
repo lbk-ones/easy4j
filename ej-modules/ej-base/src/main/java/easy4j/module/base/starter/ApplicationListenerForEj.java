@@ -6,6 +6,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.time.Duration;
 
+/**
+ * ApplicationListenerForEj
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface ApplicationListenerForEj {
 
     /**

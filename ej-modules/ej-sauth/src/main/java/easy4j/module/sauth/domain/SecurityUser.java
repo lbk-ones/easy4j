@@ -6,6 +6,12 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * SecurityUser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 @JdbcTable(name = "sys_security_user")
 public class SecurityUser {

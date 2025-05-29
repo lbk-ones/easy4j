@@ -13,6 +13,12 @@
  */
 package easy4j.module.jaeger.opentracing.jdbc;
 
+/**
+ * JdbcTracing
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class JdbcTracing {
   private static boolean traceEnabled = true;
 

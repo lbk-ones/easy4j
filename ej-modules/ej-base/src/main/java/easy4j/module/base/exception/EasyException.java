@@ -17,6 +17,12 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * EasyException
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Getter
 public class EasyException extends RuntimeException {
 

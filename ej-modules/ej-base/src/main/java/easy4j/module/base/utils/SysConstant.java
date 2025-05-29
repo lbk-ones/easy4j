@@ -2,6 +2,12 @@ package easy4j.module.base.utils;
 
 import jodd.util.StringPool;
 
+/**
+ * SysConstant
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class SysConstant {
 
     public static final String PARAM_PREFIX = "easy4j";

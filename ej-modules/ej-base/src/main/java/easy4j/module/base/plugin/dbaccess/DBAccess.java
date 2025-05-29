@@ -8,6 +8,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DBAccess
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface DBAccess {
     void init(Object object);
 

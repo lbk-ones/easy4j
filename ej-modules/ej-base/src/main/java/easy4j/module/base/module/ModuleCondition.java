@@ -12,6 +12,12 @@ import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 
+/**
+ * ModuleCondition
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class ModuleCondition implements Condition {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {

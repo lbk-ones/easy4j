@@ -10,6 +10,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * PostBean
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class PostBean implements BeanPostProcessor {
 
 

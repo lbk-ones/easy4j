@@ -5,6 +5,12 @@ import io.jaegertracing.spi.Reporter;
 
 import java.util.Collection;
 
+/**
+ * ReporterAppender
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @FunctionalInterface
 public interface ReporterAppender {
 

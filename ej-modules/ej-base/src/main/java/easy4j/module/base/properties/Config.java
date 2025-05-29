@@ -11,6 +11,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import static easy4j.module.base.log.DefLog.*;
 
 
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @EnableConfigurationProperties({EjSysProperties.class})
 @Slf4j
 @AutoConfigureBefore({SpringApplicationAdminJmxAutoConfiguration.class})

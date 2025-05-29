@@ -1,5 +1,11 @@
 package easy4j.module.base.utils;
 
+/**
+ * SP
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface SP {
     String AMPERSAND = "&";
     String AND = "and";

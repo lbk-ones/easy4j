@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * SysLog
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class SysLog {
     private static final AtomicBoolean IS_SETTING = new AtomicBoolean(false);

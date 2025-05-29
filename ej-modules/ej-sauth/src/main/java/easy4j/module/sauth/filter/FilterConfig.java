@@ -4,6 +4,12 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * FilterConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class FilterConfig implements WebMvcConfigurer {
 
     Easy4jSecurityFilterInterceptor easy4jSecurityFilterInterceptor;

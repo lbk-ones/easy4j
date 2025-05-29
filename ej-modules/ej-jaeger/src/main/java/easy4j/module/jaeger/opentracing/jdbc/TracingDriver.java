@@ -24,6 +24,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * TracingDriver
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingDriver implements Driver {
 
   private static final Driver INSTANCE = new TracingDriver();

@@ -9,6 +9,12 @@ import org.springframework.boot.context.properties.DeprecatedConfigurationProper
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * JaegerConfigurationProperties
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @ConfigurationProperties("opentracing.jaeger")
 public class JaegerConfigurationProperties {
 

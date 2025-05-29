@@ -8,6 +8,12 @@ import java.io.Serializable;
 import java.util.Date;
 
 
+/**
+ * SysLogRecord
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 public class SysLogRecord implements Serializable {
 

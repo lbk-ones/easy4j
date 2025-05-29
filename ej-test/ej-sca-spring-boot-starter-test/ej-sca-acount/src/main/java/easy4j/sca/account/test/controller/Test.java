@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Test
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Controller
 public class Test {
 

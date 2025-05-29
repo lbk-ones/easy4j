@@ -6,6 +6,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.Properties;
 
+/**
+ * IdempotentEnvironment
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class IdempotentEnvironment extends AbstractEnvironmentForEj {
 
     @Override

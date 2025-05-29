@@ -13,6 +13,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * SpringSecurityService
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Service
 public class SpringSecurityService extends AbstractSecurityService {
 

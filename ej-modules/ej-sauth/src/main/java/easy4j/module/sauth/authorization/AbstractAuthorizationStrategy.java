@@ -12,6 +12,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Set;
 
+/**
+ * AbstractAuthorizationStrategy
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractAuthorizationStrategy implements SecurityAuthorization {
 
 

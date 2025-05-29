@@ -6,6 +6,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * AuditDemo
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class AuditDemo implements Serializable {
 
     // 创建人

@@ -8,6 +8,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 
 
+/**
+ * BaseController
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Setter
 public abstract class BaseController {
 

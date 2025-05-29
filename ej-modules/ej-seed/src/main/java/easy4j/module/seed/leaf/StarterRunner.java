@@ -9,6 +9,12 @@ import org.springframework.boot.CommandLineRunner;
 
 import javax.annotation.Resource;
 
+/**
+ * StarterRunner
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class StarterRunner implements CommandLineRunner {
 

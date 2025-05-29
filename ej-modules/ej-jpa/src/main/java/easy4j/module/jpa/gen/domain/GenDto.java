@@ -5,6 +5,12 @@ import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
+/**
+ * GenDto
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class GenDto extends BaseGen{

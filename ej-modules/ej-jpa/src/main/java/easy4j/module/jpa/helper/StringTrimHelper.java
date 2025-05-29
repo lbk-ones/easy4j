@@ -7,6 +7,12 @@ import easy4j.module.jpa.annotations.Trim;
 
 import java.lang.reflect.Field;
 
+/**
+ * StringTrimHelper
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class StringTrimHelper {
 
 	public static void trim(Object obj) throws EasyException {

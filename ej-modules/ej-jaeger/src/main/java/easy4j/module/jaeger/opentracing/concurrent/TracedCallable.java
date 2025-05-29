@@ -7,6 +7,12 @@ import io.opentracing.Tracer;
 import java.util.concurrent.Callable;
 
 
+/**
+ * TracedCallable
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracedCallable<V> implements Callable<V> {
 
   private final Callable<V> delegate;

@@ -6,6 +6,12 @@ import easy4j.module.sauth.domain.SecuritySession;
 
 import java.util.Objects;
 
+/**
+ * AbstractSessionStrategy
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractSessionStrategy implements SessionStrategy {
 
     @Override

@@ -9,6 +9,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+/**
+ * JwtUtils
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Component
 public class JwtUtils {
     public static final JwtParser jwtParser = null;

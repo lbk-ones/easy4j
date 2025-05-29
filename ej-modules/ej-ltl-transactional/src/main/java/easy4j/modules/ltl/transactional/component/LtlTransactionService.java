@@ -12,6 +12,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * LtlTransactionService
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class LtlTransactionService implements InitializingBean {
     private DBAccess dbAccess;
 

@@ -8,6 +8,12 @@ import easy4j.module.sentinel.GlobalFallbackHandler;
 
 import java.lang.annotation.*;
 
+/**
+ * FlowDegradeResource
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

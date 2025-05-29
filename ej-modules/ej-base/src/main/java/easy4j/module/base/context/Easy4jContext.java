@@ -2,6 +2,12 @@ package easy4j.module.base.context;
 
 import java.util.Optional;
 
+/**
+ * Easy4jContext
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface Easy4jContext {
 
     void registerThreadHash(String key, String key2, Object value);

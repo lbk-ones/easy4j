@@ -7,6 +7,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * GenDomainName
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Desc("生成的模块名称 用于绑定Controller注解相关")
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE})

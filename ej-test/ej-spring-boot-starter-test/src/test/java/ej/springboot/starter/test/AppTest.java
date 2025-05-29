@@ -33,6 +33,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         //ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
         // 使用h2当数据库
 )
+/**
+ * AppTest
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @EnableFlowDegrade
 @SpringBootTest(classes = AppTest.class)
 public class AppTest {

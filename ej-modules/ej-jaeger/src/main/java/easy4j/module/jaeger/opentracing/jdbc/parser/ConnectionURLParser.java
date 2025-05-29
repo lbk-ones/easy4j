@@ -16,6 +16,12 @@ package easy4j.module.jaeger.opentracing.jdbc.parser;
 
 import easy4j.module.jaeger.opentracing.jdbc.ConnectionInfo;
 
+/**
+ * ConnectionURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface ConnectionURLParser {
   ConnectionInfo parse(final String url);
 }

@@ -8,6 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.*;
 
+/**
+ * LtTransactional
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

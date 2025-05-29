@@ -1,5 +1,11 @@
 package easy4j.module.sauth.enums;
 
+/**
+ * SecuritySessionType
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public enum SecuritySessionType {
 
     DB,

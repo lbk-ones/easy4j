@@ -37,6 +37,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * TracingFilter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @WebFilter(urlPatterns = "/*",filterName = "easy4jJaegerWebFilter")
 public class TracingFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(TracingFilter.class);

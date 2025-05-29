@@ -7,6 +7,12 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JavaBaseGen
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Setter
 @Getter
 public class JavaBaseGen {

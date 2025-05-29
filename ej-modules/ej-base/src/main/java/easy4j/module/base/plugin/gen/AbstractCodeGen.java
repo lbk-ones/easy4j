@@ -29,6 +29,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * AbstractCodeGen
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Setter
 @Getter
 public abstract class AbstractCodeGen<T extends BaseConfigCodeGen> implements CodeGen {

@@ -2,6 +2,12 @@ package easy4j.module.sauth.session;
 
 import easy4j.module.sauth.domain.SecuritySession;
 
+/**
+ * SessionStrategy
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public interface SessionStrategy {
     /**
      * 根据会话token获取会话信息

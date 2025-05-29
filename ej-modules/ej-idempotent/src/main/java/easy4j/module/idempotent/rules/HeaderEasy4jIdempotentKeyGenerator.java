@@ -4,6 +4,12 @@ import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * HeaderEasy4jIdempotentKeyGenerator
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class HeaderEasy4jIdempotentKeyGenerator implements Easy4jIdempotentKeyGenerator {
     public static final String IDEMPOTENT_HEADER_KEY = "XIdempotentKey";
     @Override

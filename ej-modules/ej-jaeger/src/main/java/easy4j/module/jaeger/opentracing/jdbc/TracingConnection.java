@@ -22,6 +22,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+/**
+ * TracingConnection
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingConnection implements Connection {
   private final Connection connection;
   private final ConnectionInfo connectionInfo;

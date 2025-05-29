@@ -4,6 +4,12 @@ import lombok.Data;
 
 import java.util.Objects;
 
+/**
+ * JavaBaseMethod
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 public class JavaBaseMethod {
 

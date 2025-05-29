@@ -31,6 +31,12 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 @Configuration
 public class Config implements InitializingBean {

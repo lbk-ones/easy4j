@@ -15,6 +15,12 @@ import java.util.Locale;
     group = {CommonConstants.PROVIDER},
     order = 10
 )
+/**
+ * ProviderExceptionFilter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class ProviderExceptionFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(ProviderExceptionFilter.class);
 

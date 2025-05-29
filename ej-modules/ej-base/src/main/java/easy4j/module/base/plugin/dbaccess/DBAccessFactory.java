@@ -12,6 +12,12 @@ import javax.sql.DataSource;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * DBAccessFactory
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Setter
 @Getter
 @Slf4j

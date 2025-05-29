@@ -6,6 +6,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * PathMatcherUtil
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class PathMatcherUtil {
     public PathMatcherUtil() {
     }

@@ -13,6 +13,12 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * AbstractEasy4jResolve
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R> {
 
     List<String> splitUrl(String p) {

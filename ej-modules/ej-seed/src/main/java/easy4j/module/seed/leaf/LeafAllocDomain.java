@@ -7,6 +7,12 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * LeafAllocDomain
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 @JdbcTable(name = "SYS_LEAF_ALLOC")
 public class LeafAllocDomain implements Serializable {

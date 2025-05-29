@@ -15,6 +15,12 @@ import org.springframework.core.env.Environment;
         enableH2 = true
         // 使用h2当数据库
 )
+/**
+ * TestProperties
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @EnableFlowDegrade
 @SpringBootTest(classes = TestProperties.class)
 public class TestProperties {

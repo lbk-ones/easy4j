@@ -7,6 +7,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * AllowCopy
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Desc("目前只用来控制是否更新了")
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD})

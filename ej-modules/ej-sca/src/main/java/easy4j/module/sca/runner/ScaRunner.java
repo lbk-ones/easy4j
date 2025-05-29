@@ -37,6 +37,12 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+/**
+ * ScaRunner
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class ScaRunner extends StandAbstractEasy4jResolve implements InitializingBean, CommandLineRunner, DisposableBean {
     @Autowired

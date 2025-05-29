@@ -23,6 +23,12 @@ import java.util.Objects;
     group = {CommonConstants.CONSUMER},
     order = 10
 )
+/**
+ * ConsumerExceptionFilter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class ConsumerExceptionFilter implements Filter {
 

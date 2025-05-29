@@ -2,6 +2,12 @@ package easy4j.module.base.exception;
 
 import java.util.ArrayList;
 
+/**
+ * ExceptionList
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class ExceptionList<E> extends ArrayList<E>{
 
 	private static final long serialVersionUID = -694749170467810026L;

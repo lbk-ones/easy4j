@@ -20,6 +20,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * TracingStatement
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingStatement implements Statement {
 
   private final Statement statement;

@@ -21,6 +21,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * OracleURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class OracleURLParser implements ConnectionURLParser {
   public static final String DB_TYPE = "oracle";
   public static final String PREFIX_THIN = "jdbc:oracle:thin:";

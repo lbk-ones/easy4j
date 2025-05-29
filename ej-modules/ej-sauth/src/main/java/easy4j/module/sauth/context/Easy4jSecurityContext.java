@@ -5,6 +5,12 @@ import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.sauth.domain.SecuritySession;
 
+/**
+ * Easy4jSecurityContext
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class Easy4jSecurityContext implements SecurityContext {
 
     @Override

@@ -15,6 +15,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * AbstractSecurityAuthentication
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractSecurityAuthentication extends StandardResolve implements SecurityAuthentication {
 
     public abstract EncryptionService getEncryptionService();

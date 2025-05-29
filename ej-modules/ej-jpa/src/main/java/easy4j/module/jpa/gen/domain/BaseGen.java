@@ -5,6 +5,12 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * BaseGen
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 public class BaseGen {
 

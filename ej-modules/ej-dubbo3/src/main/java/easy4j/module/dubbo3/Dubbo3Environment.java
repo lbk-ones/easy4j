@@ -6,6 +6,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.Properties;
 
+/**
+ * Dubbo3Environment
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class Dubbo3Environment extends AbstractEnvironmentForEj {
     @Override
     public String getName() {

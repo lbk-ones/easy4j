@@ -8,6 +8,12 @@ import java.util.Collections;
 import java.util.Map;
 
 
+/**
+ * HibernateConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class HibernateConfig implements HibernatePropertiesCustomizer {
     @Override
     public void customize(Map<String, Object> hibernateProperties) {

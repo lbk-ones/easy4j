@@ -7,6 +7,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * SegmentBuffer
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class SegmentBuffer {
 
     private String key;

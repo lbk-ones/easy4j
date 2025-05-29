@@ -3,6 +3,12 @@ package easy4j.module.jaeger.spring.starter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 
+/**
+ * TtlScope
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TtlScope implements Scope {
     private final TtlScopeManager scopeManager;
     private final Span wrapped;

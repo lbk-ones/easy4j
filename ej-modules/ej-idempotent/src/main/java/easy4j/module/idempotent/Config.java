@@ -9,6 +9,12 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Configuration
 @ConditionalOnBean(value = {DataSource.class})
 public class Config {

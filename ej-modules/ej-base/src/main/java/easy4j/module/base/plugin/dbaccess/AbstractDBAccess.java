@@ -32,6 +32,12 @@ import java.util.stream.Collectors;
 
 import static easy4j.module.base.plugin.dbaccess.helper.JdbcHelper.getDialect;
 
+/**
+ * AbstractDBAccess
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public abstract class AbstractDBAccess implements DBAccess {
 

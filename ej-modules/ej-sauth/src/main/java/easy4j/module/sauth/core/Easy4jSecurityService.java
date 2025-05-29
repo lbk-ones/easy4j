@@ -18,6 +18,12 @@ import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * Easy4jSecurityService
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class Easy4jSecurityService extends AbstractSecurityService implements InitializingBean {
 
 

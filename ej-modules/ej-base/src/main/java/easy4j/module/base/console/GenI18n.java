@@ -6,6 +6,12 @@ import easy4j.module.base.utils.BusCode;
 
 import java.lang.reflect.Field;
 
+/**
+ * GenI18n
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class GenI18n {
     public static void main(String[] args) {
         Field[] fields = ReflectUtil.getFields(BusCode.class);

@@ -5,6 +5,12 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * WebFilterConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class WebFilterConfig implements WebMvcConfigurer {
 
     @Autowired

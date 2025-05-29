@@ -13,6 +13,12 @@
  */
 package easy4j.module.jaeger.opentracing.jdbc;
 
+/**
+ * ConnectionInfo
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class ConnectionInfo {
 
   public static ConnectionInfo UNKNOWN_CONNECTION_INFO = new Builder("unknown_peer")

@@ -169,6 +169,12 @@ class JdbcTracingUtils {
     }
   }
 
+/**
+ * JdbcTracingUtils
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
   @FunctionalInterface
   interface CheckedRunnable<E extends Throwable> {
 

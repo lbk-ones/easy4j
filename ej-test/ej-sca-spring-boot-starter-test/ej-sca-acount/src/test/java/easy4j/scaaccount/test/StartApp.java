@@ -21,6 +21,12 @@ import java.util.List;
         h2Url = "jdbc:h2:mem:testaccount"
         // 使用h2当数据库
 )
+/**
+ * StartApp
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @EnableDiscoveryClient
 @SpringBootTest
 public class StartApp {

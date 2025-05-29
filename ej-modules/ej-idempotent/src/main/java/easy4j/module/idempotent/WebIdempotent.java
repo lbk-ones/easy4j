@@ -4,6 +4,12 @@ import easy4j.module.base.annotations.Desc;
 
 import java.lang.annotation.*;
 
+/**
+ * WebIdempotent
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

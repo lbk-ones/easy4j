@@ -13,6 +13,12 @@
  */
 package easy4j.module.jaeger.opentracing.jdbc.parser;
 
+/**
+ * URLLocation
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class URLLocation {
   private final int startIndex;
   private final int endIndex;

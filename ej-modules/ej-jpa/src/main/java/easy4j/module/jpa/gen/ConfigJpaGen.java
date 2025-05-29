@@ -9,6 +9,12 @@ import org.springframework.util.Assert;
 import java.io.File;
 
 
+/**
+ * ConfigJpaGen
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Getter
 public class ConfigJpaGen extends BaseConfigCodeGen {
 

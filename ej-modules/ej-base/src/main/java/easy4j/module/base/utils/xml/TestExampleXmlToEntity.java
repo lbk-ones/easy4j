@@ -6,6 +6,12 @@ import easy4j.module.base.utils.json.JacksonUtil;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * TestExampleXmlToEntity
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TestExampleXmlToEntity {
 
     public static void main(String[] args) {

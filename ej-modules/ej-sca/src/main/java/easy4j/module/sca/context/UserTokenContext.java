@@ -1,5 +1,11 @@
 package easy4j.module.sca.context;
 
+/**
+ * UserTokenContext
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class UserTokenContext {
     private static final ThreadLocal<String> userToken = new ThreadLocal<>();
 

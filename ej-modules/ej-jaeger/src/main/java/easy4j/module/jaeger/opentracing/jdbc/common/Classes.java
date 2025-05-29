@@ -19,6 +19,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/**
+ * Classes
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public final class Classes {
   /**
    * Adds all interfaces extended by the specified {@code iface} interface

@@ -6,6 +6,12 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * I18nUtils
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class I18nUtils {
    private final MessageSource messageSource;
 

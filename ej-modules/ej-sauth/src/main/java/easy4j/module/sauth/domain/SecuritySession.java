@@ -15,6 +15,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * SecuritySession
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 @JdbcTable(name = "sys_security_session")
 public class SecuritySession {

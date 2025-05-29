@@ -21,6 +21,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * URLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class URLParser {
   private static final Logger log = Logger.getLogger(URLParser.class.getName());
 

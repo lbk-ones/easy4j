@@ -25,6 +25,12 @@ import java.util.Map;
 import java.util.Set;
 
 
+/**
+ * TracingCallableStatement
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingCallableStatement extends TracingPreparedStatement implements
     CallableStatement {
 

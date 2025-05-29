@@ -1,13 +1,8 @@
 package easy4j.module.base.plugin.dbaccess;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
-import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
-import easy4j.module.base.utils.ListTs;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
@@ -20,12 +15,19 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
-import static org.springframework.jdbc.datasource.init.ScriptUtils.DEFAULT_BLOCK_COMMENT_END_DELIMITER;
 
+/**
+ * JdbcDbAccess
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
 

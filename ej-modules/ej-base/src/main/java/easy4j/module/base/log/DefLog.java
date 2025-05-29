@@ -5,6 +5,12 @@ import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * DefLog
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class DefLog {
 
     public static final List<String> infoLine = Collections.synchronizedList(Lists.newLinkedList());

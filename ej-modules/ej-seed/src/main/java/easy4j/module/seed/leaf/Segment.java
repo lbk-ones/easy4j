@@ -3,6 +3,12 @@ package easy4j.module.seed.leaf;
 import java.util.concurrent.atomic.AtomicLong;
 
 
+/**
+ * Segment
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class Segment {
     private AtomicLong value = new AtomicLong(0);
     private volatile long max;

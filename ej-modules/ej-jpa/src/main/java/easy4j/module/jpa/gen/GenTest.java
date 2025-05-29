@@ -3,6 +3,12 @@ package easy4j.module.jpa.gen;
 
 import easy4j.module.base.plugin.gen.BaseConfigCodeGen;
 
+/**
+ * GenTest
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class GenTest {
     public static void test(String[] args) throws Exception {
         ConfigJpaGen build = new ConfigJpaGen.Builder()

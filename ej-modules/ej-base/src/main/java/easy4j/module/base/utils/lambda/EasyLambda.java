@@ -11,6 +11,12 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 
+/**
+ * EasyLambda
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class EasyLambda {
     private static final Map<SFunction<?,?>, Field> FUNCTION_CACHE = new ConcurrentReferenceHashMap<>();
 

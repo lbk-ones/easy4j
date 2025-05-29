@@ -9,6 +9,12 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TraceUtils
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TraceUtils {
 
     public static Map<String, String> logsForException(Throwable throwable) {

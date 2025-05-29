@@ -9,6 +9,12 @@ import org.springframework.boot.SpringApplication;
         serverName = "test-ej-service",
         enableH2 = true
 )
+/**
+ * StartTest
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class StartTest {
     public static void main(String[] args) {
         SpringApplication.run(StartTest.class, args);

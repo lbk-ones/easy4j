@@ -16,6 +16,12 @@ package easy4j.module.jaeger.opentracing.jdbc.parser;
 
 import easy4j.module.jaeger.opentracing.jdbc.ConnectionInfo;
 
+/**
+ * MysqlURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class MysqlURLParser extends AbstractURLParser {
 
   private static final String DEFAULT_HOST = "localhost";

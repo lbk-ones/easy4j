@@ -16,6 +16,12 @@ package easy4j.module.jaeger.opentracing.jdbc.parser;
 
 import easy4j.module.jaeger.opentracing.jdbc.ConnectionInfo;
 
+/**
+ * H2URLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class H2URLParser extends AbstractURLParser {
 
   private static final String LOCALHOST = "localhost";

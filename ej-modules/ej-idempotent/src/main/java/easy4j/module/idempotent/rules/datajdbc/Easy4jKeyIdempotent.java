@@ -10,6 +10,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Easy4jKeyIdempotent
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 @Table("SYS_KEY_IDEMPOTENT")
 @JdbcTable(name = "SYS_KEY_IDEMPOTENT")

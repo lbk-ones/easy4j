@@ -6,6 +6,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Configuration
 @EnableConfigurationProperties(value = ConfigProperties.class)
 public class Config {

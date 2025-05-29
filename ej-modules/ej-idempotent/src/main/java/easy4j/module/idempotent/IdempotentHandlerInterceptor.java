@@ -19,6 +19,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 
+/**
+ * IdempotentHandlerInterceptor
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Component("idempotentHandlerInterceptor")
 @Slf4j
 public class IdempotentHandlerInterceptor implements HandlerInterceptor {

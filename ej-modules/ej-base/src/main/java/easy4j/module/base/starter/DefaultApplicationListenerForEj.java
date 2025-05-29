@@ -8,6 +8,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.time.Duration;
 
+/**
+ * DefaultApplicationListenerForEj
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class DefaultApplicationListenerForEj implements ApplicationListenerForEj {
 
     @Override

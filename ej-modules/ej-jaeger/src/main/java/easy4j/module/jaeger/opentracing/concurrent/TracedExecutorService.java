@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.concurrent.*;
 
 
+/**
+ * TracedExecutorService
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracedExecutorService extends TracedExecutor implements ExecutorService {
 
   private final ExecutorService delegate;

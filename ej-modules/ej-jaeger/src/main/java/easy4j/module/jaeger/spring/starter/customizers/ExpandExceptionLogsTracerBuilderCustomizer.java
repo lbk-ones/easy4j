@@ -16,6 +16,12 @@ package easy4j.module.jaeger.spring.starter.customizers;
 import easy4j.module.jaeger.spring.starter.TracerBuilderCustomizer;
 import io.jaegertracing.internal.JaegerTracer;
 
+/**
+ * ExpandExceptionLogsTracerBuilderCustomizer
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class ExpandExceptionLogsTracerBuilderCustomizer implements TracerBuilderCustomizer {
 
   @Override

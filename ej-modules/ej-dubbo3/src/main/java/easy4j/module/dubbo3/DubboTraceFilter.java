@@ -29,6 +29,12 @@ import java.util.Map;
         group = {CommonConstants.CONSUMER,CommonConstants.PROVIDER},
         order = -1
 )
+/**
+ * DubboTraceFilter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class DubboTraceFilter implements Filter {
 

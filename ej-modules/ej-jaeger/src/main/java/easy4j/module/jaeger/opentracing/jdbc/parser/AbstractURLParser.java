@@ -13,6 +13,12 @@
  */
 package easy4j.module.jaeger.opentracing.jdbc.parser;
 
+/**
+ * AbstractURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractURLParser implements ConnectionURLParser {
 
   /**

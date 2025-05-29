@@ -18,6 +18,12 @@ import java.util.List;
 
 import static easy4j.module.base.utils.SysConstant.GLOBAL_CORS_ENABLE;
 
+/**
+ * WebMvcCorsConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 @Configuration
 @Module(GLOBAL_CORS_ENABLE + ":true")

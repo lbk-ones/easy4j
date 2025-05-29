@@ -3,6 +3,12 @@ package easy4j.module.mapstruct;
 import easy4j.module.base.plugin.gen.BaseConfigCodeGen;
 import lombok.Getter;
 
+/**
+ * GenMapStructConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Getter
 public class GenMapStructConfig extends BaseConfigCodeGen {
 

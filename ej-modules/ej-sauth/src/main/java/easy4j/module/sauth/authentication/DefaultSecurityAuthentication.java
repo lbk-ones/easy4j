@@ -6,6 +6,12 @@ import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
 
+/**
+ * DefaultSecurityAuthentication
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class DefaultSecurityAuthentication extends AbstractSecurityAuthentication {
 
     SecurityAuthorization authorizationStrategy;

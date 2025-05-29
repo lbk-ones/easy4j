@@ -9,6 +9,12 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 
+/**
+ * SegmentLeafGenIdServiceImpl
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
     @Resource
     private LeafAllocDao leafAllocDao;

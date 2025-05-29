@@ -23,6 +23,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * SqlServerURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class SqlServerURLParser implements ConnectionURLParser {
 
   private static final int DEFAULT_PORT = 1433;

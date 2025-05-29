@@ -1,5 +1,11 @@
 package easy4j.module.idempotent;
 
+/**
+ * StorageTypeEnum
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public enum StorageTypeEnum {
 
     DB("db"),

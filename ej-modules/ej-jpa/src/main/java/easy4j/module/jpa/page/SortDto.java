@@ -7,6 +7,12 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+/**
+ * SortDto
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Setter
 @Getter
 @NoArgsConstructor

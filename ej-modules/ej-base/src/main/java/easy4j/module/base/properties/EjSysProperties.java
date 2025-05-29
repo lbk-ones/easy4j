@@ -28,6 +28,12 @@ import java.util.Objects;
 @ConfigurationProperties(
         prefix = SysConstant.PARAM_PREFIX
 )
+/**
+ * EjSysProperties
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 public class EjSysProperties {
 

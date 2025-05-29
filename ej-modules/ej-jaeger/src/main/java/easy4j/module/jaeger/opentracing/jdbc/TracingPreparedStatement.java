@@ -24,6 +24,12 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Set;
 
+/**
+ * TracingPreparedStatement
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingPreparedStatement extends TracingStatement implements PreparedStatement {
 
   private final PreparedStatement preparedStatement;

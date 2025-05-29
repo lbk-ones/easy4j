@@ -2,6 +2,12 @@ package easy4j.module.jpa.page;
 
 import org.springframework.data.domain.Sort;
 
+/**
+ * SortTools
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class SortTools {
 	public static Sort basicSort() {
         return basicSort("desc", "id");

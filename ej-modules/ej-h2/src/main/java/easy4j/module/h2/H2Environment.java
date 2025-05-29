@@ -17,6 +17,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import java.util.Objects;
 import java.util.Properties;
 
+/**
+ * H2Environment
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Order(value = 14)
 public class H2Environment extends AbstractEnvironmentForEj {
 

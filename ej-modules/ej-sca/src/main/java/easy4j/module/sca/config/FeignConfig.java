@@ -42,6 +42,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
 
+/**
+ * FeignConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @ConditionalOnClass(Feign.class)
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @Slf4j

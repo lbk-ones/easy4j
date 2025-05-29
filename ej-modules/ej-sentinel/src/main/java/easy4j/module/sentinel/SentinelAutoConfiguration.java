@@ -9,6 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
+/**
+ * SentinelAutoConfiguration
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Configuration
 @EnableConfigurationProperties(SentinelProperties.class)
 public class SentinelAutoConfiguration implements InitializingBean {

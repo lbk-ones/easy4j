@@ -6,6 +6,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * SecurityUserInfo
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 public class SecurityUserInfo {
 

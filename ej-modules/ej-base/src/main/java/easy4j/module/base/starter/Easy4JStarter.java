@@ -32,6 +32,12 @@ import java.lang.annotation.*;
                 classes = {AutoConfigurationExcludeFilter.class}
         )}
 )
+/**
+ * Easy4JStarter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
 @MapperScan

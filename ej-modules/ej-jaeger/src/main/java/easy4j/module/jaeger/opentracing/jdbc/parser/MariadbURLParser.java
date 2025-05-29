@@ -13,6 +13,12 @@
  */
 package easy4j.module.jaeger.opentracing.jdbc.parser;
 
+/**
+ * MariadbURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class MariadbURLParser extends MysqlURLParser {
 
   protected String dbType() {

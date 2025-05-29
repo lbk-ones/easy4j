@@ -5,6 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * WebConfig
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class WebConfig implements WebMvcConfigurer {
 
     @Autowired

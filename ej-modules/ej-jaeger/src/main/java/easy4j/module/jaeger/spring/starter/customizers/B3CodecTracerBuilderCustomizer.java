@@ -18,6 +18,12 @@ import io.jaegertracing.internal.JaegerTracer;
 import io.jaegertracing.internal.propagation.B3TextMapCodec;
 import io.opentracing.propagation.Format;
 
+/**
+ * B3CodecTracerBuilderCustomizer
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class B3CodecTracerBuilderCustomizer implements TracerBuilderCustomizer {
 
   @Override

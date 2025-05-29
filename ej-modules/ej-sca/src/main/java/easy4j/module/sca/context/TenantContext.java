@@ -4,6 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * TenantContext
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TenantContext {
     private static final Logger log = LoggerFactory.getLogger(TenantContext.class);
     private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();

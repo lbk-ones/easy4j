@@ -2,6 +2,12 @@ package easy4j.module.sentinel;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * SentinelProperties
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @ConfigurationProperties(prefix = "sentinel")
 public class SentinelProperties {
     private String appName = "default-app";

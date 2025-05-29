@@ -9,6 +9,12 @@ import easy4j.module.sauth.domain.SecurityUserInfo;
 
 import java.util.Set;
 
+/**
+ * StandardResolve
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class StandardResolve {
 
     public abstract SecurityAuthorization getAuthorizationStrategy();

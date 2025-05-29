@@ -18,6 +18,12 @@ import io.jaegertracing.internal.JaegerTracer.Builder;
 import io.jaegertracing.internal.propagation.TraceContextCodec;
 import io.opentracing.propagation.Format;
 
+/**
+ * TraceContextCodecTracerBuilderCustomizer
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TraceContextCodecTracerBuilderCustomizer implements TracerBuilderCustomizer {
 
   @Override

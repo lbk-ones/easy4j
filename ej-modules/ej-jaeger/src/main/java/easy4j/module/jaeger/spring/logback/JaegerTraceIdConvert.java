@@ -7,6 +7,12 @@ import io.jaegertracing.internal.JaegerSpan;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentracing.util.GlobalTracer;
 
+/**
+ * JaegerTraceIdConvert
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class JaegerTraceIdConvert extends ClassicConverter {
     @Override
     public String convert(ILoggingEvent iLoggingEvent) {

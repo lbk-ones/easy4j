@@ -28,6 +28,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * TracingDataSource
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TracingDataSource implements DataSource, AutoCloseable {
   private static final boolean DEFAULT_WITH_ACTIVE_SPAN_ONLY = false;
   private static final Set<String> DEFAULT_IGNORED_STATEMENTS = Collections.emptySet();

@@ -7,6 +7,12 @@ import easy4j.module.base.header.EasyResult;
 import easy4j.module.base.utils.BusCode;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * GlobalFallbackHandler
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 public class GlobalFallbackHandler {
 

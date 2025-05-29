@@ -12,6 +12,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import javax.sql.DataSource;
 
+/**
+ * DbSessionStrategy
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Slf4j
 @ConditionalOnBean(DataSource.class)
 public class DbSessionStrategy extends AbstractSessionStrategy implements InitializingBean {

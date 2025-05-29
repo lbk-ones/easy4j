@@ -10,6 +10,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * LocalMessage
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Data
 @Table("SYS_LOCAL_MESSAGE")
 @JdbcTable(name = "SYS_LOCAL_MESSAGE")

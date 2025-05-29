@@ -9,6 +9,12 @@ import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
 
+/**
+ * AbstractSecurityService
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public abstract class AbstractSecurityService extends StandardResolve implements SecurityService {
 
     public abstract SessionStrategy getSessionStrategy();

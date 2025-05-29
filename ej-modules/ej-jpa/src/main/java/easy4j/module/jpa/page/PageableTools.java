@@ -5,6 +5,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+/**
+ * PageableTools
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class PageableTools {
 	/**
      * 获取基础分页对象

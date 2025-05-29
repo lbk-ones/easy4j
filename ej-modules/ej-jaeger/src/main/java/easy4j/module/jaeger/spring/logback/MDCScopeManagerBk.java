@@ -21,6 +21,12 @@ import io.opentracing.Span;
 import io.opentracing.util.ThreadLocalScopeManager;
 import org.slf4j.MDC;
 
+/**
+ * MDCScopeManagerBk
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Deprecated
 public class MDCScopeManagerBk implements ScopeManager {
   private final ScopeManager wrappedScopeManager;

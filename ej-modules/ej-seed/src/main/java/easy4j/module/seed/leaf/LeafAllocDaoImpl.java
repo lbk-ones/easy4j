@@ -13,6 +13,12 @@ import javax.sql.DataSource;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * LeafAllocDaoImpl
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Service
 public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 

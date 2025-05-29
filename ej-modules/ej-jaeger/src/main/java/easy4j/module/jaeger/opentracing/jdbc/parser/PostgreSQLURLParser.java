@@ -19,6 +19,12 @@ import easy4j.module.jaeger.opentracing.jdbc.ConnectionInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * PostgreSQLURLParser
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class PostgreSQLURLParser extends AbstractURLParser {
 
   private static final int DEFAULT_PORT = 5432;

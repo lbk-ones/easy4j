@@ -2,6 +2,12 @@ package easy4j.module.base.plugin.dbaccess.annotations;
 
 import java.lang.annotation.*;
 
+/**
+ * JdbcTable
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

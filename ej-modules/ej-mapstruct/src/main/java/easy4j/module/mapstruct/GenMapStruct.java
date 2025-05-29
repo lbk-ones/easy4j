@@ -16,6 +16,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * GenMapStruct
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public final class GenMapStruct extends AbstractCodeGen<GenMapStructConfig> {
 
     private GenMapStruct(){}

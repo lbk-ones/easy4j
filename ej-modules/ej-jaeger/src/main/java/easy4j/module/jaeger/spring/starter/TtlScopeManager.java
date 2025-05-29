@@ -5,6 +5,12 @@ import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
+/**
+ * TtlScopeManager
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class TtlScopeManager implements ScopeManager {
     final ThreadLocal<TtlScope> tlsScope = new TransmittableThreadLocal<>();
 

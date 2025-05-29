@@ -12,6 +12,12 @@ import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 
 import javax.sql.DataSource;
 
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Configuration
 @ConditionalOnBean(DataSource.class)
 public class Config {

@@ -4,6 +4,12 @@ package easy4j.module.base.plugin.gen;
 import easy4j.module.base.annotations.Desc;
 import lombok.Getter;
 
+/**
+ * BaseConfigCodeGen
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Getter
 public class BaseConfigCodeGen {
     public BaseConfigCodeGen(Builder<?> builder) {

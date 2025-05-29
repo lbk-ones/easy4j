@@ -5,6 +5,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * ObjectHolder
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public enum ObjectHolder{
     INSTANCE;
     private static final int MAP_SIZE = 8;

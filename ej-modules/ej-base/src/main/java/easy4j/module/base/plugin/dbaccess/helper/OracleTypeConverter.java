@@ -5,6 +5,12 @@ import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * OracleTypeConverter
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 public class OracleTypeConverter {
     // 日期时间格式模板（与 Oracle 函数匹配）
     private static final String DATE_FORMAT = "yyyy-MM-dd";
