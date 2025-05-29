@@ -80,11 +80,9 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     private static void setWith(String type, String name, Object t) {
-        Map<String, Object> aDefault = contextSingletonNameMap.getOrDefault(type, new HashMap<>());
-        if (Objects.isNull(aDefault)) {
-            contextSingletonNameMap.put(type, aDefault);
-        }
-        aDefault.put(name, t);
+        contextSingletonNameMap
+                .computeIfAbsent(type, k -> new HashMap<>())
+                .put(name, t);
     }
 
     @Override
@@ -93,14 +91,10 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     private static <T> T getT(String type, String name, Class<T> aclass) {
-        Map<String, Object> o = contextSingletonNameMap.get(type);
-        if (null != o) {
-            Object o1 = o.get(name);
-            if (Objects.nonNull(o1)) {
-                return aclass.cast(o1);
-            }
-        }
-        throw EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class");
+        return Optional.ofNullable(contextSingletonNameMap.get(type))
+                .map(e -> e.get(name))
+                .map(aclass::cast)
+                .orElseThrow(() -> EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class"));
     }
 
     @Override
