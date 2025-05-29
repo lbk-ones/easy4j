@@ -30,7 +30,7 @@ public class SysConstant {
     public static final String X_SIGN = "X-Sign";
     public static final String X_TIMESTAMP = "X-TIMESTAMP";
     public static final String TENANT_ID = "X-Tenant-Id";
-    public static final String TRACE_ID_NAME = "X-Trace-Id";
+    public static final String TRACE_ID_NAME = "traceId";
 
     public static final String X_API_KEY = "X-API-Key";
     public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";

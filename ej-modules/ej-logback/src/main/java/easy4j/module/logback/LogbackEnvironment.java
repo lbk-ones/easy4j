@@ -64,7 +64,7 @@ public class LogbackEnvironment extends AbstractEnvironmentForEj {
         boolean simpleLinkTracking = ejSysProperties.isSimpleLinkTracking();
         String traceIdTemplate = "%" + SysConstant.TRACE_ID_NAME;
         if (simpleLinkTracking) {
-            traceIdTemplate = "%X{" + SysConstant.TRACE_ID_NAME + "}";
+            traceIdTemplate = "%X{" + SysConstant.TRACE_ID_NAME + ":-[]}";
         }
         Properties properties = new Properties();
         properties.setProperty("logging.level.root", "INFO");

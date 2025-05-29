@@ -14,6 +14,7 @@
  */
 package easy4j.module.base.web;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.exception.EasyException;
@@ -74,11 +75,15 @@ public class PerRequestInterceptor implements HandlerInterceptor {
     }
 
     private static void setAttribute(HttpServletRequest request, HttpServletResponse response) {
+        String requestId = request.getHeader(SysConstant.TRACE_ID_NAME);
         // 标记已拦截
         request.setAttribute(INTERCEPTOR_MARK, true);
-        // 生成唯一请求ID（用于日志追踪）
-        String requestId = UUID.randomUUID().toString().replaceAll("-", "");
-        request.setAttribute(REQUEST_ID_KEY, requestId);
+        if (StrUtil.isBlank(requestId)) {
+            // 生成唯一请求ID（用于日志追踪）
+            requestId = UUID.randomUUID().toString().replaceAll("-", "");
+            request.setAttribute(REQUEST_ID_KEY, requestId);
+        }
+
         // 记录请求开始时间
         long startTime = System.currentTimeMillis();
         request.setAttribute(START_TIME_KEY, startTime);
