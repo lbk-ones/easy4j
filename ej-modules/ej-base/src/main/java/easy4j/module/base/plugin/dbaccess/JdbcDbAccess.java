@@ -14,6 +14,7 @@
  */
 package easy4j.module.base.plugin.dbaccess;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
@@ -23,6 +24,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
@@ -139,18 +141,26 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     /**
      * 查询指定列
      *
-     * @param column 结果集的列索引号
-     * @param sql    sql语句
-     * @param params 查询参数
      * @return 指定列的结果对象
      */
-    public Object query(int column, String sql, Object... params) {
+    public Object query(Map<String, Object> map) {
+        Connection connection = Convert.convert(Connection.class, map.get(CONNECTION));
+        if (connection == null) {
+            connection = getConnection();
+        }
+        String sql = Convert.toStr(map.get(KEY_SQL));
+        Object args = map.get(KEY_ARGS);
+        Integer column = Convert.toInt(map.get(INDEX_COLUMN));
         Object result;
         try {
             if (log.isDebugEnabled()) {
                 log.debug("查询单列数据=\n" + sql);
             }
-            result = runner.query(getConnection(), sql, new ScalarHandler<>(column), params);
+            if (ObjectUtil.isNotEmpty(args)) {
+                result = runner.query(connection, sql, new ScalarHandler<>(column), args);
+            } else {
+                result = runner.query(connection, sql, new ScalarHandler<>(column));
+            }
             return result;
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("query", sql, e);
@@ -158,7 +168,8 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    protected Object queryCount(String sql, Object... args) {
-        return query(1, sql, args);
+    protected Object queryCount(Map<String, Object> map) {
+        map.put(INDEX_COLUMN, 1);
+        return query(map);
     }
 }

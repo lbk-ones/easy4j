@@ -15,6 +15,7 @@
 package ej.springboot.starter.test;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.db.Db;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.log.DbLog;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
@@ -238,5 +239,44 @@ public class AppTest {
         DbLog dbLog = context.get(DbLog.class);
         Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
         dbLog.clearLog(startTime);
+    }
+
+    @Test
+    public void testDbLog2() throws SQLException {
+
+        Easy4jContext context = Easy4j.getContext();
+        DbLog dbLog = context.get(DbLog.class);
+        Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
+        dbLog.clearLog(startTime);
+
+        DbLog.beginLog("test", "test222", "test222");
+        System.out.println(DbLog.getDeque().size());
+        SysLogRecord sysLogRecord = new SysLogRecord();
+        String jsonContainNull = JacksonUtil.toJsonContainNull(sysLogRecord);
+        DbLog.putExistRemark(jsonContainNull);
+        DbLog.putExistRemark("step2");
+        DbLog.putExistRemark("step1");
+        String id = DbLog.getParams(SysLogRecord::getId, "");
+        System.out.println("-- id " + id);
+        DbLog.beginLog("test2", "test23444", "tesggaahgat222");
+        System.out.println(DbLog.getDeque().size());
+//        DbLog.putRemark("loop2");
+        System.out.println(DbLog.getDeque().size());
+        String params = DbLog.getParams(SysLogRecord::getId, "");
+        System.out.println("first id " + params);
+        DbLog.successLog();
+        System.out.println(DbLog.getDeque().size());
+
+        String id2 = DbLog.getParams(SysLogRecord::getId, "");
+        System.out.println("two id " + id2);
+        DbLog.successLog();
+        System.out.println(DbLog.getDeque().size());
+
+
+        DBAccess dbAccess = DBAccessFactory.getDBAccess(dataSource);
+
+        SysLogRecord objectByPrimaryKey = dbAccess.getObjectByPrimaryKey(id, SysLogRecord.class);
+        System.out.println(JacksonUtil.toJson(objectByPrimaryKey));
+
     }
 }

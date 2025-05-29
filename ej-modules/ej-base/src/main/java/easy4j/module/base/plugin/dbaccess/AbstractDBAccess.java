@@ -62,6 +62,8 @@ public abstract class AbstractDBAccess implements DBAccess {
     // sql字符串
     protected static final String KEY_SQL = "SQL";
     protected static final String KEY_ARGS = "ARGS";
+    protected static final String INDEX_COLUMN = "INDEX_COLUMN";
+    protected static final String CONNECTION = "CONNECTION";
     // 字段类型
     protected static final String KEY_TYPE = "TYPE";
 
@@ -72,6 +74,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     protected static final String KEY_SU = "SU";
     // 保存
     protected static final String SAVE = "SAVE";
+    protected static final String QUERY_COUNT = "QUERY_COUNT";
     protected static final String BATCH_SAVE = "BATCH_SAVE";
     // 更新
     protected static final String UPDATE = "UPDATE";
@@ -456,17 +459,24 @@ public abstract class AbstractDBAccess implements DBAccess {
     /**
      * 分页查询时，符合条件的总记录数
      *
-     * @param sql  sql语句
-     * @param args 参数数组
      * @return 总记录数
      */
-    protected abstract Object queryCount(String sql, Object... args);
+    protected abstract Object queryCount(Map<String, Object> map);
 
     public Map<String, Object> buildMap(String sql, String su, Object[] args) {
         Map<String, Object> pMap = Maps.newHashMap();
         pMap.put(KEY_SQL, sql);
         pMap.put(KEY_SU, su);
         pMap.put(KEY_ARGS, args);
+        return pMap;
+    }
+
+    public Map<String, Object> buildMap(Connection connection, String sql, String su, Object[] args) {
+        Map<String, Object> pMap = Maps.newHashMap();
+        pMap.put(KEY_SQL, sql);
+        pMap.put(KEY_SU, su);
+        pMap.put(KEY_ARGS, args);
+        pMap.put(CONNECTION, connection);
         return pMap;
     }
 
@@ -567,7 +577,8 @@ public abstract class AbstractDBAccess implements DBAccess {
             log.debug("查询分页querySQL=\n" + querySQL);
         }
         try {
-            Object count = queryCount(countSQL, args);
+            Map<String, Object> stringObjectMap = buildMap(countSQL, QUERY_COUNT, args);
+            Object count = queryCount(stringObjectMap);
             List<T> list = getObjectList(querySQL, clazz, args);
             if (list == null) list = Collections.emptyList();
             page.setResult(list);
@@ -617,11 +628,13 @@ public abstract class AbstractDBAccess implements DBAccess {
 
     @Override
     public <T> int deleteByCondition(Condition object, Class<T> tClass) {
+        Connection connection = getConnection();
+        object.bind(connection);
         List<Object> objects = new ArrayList<>();
         String tableName = getTableName(tClass, null);
         String sql = object.getSql(objects);
         sql = "delete from " + tableName + where(sql);
-        return saveOrUpdate(buildMap(sql, DELETE, objects.toArray(new Object[]{})));
+        return saveOrUpdate(buildMap(connection, sql, DELETE, objects.toArray(new Object[]{})));
     }
 
     @Override
@@ -679,7 +692,8 @@ public abstract class AbstractDBAccess implements DBAccess {
                 sql.append(" where ");
             }
             sql.append(sqlByObject);
-            return (long) queryCount(sql.toString(), newArgsList.toArray(new Object[]{}));
+            Map<String, Object> map = buildMap(sql.toString(), QUERY_COUNT, newArgsList.toArray(new Object[]{}));
+            return (long) queryCount(map);
         }
         return 0;
     }
@@ -697,18 +711,23 @@ public abstract class AbstractDBAccess implements DBAccess {
                 sql.append(" where ");
             }
             sql.append(sqlByObject);
-            return (long) queryCount(sql.toString(), newArgsList.toArray(new Object[]{}));
+            Map<String, Object> buildMap = buildMap(sql.toString(), QUERY_COUNT, newArgsList.toArray(new Object[]{}));
+            return (long) queryCount(buildMap);
         }
         return 0;
     }
 
     @Override
     public long countByCondition(Condition object, Class<?> aClass) {
+
+        Connection connection = getConnection();
+        object.bind(connection);
         List<Object> objects = new ArrayList<>();
         String tableName = getTableName(aClass, null);
         String sql = object.getSql(objects);
         sql = "select count(1) from " + tableName + where(sql);
-        return ((long) queryCount(sql, objects.toArray(new Object[]{})));
+        Map<String, Object> map = buildMap(connection, sql, QUERY_COUNT, objects.toArray(new Object[]{}));
+        return ((long) queryCount(map));
     }
 
     @Override

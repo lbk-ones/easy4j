@@ -157,7 +157,7 @@ public class DbLog {
         }
     }
 
-    public static void putRemark(String remark) {
+    private static void putRemark(String remark) {
         String params = getParams(SysLogRecord::getRemark, "");
         String temP = StrUtil.blankToDefault(params, "") + (StrUtil.isNotBlank(params) ? "\n" : "") + remark;
         setParams(e -> e.setRemark(temP), false);
@@ -171,13 +171,11 @@ public class DbLog {
 
 
     /**
-     * @param tag        主题
-     * @param tagDesc    主题子标题
-     * @param content    内容 一般参数
-     * @param inpVisitId 住院流水号
-     * @param patId      患者id
+     * @param tag     主题
+     * @param tagDesc 主题子标题
+     * @param content 内容 一般参数
      */
-    private synchronized static void beginLogWith(String tag, String tagDesc, String content, String inpVisitId, String patId) {
+    private synchronized static void beginLogWith(String tag, String tagDesc, String content) {
         try {
             SysLogRecord logRecord = new SysLogRecord();
             logRecord.setTag(tag);
@@ -187,19 +185,11 @@ public class DbLog {
             logRecord.setTraceId(traceId);
             logRecord.setParams(content);
             logRecord.setCreateDate(new Date());
-            String id;
-            if (TransactionSynchronizationManager.isActualTransactionActive()) {
-                ThreadPoolTaskExecutor threadPoolTaskExecutor = ThreadPoolUtils.getThreadPoolTaskExecutor("thread-log-pools");
-                Future<String> submit = threadPoolTaskExecutor.submit(() -> insertDomain(logRecord));
-                id = submit.get();
-            } else {
-                id = insertDomain(logRecord);
-            }
+            String id = insertDomain(logRecord);
             setParams(e -> e.setId(id), false);
             logRecord.setId(id);
             SysLogRecord last = getLast(false);
             BeanUtil.copyProperties(logRecord, last);
-
 
         } catch (Throwable e) {
             log.error("日志写入失败", e);
@@ -209,15 +199,15 @@ public class DbLog {
     // -----------------------------------------------------------------------------
 
 
-    public static void beginLog(String tag, String serViceId, String content, String inpVisitId, String patId) {
+    public static void beginLog(String tag, String tagDesc, String content) {
 
-        beginLogWith(tag, serViceId, content, inpVisitId, patId);
+        beginLogWith(tag, tagDesc, content);
 
     }
 
-    public static void beginLog(String tag, String serViceId, String content) {
+    public static Deque<SysLogRecord> getDeque() {
 
-        beginLogWith(tag, serViceId, content, null, null);
+        return threadLocalMap.get();
 
     }
 
@@ -284,10 +274,7 @@ public class DbLog {
                 logRecord.setStatus(_status);
             }
             // 异步更新
-            ThreadPoolTaskExecutor threadPoolTaskExecutor = ThreadPoolUtils.getThreadPoolTaskExecutor("thread-log-pools");
-            threadPoolTaskExecutor.submit(() -> {
-                dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class);
-            });
+            dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class);
         } catch (Throwable e) {
             log.error("日志完成写入失败", e);
         } finally {

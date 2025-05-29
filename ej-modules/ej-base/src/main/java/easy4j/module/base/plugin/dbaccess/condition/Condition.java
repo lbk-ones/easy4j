@@ -17,11 +17,14 @@ package easy4j.module.base.plugin.dbaccess.condition;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,9 +50,14 @@ public class Condition {
     public static final String ORDER_BY = "order by";
     public static final String ASC = "asc";
     public static final String DESC = "desc";
+    private Connection connection;
 
     public static Condition get() {
         return new Condition();
+    }
+
+    public void bind(Connection connection) {
+        this.connection = connection;
     }
 
     public List<Tuple> tuple = ListTs.newLinkedList();
@@ -177,8 +185,8 @@ public class Condition {
         }
     }
 
-    public String getSqlSegment(Tuple tuple, List<Object> argsList) {
-        String name = StrUtil.blankToDefault(getName(tuple), "");
+    public String getSqlSegment(Tuple tuple, List<Object> argsList, Wrapper wrapper) {
+        String name = wrapper.wrap(StrUtil.blankToDefault(getName(tuple), ""));
         String symbol = StrUtil.blankToDefault(getSymbol(tuple), "");
         String value = StrUtil.blankToDefault(getZwf(tuple), "");
         Object value1 = getValue(tuple);
@@ -191,6 +199,12 @@ public class Condition {
 
     // 从条件中获取sql
     public String getSql(List<Object> argsList) {
+        if (this.connection == null) {
+            throw new EasyException("condition is not bind connection please bind a connection");
+        }
+        Dialect dialect = JdbcHelper.getDialect(this.connection);
+        assert dialect != null;
+        Wrapper wrapper = dialect.getWrapper();
         StringBuilder sb = new StringBuilder();
         for (Tuple tuple : tuple) {
             String orAnd = Convert.toStr(tuple.get(1));
@@ -209,7 +223,7 @@ public class Condition {
                     sb.append("(").append(" ").append(sbOr).append(" ").append(")").append(" ").append(AND).append(" ");
                 }
             } else if (orAnd.equals(AND)) {
-                sb.append(getSqlSegment(tuple, argsList)).append(" ").append(AND).append(" ");
+                sb.append(getSqlSegment(tuple, argsList, wrapper)).append(" ").append(AND).append(" ");
             }
         }
         if (StrUtil.isBlank(sb)) {

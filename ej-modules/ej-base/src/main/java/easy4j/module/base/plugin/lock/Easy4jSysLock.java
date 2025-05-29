@@ -45,7 +45,7 @@ public class Easy4jSysLock {
 
     private static void lockWith(String resourceId, int minutes, String remark) {
 
-        if (StrUtil.isBlank(resourceId) || minutes < 0 || StrUtil.isNotBlank(remark)) {
+        if (StrUtil.isBlank(resourceId) || minutes < 0 || StrUtil.isBlank(remark)) {
             log.info("The resource does not meet the locking conditions " + resourceId + ":" + minutes + ":" + remark);
             return;
         }
