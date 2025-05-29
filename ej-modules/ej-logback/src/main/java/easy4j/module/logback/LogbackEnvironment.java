@@ -68,6 +68,7 @@ public class LogbackEnvironment extends AbstractEnvironmentForEj {
         }
         Properties properties = new Properties();
         properties.setProperty("logging.level.root", "INFO");
+        properties.setProperty("logging.charset.file", "UTF-8");
         String property = getProperty(SysConstant.SPRING_SERVER_NAME);
         properties.setProperty("logging.pattern.console", "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%-5level) %clr(${PID:- }){magenta} [" + property + "] [%thread] %clr(%-37.37logger{36}){cyan} " + traceIdTemplate + "- %msg%n");
         properties.setProperty("logging.pattern.file", "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } [" + property + "] [%thread] %-37.37logger{36} " + traceIdTemplate + "- %msg%n");
