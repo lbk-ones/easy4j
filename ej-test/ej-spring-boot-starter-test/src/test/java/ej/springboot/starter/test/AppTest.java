@@ -270,7 +270,7 @@ public class AppTest {
         String id2 = DbLog.getParams(SysLogRecord::getId, "");
         System.out.println("two id " + id2);
         DbLog.successLog();
-        System.out.println(DbLog.getDeque().size());
+        System.out.println(DbLog.getDeque() == null);
 
 
         DBAccess dbAccess = DBAccessFactory.getDBAccess(dataSource);

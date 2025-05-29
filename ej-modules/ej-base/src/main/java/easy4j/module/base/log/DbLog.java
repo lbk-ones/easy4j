@@ -44,6 +44,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -97,20 +98,16 @@ public class DbLog {
      */
     public synchronized static void setParams(Consumer<SysLogRecord> consumer, boolean ifExist) {
         Deque<SysLogRecord> logRecord = threadLocalMap.get();
-        if (Objects.isNull(logRecord) && !ifExist) {
-            SysLogRecord v2InterfaceLogDomain1 = new SysLogRecord();
-            consumer.accept(v2InterfaceLogDomain1);
-            Deque<SysLogRecord> logRecords = new ConcurrentLinkedDeque<>();
-            logRecords.addLast(v2InterfaceLogDomain1);
-            threadLocalMap.set(logRecords);
-        } else if (ifExist) {
-            if (Objects.nonNull(logRecord)) {
-                SysLogRecord logRecord1 = logRecord.peekLast();
-                if (null != logRecord1) {
-                    consumer.accept(logRecord1);
-                }
-            }
+        Optional.ofNullable(logRecord).map(Deque::peekLast).ifPresent(consumer);
+    }
+
+    public static void append(SysLogRecord sysLogRecord) {
+        Deque<SysLogRecord> logRecord = threadLocalMap.get();
+        if (Objects.isNull(logRecord)) {
+            threadLocalMap.set(new ConcurrentLinkedDeque<>());
         }
+        Deque<SysLogRecord> sysLogRecords = threadLocalMap.get();
+        sysLogRecords.add(sysLogRecord);
     }
 
     /**
@@ -157,12 +154,6 @@ public class DbLog {
         }
     }
 
-    private static void putRemark(String remark) {
-        String params = getParams(SysLogRecord::getRemark, "");
-        String temP = StrUtil.blankToDefault(params, "") + (StrUtil.isNotBlank(params) ? "\n" : "") + remark;
-        setParams(e -> e.setRemark(temP), false);
-    }
-
     public static void putExistRemark(String remark) {
         String params = getParams(SysLogRecord::getRemark, "");
         String temP = StrUtil.blankToDefault(params, "") + (StrUtil.isNotBlank(params) ? "\n" : "") + remark;
@@ -186,10 +177,11 @@ public class DbLog {
             logRecord.setParams(content);
             logRecord.setCreateDate(new Date());
             String id = insertDomain(logRecord);
-            setParams(e -> e.setId(id), false);
+            append(logRecord);
             logRecord.setId(id);
             SysLogRecord last = getLast(false);
             BeanUtil.copyProperties(logRecord, last);
+
 
         } catch (Throwable e) {
             log.error("日志写入失败", e);
