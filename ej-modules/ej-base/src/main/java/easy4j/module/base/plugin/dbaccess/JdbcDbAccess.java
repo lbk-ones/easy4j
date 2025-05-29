@@ -91,9 +91,6 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
             return 0;
         }
         Object args = map.get(KEY_ARGS);
-        if (Objects.nonNull(args)) {
-            args = (Object[]) args;
-        }
         final String sql = (String) o;
         try {
             if (ObjectUtil.isNotEmpty(args)) {

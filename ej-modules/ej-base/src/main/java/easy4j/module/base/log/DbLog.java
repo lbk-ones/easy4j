@@ -26,6 +26,7 @@ import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
+import easy4j.module.base.plugin.dbaccess.condition.FCondition;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.plugin.lock.Easy4jSysLock;
@@ -323,7 +324,8 @@ public class DbLog {
     private static final long limitHours = 24 * 60 * 60 * 1000;
 
     // 服务启动之后第一次执行 默认一个小时
-    private static final long initlimitHours = 60 * 60 * 1000;
+//    private static final long initlimitHours = 60 * 60 * 1000;
+    private static final long initlimitHours = 10;
 
     // 第一次执行过没有
     private static volatile boolean firstEd = false;
@@ -341,14 +343,13 @@ public class DbLog {
 
                     // 默认保留7天的日志
                     Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
-                    String s = DateUtil.formatDateTime(startTime);
                     if (!firstEd) {
                         if (time > l && (time - l) >= initlimitHours) {
-                            clearLog(s, startTime);
+                            clearLog(startTime);
                         }
                     } else {
                         if (time > l && (time - l) >= limitHours) {
-                            clearLog(s, startTime);
+                            clearLog(startTime);
                         }
                     }
                     try {
@@ -366,17 +367,17 @@ public class DbLog {
         thread.start();
     }
 
-    private void clearLog(String s, Date startTime) {
+    public void clearLog(Date startTime) {
 
         // 纠正时间，改到晚上三点执行
-        if (!firstEd) {
-            LocalTime currentTime = LocalTime.now();
-            LocalTime targetTime = LocalTime.of(3, 0);
-            boolean isAfter3AM = currentTime.isAfter(targetTime);
-            if (!isAfter3AM) {
-                return;
-            }
-        }
+//        if (!firstEd) {
+//            LocalTime currentTime = LocalTime.now();
+//            LocalTime targetTime = LocalTime.of(3, 0);
+//            boolean isAfter3AM = currentTime.isAfter(targetTime);
+//            if (!isAfter3AM) {
+//                return;
+//            }
+//        }
 
         try {
             Easy4jSysLock.lock(DB_LOCK_ID, 5, "to delete log record");
@@ -392,14 +393,12 @@ public class DbLog {
             logRecord.setCreateDate(new Date());
             logRecord.setTag("日志定时清除");
 
-            Dict dict = Dict.create();
-            dict.set(LambdaUtil.getFieldName(SysLogRecord::getCreateDate), new Tuple("<=", startTime));
-            long i = dbAccess.countByMap(dict, SysLogRecord.class);
+            FCondition lte = FCondition.get().lte(logRecord::getCreateDate, startTime);
+            long i = dbAccess.countByCondition(lte, SysLogRecord.class);
 
-            dbAccess.deleteByMap(dict, SysLogRecord.class);
+            dbAccess.deleteByCondition(lte, SysLogRecord.class);
             logRecord.setRemark("日志定时删除" + i + "条");
             log.info("日志定时删除" + i + "条");
-
             long endTime = System.currentTimeMillis();
             logRecord.setProcessTime((endTime - beginTime) + "");
             insertDomain(logRecord);

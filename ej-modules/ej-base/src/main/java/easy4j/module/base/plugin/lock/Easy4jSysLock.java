@@ -86,7 +86,9 @@ public class Easy4jSysLock {
         if (StrUtil.isBlank(id)) {
             return;
         }
-        dbAccess.deleteByPrimaryKey(id, SysLock.class);
+        SysLock sysLock = new SysLock();
+        sysLock.setId(id);
+        dbAccess.deleteByPrimaryKey(sysLock, SysLock.class);
     }
 
 

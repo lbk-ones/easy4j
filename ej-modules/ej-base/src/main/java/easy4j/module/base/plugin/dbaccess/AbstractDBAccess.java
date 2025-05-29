@@ -27,6 +27,7 @@ import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
+import easy4j.module.base.plugin.dbaccess.condition.Condition;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.BusCode;
@@ -110,6 +111,15 @@ public abstract class AbstractDBAccess implements DBAccess {
             return true;
         }
         return field.isAnnotationPresent(JdbcIgnore.class);
+    }
+
+    public String where(String sql) {
+
+        if (StrUtil.isNotBlank(sql)) {
+            return " where " + sql;
+        }
+        return "";
+
     }
 
     public List<String> getColumns(Class<?> aClass, String sqlType) {
@@ -595,7 +605,7 @@ public abstract class AbstractDBAccess implements DBAccess {
     }
 
     @Override
-    public <T> int deleteByPrimaryKey(Object object, Class<T> tClass) {
+    public <T> int deleteByPrimaryKey(T object, Class<T> tClass) {
         String tableName = this.getTableName(tClass, null);
         Map<String, Object> idMap = this.getIdMap(object);
         List<Object> args = ListTs.newLinkedList();
@@ -603,6 +613,15 @@ public abstract class AbstractDBAccess implements DBAccess {
         String sql = "delete from " + tableName + " where " + sqlByObject;
         Map<String, Object> stringObjectMap = buildMap(sql, DELETE, args.toArray(new Object[]{}));
         return this.saveOrUpdate(stringObjectMap);
+    }
+
+    @Override
+    public <T> int deleteByCondition(Condition object, Class<T> tClass) {
+        List<Object> objects = new ArrayList<>();
+        String tableName = getTableName(tClass, null);
+        String sql = object.getSql(objects);
+        sql = "delete from " + tableName + where(sql);
+        return saveOrUpdate(buildMap(sql, DELETE, objects.toArray(new Object[]{})));
     }
 
     @Override
@@ -681,6 +700,15 @@ public abstract class AbstractDBAccess implements DBAccess {
             return (long) queryCount(sql.toString(), newArgsList.toArray(new Object[]{}));
         }
         return 0;
+    }
+
+    @Override
+    public long countByCondition(Condition object, Class<?> aClass) {
+        List<Object> objects = new ArrayList<>();
+        String tableName = getTableName(aClass, null);
+        String sql = object.getSql(objects);
+        sql = "select count(1) from " + tableName + where(sql);
+        return ((long) queryCount(sql, objects.toArray(new Object[]{})));
     }
 
     @Override

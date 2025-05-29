@@ -15,10 +15,13 @@
 package ej.springboot.starter.test;
 
 import cn.hutool.core.date.DateUtil;
+import easy4j.module.base.context.Easy4jContext;
+import easy4j.module.base.log.DbLog;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 import easy4j.module.seed.CommonKey;
@@ -205,5 +208,35 @@ public class AppTest {
         assertThatThrownBy(() -> {
             dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
         }).isInstanceOf(DuplicateKeyException.class);
+    }
+
+    @Test
+    public void testDbLog() throws SQLException {
+
+        DBAccess dbAccess = DBAccessFactory.getDBAccess(dataSource);
+        List<SysLogRecord> needUpdateList = ListTs.newArrayList();
+        for (int i = 0; i < 10; i++) {
+            SysLogRecord sysLogRecord = new SysLogRecord();
+            sysLogRecord.setId(CommonKey.gennerString());
+            sysLogRecord.setRemark("this is the remark" + i);
+            sysLogRecord.setParams("this is the params" + i);
+            sysLogRecord.setTag("测试新增和查询");
+            sysLogRecord.setTagDesc("这是" + DateUtil.formatDate(new Date()) + "的测试用例" + i);
+            sysLogRecord.setStatus("1");
+            sysLogRecord.setErrorInfo("cause by this is a error info list....." + i);
+            sysLogRecord.setCreateDate(DateUtil.offsetDay(new Date(), -10));
+            String s = UUID.randomUUID().toString().replaceAll("-", "");
+            sysLogRecord.setTraceId(s);
+            int i1 = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
+            if (i1 > 0) {
+                needUpdateList.add(sysLogRecord);
+            }
+        }
+
+
+        Easy4jContext context = Easy4j.getContext();
+        DbLog dbLog = context.get(DbLog.class);
+        Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
+        dbLog.clearLog(startTime);
     }
 }

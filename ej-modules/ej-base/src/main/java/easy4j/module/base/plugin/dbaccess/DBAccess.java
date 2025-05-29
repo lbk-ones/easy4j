@@ -15,6 +15,7 @@
 package easy4j.module.base.plugin.dbaccess;
 
 import cn.hutool.core.lang.Dict;
+import easy4j.module.base.plugin.dbaccess.condition.Condition;
 import org.springframework.core.io.Resource;
 
 import java.sql.Connection;
@@ -188,6 +189,8 @@ public interface DBAccess {
      */
     long countByMap(Map<String, Object> object, Class<?> aClass);
 
+    long countByCondition(Condition object, Class<?> aClass);
+
     /**
      * 执行sql脚本
      *
@@ -223,7 +226,9 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> int deleteByPrimaryKey(Object object, Class<T> tClass);
+    <T> int deleteByPrimaryKey(T object, Class<T> tClass);
+
+    <T> int deleteByCondition(Condition object, Class<T> tClass);
 
 
     <T> int deleteByMap(Dict dict, Class<T> tClass);

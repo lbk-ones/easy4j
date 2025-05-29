@@ -122,7 +122,9 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
     @Override
     public void releaseLock(String key) {
         if (StrUtil.isEmpty(key)) return;
-        dbAccess.deleteByPrimaryKey(key, Easy4jKeyIdempotent.class);
+        Easy4jKeyIdempotent easy4jKeyIdempotent = new Easy4jKeyIdempotent();
+        easy4jKeyIdempotent.setIdeKey(key);
+        dbAccess.deleteByPrimaryKey(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
         cache.removeIf(e -> e.getIdeKey().equals(key));
     }
 }
