@@ -22,10 +22,8 @@ import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.json.JacksonUtil;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -213,13 +211,14 @@ public class Condition {
                 StringBuilder sbOr = new StringBuilder();
                 Condition[] condition = tuple.get(2);
                 for (Condition conditionItem : condition) {
+                    conditionItem.bind(this.connection);
                     String sql = conditionItem.getSql(argsList);
                     if (StrUtil.isNotBlank(sql)) {
                         sbOr.append("(").append(" ").append(sql).append(" ").append(")").append(" ").append(OR).append(" ");
                     }
                 }
                 if (StrUtil.isNotBlank(sbOr)) {
-                    sbOr.delete(sbOr.length() - 3, sbOr.length());
+                    sbOr.delete(sbOr.length() - (2 + OR.length()), sbOr.length());
                     sb.append("(").append(" ").append(sbOr).append(" ").append(")").append(" ").append(AND).append(" ");
                 }
             } else if (orAnd.equals(AND)) {
@@ -238,26 +237,34 @@ public class Condition {
                 for (Tuple objects : groupTuple) {
                     String[] w = objects.get(2);
                     for (String s : w) {
-                        groupByStr.append(" ").append(s).append(" ").append(",");
+                        s = wrapper.wrap(StrUtil.toUnderlineCase(s));
+                        groupByStr.append(" ").append(s).append(",");
                     }
                 }
             }
             if (!orderBy.isEmpty()) {
                 for (Tuple objects : orderBy) {
                     String str = Convert.toStr(objects.get(2));
-                    orderByStr.append(" ").append(str).append(" ").append(",");
+                    str = wrapper.wrap(StrUtil.toUnderlineCase(str));
+                    orderByStr.append(" ").append(str).append(",");
                 }
             }
             if (groupByStr.length() > GROUP.length()) {
-                groupByStr.delete(groupByStr.length() - 2, groupByStr.length());
-                builder.append(" ").append(groupByStr).append(" ");
+                groupByStr.delete(groupByStr.length() - 1, groupByStr.length());
+                builder.append(" ").append(groupByStr);
             }
             if (orderByStr.length() > ORDER_BY.length()) {
-                orderByStr.delete(orderByStr.length() - 2, orderByStr.length());
+                orderByStr.delete(orderByStr.length() - 1, orderByStr.length());
                 builder.append(" ").append(orderByStr).append(" ");
             }
         }
         return StrUtil.trim(builder.toString());
+    }
+
+    public void clear() {
+        tuple.clear();
+        groupTuple.clear();
+        orderBy.clear();
     }
 
 

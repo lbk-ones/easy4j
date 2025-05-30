@@ -14,21 +14,12 @@
  */
 package easy4j.module.base.plugin.dbaccess.condition;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Tuple;
 import cn.hutool.core.lang.func.Func0;
-import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
-import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
-import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.json.JacksonUtil;
 
-import java.util.ArrayList;
+import java.sql.Connection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Condition
@@ -45,11 +36,15 @@ import java.util.Objects;
  * @date 2025-05-29 23:16:46
  */
 public class FCondition extends Condition {
-    public static final String OR = "or";
-    public static final String AND = "and";
 
     public static FCondition get() {
         return new FCondition();
+    }
+
+    public static FCondition get(Connection connection) {
+        FCondition fCondition = new FCondition();
+        fCondition.bind(connection);
+        return fCondition;
     }
 
     public String getName(Func0<?> func) {
@@ -57,69 +52,55 @@ public class FCondition extends Condition {
     }
 
     public FCondition set(Func0<?> func, String symbol, Object value) {
-
-        super.set(getName(func), symbol, value);
-        return this;
+        return (FCondition) super.set(getName(func), symbol, value);
     }
 
     public FCondition equal(Func0<?> func, Object value) {
-        super.equal(getName(func), value);
-        return this;
+        return (FCondition) super.equal(getName(func), value);
     }
 
     public FCondition gt(Func0<?> func, Object value) {
-        super.gt(getName(func), value);
-        return this;
+        return (FCondition) super.gt(getName(func), value);
     }
 
     public FCondition gte(Func0<?> func, Object value) {
-        super.gte(getName(func), value);
-        return this;
+        return (FCondition) super.gte(getName(func), value);
     }
 
     public FCondition lt(Func0<?> func, Object value) {
-        super.lt(getName(func), value);
-        return this;
+        return (FCondition) super.lt(getName(func), value);
     }
 
     public FCondition lte(Func0<?> func, Object value) {
-        super.lte(getName(func), value);
-        return this;
+        return (FCondition) super.lte(getName(func), value);
     }
 
     public FCondition ne(Func0<?> func, Object value) {
-        super.ne(getName(func), value);
-        return this;
+        return (FCondition) super.ne(getName(func), value);
     }
 
     public FCondition ne2(Func0<?> func, Object value) {
-        super.ne2(getName(func), value);
-        return this;
+        return (FCondition) super.ne2(getName(func), value);
     }
 
     public FCondition isNotNull(Func0<?> func) {
-        super.isNotNull(getName(func));
-        return this;
+        return (FCondition) super.isNotNull(getName(func));
     }
 
     public FCondition isNull(Func0<?> func) {
-        super.isNull(getName(func));
-        return this;
+        return (FCondition) super.isNull(getName(func));
     }
 
     public FCondition like(Func0<?> func, String value) {
-        super.like(getName(func), value);
-        return this;
+        return (FCondition) super.like(getName(func), value);
     }
 
     public FCondition likeLeft(Func0<?> func, String value) {
-        super.likeLeft(getName(func), value);
-        return this;
+        return (FCondition) super.likeLeft(getName(func), value);
     }
 
     public FCondition likeRight(Func0<?> func, String value) {
-        super.likeRight(getName(func), value);
-        return this;
+        return (FCondition) super.likeRight(getName(func), value);
     }
 
     /**
@@ -129,8 +110,7 @@ public class FCondition extends Condition {
      * @return
      */
     public FCondition or(FCondition... condition) {
-        super.or(condition);
-        return this;
+        return (FCondition) super.or(condition);
     }
 
     public FCondition groupBy(Func0<?>... field) {
@@ -139,18 +119,15 @@ public class FCondition extends Condition {
             String name = getName(func0);
             objects.add(name);
         }
-        super.groupBy(objects.toArray(new String[]{}));
-        return this;
+        return (FCondition) super.groupBy(objects.toArray(new String[]{}));
     }
 
     public FCondition asc(Func0<?> func) {
-        super.asc(getName(func));
-        return this;
+        return (FCondition) super.asc(getName(func));
     }
 
     public FCondition desc(Func0<?> func) {
-        super.desc(getName(func));
-        return this;
+        return (FCondition) super.desc(getName(func));
     }
 
 }
