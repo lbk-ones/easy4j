@@ -19,29 +19,44 @@ import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.ServiceLoaderUtils;
 import easy4j.module.base.utils.SysConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 初始化上下文
  * 开启简单链路最终
  * 将链路ID放到上下文去
+ * 这里面不处理异常 出了异常就抛出去
+ *
+ * @author bokun.li
  */
 @Slf4j
 @Component
 public class PerRequestInterceptor implements HandlerInterceptor {
+    public static final String PRE_HANDLER = "preHandle";
+    public static final String POST_HANDLE = "postHandle";
+
+    public static final String AFTER_COMPLETION = "afterCompletion";
     public static final String INTERCEPTOR_MARK = SysConstant.PARAM_PREFIX.toLowerCase() + "_request_lifecycle_intercepted";
     public static final String START_TIME_KEY = SysConstant.PARAM_PREFIX.toLowerCase() + "_request_start_time";
     public static final String REQUEST_ID_KEY = SysConstant.PARAM_PREFIX.toLowerCase() + "_request_id";
     public static final String REQUEST_PRINT_LOG = SysConstant.PARAM_PREFIX.toLowerCase() + "_is_print_log";
     public static final String REQUEST_IP_ADDR = SysConstant.PARAM_PREFIX.toLowerCase() + "_ip_addr";
+    private final List<Easy4JWebMvcHandler> easy4JWebMvcHandlers = ServiceLoaderUtils.load(Easy4JWebMvcHandler.class).stream().sorted(Comparator.comparing(Easy4JWebMvcHandler::getOrder)).collect(Collectors.toList());
+
 
     /**
      * 请求进入时触发，记录开始时间、生成唯一请求 ID，打印初始日志。
@@ -58,20 +73,43 @@ public class PerRequestInterceptor implements HandlerInterceptor {
         if (request.getAttribute(INTERCEPTOR_MARK) != null) {
             return true;
         }
-        try {
-            setAttribute(request, response);
-            String ipAddr = IpUtils.getIpAddr(request);
-            request.setAttribute(REQUEST_IP_ADDR, ipAddr);
-            Object attribute = request.getAttribute(REQUEST_PRINT_LOG);
-            if (null != attribute && (boolean) attribute) {
-                // 打印控制器处理完成日志（视图未渲染）
-                log.info("[请求开始] ip: {}, 路径: {}, 方法:{}", ipAddr, request.getRequestURI(), request.getMethod());
-            }
-        } catch (Exception e) {
-            log.error(this.getClass().getName() + "--preHandler find a exception", e);
+        setAttribute(request, response);
+        String ipAddr = IpUtils.getIpAddr(request);
+        request.setAttribute(REQUEST_IP_ADDR, ipAddr);
+        Object attribute = request.getAttribute(REQUEST_PRINT_LOG);
+        if (null != attribute && (boolean) attribute) {
+            // 打印控制器处理完成日志（视图未渲染）
+            log.info("[请求开始] ip: {}, 路径: {}, 方法:{}", ipAddr, request.getRequestURI(), request.getMethod());
         }
+        handlerMethods(request, response, handler, null, null, PRE_HANDLER);
 
         return true;
+    }
+
+    // spi call
+    private void handlerMethods(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Object handler,
+            ModelAndView modelAndView,
+            Exception ex,
+            String type
+    ) {
+        if (handler instanceof HandlerMethod) {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            for (Easy4JWebMvcHandler easy4JWebMvcHandler : easy4JWebMvcHandlers) {
+                if (PRE_HANDLER.equals(type)) {
+                    easy4JWebMvcHandler.preHandle(request, response, handlerMethod);
+                }
+                if (POST_HANDLE.equals(type)) {
+                    easy4JWebMvcHandler.postHandle(request, response, modelAndView, handlerMethod);
+                }
+                if (AFTER_COMPLETION.equals(type)) {
+                    easy4JWebMvcHandler.afterCompletion(request, response, ex, handlerMethod);
+                }
+            }
+        }
+
     }
 
     private static void setAttribute(HttpServletRequest request, HttpServletResponse response) {
@@ -105,14 +143,18 @@ public class PerRequestInterceptor implements HandlerInterceptor {
      */
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                           org.springframework.web.servlet.ModelAndView modelAndView) {
+                           ModelAndView modelAndView) {
         // 仅处理首次拦截的请求
         if (request.getAttribute(INTERCEPTOR_MARK) == null) return;
         Object attribute = request.getAttribute(REQUEST_PRINT_LOG);
+
+        handlerMethods(request, response, handler, modelAndView, null, POST_HANDLE);
+
         if (null != attribute && (boolean) attribute) {
             // 打印控制器处理完成日志（视图未渲染）
             log.info("[控制器完成] 状态码: {}", response.getStatus());
         }
+
 
     }
 
@@ -135,6 +177,8 @@ public class PerRequestInterceptor implements HandlerInterceptor {
             // 计算请求耗时
             long startTime = (long) request.getAttribute(START_TIME_KEY);
             long duration = System.currentTimeMillis() - startTime;
+
+            handlerMethods(request, response, handler, null, ex, AFTER_COMPLETION);
 
             if (isPrintLog) {
                 // 打印请求完成日志（含异常信息）

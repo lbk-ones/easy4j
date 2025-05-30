@@ -16,7 +16,6 @@ package easy4j.module.base.plugin.dbaccess.domain;
 
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import lombok.Data;
-import org.apache.commons.dbutils.Column;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -64,4 +63,36 @@ public class SysLogRecord implements Serializable {
 
     // 错误信息
     private String errorInfo;
+
+
+    // 操作对象ID(当前操作的对象标识id)
+    private String targetId;
+
+    // 操作对象ID(当前操作对象第二个标识id)
+    private String targetId2;
+
+    // 操作人代码
+    private String operateCode;
+
+    // 操作人姓名
+    private String operateName;
+
+    public SysLogRecord toNewLogRecord() {
+        SysLogRecord sysLogRecord = new SysLogRecord();
+        sysLogRecord.setId(this.getId());
+        sysLogRecord.setTag(this.getTag());
+        sysLogRecord.setTagDesc(this.getTagDesc());
+        sysLogRecord.setTraceId(this.getTraceId());
+        sysLogRecord.setStatus(this.getStatus());
+        sysLogRecord.setProcessTime(this.getProcessTime());
+        sysLogRecord.setCreateDate(this.getCreateDate());
+        sysLogRecord.setParams(this.getParams());
+        sysLogRecord.setRemark(this.getRemark());
+        sysLogRecord.setErrorInfo(this.getErrorInfo());
+        sysLogRecord.setTargetId(this.getTargetId());
+        sysLogRecord.setTargetId2(this.getTargetId2());
+        sysLogRecord.setOperateCode(this.getOperateCode());
+        sysLogRecord.setOperateName(this.getOperateName());
+        return sysLogRecord;
+    }
 }

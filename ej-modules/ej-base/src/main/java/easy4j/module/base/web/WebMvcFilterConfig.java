@@ -25,7 +25,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author bokun.li
  * @date 2025-05
  */
-public class WebFilterConfig implements WebMvcConfigurer {
+public class WebMvcFilterConfig implements WebMvcConfigurer {
 
     @Autowired
     PerRequestInterceptor perRequestInterceptor;

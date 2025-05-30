@@ -14,37 +14,72 @@
  */
 package easy4j.module.base.plugin.i18n;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import easy4j.module.base.utils.SysLog;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 
+import javax.annotation.Resource;
 import java.util.Locale;
-import java.util.Objects;
 
 /**
- * I18nUtils
+ * 一些系统工具
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2023/11/23
  */
-public class I18nUtils {
-   private final MessageSource messageSource;
+@Slf4j
+public class I18nUtils implements InitializingBean {
 
-   public I18nUtils(MessageSource messageSource) {
-       this.messageSource = messageSource;
-   }
+    private static I18nBean i18nBean;
 
-   public String getMessage(String msgKey, Object[] args) {
-       return messageSource.getMessage(msgKey, args,"", LocaleContextHolder.getLocale());
-   }
-    public String getMessage(String msgKey, Locale locale, Object[] args) {
-        return messageSource.getMessage(msgKey, args,"", Objects.isNull(locale)?LocaleContextHolder.getLocale():locale);
+    @Resource
+    public void setI18nBean(I18nBean i18NBean) {
+        I18nUtils.i18nBean = i18NBean;
     }
 
-    public String getMessage(String msgKey) {
-        return messageSource.getMessage(msgKey, null,"", LocaleContextHolder.getLocale());
+    private static I18nBean getI18Bean() {
+        if (i18nBean == null) {
+            i18nBean = SpringUtil.getBean(I18nBean.class);
+        }
+        return i18nBean;
     }
 
-   public String getSysMessage(String msgKey) {
-       return messageSource.getMessage(msgKey, null,"", LocaleContextHolder.getLocale());
-   }
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info(SysLog.compact("i18nUtils工具加载成功"));
+    }
+
+
+    public static String getOperateSuccessStr() {
+        return clear(getI18Bean().getSysMessage("A00001"));
+    }
+
+    public static String getOperateErrorStr() {
+        return clear(getI18Bean().getSysMessage("A00002"));
+    }
+
+    public static String getSysErrorStr() {
+        return clear(getI18Bean().getSysMessage("A00003"));
+    }
+
+    public static String getMessage(String msgKey, String... paramster) {
+        return clear(getI18Bean().getMessage(msgKey, paramster));
+    }
+
+    public static String getMessageByKey(String msgKey) {
+        return getI18Bean().getMessage(msgKey);
+    }
+
+    public static String getMessage(String msgKey, Locale locale, String... paramster) {
+        return clear(getI18Bean().getMessage(msgKey, locale, paramster));
+    }
+
+    public static String clear(String msg) {
+        // 去掉占位符
+        return StrUtil.isNotBlank(msg) ? msg.replaceAll("\\{\\d+\\}", "") : msg;
+    }
+
+
 }

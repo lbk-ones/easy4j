@@ -124,4 +124,7 @@ public class BusCode {
 
     @Desc("该资源【{0}】已经被锁定，备注：{0}")
     public static final String A00039 = "A00039";
+
+    @Desc("JSON不合法")
+    public static final String A00040 = "A00040";
 }

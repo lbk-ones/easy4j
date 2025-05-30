@@ -17,9 +17,6 @@ package easy4j.module.base.log;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Dict;
-import cn.hutool.core.lang.Tuple;
-import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import easy4j.module.base.context.Easy4jContext;
@@ -33,20 +30,15 @@ import easy4j.module.base.plugin.lock.Easy4jSysLock;
 import easy4j.module.base.plugin.seed.Easy4jSeed;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.ThreadPoolUtils;
 import jodd.exception.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,6 +53,8 @@ import java.util.function.Function;
  */
 @Slf4j
 public class DbLog {
+
+    public static final String CONTEXT_THREAD_KEY = "easy4j-sys-log-record-context-key";
 
     public static final String DB_LOCK_ID = "delete-sys-log-record-lock";
     public static final String DB_LOCK_ID_INIT = "delete-sys-log-record-lock-init";
@@ -94,9 +88,8 @@ public class DbLog {
      * 写入参数
      *
      * @param consumer
-     * @param ifExist  true 存在才写入 false 不存在就新增
      */
-    public synchronized static void setParams(Consumer<SysLogRecord> consumer, boolean ifExist) {
+    public synchronized static void set(Consumer<SysLogRecord> consumer) {
         Deque<SysLogRecord> logRecord = threadLocalMap.get();
         Optional.ofNullable(logRecord).map(Deque::peekLast).ifPresent(consumer);
     }
@@ -154,10 +147,24 @@ public class DbLog {
         }
     }
 
-    public static void putExistRemark(String remark) {
+    public static void putRemark(String remark) {
         String params = getParams(SysLogRecord::getRemark, "");
         String temP = StrUtil.blankToDefault(params, "") + (StrUtil.isNotBlank(params) ? "\n" : "") + remark;
-        setParams(e -> e.setRemark(temP), true);
+        set(e -> e.setRemark(temP));
+    }
+
+    public static void putParams(String params2) {
+        String params = getParams(SysLogRecord::getParams, "");
+        String temP = StrUtil.blankToDefault(params, "") + (StrUtil.isNotBlank(params) ? "\n" : "") + params2;
+        set(e -> e.setParams(temP));
+    }
+
+    public static void putTargetId(String targetId) {
+        set(e -> e.setTargetId(targetId));
+    }
+
+    public static void putTargetId2(String targetId2) {
+        set(e -> e.setTargetId2(targetId2));
     }
 
 
@@ -211,10 +218,6 @@ public class DbLog {
         endLogWith(null, null, null);
     }
 
-    public static void successLog() {
-        endLogWith(null, null, null);
-    }
-
     public static void endLogId(String id) {
         endLogWith(id, null, null);
     }
@@ -248,8 +251,7 @@ public class DbLog {
 
             Date createDate = last.getCreateDate();
             Date newDate = new Date();
-            SysLogRecord logRecord = new SysLogRecord();
-            BeanUtil.copyProperties(last, logRecord);
+            SysLogRecord logRecord = last.toNewLogRecord();
             if (Objects.nonNull(createDate)) {
                 long l = newDate.getTime() - createDate.getTime();
                 logRecord.setProcessTime(String.valueOf(l));
@@ -265,7 +267,6 @@ public class DbLog {
             } else {
                 logRecord.setStatus(_status);
             }
-            // 异步更新
             dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class);
         } catch (Throwable e) {
             log.error("日志完成写入失败", e);

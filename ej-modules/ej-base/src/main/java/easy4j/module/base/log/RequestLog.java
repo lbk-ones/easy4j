@@ -26,4 +26,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RequestLog {
+
+    String tag() default "";
+
+    String tagDesc() default "";
 }

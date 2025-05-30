@@ -123,6 +123,7 @@ public class SysConstant {
     public static final String EASY4J_SAUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
     public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
     public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "auth-session-storage-type";
+    public static final String EASY4J_ENABLE_DB_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "db-request-log-enable";
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
 

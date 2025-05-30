@@ -14,10 +14,18 @@
  */
 package ej.spring.boot.starter.server.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import easy4j.module.base.header.EasyResult;
+import easy4j.module.base.log.RequestLog;
+import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
+import easy4j.module.base.utils.json.JacksonUtil;
+import ej.spring.boot.starter.server.mapper.SysLogRecordMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * TestController
@@ -30,10 +38,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
 
+    @Autowired
+    SysLogRecordMapper sysLogRecordMapper;
+
     @RequestMapping("hello")
+    @RequestLog(tag = "test", tagDesc = "hello-test")
     public EasyResult<String> getEasyResult() {
 
         log.info("this a test hello~~");
         return EasyResult.ok("hello wolrd");
+    }
+
+    @RequestMapping("querySysLogRecord")
+    public EasyResult<String> querySysLogRecord() {
+        LambdaQueryWrapper<SysLogRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<SysLogRecord> sysLogRecords = sysLogRecordMapper.selectList(lambdaQueryWrapper);
+        log.info("this a test hello~~");
+        return EasyResult.ok(JacksonUtil.toJson(sysLogRecords));
     }
 }

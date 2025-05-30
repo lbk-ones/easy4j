@@ -17,6 +17,7 @@ package ej.spring.boot.starter.server;
 
 import easy4j.module.base.starter.Easy4JStarter;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 
 @Easy4JStarter(
         serverPort = 9051,
@@ -30,8 +31,11 @@ import org.springframework.boot.SpringApplication;
  * @date 2025-05
  */
 public class StartTest {
+
     public static void main(String[] args) {
-        SpringApplication.run(StartTest.class, args);
+        SpringApplication app = new SpringApplication(StartTest.class);
+        app.setApplicationStartup(new BufferingApplicationStartup(10000)); // 缓冲区大小可根据需要调整
+        app.run(args);
     }
 
 }

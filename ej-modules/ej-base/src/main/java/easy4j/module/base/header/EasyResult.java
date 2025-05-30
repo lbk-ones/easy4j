@@ -16,11 +16,11 @@ package easy4j.module.base.header;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.plugin.i18n.I18nUtils;
 import easy4j.module.base.utils.BusCode;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
-import easy4j.module.base.plugin.i18n.I18nBean;
 import easy4j.module.base.utils.json.JacksonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jodd.util.StringPool;
@@ -77,7 +77,7 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
 
         easyResult.setData(data);
-        easyResult.setMessage(I18nBean.getOperateSuccessStr());
+        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
@@ -87,7 +87,7 @@ public class EasyResult<T> implements Serializable {
 
         easyResult.setData(data);
         easyResult.setStartTime(startDate != null ? startDate.getTime() : easyResult.getStartTime());
-        easyResult.setMessage(I18nBean.getOperateSuccessStr());
+        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
@@ -95,11 +95,11 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setData(null);
         easyResult.setCode(code);
-        String message1 = I18nBean.getMessage(code);
+        String message1 = I18nUtils.getMessage(code);
         if (StrUtil.isNotBlank(message1)) {
             easyResult.setMessage(message1);
         } else {
-            easyResult.setMessage(I18nBean.getOperateSuccessStr());
+            easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         }
         return easyResult;
     }
@@ -111,7 +111,7 @@ public class EasyResult<T> implements Serializable {
         easyResult.setData(data);
         easyResult.setCode(code);
         easyResult.setStartTime(startDate != null ? startDate.getTime() : easyResult.getStartTime());
-        easyResult.setMessage(I18nBean.getOperateSuccessStr());
+        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
@@ -129,7 +129,7 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setError(error);
         easyResult.setCode(i18nCode);
-        easyResult.setMessage(I18nBean.getMessage(i18nCode));
+        easyResult.setMessage(I18nUtils.getMessage(i18nCode));
         easyResult.setData(data);
         return easyResult;
     }
@@ -139,7 +139,7 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setError(error);
         easyResult.setCode(i18nCode);
-        easyResult.setMessage(I18nBean.getMessage(i18nCode));
+        easyResult.setMessage(I18nUtils.getMessage(i18nCode));
         easyResult.setData(null);
         return easyResult;
     }
@@ -148,7 +148,7 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setCode(BusCode.A00003);
         easyResult.setError(SysConstant.ERRORCODE);
-        easyResult.setMessage(I18nBean.getOperateErrorStr());
+        easyResult.setMessage(I18nUtils.getOperateErrorStr());
         if (!(e instanceof EasyException)) {
             easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
         }
@@ -210,17 +210,17 @@ public class EasyResult<T> implements Serializable {
                     String argStr = message1.substring(i + 1);
                     if (StrUtil.isNotEmpty(argStr)) {
                         List<String> list = ListTs.asList(argStr.split(StringPool.COMMA));
-                        msg = I18nBean.getMessage(msgKey, local, list.toArray(new String[]{}));
+                        msg = I18nUtils.getMessage(msgKey, local, list.toArray(new String[]{}));
                     }
                 } else {
-                    msg = I18nBean.getMessage(msgKey);
+                    msg = I18nUtils.getMessage(msgKey);
                 }
             }
         }
         String code = "A00003";
         // 不允许使用自己定义的内容发布异常
         if (msg.isEmpty()) {
-            msg = isEasy4j ? e.getMessage() : I18nBean.getMessage(code, local);
+            msg = isEasy4j ? e.getMessage() : I18nUtils.getMessage(code, local);
         } else {
             code = msgKey;
         }

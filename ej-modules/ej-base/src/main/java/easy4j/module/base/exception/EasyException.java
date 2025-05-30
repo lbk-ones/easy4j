@@ -17,7 +17,7 @@ package easy4j.module.base.exception;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.annotations.Desc;
-import easy4j.module.base.plugin.i18n.I18nBean;
+import easy4j.module.base.plugin.i18n.I18nUtils;
 import easy4j.module.base.utils.ListTs;
 import jodd.util.StringPool;
 import lombok.Getter;
@@ -70,7 +70,7 @@ public class EasyException extends RuntimeException {
 
     public static EasyException throwExc(String message) throws EasyException {
         if (StrUtil.isBlank(message)) {
-            throw new EasyException(I18nBean.getOperateErrorStr());
+            throw new EasyException(I18nUtils.getOperateErrorStr());
         } else {
             throw new EasyException(message);
         }
@@ -87,14 +87,14 @@ public class EasyException extends RuntimeException {
     public static void isNullThrow(Object object, String paramName) {
         String s = handlerDotMessage(paramName);
         if (Objects.isNull(object)) {
-            throw new EasyException(I18nBean.getMessage("A00004", s));
+            throw new EasyException(I18nUtils.getMessage("A00004", s));
         } else if (StrUtil.isBlankIfStr(object)) {
-            throw new EasyException(I18nBean.getMessage("A00004", s));
+            throw new EasyException(I18nUtils.getMessage("A00004", s));
         } else {
             if (object instanceof Collection) {
                 Collection<?> object1 = (Collection<?>) object;
                 if (object1.isEmpty()) {
-                    throw new EasyException(I18nBean.getMessage("A00004", s));
+                    throw new EasyException(I18nUtils.getMessage("A00004", s));
                 }
             }
         }
@@ -104,9 +104,9 @@ public class EasyException extends RuntimeException {
     public static void isTrueThrow(boolean flag, String msgKey, String msgContent) {
         if (flag) {
             if (StrUtil.isBlank(msgKey)) {
-                throw new EasyException(I18nBean.getOperateErrorStr());
+                throw new EasyException(I18nUtils.getOperateErrorStr());
             } else {
-                throw new EasyException(I18nBean.getMessage(msgKey, msgContent));
+                throw new EasyException(I18nUtils.getMessage(msgKey, msgContent));
             }
         }
     }
@@ -131,7 +131,7 @@ public class EasyException extends RuntimeException {
 
             String s = handlerDotMessage(join);
 
-            throw new EasyException(I18nBean.getMessage("A00004", s));
+            throw new EasyException(I18nUtils.getMessage("A00004", s));
 
         }
 

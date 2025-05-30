@@ -15,7 +15,7 @@
 package easy4j.module.base.exception;
 
 import easy4j.module.base.header.EasyResult;
-import easy4j.module.base.plugin.i18n.I18nBean;
+import easy4j.module.base.plugin.i18n.I18nUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * 捕捉到Exception、EasyException异常，会由此对象拦截处理
+ *
  * @author bokun.li
  * @date 2023/11/23
  */
@@ -39,17 +40,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = EasyException.class)
     @ResponseBody
     public EasyResult<Object> appErrorHandler(HttpServletRequest req, EasyException e) throws Exception {
-        log.info("运行时自定义异常-------"+e.getMessage());
+        log.info("运行时自定义异常-------" + e.getMessage());
         return EasyResult.toI18n(e);
     }
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public EasyResult<Object> defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        log.error("不可预期的异常："+e.getMessage(),e);
-        if(e instanceof EasyException){
+        log.error("不可预期的异常：" + e.getMessage(), e);
+        if (e instanceof EasyException) {
             return EasyResult.rpcErrorInfo(e);
-        }else{
+        } else {
             return EasyResult.errorInfo(e);
         }
     }
@@ -77,21 +78,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     @ResponseBody
     public EasyResult<Object> httpErrorHandler(HttpServletRequest req, HttpMessageNotReadableException e) throws Exception {
-        log.info("HTTP请求参数异常-------"+e.getMessage());
-        return EasyResult.errorInfo( I18nBean.getMessage("A00005",e.getMessage()));
+        log.info("HTTP请求参数异常-------" + e.getMessage());
+        return EasyResult.errorInfo(I18nUtils.getMessage("A00005", e.getMessage()));
     }
 
     @ExceptionHandler(value = HttpMediaTypeNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMediaTypeNotSupportedExceptionHandler(HttpServletRequest req, HttpMediaTypeNotSupportedException e) throws Exception {
-        log.info("HTTP请求ContentType异常-------"+e.getMessage());
-        return EasyResult.errorInfo( I18nBean.getMessage("A00006"));
+        log.info("HTTP请求ContentType异常-------" + e.getMessage());
+        return EasyResult.errorInfo(I18nUtils.getMessage("A00006"));
     }
 
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMethodErrorHandler(HttpServletRequest req, HttpRequestMethodNotSupportedException e) throws Exception {
-        return EasyResult.errorInfo(I18nBean.getMessage("A00007",e.getMessage()));
+        return EasyResult.errorInfo(I18nUtils.getMessage("A00007", e.getMessage()));
     }
 }
 

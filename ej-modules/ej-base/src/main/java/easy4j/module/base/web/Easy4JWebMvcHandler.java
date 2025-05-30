@@ -14,29 +14,28 @@
  */
 package easy4j.module.base.web;
 
-import easy4j.module.base.web.filter.RequestWrapperFilter;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.Filter;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * Config
+ * WebMvcHandler
  *
  * @author bokun.li
- * @date 2025-05
  */
-@Configuration
-public class Config {
+public interface Easy4JWebMvcHandler {
 
-    @Bean
-    public Filter requestWrapperFilter() {
-        return new RequestWrapperFilter();
+
+    void preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod);
+
+    void postHandle(HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView, HandlerMethod handlerMethod);
+
+    void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handlerMethod);
+
+    default Integer getOrder() {
+        return 1;
     }
 
-    @Bean
-    public PerRequestInterceptor perRequestLifecycleInterceptor() {
-        return new PerRequestInterceptor();
-    }
 }

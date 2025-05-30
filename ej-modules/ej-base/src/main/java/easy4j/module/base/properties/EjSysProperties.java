@@ -352,6 +352,12 @@ public class EjSysProperties {
     @SpringVs(desc = "权限session存储类型：db代表数据库，redis代表redis")
     private String authSessionStorageType = "db";
 
+    /**
+     * 是否启用RequestLog注解进行请求日志收集 true代表开启
+     */
+    @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")
+    private boolean dbRequestLogEnable = true;
+
 
     /**
      * 根据常量获取 对应的springboot变量

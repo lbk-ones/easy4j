@@ -19,7 +19,6 @@ import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguratio
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -55,13 +54,13 @@ public class Config {
     }
 */
     @Bean
-    public I18nUtils i18nUtils() {
-        return new I18nUtils(messageSource());
+    public I18nBean i18nBean() {
+        return new I18nBean(messageSource());
     }
 
     @Bean
-    public I18nBean i18nBean(){
-        return new I18nBean();
+    public I18nUtils i18nUtils() {
+        return new I18nUtils();
     }
 
     /**
@@ -71,11 +70,11 @@ public class Config {
     public ReloadableResourceBundleMessageSource messageSource() {
 
         ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
-        source.setBasenames("classpath:/i18n/sys","classpath:/i18n/messages");
+        source.setBasenames("classpath:/i18n/sys", "classpath:/i18n/messages");
         //默认是false，调试设置为true 打开之后
 //        source.setUseCodeAsDefaultMessage(true);
         source.setDefaultEncoding(StandardCharsets.UTF_8.displayName(Locale.getDefault()));
-        source.setDefaultLocale(new Locale("zh","CN"));
+        source.setDefaultLocale(new Locale("zh", "CN"));
         return source;
     }
 
@@ -111,7 +110,6 @@ public class Config {
         messageSource.setUseCodeAsDefaultMessage(properties.isUseCodeAsDefaultMessage());
         return messageSource;
     }*/
-
 
 
     /**

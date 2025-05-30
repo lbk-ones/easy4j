@@ -154,10 +154,10 @@
             <version>${disruptor.version}</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jdbc</artifactId>
-        </dependency>
+        </dependency>-->
 
 
         <dependency>

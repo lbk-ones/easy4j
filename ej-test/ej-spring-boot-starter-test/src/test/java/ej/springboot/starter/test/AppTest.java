@@ -15,7 +15,6 @@
 package ej.springboot.starter.test;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.db.Db;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.log.DbLog;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
@@ -34,12 +33,10 @@ import org.springframework.dao.DuplicateKeyException;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Easy4JStarter(
@@ -253,9 +250,9 @@ public class AppTest {
         System.out.println(DbLog.getDeque().size());
         SysLogRecord sysLogRecord = new SysLogRecord();
         String jsonContainNull = JacksonUtil.toJsonContainNull(sysLogRecord);
-        DbLog.putExistRemark(jsonContainNull);
-        DbLog.putExistRemark("step2");
-        DbLog.putExistRemark("step1");
+        DbLog.putRemark(jsonContainNull);
+        DbLog.putRemark("step2");
+        DbLog.putRemark("step1");
         String id = DbLog.getParams(SysLogRecord::getId, "");
         System.out.println("-- id " + id);
         DbLog.beginLog("test2", "test23444", "tesggaahgat222");
@@ -264,12 +261,12 @@ public class AppTest {
         System.out.println(DbLog.getDeque().size());
         String params = DbLog.getParams(SysLogRecord::getId, "");
         System.out.println("first id " + params);
-        DbLog.successLog();
+        DbLog.endLog();
         System.out.println(DbLog.getDeque().size());
 
         String id2 = DbLog.getParams(SysLogRecord::getId, "");
         System.out.println("two id " + id2);
-        DbLog.successLog();
+        DbLog.endLog();
         System.out.println(DbLog.getDeque() == null);
 
 
