@@ -11,8 +11,8 @@ import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 import easy4j.module.sentinel.EnableFlowDegrade;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import ej.spring.boot.starter.server.StartTest;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -36,10 +36,11 @@ import static org.junit.jupiter.api.Assertions.*;
         serverName = "test-server",
         serviceDesc = "测试条件",
         author = "bokun.li",
-        enableH2 = true
+        enableH2 = false,
+        ejDataSourceUrl = "jdbc:postgresql://localhost:5432/test@root:123456"
 )
 @EnableFlowDegrade
-@SpringBootTest(classes = ConditionTest.class)
+@SpringBootTest(classes = StartTest.class)
 public class ConditionTest {
 
     private Condition condition;
@@ -50,10 +51,12 @@ public class ConditionTest {
     @Autowired
     DataSource dataSource;
 
+
     @BeforeEach
     public void setUp() throws SQLException {
         condition = Condition.get();
         mockConnection = dataSource.getConnection();
+        System.out.println(mockConnection.isClosed());
         mockDialect = JdbcHelper.getDialect(mockConnection);
         assert mockDialect != null;
         mockWrapper = mockDialect.getWrapper();
@@ -227,4 +230,10 @@ public class ConditionTest {
         System.out.println(sql);
         System.out.println(JacksonUtil.toJson(objects));
     }
+
+    @AfterEach
+    public void afterEach() throws SQLException {
+        mockConnection.close();
+    }
+
 }

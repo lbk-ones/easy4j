@@ -26,6 +26,8 @@ import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.json.JacksonUtil;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.sentinel.EnableFlowDegrade;
+import ej.spring.boot.starter.server.StartTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         serviceDesc = "测试服务",
         author = "bokun.li",
         enableH2 = true
+//        ejDataSourceUrl = "jdbc:postgresql://localhost:5432/test@root:123456"
         //ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
         // 使用h2当数据库
 )
@@ -55,7 +58,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @date 2025-05
  */
 @EnableFlowDegrade
-@SpringBootTest(classes = AppTest.class)
+@SpringBootTest(classes = StartTest.class)
 public class AppTest {
     @Autowired
     DataSource dataSource;
@@ -275,5 +278,11 @@ public class AppTest {
         SysLogRecord objectByPrimaryKey = dbAccess.getObjectByPrimaryKey(id, SysLogRecord.class);
         System.out.println(JacksonUtil.toJson(objectByPrimaryKey));
 
+    }
+
+
+    @AfterAll
+    public static void wtt() {
+        System.out.println("close----ConditionTest---");
     }
 }

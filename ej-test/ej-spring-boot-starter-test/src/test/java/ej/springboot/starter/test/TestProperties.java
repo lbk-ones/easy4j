@@ -16,11 +16,18 @@ package ej.springboot.starter.test;
 
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
+import ej.spring.boot.starter.server.StartTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
+/**
+ * TestProperties
+ *
+ * @author bokun.li
+ * @date 2025-05
+ */
 @Easy4JStarter(
         serverPort = 10001,
         serverName = "build-server",
@@ -29,14 +36,8 @@ import org.springframework.core.env.Environment;
         enableH2 = true
         // 使用h2当数据库
 )
-/**
- * TestProperties
- *
- * @author bokun.li
- * @date 2025-05
- */
 @EnableFlowDegrade
-@SpringBootTest(classes = TestProperties.class)
+@SpringBootTest(classes = StartTest.class)
 public class TestProperties {
 
     @Autowired

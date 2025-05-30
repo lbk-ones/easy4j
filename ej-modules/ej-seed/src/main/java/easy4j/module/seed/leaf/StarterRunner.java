@@ -40,7 +40,7 @@ public class StarterRunner implements CommandLineRunner {
 
         Easy4jContext context = Easy4j.getContext();
         context.set(Easy4jSeed.class, CommonKey.getCommonKey());
-        
+
         idGenService.init();
     }
 }

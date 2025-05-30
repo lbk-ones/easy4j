@@ -16,6 +16,7 @@ package ej.spring.boot.starter.server;
 
 
 import easy4j.module.base.starter.Easy4JStarter;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 
@@ -24,6 +25,7 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
         serverName = "test-ej-service",
         enableH2 = true
 )
+@MapperScan("ej.spring.boot.starter.server.mapper")
 /**
  * StartTest
  *

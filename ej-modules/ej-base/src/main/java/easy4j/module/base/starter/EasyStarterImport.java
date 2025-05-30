@@ -15,9 +15,11 @@
 package easy4j.module.base.starter;
 
 import easy4j.module.base.exception.GlobalExceptionHandler;
+import easy4j.module.base.web.PerRequestInterceptor;
 import easy4j.module.base.web.WebMvcConvertConfig;
 import easy4j.module.base.web.WebMvcCorsConfig;
 import easy4j.module.base.web.WebMvcFilterConfig;
+import easy4j.module.base.web.filter.RequestWrapperFilter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
@@ -38,6 +40,8 @@ public class EasyStarterImport implements InitializingBean, ImportSelector {
                 GlobalExceptionHandler.class.getName(),
                 WebMvcCorsConfig.class.getName(),
                 WebMvcConvertConfig.class.getName(),
+                PerRequestInterceptor.class.getName(),
+                RequestWrapperFilter.class.getName(),
                 WebMvcFilterConfig.class.getName()
         };
     }

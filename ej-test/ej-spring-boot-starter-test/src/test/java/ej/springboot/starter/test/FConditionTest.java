@@ -10,7 +10,9 @@ import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
+import ej.spring.boot.starter.server.StartTest;
 import lombok.Data;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
         enableH2 = true
 )
 @EnableFlowDegrade
-@SpringBootTest(classes = FConditionTest.class)
+@SpringBootTest(classes = StartTest.class)
 public class FConditionTest {
 
     User user;
@@ -259,6 +261,11 @@ public class FConditionTest {
 
         assertEquals(1, argsList.size());
         assertEquals(1, argsList.get(0));
+    }
+
+    @AfterEach
+    public void afterEach() throws SQLException {
+        mockConnection.close();
     }
 
 

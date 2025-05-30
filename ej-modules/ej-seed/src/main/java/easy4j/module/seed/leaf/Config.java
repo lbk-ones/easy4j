@@ -55,7 +55,6 @@ public class Config implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         logger.info(SysLog.compact("LEAF 分布式主键开始初始化"));
 
+
     }
-
-
 }

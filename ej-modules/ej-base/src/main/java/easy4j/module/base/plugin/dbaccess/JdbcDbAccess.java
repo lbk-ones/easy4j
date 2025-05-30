@@ -64,10 +64,13 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     public <T> T getObject(String sql, Class<T> clazz, Object... args) {
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
         List<T> query = null;
+        Connection connection = getConnection();
         try {
-            query = runner.query(getConnection(), sql, tBeanListHandler, args);
+            query = runner.query(connection, sql, tBeanListHandler, args);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("getObject", sql, e);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
         return JdbcHelper.requiredSingleResult(query);
     }
@@ -75,11 +78,14 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     // 查多个
     @Override
     public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) {
+        Connection connection = getConnection();
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
         try {
-            return ObjectUtil.defaultIfNull(runner.query(getConnection(), sql, tBeanListHandler, args), new ArrayList<>());
+            return ObjectUtil.defaultIfNull(runner.query(connection, sql, tBeanListHandler, args), new ArrayList<>());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("getObjectList", sql, e);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }
 
@@ -90,16 +96,22 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         if (ObjectUtil.isEmpty(o)) {
             return 0;
         }
+        Connection connection = Convert.convert(Connection.class, map.get(CONNECTION));
+        if (connection == null) {
+            connection = getConnection();
+        }
         Object args = map.get(KEY_ARGS);
         final String sql = (String) o;
         try {
             if (ObjectUtil.isNotEmpty(args)) {
-                return runner.update(getConnection(), sql, args);
+                return runner.update(connection, sql, args);
             } else {
-                return runner.update(getConnection(), sql);
+                return runner.update(connection, sql);
             }
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
 
 
@@ -117,6 +129,8 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
                     DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", null, e);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
 
     }
@@ -162,6 +176,8 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
             return result;
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("query", sql, e);
+        } finally {
+            DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }
 
