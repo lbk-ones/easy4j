@@ -15,7 +15,7 @@
 package easy4j.module.base.plugin.dbaccess;
 
 import cn.hutool.core.lang.Dict;
-import easy4j.module.base.plugin.dbaccess.condition.Condition;
+import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
 import org.springframework.core.io.Resource;
 
 import java.sql.Connection;
@@ -189,7 +189,6 @@ public interface DBAccess {
      */
     long countByMap(Map<String, Object> object, Class<?> aClass);
 
-    long countByCondition(Condition object, Class<?> aClass);
 
     /**
      * 执行sql脚本
@@ -228,8 +227,6 @@ public interface DBAccess {
      */
     <T> int deleteByPrimaryKey(T object, Class<T> tClass);
 
-    <T> int deleteByCondition(Condition object, Class<T> tClass);
-
 
     <T> int deleteByMap(Dict dict, Class<T> tClass);
 
@@ -265,5 +262,39 @@ public interface DBAccess {
      * @throws SQLException
      */
     <T> T getObjectOneByMap(Dict dict, Class<T> tClass);
+
+
+    <T> boolean existByPrimaryKey(Object object, Class<T> tClass);
+
+
+    // Condition
+    long countByCondition(SqlBuild sqlBuilder, Class<?> aClass);
+
+    <T> int deleteByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+
+    /**
+     * 根据条件查询
+     *
+     * @author bokun.li
+     * @date 2025-05-31 17:52:27
+     */
+    <T> List<T> selectByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+
+    /**
+     * 根据条件更新
+     *
+     * @author bokun.li
+     * @date 2025-05-31 17:52:27
+     */
+    <T> int updateByCondition(SqlBuild sqlBuilder, T update, Class<T> tClass);
+
+    /**
+     * 根据条件查询是否存在
+     *
+     * @author bokun.li
+     * @date 2025-05-31 17:52:27
+     */
+    <T> boolean existByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+
 
 }

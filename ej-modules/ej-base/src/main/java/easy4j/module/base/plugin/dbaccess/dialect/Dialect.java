@@ -17,6 +17,7 @@ package easy4j.module.base.plugin.dbaccess.dialect;
 
 import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.plugin.dbaccess.Page;
+import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -85,7 +86,7 @@ public interface Dialect {
      * 根据条件单个更新
      *
      * @param tableName
-     * @param recordList      要更新的bean(必须要是Map<String,Object>)
+     * @param record          要更新的bean(必须要是Map<String,Object>)
      * @param aClass          实体class
      * @param updateCondition 更新条件
      * @param ignoreNull      是否忽略空值
@@ -93,7 +94,11 @@ public interface Dialect {
      * @return
      * @throws SQLException
      */
-    PreparedStatement psForUpdateBy(String tableName, Map<String, Object> recordList, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+    PreparedStatement psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+
+    PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, SqlBuild sqlBuilder, boolean ignoreNull, Connection connection);
+
+    PreparedStatement psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection);
 
     /**
      * 多个批量更新

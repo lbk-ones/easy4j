@@ -250,9 +250,13 @@ public abstract class JdbcHelper {
      * @param conn
      * @throws SQLException
      */
-    public static void close(Connection conn) throws SQLException {
+    public static void close(Connection conn) {
         if (conn != null) {
-            conn.close();
+            try {
+                conn.close();
+            } catch (final SQLException ignored) {
+
+            }
         }
     }
 
@@ -262,9 +266,13 @@ public abstract class JdbcHelper {
      * @param rs
      * @throws SQLException
      */
-    public static void close(ResultSet rs) throws SQLException {
+    public static void close(ResultSet rs) {
         if (rs != null) {
-            rs.close();
+            try {
+                rs.close();
+            } catch (final SQLException ignored) {
+
+            }
         }
     }
 
@@ -278,8 +286,8 @@ public abstract class JdbcHelper {
         if (stmt != null) {
             try {
                 stmt.close();
-            } catch (SQLException e) {
-                throw translateSqlException("close", null, e);
+            } catch (final SQLException ignored) {
+
             }
         }
     }
@@ -297,9 +305,10 @@ public abstract class JdbcHelper {
         return databaseTypeMappings.getProperty(databaseProductName);
     }
 
-    public static final SQLErrorCodeSQLExceptionTranslator sqlErrorCodeSQLExceptionTranslator = new SQLErrorCodeSQLExceptionTranslator(getDataSource());
+    public static final SQLErrorCodeSQLExceptionTranslator sqlErrorCodeSQLExceptionTranslator = new SQLErrorCodeSQLExceptionTranslator();
 
     public static DataAccessException translateSqlException(String task, String sql, SQLException sqlException) {
+        sqlErrorCodeSQLExceptionTranslator.setDataSource(getDataSource());
         DataAccessException translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
         if (translate == null) {
             throw new EasyException(sqlException.getMessage());

@@ -23,7 +23,8 @@ import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.plugin.dbaccess.condition.FCondition;
+import easy4j.module.base.plugin.dbaccess.condition.FSqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.plugin.lock.Easy4jSysLock;
@@ -349,16 +350,6 @@ public class DbLog {
 
     public void clearLog(Date startTime) {
 
-        // 纠正时间，改到晚上三点执行
-//        if (!firstEd) {
-//            LocalTime currentTime = LocalTime.now();
-//            LocalTime targetTime = LocalTime.of(3, 0);
-//            boolean isAfter3AM = currentTime.isAfter(targetTime);
-//            if (!isAfter3AM) {
-//                return;
-//            }
-//        }
-
         try {
             Easy4jSysLock.lock(DB_LOCK_ID, 5, "to delete log record");
         } catch (Exception e) {
@@ -373,10 +364,12 @@ public class DbLog {
             logRecord.setCreateDate(new Date());
             logRecord.setTag("日志定时清除");
 
-            FCondition lte = FCondition.get().lte(logRecord::getCreateDate, startTime);
-            long i = dbAccess.countByCondition(lte, SysLogRecord.class);
+            SqlBuild lte1 = FSqlBuild.get(SysLogRecord.class)
+                    .lte(SysLogRecord::getCreateDate, startTime);
 
-            dbAccess.deleteByCondition(lte, SysLogRecord.class);
+            long i = dbAccess.countByCondition(lte1, SysLogRecord.class);
+
+            dbAccess.deleteByCondition(lte1, SysLogRecord.class);
             logRecord.setRemark("日志定时删除" + i + "条");
             log.info("日志定时删除" + i + "条");
             long endTime = System.currentTimeMillis();

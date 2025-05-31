@@ -17,10 +17,10 @@ package easy4j.module.base.plugin.dbaccess;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.db.StatementUtil;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
@@ -29,6 +29,8 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +47,6 @@ import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
 @Slf4j
 public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
 
-    private final QueryRunner runner = new QueryRunner(true);
-
     private DataSource dataSource;
 
     @Setter
@@ -62,16 +62,7 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     // 查单个
     @Override
     public <T> T getObject(String sql, Class<T> clazz, Object... args) {
-        BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
-        List<T> query = null;
-        Connection connection = getConnection();
-        try {
-            query = runner.query(connection, sql, tBeanListHandler, args);
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("getObject", sql, e);
-        } finally {
-            DataSourceUtils.releaseConnection(connection, dataSource);
-        }
+        List<T> query = getObjectList(sql, clazz, args);
         return JdbcHelper.requiredSingleResult(query);
     }
 
@@ -80,11 +71,24 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
     public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) {
         Connection connection = getConnection();
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
         try {
-            return ObjectUtil.defaultIfNull(runner.query(connection, sql, tBeanListHandler, args), new ArrayList<>());
+            logSql(sql, args);
+            if (ObjectUtil.isNotEmpty(args)) {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
+            } else {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql);
+            }
+            resultSet = preparedStatement.executeQuery();
+            List<T> t = tBeanListHandler.handle(resultSet);
+
+            return ObjectUtil.defaultIfNull(t, new ArrayList<>());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("getObjectList", sql, e);
         } finally {
+            JdbcHelper.close(resultSet);
+            JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }
@@ -102,15 +106,22 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         }
         Object args = map.get(KEY_ARGS);
         final String sql = (String) o;
+        PreparedStatement preparedStatement = null;
         try {
+            logSql(sql, args);
+            int effectRows;
             if (ObjectUtil.isNotEmpty(args)) {
-                return runner.update(connection, sql, args);
+                preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
+                effectRows = preparedStatement.executeUpdate();
             } else {
-                return runner.update(connection, sql);
+                preparedStatement = StatementUtil.prepareStatement(connection, sql);
+                effectRows = preparedStatement.executeUpdate();
             }
+            return effectRows;
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
         } finally {
+            JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }
 
@@ -163,20 +174,23 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         String sql = Convert.toStr(map.get(KEY_SQL));
         Object args = map.get(KEY_ARGS);
         Integer column = Convert.toInt(map.get(INDEX_COLUMN));
-        Object result;
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("查询单列数据=\n" + sql);
-            }
+            logSql(sql, args);
+            ScalarHandler<Object> objectScalarHandler = new ScalarHandler<>(column);
             if (ObjectUtil.isNotEmpty(args)) {
-                result = runner.query(connection, sql, new ScalarHandler<>(column), args);
+                preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
             } else {
-                result = runner.query(connection, sql, new ScalarHandler<>(column));
+                preparedStatement = StatementUtil.prepareStatement(connection, sql);
             }
-            return result;
+            resultSet = preparedStatement.executeQuery();
+            return objectScalarHandler.handle(resultSet);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("query", sql, e);
         } finally {
+            JdbcHelper.close(resultSet);
+            JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }
     }

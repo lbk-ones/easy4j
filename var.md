@@ -43,3 +43,8 @@
 - **easy4j.sign-urls**: 需要加强校验的接口清单
 - **easy4j.simple-auth-enable**: 简单权限认证 默认没开启 true为开启
 - **easy4j.session-expire-time-seconds**: 会话过期时间 默认3个小时
+- **easy4j.simple-link-tracking**: 单服务简单链路追踪，默认未开启，true为开启
+- **easy4j.print-request-log**: 是否打印简单的请求日志，默认不打印，true为打印
+- **easy4j.auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
+- **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
+- **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启

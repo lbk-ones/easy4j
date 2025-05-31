@@ -125,6 +125,10 @@ public class SysConstant {
     public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "auth-session-storage-type";
     public static final String EASY4J_ENABLE_DB_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "db-request-log-enable";
 
+
+    public static final String EASY4J_ENABLE_PRINT_SYS_DB_SQL = PARAM_PREFIX + StringPool.DOT + "enable-print-sys-db-sql";
+
+
     // -------------------------EASY4j PROPERTIES end----------------------------------------
 
     // -------------------------EASY4j CONTEXT begin----------------------------------------
@@ -242,6 +246,5 @@ public class SysConstant {
     public static final String KNIFE4J_BASIC_ENABLE = "knife4j.basic.enable";
     public static final String KNIFE4J_BASIC_USERNAME = "knife4j.basic.username";
     public static final String KNIFE4J_BASIC_PASSWORD = "knife4j.basic.password";
-
 
 }

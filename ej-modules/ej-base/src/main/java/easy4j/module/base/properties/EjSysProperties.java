@@ -358,6 +358,12 @@ public class EjSysProperties {
     @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")
     private boolean dbRequestLogEnable = true;
 
+    /**
+     * 是否开启系统sql日志记录 true 代表开启，默认开启
+     */
+    @SpringVs(desc = "是否开启系统sql日志记录 true 代表开启，默认开启")
+    private boolean enablePrintSysDbSql = true;
+
 
     /**
      * 根据常量获取 对应的springboot变量

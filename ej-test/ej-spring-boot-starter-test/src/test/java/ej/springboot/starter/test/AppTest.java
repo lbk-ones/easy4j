@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         serviceDesc = "测试服务",
         author = "bokun.li",
         enableH2 = true
-//        ejDataSourceUrl = "jdbc:postgresql://localhost:5432/test@root:123456"
+        //ejDataSourceUrl = "jdbc:postgresql://localhost:5432/test@root:123456"
         //ejDataSourceUrl = "jdbc:mysql://localhost:3306/vcc_portal_v1@root:123456",
         // 使用h2当数据库
 )
@@ -237,7 +237,7 @@ public class AppTest {
 
         Easy4jContext context = Easy4j.getContext();
         DbLog dbLog = context.get(DbLog.class);
-        Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
+        Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7)).toJdkDate();
         dbLog.clearLog(startTime);
     }
 
