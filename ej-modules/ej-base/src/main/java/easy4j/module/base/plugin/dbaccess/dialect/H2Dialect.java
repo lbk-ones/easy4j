@@ -15,6 +15,7 @@
 package easy4j.module.base.plugin.dbaccess.dialect;
 
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.plugin.dbaccess.Page;
 
 /**
@@ -30,5 +31,17 @@ public class H2Dialect extends AbstractDialect {
         int start = (page.getPageNo() - 1) * page.getPageSize();
         pageSql.append(" limit ").append(start).append(",").append(page.getPageSize());
         return pageSql.toString();
+    }
+
+    // TO_TIMESTAMP('2023-10-01 12:30:45', 'yyyy-MM-dd HH:mm:ss')
+    @Override
+    public String strDateToFunc(String str) {
+
+        if (StrUtil.isNotBlank(str)) {
+            return "TO_TIMESTAMP('" + str + "', 'yyyy-MM-dd HH:mm:ss')";
+        } else {
+            return str;
+        }
+
     }
 }

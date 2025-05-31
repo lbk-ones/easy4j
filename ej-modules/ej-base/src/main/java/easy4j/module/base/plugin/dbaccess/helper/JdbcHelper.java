@@ -19,6 +19,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.dialect.*;
+import easy4j.module.base.starter.Easy4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
@@ -38,6 +39,8 @@ public abstract class JdbcHelper {
 
 
     private static final Properties databaseTypeMappings = getDefaultDatabaseTypeMappings();
+
+    public static Dialect dialect;
 
     private static Properties getDefaultDatabaseTypeMappings() {
         Properties databaseTypeMappings = new Properties();
@@ -339,6 +342,25 @@ public abstract class JdbcHelper {
         } catch (SQLException e) {
             throw translateSqlException("getDialect", null, e);
         }
+    }
+
+    public static Dialect getDialectFromUrl() {
+        if (dialect == null) {
+            synchronized (JdbcHelper.class) {
+                if (dialect == null) {
+                    String dbType = Easy4j.getDbType();
+                    if (StrUtil.isEmpty(dbType)) return new AbstractDialect();
+                    if (StrUtil.startWithAnyIgnoreCase(dbType, "mysql")) return new MySqlDialect();
+                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "oracle")) return new OracleDialect();
+                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "postgresql")) return new PostgresqlDialect();
+                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "sqlserver")) return new SQLServerDialect();
+                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "db2")) return new Db2Dialect();
+                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "h2")) return new H2Dialect();
+                    else return new AbstractDialect();
+                }
+            }
+        }
+        return dialect;
     }
 
     /**

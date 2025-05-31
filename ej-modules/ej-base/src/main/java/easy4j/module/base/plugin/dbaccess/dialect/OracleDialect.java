@@ -122,4 +122,14 @@ public class OracleDialect extends AbstractDialect {
             throw JdbcHelper.translateSqlException("psForBatchInsert", string, e);
         }
     }
+
+    // TO_DATE('2023-10-01 12:30:45', 'YYYY-MM-DD HH24:MI:SS')
+    @Override
+    public String strDateToFunc(String str) {
+        if (StrUtil.isNotBlank(str)) {
+            return "TO_TIMESTAMP('" + str + "', 'YYYY-MM-DD HH24:MI:SS')";
+        } else {
+            return str;
+        }
+    }
 }

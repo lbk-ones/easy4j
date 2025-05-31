@@ -15,6 +15,7 @@
 package easy4j.module.base.plugin.dbaccess.dialect;
 
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.plugin.dbaccess.Page;
 
@@ -36,5 +37,14 @@ public class MySqlDialect extends AbstractDialect {
     @Override
     public Wrapper getWrapper() {
         return new Wrapper('`');
+    }
+
+    @Override
+    public String strDateToFunc(String str) {
+        if (StrUtil.isNotBlank(str)) {
+            return "CAST('" + str + "' AS DATETIME)";
+        } else {
+            return str;
+        }
     }
 }

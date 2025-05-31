@@ -95,6 +95,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         String subSqlsStr = String.join(StringPool.SPACE, subSql);
         String finalSql = DDlLine(INSERT, tableName, subSqlsStr, columnFieldNames.toArray(new String[]{}));
         try {
+            logSql(finalSql, objects);
             PreparedStatement preparedStatement = connection.prepareStatement(finalSql);
             StatementUtil.fillParams(preparedStatement, objects);
             return preparedStatement;
@@ -295,5 +296,10 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
             throw JdbcHelper.translateSqlException("prepareStatement", string, e);
         }
 
+    }
+
+    @Override
+    public String strDateToFunc(String str) {
+        return "'" + str + "'";
     }
 }

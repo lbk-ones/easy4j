@@ -14,10 +14,14 @@
  */
 package easy4j.module.base.web.filter;
 
+import easy4j.module.base.utils.SysConstant;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -26,8 +30,24 @@ import java.io.IOException;
  *
  * @author bokun.li
  */
-@WebFilter(urlPatterns = "/*")
+//@WebFilter(urlPatterns = "/*")
 public class RequestWrapperFilter implements Filter {
+    private static Integer LENGTH = 1024 * 1024 * 10;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        Filter.super.init(filterConfig);
+        FilterRegistrationBean<RequestWrapperFilter> bean = new FilterRegistrationBean<>();
+        Map<String, String> initParameters = bean.getInitParameters();
+        String s = initParameters.get(SysConstant.EASY4J_CACHE_CONTENT_LENGTH);
+
+        try {
+            LENGTH = Integer.parseInt(s);
+        } catch (Exception ignored) {
+        }
+
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -35,7 +55,7 @@ public class RequestWrapperFilter implements Filter {
             HttpServletRequest request1 = (HttpServletRequest) request;
             if (hasRequestBody(request1)) {
                 // 包装请求，缓存请求体
-                RepeatServletRequestWrapper wrappedRequest = new RepeatServletRequestWrapper((HttpServletRequest) request);
+                ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper((HttpServletRequest) request, LENGTH);
                 chain.doFilter(wrappedRequest, response);
             } else {
                 chain.doFilter(request, response);

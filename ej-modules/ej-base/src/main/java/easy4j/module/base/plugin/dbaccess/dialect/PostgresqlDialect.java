@@ -15,6 +15,7 @@
 package easy4j.module.base.plugin.dbaccess.dialect;
 
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.plugin.dbaccess.Page;
 
 /**
@@ -38,5 +39,14 @@ public class PostgresqlDialect extends AbstractDialect {
     public String getPageAfter(String sql, Page<?> page) {
         int start = (page.getPageNo() - 1) * page.getPageSize();
         return " limit " + page.getPageSize() + " offset " + start;
+    }
+
+    @Override
+    public String strDateToFunc(String str) {
+        if (StrUtil.isNotBlank(str)) {
+            return "TO_TIMESTAMP('" + str + "', 'YYYY-MM-DD HH24:MI:SS')";
+        } else {
+            return str;
+        }
     }
 }

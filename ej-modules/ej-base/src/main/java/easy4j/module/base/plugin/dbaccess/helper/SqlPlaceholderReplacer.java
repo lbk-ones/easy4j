@@ -14,6 +14,8 @@
  */
 package easy4j.module.base.plugin.dbaccess.helper;
 
+import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,13 +73,15 @@ public class SqlPlaceholderReplacer {
      * 将参数转换为 SQL 字符串形式
      */
     private static String convertParamToString(Object param) {
+        Dialect dialectFromUrl = JdbcHelper.getDialectFromUrl();
         if (param == null) {
             return "NULL";
         } else if (param instanceof String) {
             return "'" + param.toString().replace("'", "''") + "'"; // 转义单引号
         } else if (param instanceof Date || param instanceof Timestamp) {
+
             String dateStr = DATE_FORMAT.format(param);
-            return "'" + dateStr + "'"; // 日期转为字符串字面量
+            return dialectFromUrl.strDateToFunc(dateStr); // 日期转为字符串字面量
         } else if (param instanceof Number || param instanceof Boolean) {
             return param.toString(); // 数值和布尔值直接转换
         } else {

@@ -21,9 +21,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 
 @Easy4JStarter(
-        serverPort = 9051,
+        serverPort = 9052,
         serverName = "test-ej-service",
-        enableH2 = true
+        enableH2 = true,
+        h2Url = "jdbc:h2:mem:test@easy4j:easy4j"
 )
 @MapperScan("ej.spring.boot.starter.server.mapper")
 /**
@@ -35,9 +36,7 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
 public class StartTest {
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(StartTest.class);
-        app.setApplicationStartup(new BufferingApplicationStartup(10000)); // 缓冲区大小可根据需要调整
-        app.run(args);
+        SpringApplication.run(StartTest.class, args);
     }
 
 }

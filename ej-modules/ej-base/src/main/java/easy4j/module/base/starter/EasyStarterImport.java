@@ -33,7 +33,6 @@ import org.springframework.core.type.AnnotationMetadata;
 public class EasyStarterImport implements InitializingBean, ImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-
         return new String[]{
                 ApplicationRuner.class.getName(),
                 Easy4j.class.getName(),
@@ -41,7 +40,6 @@ public class EasyStarterImport implements InitializingBean, ImportSelector {
                 WebMvcCorsConfig.class.getName(),
                 WebMvcConvertConfig.class.getName(),
                 PerRequestInterceptor.class.getName(),
-                RequestWrapperFilter.class.getName(),
                 WebMvcFilterConfig.class.getName()
         };
     }

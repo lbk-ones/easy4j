@@ -89,4 +89,14 @@ public class SQLServerDialect extends AbstractDialect {
     public Wrapper getWrapper() {
         return new Wrapper('[', ']');
     }
+
+
+    @Override
+    public String strDateToFunc(String str) {
+        if (StrUtil.isNotBlank(str)) {
+            return "CONVERT(datetime, '" + str + "')";
+        } else {
+            return str;
+        }
+    }
 }

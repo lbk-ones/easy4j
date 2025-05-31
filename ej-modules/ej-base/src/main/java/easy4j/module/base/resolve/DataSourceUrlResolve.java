@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package easy4j.module.base.resolve;
+
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.utils.SysConstant;
 
 import java.util.Map;
@@ -21,22 +23,33 @@ import java.util.Properties;
 /**
  * 处理连接加密码
  */
-public class DataSourceUrlResolve extends PropertiesResolve{
+public class DataSourceUrlResolve extends PropertiesResolve {
 
     @Override
     public Properties handler(Properties properties, String p) {
         properties.setProperty(SysConstant.DB_URL_STR, getUrl(p));
-        properties.setProperty(SysConstant.DB_USER_NAME, getUsername(p));
-        properties.setProperty(SysConstant.DB_USER_PASSWORD, getPassword(p));
+        String username = getUsername(p);
+        if (StrUtil.isNotBlank(username)) {
+            properties.setProperty(SysConstant.DB_USER_NAME, username);
+        }
+        String password = getPassword(p);
+        if (StrUtil.isNotBlank(password)) {
+            properties.setProperty(SysConstant.DB_USER_PASSWORD, password);
+        }
         return properties;
     }
 
-    public void handlerMap(Map<String,Object> properties, String p) {
+    public void handlerMap(Map<String, Object> properties, String p) {
         properties.put(SysConstant.DB_URL_STR, getUrl(p));
-        properties.put(SysConstant.DB_USER_NAME, getUsername(p));
-        properties.put(SysConstant.DB_USER_PASSWORD, getPassword(p));
+        String username = getUsername(p);
+        if (StrUtil.isNotBlank(username)) {
+            properties.put(SysConstant.DB_USER_NAME, username);
+        }
+        String password = getPassword(p);
+        if (StrUtil.isNotBlank(password)) {
+            properties.put(SysConstant.DB_USER_PASSWORD, password);
+        }
     }
-
 
 
 }

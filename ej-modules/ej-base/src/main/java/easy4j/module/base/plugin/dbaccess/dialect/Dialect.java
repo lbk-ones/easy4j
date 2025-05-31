@@ -113,4 +113,7 @@ public interface Dialect {
      * @throws SQLException
      */
     PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+
+
+    String strDateToFunc(String str);
 }
