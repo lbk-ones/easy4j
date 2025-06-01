@@ -41,8 +41,8 @@ class CommonDBAccessTest {
         String sql5 = dbAccess.DDlLine("INSERT", "users", "VALUES ('Alice')", "name");
         assertEquals("INSERT INTO users name VALUES ('Alice')", sql5);
 
-        String sql6 = dbAccess.DDlLine("INSERT", "users", "VALUES (1, 'Alice')", "id", "name");
-        assertEquals("INSERT INTO users (id, name) VALUES (1, 'Alice')", sql6);
+        String sql6 = dbAccess.DDlLine("INSERT", "users", "VALUES (1, 'Alice','test')", "id", "name", "testCase");
+        assertEquals("INSERT INTO users (id, name, test_case) VALUES (1, 'Alice','test')", sql6);
 
         String sql61 = dbAccess.DDlLine("INSERT", "users", "VALUES (1, 'Alice')");
         assertEquals("INSERT INTO users VALUES (1, 'Alice')", sql61);
@@ -50,6 +50,9 @@ class CommonDBAccessTest {
 
         String sql7 = dbAccess.DDlLine("select", "users", "id = 1");
         assertEquals("SELECT * FROM users id = 1", sql7);
+
+        String sql71 = dbAccess.DDlLine("select", "users", "id = 1", "name", "birthDate");
+        assertEquals("SELECT name, birth_date FROM users id = 1", sql71);
 
 
         assertThrows(EasyException.class, () -> {

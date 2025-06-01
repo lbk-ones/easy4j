@@ -1,5 +1,6 @@
 package easy4j.module.base.plugin.dbaccess;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -17,6 +18,7 @@ import jodd.util.StringPool;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,13 +80,20 @@ public abstract class CommonDBAccess {
      * <p>
      * INSERT INTO [TABLENAME] [FIELDS] [SUBSQL]
      */
-    public String DDlLine(String type, String tableName, String subSql, String... fields) {
+    public String DDlLine(String type, String tableName, String subSql, String... _fields) {
+
         if (StrUtil.isBlank(type)) {
             throw new EasyException("please input ddl type!");
         }
         if (StrUtil.isBlank(tableName)) {
             throw new EasyException("please input ddl tableName!");
         }
+        List<String> fields = ListTs.asList(_fields);
+        // 更新的时候 字段 形式为 name='xx' 这种所以不需要转下划线
+        if (!UPDATE.equalsIgnoreCase(type)) {
+            fields = ListTs.mapT(_fields, String.class, e -> StrUtil.toUnderlineCase(e.toString()));
+        }
+
         List<String> ddlList = ListTs.newLinkedList();
         String upperCase = type.toUpperCase();
         ddlList.add(upperCase);
@@ -95,8 +104,10 @@ public abstract class CommonDBAccess {
             case UPDATE:
                 break;
             case SELECT:
-                if (fields.length > 0) {
-                    ddlList.add(String.join(StringPool.COMMA + StringPool.SPACE, ListTs.asList(fields)));
+                if (!fields.isEmpty()) {
+                    ddlList.add(
+                            String.join(StringPool.COMMA + StringPool.SPACE, fields)
+                    );
                     ddlList.add(FROM);
                 } else {
                     ddlList.add(StringPool.STAR);
@@ -106,10 +117,14 @@ public abstract class CommonDBAccess {
             case INSERT:
                 ddlList.add(INTO);
                 ddlList.add(tableName);
-                if (fields.length == 1) {
-                    ddlList.add(fields[0]);
-                } else if (fields.length > 1) {
-                    ddlList.add(StringPool.LEFT_BRACKET + String.join(StringPool.COMMA + StringPool.SPACE, ListTs.asList(fields)) + StringPool.RIGHT_BRACKET);
+                if (fields.size() == 1) {
+                    ddlList.add(fields.get(0));
+                } else if (fields.size() > 1) {
+                    ddlList.add(
+                            StringPool.LEFT_BRACKET +
+                                    String.join(StringPool.COMMA + StringPool.SPACE, fields) +
+                                    StringPool.RIGHT_BRACKET
+                    );
                 }
                 break;
             default:
@@ -120,10 +135,10 @@ public abstract class CommonDBAccess {
         }
         if (UPDATE.equalsIgnoreCase(upperCase)) {
             ddlList.add(SET);
-            if (fields.length == 1) {
-                ddlList.add(fields[0]);
-            } else if (fields.length > 1) {
-                ddlList.add(String.join(StringPool.COMMA + StringPool.SPACE, ListTs.asList(fields)));
+            if (fields.size() == 1) {
+                ddlList.add(fields.get(0));
+            } else if (fields.size() > 1) {
+                ddlList.add(String.join(StringPool.COMMA + StringPool.SPACE, fields));
             }
         }
         ddlList.add(subSql);
@@ -132,45 +147,45 @@ public abstract class CommonDBAccess {
 
 
     /**
-     * 获取主键对应的值
+     * 从对象（集合或者单个对象）中 获取主键对应的值
      *
      * @param object_
+     * @param emptyThrow
      * @return
      */
-    public Map<String, Object> getIdMap(Object object_) {
+    public Map<String, Object> getIdMap(Object object_, boolean emptyThrow) {
 
         Map<String, Object> map = Maps.newHashMap();
         ListTs.loop(object_, (object) -> {
+            if (ObjectUtil.isBasicType(object)) {
+                return;
+            }
             Field[] fields = ReflectUtil.getFields(object.getClass());
             for (Field field : fields) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 if (Objects.nonNull(annotation) && annotation.isPrimaryKey()) {
                     String name = field.getName();
                     Object fieldValue = ReflectUtil.getFieldValue(object, field);
-                    if (map.containsKey(name)) {
-                        Object originObject = map.get(name);
-                        List<Object> originObject1 = (List<Object>) originObject;
-                        originObject1.add(fieldValue);
+                    if (ObjectUtil.isNotEmpty(fieldValue)) {
+                        if (map.containsKey(name)) {
+                            Object originObject = map.get(name);
+                            List<Object> originObject1 = (List<Object>) originObject;
+                            originObject1.add(fieldValue);
 
-                    } else {
-                        map.put(name, ListTs.asList(fieldValue));
+                        } else {
+                            map.put(name, ListTs.asList(fieldValue));
+                        }
                     }
+
                 }
             }
-//            if (map.isEmpty()) {
-//                log.warn("{} has no specify primary key,default set to id", object.getClass().getName());
-//                Object fieldValue = ReflectUtil.getFieldValue(object, "id");
-//                if (Objects.nonNull(fieldValue)) {
-//                    if (map.containsKey("id")) {
-//                        Object originObject = map.get("id");
-//                        List<Object> originObject1 = (List<Object>) originObject;
-//                        originObject1.add(fieldValue);
-//                    } else {
-//                        map.put("id", ListTs.asList(fieldValue));
-//                    }
-//                }
-//            }
         });
+        if (emptyThrow && map.entrySet()
+                .stream()
+                .allMatch(e -> StrUtil.isBlank(e.getKey()) || ObjectUtil.isEmpty(e.getValue()))
+        ) {
+            throw new EasyException("When updating, the primary key condition cannot be empty");
+        }
 
         return map;
 
@@ -250,19 +265,21 @@ public abstract class CommonDBAccess {
     }
 
 
-    public void logSql(String sql, Object... args) {
+    public void logSql(String sql, Connection connection, Object... args) {
         try {
             boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_PRINT_SYS_DB_SQL, boolean.class);
             if (property) {
-                List<Object> newArrayList;
-                if (ArrayUtil.isNotEmpty(args) && 1 == args.length && args[0] instanceof Collection) {
-                    Object arg = args[0];
-                    newArrayList = ListTs.map(arg, (object) -> object);
-                } else {
-                    newArrayList = ListTs.asList(args);
+                List<Object> newArrayList = null;
+                if (ArrayUtil.isNotEmpty(args)) {
+                    if (1 == args.length && args[0] instanceof Collection) {
+                        Object arg = args[0];
+                        newArrayList = ListTs.map(arg, (object) -> object);
+                    } else {
+                        newArrayList = ListTs.asList(args);
+                    }
                 }
-                if (!newArrayList.isEmpty()) {
-                    String s = SqlPlaceholderReplacer.replacePlaceholders(sql, newArrayList);
+                if (CollUtil.isNotEmpty(newArrayList)) {
+                    String s = SqlPlaceholderReplacer.replacePlaceholders(sql, newArrayList, connection);
                     Easy4j.info("[SQL] -> {}", s);
                 } else {
                     Easy4j.info("[SQL] -> {}", sql);

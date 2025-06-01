@@ -1,5 +1,6 @@
 package easy4j.module.base.web;
 
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.web.filter.RequestWrapperFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -21,7 +22,9 @@ public class Config {
         // 设置初始化参数
         Map<String, String> initParams = new HashMap<>();
 
-        initParams.put(SysConstant.EASY4J_CACHE_CONTENT_LENGTH, String.valueOf(10 * 1024 * 1024));
+        String property = Easy4j.getProperty(SysConstant.EASY4J_CACHE_CONTENT_LENGTH);
+
+        initParams.put(SysConstant.EASY4J_CACHE_CONTENT_LENGTH, property);
         filterFilterRegistrationBean.setInitParameters(initParams);
         return filterFilterRegistrationBean;
     }

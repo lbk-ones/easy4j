@@ -113,7 +113,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> T getObject(String sql, Class<T> clazz, Object... args);
+    <T> T selectOne(String sql, Class<T> clazz, Object... args);
 
     /**
      * 根据sql查询某一个对象集合
@@ -125,7 +125,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args);
+    <T> List<T> selectList(String sql, Class<T> clazz, Object... args);
 
 
     /**
@@ -136,7 +136,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getAll(Class<T> clazz);
+    <T> List<T> selectAll(Class<T> clazz, String... fieldNames);
 
     /**
      * 根据sql分页查询某一个对象
@@ -148,7 +148,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectListByPage(Page<T> page, QueryFilter filter, Class<T> clazz, String sql, Object... args);
+    <T> List<T> selectListByPage(Page<T> page, QueryFilter filter, Class<T> clazz, String sql, Object... args);
 
     /**
      * 根据主键查询某对象
@@ -159,7 +159,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> T getObjectByPrimaryKey(Object arg, Class<T> clazz);
+    <T> T selectByPrimaryKey(Object arg, Class<T> clazz);
 
     /**
      * 根据多个主键查询对象集合
@@ -170,7 +170,9 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectByPrimaryKeys(List<Object> args, Class<T> clazz);
+    <T> List<T> selectByPrimaryKeys(List<Object> args, Class<T> clazz);
+
+    <T> List<T> selectByPrimaryKeysT(List<T> args, Class<T> clazz);
 
     /**
      * 根据条件查询数量
@@ -239,10 +241,10 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectBy(T object, Class<T> tClass);
+    <T> List<T> selectByObject(T object, Class<T> tClass);
 
     /**
-     * 根据条件查询
+     * 根据MAP条件查询
      *
      * @param dict
      * @param tClass
@@ -250,7 +252,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> List<T> getObjectByMap(Dict dict, Class<T> tClass);
+    <T> List<T> selectByMap(Dict dict, Class<T> tClass);
 
     /**
      * 根据条件查询单个
@@ -261,7 +263,7 @@ public interface DBAccess {
      * @return
      * @throws SQLException
      */
-    <T> T getObjectOneByMap(Dict dict, Class<T> tClass);
+    <T> T selectOneByMap(Dict dict, Class<T> tClass);
 
 
     <T> boolean existByPrimaryKey(Object object, Class<T> tClass);

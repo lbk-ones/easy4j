@@ -21,7 +21,6 @@ import cn.hutool.db.StatementUtil;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -30,10 +29,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
@@ -57,75 +53,6 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         if (object instanceof DataSource) {
             this.dataSource = (DataSource) object;
         }
-    }
-
-    // 查单个
-    @Override
-    public <T> T getObject(String sql, Class<T> clazz, Object... args) {
-        List<T> query = getObjectList(sql, clazz, args);
-        return JdbcHelper.requiredSingleResult(query);
-    }
-
-    // 查多个
-    @Override
-    public <T> List<T> getObjectList(String sql, Class<T> clazz, Object... args) {
-        Connection connection = getConnection();
-        BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
-        ResultSet resultSet = null;
-        PreparedStatement preparedStatement = null;
-        try {
-            logSql(sql, args);
-            if (ObjectUtil.isNotEmpty(args)) {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
-            } else {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql);
-            }
-            resultSet = preparedStatement.executeQuery();
-            List<T> t = tBeanListHandler.handle(resultSet);
-
-            return ObjectUtil.defaultIfNull(t, new ArrayList<>());
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("getObjectList", sql, e);
-        } finally {
-            JdbcHelper.close(resultSet);
-            JdbcHelper.close(preparedStatement);
-            DataSourceUtils.releaseConnection(connection, dataSource);
-        }
-    }
-
-    // 更新 插入 删除
-    @Override
-    public int saveOrUpdate(Map<String, Object> map) {
-        Object o = map.get(KEY_SQL);
-        if (ObjectUtil.isEmpty(o)) {
-            return 0;
-        }
-        Connection connection = Convert.convert(Connection.class, map.get(CONNECTION));
-        if (connection == null) {
-            connection = getConnection();
-        }
-        Object args = map.get(KEY_ARGS);
-        final String sql = (String) o;
-        PreparedStatement preparedStatement = null;
-        try {
-            logSql(sql, args);
-            int effectRows;
-            if (ObjectUtil.isNotEmpty(args)) {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
-                effectRows = preparedStatement.executeUpdate();
-            } else {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql);
-                effectRows = preparedStatement.executeUpdate();
-            }
-            return effectRows;
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
-        } finally {
-            JdbcHelper.close(preparedStatement);
-            DataSourceUtils.releaseConnection(connection, dataSource);
-        }
-
-
     }
 
 
@@ -161,43 +88,44 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         }
     }
 
-    /**
-     * 查询指定列
-     *
-     * @return 指定列的结果对象
-     */
-    public Object query(Map<String, Object> map) {
+
+    // 更新 插入 删除
+    @Override
+    public int saveOrUpdate(Map<String, Object> map) {
+        Object o = map.get(KEY_SQL);
+        if (ObjectUtil.isEmpty(o)) {
+            return 0;
+        }
         Connection connection = Convert.convert(Connection.class, map.get(CONNECTION));
         if (connection == null) {
             connection = getConnection();
         }
-        String sql = Convert.toStr(map.get(KEY_SQL));
         Object args = map.get(KEY_ARGS);
-        Integer column = Convert.toInt(map.get(INDEX_COLUMN));
-        ResultSet resultSet = null;
+        final String sql = (String) o;
         PreparedStatement preparedStatement = null;
         try {
-            logSql(sql, args);
-            ScalarHandler<Object> objectScalarHandler = new ScalarHandler<>(column);
+            logSql(sql, connection, args);
+            int effectRows;
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
+                effectRows = preparedStatement.executeUpdate();
             } else {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql);
+                effectRows = preparedStatement.executeUpdate();
             }
-            resultSet = preparedStatement.executeQuery();
-            return objectScalarHandler.handle(resultSet);
+            return effectRows;
         } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("query", sql, e);
+            throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
         } finally {
-            JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }
+
+
     }
 
     @Override
-    protected Object queryCount(Map<String, Object> map) {
-        map.put(INDEX_COLUMN, 1);
-        return query(map);
+    public DataSource getDataSource() {
+        return dataSource;
     }
 }

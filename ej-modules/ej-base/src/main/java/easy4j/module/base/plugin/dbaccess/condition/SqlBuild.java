@@ -14,14 +14,25 @@
  */
 package easy4j.module.base.plugin.dbaccess.condition;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.plugin.dbaccess.Page;
+import easy4j.module.base.plugin.dbaccess.dialect.AbstractDialect;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
+import easy4j.module.base.utils.ListTs;
+import jodd.util.StringPool;
+import lombok.Getter;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * SQL 条件构建器，支持 AND、OR、NOT 等逻辑组合，以及各种比较条件。
@@ -67,12 +78,36 @@ import java.util.List;
 public class SqlBuild {
 
     private final List<Condition> conditions = new ArrayList<>();
+    private final List<Condition> groupBy = new ArrayList<>();
+    private final List<Condition> orderBy = new ArrayList<>();
+
+    private final List<Condition> selectFields = new ArrayList<>();
     private final List<SqlBuild> subBuilders = new ArrayList<>();
     private LogicOperator logicOperator = LogicOperator.AND; // 默认使用 AND 连接条件
+    private boolean isSubSql = false;
 
 
     public Connection connection;
     public Dialect dialect;
+
+    public List<String> getSelectFields() {
+        Wrapper wrapper = getDialect().getWrapper();
+        return selectFields.stream()
+                .map(e -> wrapper.wrap(e.getColumn()))
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toList());
+    }
+
+    public Dialect getDialect() {
+        if (this.dialect != null) {
+            return this.dialect;
+        } else if (this.connection != null) {
+            this.dialect = JdbcHelper.getDialect(this.connection);
+            return this.dialect;
+        } else {
+            return new AbstractDialect();
+        }
+    }
 
     public void bind(Connection connection) {
         this.connection = connection;
@@ -168,9 +203,63 @@ public class SqlBuild {
         return this;
     }
 
+
+    public SqlBuild select(String... columns) {
+        if (!this.isSubSql) {
+            List<Condition> map = ListTs.mapT(columns, Condition.class, e -> {
+                String string = e.toString();
+                return new Condition(string, CompareOperator.EMPTY, null);
+            });
+            if (CollUtil.isNotEmpty(map)) {
+                selectFields.addAll(map);
+            }
+        }
+        return this;
+    }
+
+    public SqlBuild groupBy(String... column) {
+        if (!this.isSubSql) {
+            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
+                String string = e.toString();
+                return new Condition(string, CompareOperator.EMPTY, null);
+            });
+            if (CollUtil.isNotEmpty(map)) {
+                groupBy.addAll(map);
+            }
+        }
+        return this;
+    }
+
+    public SqlBuild asc(String... column) {
+        if (!this.isSubSql) {
+            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
+                String string = e.toString();
+                return new Condition(string, CompareOperator.EMPTY, "ASC");
+            });
+            if (CollUtil.isNotEmpty(map)) {
+                orderBy.addAll(map);
+            }
+        }
+        return this;
+    }
+
+    public SqlBuild desc(String... column) {
+        if (!this.isSubSql) {
+            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
+                String string = e.toString();
+                return new Condition(string, CompareOperator.EMPTY, "DESC");
+            });
+            if (CollUtil.isNotEmpty(map)) {
+                orderBy.addAll(map);
+            }
+        }
+        return this;
+    }
+
     // 构建子条件
     public SqlBuild and(SqlBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.AND);
+        subBuilder.isSubSql = true;
         subBuilders.add(subBuilder);
         return this;
     }
@@ -178,19 +267,25 @@ public class SqlBuild {
     public SqlBuild or(SqlBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.OR);
         subBuilders.add(subBuilder);
+        subBuilder.isSubSql = true;
         return this;
     }
 
     public SqlBuild not(SqlBuild subBuilder) {
+        subBuilder.isSubSql = true;
         subBuilder.withLogicOperator(LogicOperator.NOT);
         subBuilders.add(subBuilder);
         return this;
     }
 
+
     // 清除条件
     public void clear() {
         conditions.clear();
         subBuilders.clear();
+        orderBy.clear();
+        groupBy.clear();
+        selectFields.clear();
         withLogicOperator(LogicOperator.AND);
     }
 
@@ -204,19 +299,18 @@ public class SqlBuild {
         if (this.connection == null) {
             throw new EasyException("condition is not bind connection please bind a connection");
         }
+        Dialect sqlDialect = getDialect();
+        Wrapper wrapper = sqlDialect.getWrapper();
 
-        if (this.dialect == null) {
-            this.dialect = JdbcHelper.getDialect(this.connection);
-        }
 
         List<String> parts = new ArrayList<>();
         // 添加基本条件
         for (Condition condition : conditions) {
-            parts.add(condition.getSqlSegment(argsList, this.dialect));
+            parts.add(condition.getSqlSegment(argsList, sqlDialect));
         }
         // 添加子条件
         for (SqlBuild subBuilder : subBuilders) {
-            subBuilder.bind(dialect);
+            subBuilder.bind(sqlDialect);
             subBuilder.bind(connection);
             String subCondition = subBuilder.build(argsList);
             if (!subCondition.isEmpty()) {
@@ -230,7 +324,27 @@ public class SqlBuild {
 
         // 使用逻辑运算符连接所有条件
         String operator = logicOperator == LogicOperator.AND ? " AND " : " OR ";
-        return String.join(operator, parts);
+        String join = String.join(operator, parts);
+
+        String groupBySegment = groupBy.stream().map(e -> {
+            String column = e.getColumn();
+            return wrapper.wrap(column);
+        }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
+
+        if (StrUtil.isNotBlank(groupBySegment)) {
+            join += " GROUP BY " + groupBySegment;
+        }
+
+        String orderBySegment = orderBy.stream().map(e -> {
+            String column = e.getColumn();
+            String value = Convert.toStr(e.getValue());
+            return wrapper.wrap(column) + StringPool.SPACE + value;
+        }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
+
+        if (StrUtil.isNotBlank(orderBySegment)) {
+            join += " ORDER BY " + orderBySegment;
+        }
+        return join;
     }
 
     // 静态工厂方法

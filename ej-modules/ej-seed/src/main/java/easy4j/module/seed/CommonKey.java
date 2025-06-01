@@ -85,7 +85,7 @@ public class CommonKey implements Easy4jSeed {
         // 所有节点的 ip num 不能一样
         List<String> notHhIpList = localIpList.stream().filter(e -> !HH_IP.equals(e)).collect(Collectors.toList());
         try {
-            List<SYS_WORK_IP> allWorkIpList = dbAccess.getAll(SYS_WORK_IP.class);
+            List<SYS_WORK_IP> allWorkIpList = dbAccess.selectAll(SYS_WORK_IP.class);
             //List<SYS_WORK_IP> allWorkIpList = jdbcTemplate.query("SELECT * FROM SYS_WORK_IP", BeanPropertyRowMapper.newInstance(SYS_WORK_IP.class));
             ListTs.foreach(allWorkIpList, e -> {
                 if (Objects.isNull(e.getNUM())) {
@@ -119,7 +119,7 @@ public class CommonKey implements Easy4jSeed {
                         //jdbcTemplate.update("INSERT INTO SYS_WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
                     } else {
                         // k8s 重启 ip是不会延续原来的 但是这里兼容一下这种情况 万一不用 k8s捏 对吧
-                        SYS_WORK_IP workip = dbAccess.getObjectByPrimaryKey(masterIp, SYS_WORK_IP.class);
+                        SYS_WORK_IP workip = dbAccess.selectByPrimaryKey(masterIp, SYS_WORK_IP.class);
                         if (Objects.nonNull(workip)) {
                             workerId = workip.getNUM();
                         }

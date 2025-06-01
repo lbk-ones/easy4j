@@ -36,7 +36,8 @@ public enum CompareOperator {
     NOT_IN("NOT IN"),
     BETWEEN("BETWEEN"),
     IS_NULL("IS NULL"),
-    IS_NOT_NULL("IS NOT NULL");
+    IS_NOT_NULL("IS NOT NULL"),
+    EMPTY("EMPTY");
 
     private final String symbol;
 

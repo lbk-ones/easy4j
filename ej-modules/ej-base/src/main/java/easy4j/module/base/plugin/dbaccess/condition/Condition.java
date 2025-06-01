@@ -16,6 +16,8 @@ package easy4j.module.base.plugin.dbaccess.condition;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
+import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,10 +28,16 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  */
+
 public class Condition {
     private String column;
     private final CompareOperator operator;
+    @Getter
     private final Object value;
+
+    public String getColumn() {
+        return StrUtil.isNotBlank(this.column) ? StrUtil.toUnderlineCase(this.column) : this.column;
+    }
 
     public Condition(String column, CompareOperator operator, Object value) {
         this.column = column;

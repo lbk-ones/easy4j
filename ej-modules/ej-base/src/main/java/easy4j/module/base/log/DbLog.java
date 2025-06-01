@@ -244,7 +244,7 @@ public class DbLog {
             if (StrUtil.isBlank(s) && StrUtil.isNotBlank(_id)) {
                 SysLogRecord logRecord1 = new SysLogRecord();
                 logRecord1.setId(_id);
-                last = dbAccess.getObjectByPrimaryKey(_id, SysLogRecord.class);
+                last = dbAccess.selectByPrimaryKey(_id, SysLogRecord.class);
             }
             if (Objects.isNull(last) || StrUtil.isBlank(last.getId())) {
                 return;

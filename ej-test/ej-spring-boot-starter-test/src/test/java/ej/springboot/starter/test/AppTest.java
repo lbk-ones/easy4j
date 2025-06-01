@@ -101,7 +101,7 @@ public class AppTest {
         sysLogRecord.setTraceId(s);
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
         System.out.println("更新条数---" + i);
-        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
+        SysLogRecord sysLogRecordById = dbAccess.selectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
         System.out.println(JacksonUtil.toJson(sysLogRecordById));
         String traceId = sysLogRecordById.getTraceId();
         System.out.println(traceId.equals(s));
@@ -126,7 +126,7 @@ public class AppTest {
         sysLogRecord.setTraceId(s);
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
 
-        SysLogRecord sysLogRecordById = dbAccess.getObjectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
+        SysLogRecord sysLogRecordById = dbAccess.selectByPrimaryKey(sysLogRecord.getId(), SysLogRecord.class);
         System.out.println("更新前--->" + JacksonUtil.toJson(sysLogRecordById));
         sysLogRecordById.setTraceId("123");
         sysLogRecordById.setProcessTime("8988");
@@ -163,7 +163,7 @@ public class AppTest {
             sysLogRecord.setErrorInfo(null);
         }
         int i = dbAccess.updateListByPrimaryKey(needUpdateList, SysLogRecord.class);
-        List<SysLogRecord> objectByPrimaryKeys = dbAccess.getObjectByPrimaryKeys(ListTs.mapList(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
+        List<SysLogRecord> objectByPrimaryKeys = dbAccess.selectByPrimaryKeys(ListTs.mapList(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
         for (SysLogRecord sysLogRecord : objectByPrimaryKeys) {
             System.out.println(JacksonUtil.toJson(sysLogRecord));
         }
@@ -275,7 +275,7 @@ public class AppTest {
 
         DBAccess dbAccess = DBAccessFactory.getDBAccess(dataSource);
 
-        SysLogRecord objectByPrimaryKey = dbAccess.getObjectByPrimaryKey(id, SysLogRecord.class);
+        SysLogRecord objectByPrimaryKey = dbAccess.selectByPrimaryKey(id, SysLogRecord.class);
         System.out.println(JacksonUtil.toJson(objectByPrimaryKey));
 
     }

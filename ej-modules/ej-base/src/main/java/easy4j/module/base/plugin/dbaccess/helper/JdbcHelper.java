@@ -40,7 +40,7 @@ public abstract class JdbcHelper {
 
     private static final Properties databaseTypeMappings = getDefaultDatabaseTypeMappings();
 
-    public static Dialect dialect;
+    public static volatile Dialect dialect;
 
     private static Properties getDefaultDatabaseTypeMappings() {
         Properties databaseTypeMappings = new Properties();
@@ -344,6 +344,8 @@ public abstract class JdbcHelper {
         }
     }
 
+    // 这个方法最好不用 数据库方言最好从connection中拿取 不然可能会乱套
+    @Deprecated
     public static Dialect getDialectFromUrl() {
         if (dialect == null) {
             synchronized (JdbcHelper.class) {

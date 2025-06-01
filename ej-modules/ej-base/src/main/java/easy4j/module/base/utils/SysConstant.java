@@ -128,7 +128,7 @@ public class SysConstant {
 
     public static final String EASY4J_ENABLE_PRINT_SYS_DB_SQL = PARAM_PREFIX + StringPool.DOT + "enable-print-sys-db-sql";
 
-    public static final String EASY4J_CACHE_CONTENT_LENGTH = PARAM_PREFIX + StringPool.DOT + "cache-content-length";
+    public static final String EASY4J_CACHE_CONTENT_LENGTH = PARAM_PREFIX + StringPool.DOT + "cache-http-content-length";
 
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------

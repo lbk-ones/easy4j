@@ -96,8 +96,29 @@ public interface Dialect {
      */
     PreparedStatement psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 
+    /**
+     * 根据SqlBuild条件类更新
+     *
+     * @param tableName
+     * @param record
+     * @param sqlBuilder
+     * @param ignoreNull
+     * @param connection
+     * @return
+     */
     PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, SqlBuild sqlBuilder, boolean ignoreNull, Connection connection);
 
+    /**
+     * 根据字符串条件来更新
+     *
+     * @param tableName
+     * @param record
+     * @param sqlBuilder
+     * @param args
+     * @param ignoreNull
+     * @param connection
+     * @return
+     */
     PreparedStatement psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection);
 
     /**
@@ -115,5 +136,12 @@ public interface Dialect {
     PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 
 
+    /**
+     * 字符串转数据库时间类型
+     * 输出函数与字符串组合
+     *
+     * @param str
+     * @return
+     */
     String strDateToFunc(String str);
 }

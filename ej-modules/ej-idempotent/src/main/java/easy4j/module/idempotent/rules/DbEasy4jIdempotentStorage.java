@@ -28,8 +28,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +72,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
                                 }
                             }
                         } else {
-                            List<Easy4jKeyIdempotent> all = dbAccess.getAll(Easy4jKeyIdempotent.class);
+                            List<Easy4jKeyIdempotent> all = dbAccess.selectAll(Easy4jKeyIdempotent.class);
                             //Iterable<Easy4jKeyIdempotent> all = easy4jIdempotentDao.findAll();
                             for (Easy4jKeyIdempotent keyIdempotent : all) {
                                 if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {

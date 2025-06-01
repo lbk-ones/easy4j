@@ -54,13 +54,13 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     private LeafAllocDomain getByBizTag(String bizTag) {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
         leafAllocDomain.setBIZ_TAG(bizTag);
-        return dbaccess.getObjectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
+        return dbaccess.selectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
 
     }
 
 
     public List<String> getAllTags() {
-        return ListTs.mapListStr(dbaccess.getAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
+        return ListTs.mapListStr(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
     }
 
     @Transactional(rollbackFor = Exception.class)

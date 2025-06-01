@@ -366,6 +366,13 @@ public class EjSysProperties {
 
 
     /**
+     * 请求体缓存字节流最大大小，默认5M
+     */
+    @SpringVs(desc = "请求体缓存字节流最大大小，默认5M")
+    private int cacheHttpContentLength = 5 * 1024 * 1024;
+
+
+    /**
      * 根据常量获取 对应的springboot变量
      *
      * @param constant

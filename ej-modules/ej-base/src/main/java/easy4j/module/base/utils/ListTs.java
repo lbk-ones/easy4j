@@ -16,6 +16,7 @@ package easy4j.module.base.utils;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -388,6 +389,16 @@ public class ListTs {
         loop(obj_, obj -> {
             Object apply = convertFunction.apply(obj);
             mapResultList.add(apply);
+        });
+        return mapResultList;
+    }
+
+    public static <T> List<T> mapT(Object obj_, Class<T> aclass, Function<Object, Object> convertFunction) {
+        List<T> mapResultList = ListTs.newArrayList();
+        loop(obj_, obj -> {
+            Object apply = convertFunction.apply(obj);
+            T convert = Convert.convert(aclass, apply);
+            mapResultList.add(convert);
         });
         return mapResultList;
     }

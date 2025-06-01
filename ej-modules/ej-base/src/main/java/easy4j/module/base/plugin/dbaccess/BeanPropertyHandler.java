@@ -16,6 +16,7 @@ package easy4j.module.base.plugin.dbaccess;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.AbstractListHandler;
 
@@ -112,7 +113,7 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
         for (PropertyDescriptor pd : propertyDescriptorMap.values()) {
             if (pd.getWriteMethod() != null) {
                 this.mappedFields.put(pd.getName().toLowerCase(), pd);
-                String underscoredName = underscoreName(pd.getName());
+                String underscoredName = StrUtil.toUnderlineCase(pd.getName());
                 if (!pd.getName().toLowerCase().equals(underscoredName)) {
                     this.mappedFields.put(underscoredName, pd);
                 }

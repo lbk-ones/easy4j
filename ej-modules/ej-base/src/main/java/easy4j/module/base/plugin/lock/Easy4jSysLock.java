@@ -60,7 +60,7 @@ public class Easy4jSysLock {
             log.info("The resource has been locked successfully:" + resourceId + ":" + remark);
         } catch (DuplicateKeyException e) {
             log.error("Failed to lock the resource:" + resourceId + ":" + remark);
-            SysLock objectByPrimaryKey = dbAccess.getObjectByPrimaryKey(resourceId, SysLock.class);
+            SysLock objectByPrimaryKey = dbAccess.selectByPrimaryKey(resourceId, SysLock.class);
             Date expireDate = objectByPrimaryKey.getExpireDate();
             // expireDate == null always lock
             if (expireDate != null && new Date().after(expireDate)) {

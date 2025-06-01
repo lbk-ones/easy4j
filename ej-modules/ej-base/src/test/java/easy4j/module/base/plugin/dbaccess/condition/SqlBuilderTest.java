@@ -58,6 +58,7 @@ class SqlBuilderTest {
         List<Object> argList = ListTs.newArrayList();
         // 示例 1：简单条件
         String condition1 = fSqlBuilder
+                .select("groupArg1", "groupArg2")
                 .equal("age", 30)
                 .and(SqlBuild.get(connection, dialect)
                         .equal("gender", "F")
@@ -68,15 +69,17 @@ class SqlBuilderTest {
                 ).or(
                         SqlBuild.get(connection, dialect)
                                 .gt("create_date", new Date()).isNotNull("ord_class")
-                ).in(
-                        "order_no",
-                        "1234151",
-                        "2151251651"
-                ).build(argList);
+                ).in("order_no", "1234151", "2151251651")
+                .asc("ageMax", "xx")
+                .desc("xxx")
+                .groupBy("groupArg1", "groupArg2")
+                .build(argList);
+        assertEquals("[\"group_arg1\",\"group_arg2\"]", JacksonUtil.toJson(fSqlBuilder.getSelectFields()));
+        System.out.println("字段 1: " + fSqlBuilder.getSelectFields());
         System.out.println("条件 1: " + condition1);
         System.out.println("值 1: " + JacksonUtil.toJson(argList));
         argList.clear();
-        assertEquals("age = ? AND order_no IN (?, ?) AND (gender = ? AND (department = ? OR salary != ?)) AND (create_date > ? OR ord_class IS NOT NULL)", condition1);
+        assertEquals("age = ? AND order_no IN (?, ?) AND (gender = ? AND (department = ? OR salary != ?)) AND (create_date > ? OR ord_class IS NOT NULL) GROUP BY group_arg1, group_arg2 ORDER BY age_max ASC, xx ASC, xxx DESC", condition1);
         // 输出: age = 30 AND (gender = 'F' OR (department = 'IT' AND salary != 5000))
 
         fSqlBuilder.clear();

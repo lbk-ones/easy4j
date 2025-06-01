@@ -95,7 +95,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         String subSqlsStr = String.join(StringPool.SPACE, subSql);
         String finalSql = DDlLine(INSERT, tableName, subSqlsStr, columnFieldNames.toArray(new String[]{}));
         try {
-            logSql(finalSql, objects);
+            logSql(finalSql, connection, objects);
             PreparedStatement preparedStatement = connection.prepareStatement(finalSql);
             StatementUtil.fillParams(preparedStatement, objects);
             return preparedStatement;
@@ -154,7 +154,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         String s = DDlLine(UPDATE, tableName, buildSql, nameList.toArray(new String[]{}));
         PreparedStatement preparedStatement = null;
         try {
-            logSql(s, objects);
+            logSql(s, connection, objects);
             preparedStatement = StatementUtil.prepareStatement(connection, s, objects.toArray(new Object[]{}));
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("psForUpdateBySqlBuider", s, e);
@@ -288,7 +288,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         unionWhere(updateCondition, stringBuilder, objects);
         String string = StrUtil.trim(stringBuilder.toString());
         try {
-            logSql(string, objects);
+            logSql(string, connection, objects);
             PreparedStatement preparedStatement = connection.prepareStatement(string);
             StatementUtil.fillParams(preparedStatement, objects);
             return preparedStatement;

@@ -14,7 +14,8 @@
  */
 package easy4j.sca.account.test;
 
-import easy4j.module.base.starter.Easy4JStarterSca;
+import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.module.sca.annotations.EnableSca;
 import org.springframework.boot.SpringApplication;
 
 /**
@@ -23,7 +24,8 @@ import org.springframework.boot.SpringApplication;
  * @author bokun.li
  * @date 2025-05
  */
-@Easy4JStarterSca
+@EnableSca
+@Easy4JStarter
 public class StartAccountApp {
     public static void main(String[] args) {
         SpringApplication.run(StartAccountApp.class, args);

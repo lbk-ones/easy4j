@@ -50,7 +50,7 @@ public class LtlTransactionService implements InitializingBean {
     }
 
     public LocalMessage findById(String id) throws SQLException {
-        LocalMessage byId = dbAccess.getObjectByPrimaryKey(id, LocalMessage.class);
+        LocalMessage byId = dbAccess.selectByPrimaryKey(id, LocalMessage.class);
         //Optional<LocalMessage> byId = ltlTransactionMapper.findById(id);
         AtomicReference<LocalMessage> res = new AtomicReference<>(null);
         res.set(byId);
@@ -61,7 +61,7 @@ public class LtlTransactionService implements InitializingBean {
         LocalMessage localMessage = new LocalMessage();
         localMessage.setIsFreeze("is null");
         List<LocalMessage> all = ListTs.newArrayList();
-        all = dbAccess.getObjectBy(localMessage, LocalMessage.class);
+        all = dbAccess.selectByObject(localMessage, LocalMessage.class);
 
         return all;
     }

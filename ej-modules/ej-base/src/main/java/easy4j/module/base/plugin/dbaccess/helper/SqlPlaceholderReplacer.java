@@ -16,6 +16,7 @@ package easy4j.module.base.plugin.dbaccess.helper;
 
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 
+import java.sql.Connection;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,9 +42,8 @@ public class SqlPlaceholderReplacer {
      * @param params 参数列表（支持 String、Integer、Long、Date、Timestamp 等类型）
      * @return 替换后的 SQL 语句
      */
-    public static String replacePlaceholders(String sql, List<Object> params) {
+    public static String replacePlaceholders(String sql, List<Object> params, Connection connection) {
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(sql);
-        List<String> paramValues = new ArrayList<>();
 
         // 检查参数数量是否匹配
         int placeholderCount = 0;
@@ -58,10 +58,10 @@ public class SqlPlaceholderReplacer {
         matcher = PLACEHOLDER_PATTERN.matcher(sql);
         StringBuffer result = new StringBuffer();
         int index = 0;
-
+        Dialect dialectFromUrl = JdbcHelper.getDialect(connection);
         while (matcher.find()) {
             Object param = params.get(index++);
-            String paramStr = convertParamToString(param);
+            String paramStr = convertParamToString(param, dialectFromUrl);
             matcher.appendReplacement(result, Matcher.quoteReplacement(paramStr));
         }
         matcher.appendTail(result);
@@ -72,13 +72,13 @@ public class SqlPlaceholderReplacer {
     /**
      * 将参数转换为 SQL 字符串形式
      */
-    private static String convertParamToString(Object param) {
-        Dialect dialectFromUrl = JdbcHelper.getDialectFromUrl();
+    private static String convertParamToString(Object param, Dialect dialectFromUrl) {
+
         if (param == null) {
             return "NULL";
         } else if (param instanceof String) {
             return "'" + param.toString().replace("'", "''") + "'"; // 转义单引号
-        } else if (param instanceof Date || param instanceof Timestamp) {
+        } else if (param instanceof Date) {
 
             String dateStr = DATE_FORMAT.format(param);
             return dialectFromUrl.strDateToFunc(dateStr); // 日期转为字符串字面量

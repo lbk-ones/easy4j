@@ -50,7 +50,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         securitySession.setShaToken(token);
         Dict dict = Dict.create()
                 .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-        return dbAccess.getObjectOneByMap(dict, SecuritySession.class);
+        return dbAccess.selectOneByMap(dict, SecuritySession.class);
     }
 
     @Override

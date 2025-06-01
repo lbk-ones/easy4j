@@ -173,7 +173,6 @@ public class Easy4j implements ApplicationContextAware {
                         Easy4JStarter annotation = mainClass.getAnnotation(Easy4JStarter.class);
                         Easy4JStarterNd annotation2 = mainClass.getAnnotation(Easy4JStarterNd.class);
                         Easy4JStarterTest annotation3 = mainClass.getAnnotation(Easy4JStarterTest.class);
-                        Easy4JStarterSca annotation4 = mainClass.getAnnotation(Easy4JStarterSca.class);
                         if (Objects.nonNull(annotation)) {
                             serverName = annotation.serverName();
                             serverPort = annotation.serverPort();
@@ -204,16 +203,6 @@ public class Easy4j implements ApplicationContextAware {
                             serviceDesc = annotation3.serviceDesc();
                             h2ConsoleUsername = annotation3.h2ConsoleUsername();
                             h2ConsolePassword = annotation3.h2ConsolePassword();
-                        } else if (Objects.nonNull(annotation4)) {
-                            serverName = annotation4.serverName();
-                            serverPort = annotation4.serverPort();
-                            ejDataSource = annotation4.ejDataSourceUrl();
-                            enableH2 = annotation4.enableH2();
-                            h2Url = annotation4.h2Url();
-                            author = annotation4.author();
-                            serviceDesc = annotation4.serviceDesc();
-                            h2ConsoleUsername = annotation4.h2ConsoleUsername();
-                            h2ConsolePassword = annotation4.h2ConsolePassword();
                         }
                         if (StrUtil.isNotBlank(serverName)) {
                             extMap.put(SysConstant.SPRING_SERVER_NAME, serverName);
