@@ -14,7 +14,11 @@
  */
 package easy4j.module.base.plugin.idempotent;
 
+import cn.hutool.core.convert.Convert;
+import easy4j.module.base.utils.SysConstant;
+
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * Easy4jIdempotentKeyGenerator
@@ -24,4 +28,13 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface Easy4jIdempotentKeyGenerator {
     String generate(HttpServletRequest request);
+
+    default String getRpcId(HttpServletRequest request) {
+        Object header = request.getAttribute(SysConstant.EASY4J_RPC_TRACE);
+        return Objects.nonNull(header) ? ":" + Convert.toStr(header) : "";
+    }
+
+    default String getUri(HttpServletRequest request) {
+        return request.getRequestURI();
+    }
 }

@@ -59,6 +59,11 @@ public class Easy4jRequestInterceptor implements RequestInterceptor {
         Optional<Object> xTenantId = context.getThreadHashValue(SysConstant.X_TENANT_ID, SysConstant.X_TENANT_ID);
         xTenantId.ifPresent(object -> template.header(SysConstant.X_TENANT_ID, object.toString()));
 
+        // this value must be the same for the same rpc request
+        // easy4j trace id
+        Optional<Object> easy4jRpcTrace = context.getThreadHashValue(SysConstant.EASY4J_RPC_TRACE, SysConstant.EASY4J_RPC_TRACE);
+        easy4jRpcTrace.ifPresent(object -> template.header(SysConstant.EASY4J_RPC_TRACE, object.toString()));
+
 
         // sign url
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getSignUrls);

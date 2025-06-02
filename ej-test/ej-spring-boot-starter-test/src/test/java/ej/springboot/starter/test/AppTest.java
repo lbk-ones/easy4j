@@ -130,7 +130,7 @@ public class AppTest {
         System.out.println("更新前--->" + JacksonUtil.toJson(sysLogRecordById));
         sysLogRecordById.setTraceId("123");
         sysLogRecordById.setProcessTime("8988");
-        SysLogRecord sysLogRecord1 = dbAccess.updateByPrimaryKeySelective(sysLogRecordById, SysLogRecord.class);
+        SysLogRecord sysLogRecord1 = dbAccess.updateByPrimaryKeySelective(sysLogRecordById, SysLogRecord.class, true);
         System.out.println("更新后--->" + JacksonUtil.toJson(sysLogRecord1));
 
     }

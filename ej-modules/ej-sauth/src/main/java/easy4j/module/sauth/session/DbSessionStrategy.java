@@ -40,7 +40,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class), true);
+        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class), true, true);
     }
 
     @Override

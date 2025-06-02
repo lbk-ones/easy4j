@@ -130,6 +130,8 @@ public class SysConstant {
 
     public static final String EASY4J_CACHE_CONTENT_LENGTH = PARAM_PREFIX + StringPool.DOT + "cache-http-content-length";
 
+    public static final String EASY4J_RPC_TRACE = PARAM_PREFIX + StringPool.DOT + "rpc-trace-id";
+
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
 

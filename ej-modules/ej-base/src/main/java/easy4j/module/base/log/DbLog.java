@@ -21,6 +21,8 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
+import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.header.EasyResult;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.condition.FSqlBuild;
@@ -59,7 +61,7 @@ public class DbLog {
 
     public static final String DB_LOCK_ID = "delete-sys-log-record-lock";
     public static final String DB_LOCK_ID_INIT = "delete-sys-log-record-lock-init";
-    private static final DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource());
+    private static final DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
 
     private static final ThreadLocal<Deque<SysLogRecord>> threadLocalMap = new TransmittableThreadLocal<>();
 
@@ -264,11 +266,16 @@ public class DbLog {
             if (Objects.nonNull(throwable)) {
                 _status = "0";
                 logRecord.setStatus(_status);
-                logRecord.setErrorInfo(ExceptionUtil.exceptionStackTraceToString(throwable));
+                if (throwable instanceof EasyException) {
+                    String message1 = EasyResult.toI18n(throwable).getMessage();
+                    logRecord.setErrorInfo(message1);
+                } else {
+                    logRecord.setErrorInfo(ExceptionUtil.exceptionChainToString(throwable));
+                }
             } else {
                 logRecord.setStatus(_status);
             }
-            dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class);
+            dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class, false);
         } catch (Throwable e) {
             log.error("日志完成写入失败", e);
         } finally {

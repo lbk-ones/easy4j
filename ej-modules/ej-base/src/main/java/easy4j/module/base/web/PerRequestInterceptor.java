@@ -18,6 +18,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
 import easy4j.module.base.exception.EasyException;
+import easy4j.module.base.log.DbLog;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ServiceLoaderUtils;
 import easy4j.module.base.utils.SysConstant;
@@ -81,13 +82,18 @@ public class PerRequestInterceptor implements HandlerInterceptor {
             // 打印控制器处理完成日志（视图未渲染）
             log.info("[请求开始] ip: {}, 路径: {}, 方法:{}", ipAddr, request.getRequestURI(), request.getMethod());
         }
-        handlerMethods(request, response, handler, null, null, PRE_HANDLER);
+        try {
+            return handlerMethods(request, response, handler, null, null, PRE_HANDLER);
 
-        return true;
+        } catch (Exception e) {
+            handlerMethods(request, response, handler, null, e, AFTER_COMPLETION);
+            return false;
+        }
+
     }
 
     // spi call
-    private void handlerMethods(
+    private boolean handlerMethods(
             HttpServletRequest request,
             HttpServletResponse response,
             Object handler,
@@ -99,7 +105,9 @@ public class PerRequestInterceptor implements HandlerInterceptor {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             for (Easy4JWebMvcHandler easy4JWebMvcHandler : easy4JWebMvcHandlers) {
                 if (PRE_HANDLER.equals(type)) {
-                    easy4JWebMvcHandler.preHandle(request, response, handlerMethod);
+                    if (!easy4JWebMvcHandler.preHandle(request, response, handlerMethod)) {
+                        return false;
+                    }
                 }
                 if (POST_HANDLE.equals(type)) {
                     easy4JWebMvcHandler.postHandle(request, response, modelAndView, handlerMethod);
@@ -109,17 +117,24 @@ public class PerRequestInterceptor implements HandlerInterceptor {
                 }
             }
         }
+        return true;
 
     }
 
     private static void setAttribute(HttpServletRequest request, HttpServletResponse response) {
         String requestId = request.getHeader(SysConstant.SERVER_TRACE_NAME);
+        String easy4jTraceId = request.getHeader(SysConstant.EASY4J_RPC_TRACE);
+
         // 标记已拦截
         request.setAttribute(INTERCEPTOR_MARK, true);
         if (StrUtil.isBlank(requestId)) {
             // 生成唯一请求ID（用于日志追踪）
             requestId = UUID.randomUUID().toString().replaceAll("-", "");
             request.setAttribute(REQUEST_ID_KEY, requestId);
+            // 如果使用简单的分布式链路id那么这个值和SysConstant.TRACE_ID_NAME这个值一样
+            if (StrUtil.isBlank(easy4jTraceId)) {
+                easy4jTraceId = requestId;
+            }
         }
 
         // 记录请求开始时间
@@ -127,10 +142,18 @@ public class PerRequestInterceptor implements HandlerInterceptor {
         request.setAttribute(START_TIME_KEY, startTime);
         boolean isPrintLog = Easy4j.getProperty(SysConstant.EASY4J_PRINT_REQUEST_LOG, boolean.class);
         request.setAttribute(REQUEST_PRINT_LOG, isPrintLog);
+        // 多放一个用于向下传递  TRACE_ID_NAME 是其他标准的分布式链路ID (它可能并不能证明是这一次请求的传递) EASY4J_RPC_TRACE 给自己系统使用的
+
+        if (StrUtil.isBlank(easy4jTraceId)) {
+            easy4jTraceId = UUID.randomUUID().toString().replaceAll("-", "");
+        }
+        request.setAttribute(SysConstant.EASY4J_RPC_TRACE, easy4jTraceId);
+
         response.setHeader(SysConstant.TRACE_ID_NAME, requestId);
         MDC.put(SysConstant.TRACE_ID_NAME, "[" + requestId + "]");
         Easy4jContext context = Easy4jContextFactory.getContext();
         context.registerThreadHash(SysConstant.TRACE_ID_NAME, SysConstant.TRACE_ID_NAME, requestId);
+        context.registerThreadHash(SysConstant.EASY4J_RPC_TRACE, SysConstant.EASY4J_RPC_TRACE, easy4jTraceId);
     }
 
     /**

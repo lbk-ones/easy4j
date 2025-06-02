@@ -15,10 +15,11 @@
 package easy4j.module.base.utils.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -27,11 +28,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.google.common.collect.Maps;
-import lombok.Getter;
-import lombok.Setter;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -39,7 +38,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +82,7 @@ public class JacksonUtil {
         timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         timeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
         objectMapper.registerModule(timeModule);
+        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
     }
 
     /**
@@ -270,9 +269,31 @@ public class JacksonUtil {
         String json = toJson(paramMap);
         System.out.println(json);
 
+
     }
 
     public static String writeValueAsString(Object obj) throws JsonProcessingException {
         return mapper.writeValueAsString(obj);
     }
+
+    public static String compress(String jsonString) {
+
+        Object json;
+        try {
+            json = mapper.readValue(jsonString, Object.class);
+            StringWriter writer = new StringWriter();
+            JsonFactory factory = mapper.getFactory();
+
+            try (JsonGenerator generator = factory.createGenerator(writer)) {
+                // 禁用自动缩进
+                generator.setPrettyPrinter(null);
+                mapper.writeValue(generator, json);
+            }
+            return writer.toString();
+        } catch (Exception ignored) {
+
+        }
+        return jsonString;
+    }
+
 }

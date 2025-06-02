@@ -25,6 +25,12 @@ import java.util.stream.Collectors;
 
 public abstract class CommonDBAccess {
 
+    private boolean isPrintLog = false;
+
+    public void setPrintLog(boolean printLog) {
+        isPrintLog = printLog;
+    }
+
     protected static final String UPDATE = "UPDATE";
     protected static final String DELETE = "DELETE";
     protected static final String SELECT = "SELECT";
@@ -268,7 +274,7 @@ public abstract class CommonDBAccess {
     public void logSql(String sql, Connection connection, Object... args) {
         try {
             boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_PRINT_SYS_DB_SQL, boolean.class);
-            if (property) {
+            if (property && this.isPrintLog) {
                 List<Object> newArrayList = null;
                 if (ArrayUtil.isNotEmpty(args)) {
                     if (1 == args.length && args[0] instanceof Collection) {

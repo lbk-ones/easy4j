@@ -134,12 +134,12 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode) {
+    public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode, String... args) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setError(error);
         easyResult.setCode(i18nCode);
-        easyResult.setMessage(I18nUtils.getMessage(i18nCode));
+        easyResult.setMessage(I18nUtils.getMessage(i18nCode, args));
         easyResult.setData(null);
         return easyResult;
     }

@@ -37,7 +37,7 @@ import java.util.Date;
 @Slf4j
 public class Easy4jSysLock {
 
-    private final static DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource());
+    private final static DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, false);
 
     public static void lock(String id, int minutes, String remark) {
         lockWith(id, minutes, remark);
@@ -57,13 +57,13 @@ public class Easy4jSysLock {
         easy4jSysLock.setRemark(remark);
         try {
             dbAccess.saveOne(easy4jSysLock, SysLock.class);
-            log.info("The resource has been locked successfully:" + resourceId + ":" + remark);
+            log.debug("The resource has been locked successfully:" + resourceId + ":" + remark);
         } catch (DuplicateKeyException e) {
-            log.error("Failed to lock the resource:" + resourceId + ":" + remark);
             SysLock objectByPrimaryKey = dbAccess.selectByPrimaryKey(resourceId, SysLock.class);
             Date expireDate = objectByPrimaryKey.getExpireDate();
             // expireDate == null always lock
             if (expireDate != null && new Date().after(expireDate)) {
+                log.error("Failed to lock the resource:" + resourceId + ":" + remark + ":" + "but the old lock is expired");
                 unLock(resourceId);
                 Date date = new Date();
                 easy4jSysLock.setCreateDate(date);
@@ -71,7 +71,7 @@ public class Easy4jSysLock {
                 // lock again
                 try {
                     dbAccess.saveOne(easy4jSysLock, SysLock.class);
-                    log.info("The resource has been locked successfully:" + resourceId + ":" + remark);
+                    log.debug("The resource has been locked successfully:" + resourceId + ":" + remark);
                     return;
                 } catch (Exception e1) {
                     log.error("Failed to lock the resource:" + resourceId + ":" + remark);

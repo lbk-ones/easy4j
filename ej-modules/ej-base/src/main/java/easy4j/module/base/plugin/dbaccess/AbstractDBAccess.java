@@ -446,10 +446,10 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     }
 
     @Override
-    public <T> T updateByPrimaryKey(T beanObject, Class<T> aClass) {
+    public <T> T updateByPrimaryKey(T beanObject, Class<T> aClass, boolean isQuery) {
         Map<String, Object> idMap = getIdMap(beanObject, true);
         int i = updateListByBean(ListTs.singletonList(beanObject), null, idMap, false, aClass);
-        if (i > 0) {
+        if (i > 0 && isQuery) {
             List<Object> idValue = getIdValue(beanObject, aClass);
             return selectByPrimaryKey(idValue.get(0), aClass);
         }
@@ -468,7 +468,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     }
 
     @Override
-    public <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass) {
+    public <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass, boolean isQuery) {
         Map<String, Object> idMap = getIdMap(logRecord, true);
         int i = updateListByBean(ListTs.singletonList(logRecord), null, idMap, true, aClass);
         if (i > 0) {

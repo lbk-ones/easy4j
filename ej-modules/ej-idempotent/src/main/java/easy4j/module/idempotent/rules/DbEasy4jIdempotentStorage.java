@@ -19,16 +19,19 @@ import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
+import easy4j.module.base.plugin.lock.Easy4jSysLock;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,70 +42,72 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, InitializingBean {
 
+    public static final String DB_EASY4J_IDEMPOTENT_KEY = "db-easy4j-idempotent-key";
+
     private DBAccess dbAccess;
 
 
 //    @Autowired
 //    Easy4jIdempotentDao easy4jIdempotentDao;
 
-    private static final List<Easy4jKeyIdempotent> cache = ListTs.newArrayList();
+    private static final List<Easy4jKeyIdempotent> cache = ListTs.newCopyOnWriteArrayList();
 
 
     @Override
     public void afterPropertiesSet() throws Exception {
         DBAccessFactory.INIT_DB_FILE_PATH.add("db/idempotent");
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
-        schedule();
+//        schedule();
     }
 
-    private void schedule() {
-        Thread thread = new Thread(() -> {
-            try {
-                while (true) {
-                    if (!Thread.currentThread().isInterrupted()) {
-                        TimeUnit.MINUTES.sleep(10L);
-                        if (!cache.isEmpty()) {
-                            for (Easy4jKeyIdempotent keyIdempotent : cache) {
-                                if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
-                                    try {
-                                        dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
-                                    } catch (Exception e) {
-                                        log.error(SysLog.compact("幂等表删除失败"), e);
-                                    }
-                                }
-                            }
-                        } else {
-                            List<Easy4jKeyIdempotent> all = dbAccess.selectAll(Easy4jKeyIdempotent.class);
-                            //Iterable<Easy4jKeyIdempotent> all = easy4jIdempotentDao.findAll();
-                            for (Easy4jKeyIdempotent keyIdempotent : all) {
-                                if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
-                                    try {
-                                        dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
-                                    } catch (Exception e) {
-                                        log.error(SysLog.compact("幂等表删除失败"), e);
-                                    }
-                                }
-                            }
+    // 十秒一次
+    @Scheduled(fixedRate = 1000 * 60 * 5)
+    public void scheduleIdempotentDb() {
+        try {
+            Easy4jSysLock.lock(DB_EASY4J_IDEMPOTENT_KEY, 5, "web-idempotent-db-clear-lock");
+        } catch (Exception e) {
+            return;
+        }
+        try {
+            if (!cache.isEmpty()) {
+                Iterator<Easy4jKeyIdempotent> iterator = cache.iterator();
+                while (iterator.hasNext()) {
+                    Easy4jKeyIdempotent keyIdempotent = iterator.next();
+                    if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
+                        try {
+                            dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
+                            iterator.remove();
+                        } catch (Exception e) {
+                            log.error(SysLog.compact("幂等表删除失败"), e);
                         }
                     }
                 }
-            } catch (InterruptedException ignored) {
-                // elegant interrupt thread
-                Thread.currentThread().interrupt();
-            } catch (Exception e) {
-                log.error("idempotent schedule error:", e);
+            } else {
+                List<Easy4jKeyIdempotent> all = dbAccess.selectAll(Easy4jKeyIdempotent.class);
+                //Iterable<Easy4jKeyIdempotent> all = easy4jIdempotentDao.findAll();
+                for (Easy4jKeyIdempotent keyIdempotent : all) {
+                    if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
+                        try {
+                            dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
+                        } catch (Exception e) {
+                            log.error(SysLog.compact("幂等表删除失败"), e);
+                        }
+                    }
+                }
             }
+        } finally {
+            Easy4jSysLock.unLock(DB_EASY4J_IDEMPOTENT_KEY);
+        }
 
-        });
-        thread.setDaemon(true);
-        thread.setName("delete-expired-idempotent-records-thread");
-        thread.start();
     }
 
     @Override
     public boolean acquireLock(String key, int expireSeconds) {
 
         try {
+            if (StrUtil.isBlank(key)) {
+                return true;
+            }
             Easy4jKeyIdempotent easy4jKeyIdempotent = new Easy4jKeyIdempotent();
             easy4jKeyIdempotent.setIdeKey(key);
             Date date = new Date();

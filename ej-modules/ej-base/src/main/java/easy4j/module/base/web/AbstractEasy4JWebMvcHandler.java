@@ -27,8 +27,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class AbstractEasy4JWebMvcHandler implements Easy4JWebMvcHandler {
     @Override
-    public void preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) {
 
+        return true;
     }
 
     @Override

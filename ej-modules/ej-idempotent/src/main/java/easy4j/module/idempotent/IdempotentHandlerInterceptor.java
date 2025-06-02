@@ -14,21 +14,19 @@
  */
 package easy4j.module.idempotent;
 
-import easy4j.module.base.header.EasyResult;
+import cn.hutool.extra.spring.SpringUtil;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.BusCode;
-import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
 import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
 import easy4j.module.base.utils.SysLog;
+import easy4j.module.base.web.AbstractEasy4JWebMvcHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.core.MethodParameter;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
@@ -39,62 +37,60 @@ import java.lang.reflect.Method;
  * @author bokun.li
  * @date 2025-05
  */
-@Component("idempotentHandlerInterceptor")
+//@Component("idempotentHandlerInterceptor")
 @Slf4j
-public class IdempotentHandlerInterceptor implements HandlerInterceptor {
+public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
 
     public static final String IDENTIFY_KEY = "webIdempotentKeyValue";
     public static final String WEB_ANNOTATION_KEY = "webIdempotent";
 
+    volatile IdempotentToolFactory idempotentToolFactory;
 
-    @Autowired
-    IdempotentToolFactory idempotentToolFactory;
+    public IdempotentToolFactory idempotentToolFactory() {
+        if (idempotentToolFactory == null) {
+            synchronized (IdempotentHandlerInterceptor.class) {
+                if (idempotentToolFactory == null) {
+                    idempotentToolFactory = SpringUtil.getBean(IdempotentToolFactory.class);
+                }
+            }
+        }
+        return idempotentToolFactory;
+    }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handler1 = (HandlerMethod) handler;
-            Method method = handler1.getMethod();
-            if (method.isAnnotationPresent(WebIdempotent.class)) {
-                WebIdempotent annotation = method.getAnnotation(WebIdempotent.class);
-                String s = annotation.keyGeneratorType();
-                StorageTypeEnum storageType = annotation.storageType();
-                Easy4jIdempotentKeyGenerator keyGenerator = idempotentToolFactory.getKeyGenerator(s);
-                Easy4jIdempotentStorage storage;
-                try{
-                    storage = idempotentToolFactory.getStorage(storageType);
-                }catch (Exception e){
-                    log.error(SysLog.compact(e.getMessage()));
-                    return true;
-                }
-                String generate = keyGenerator.generate(request);
-                request.setAttribute(WEB_ANNOTATION_KEY,annotation);
-                request.setAttribute(IDENTIFY_KEY,generate);
-
-                if (!storage.acquireLock(generate, annotation.expireSeconds())) {
-                    PrintWriter writer = response.getWriter();
-                    writer.write(EasyResult.parseFromI18n(SysConstant.ERRORCODE,BusCode.A00021).toString());
-                    writer.flush();
-                    return false;
-                }
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
+        Method method = handler.getMethod();
+        if (method.isAnnotationPresent(WebIdempotent.class)) {
+            WebIdempotent annotation = method.getAnnotation(WebIdempotent.class);
+            String keyType = annotation.keyGeneratorType();
+            StorageTypeEnum storageType = annotation.storageType();
+            IdempotentToolFactory idempotentedToolFactory = idempotentToolFactory();
+            Easy4jIdempotentKeyGenerator keyGenerator = idempotentedToolFactory.getKeyGenerator(keyType);
+            Easy4jIdempotentStorage storage = idempotentedToolFactory.getStorage(storageType);
+            String generateKey = keyGenerator.generate(request);
+            request.setAttribute(WEB_ANNOTATION_KEY, annotation);
+            request.setAttribute(IDENTIFY_KEY, generateKey);
+            if (!storage.acquireLock(generateKey, annotation.expireSeconds())) {
+                throw EasyException.wrap(BusCode.A00021, generateKey);
             }
         }
         return true;
     }
 
+
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handler) {
         Object webIdempotent = request.getAttribute(WEB_ANNOTATION_KEY);
-        if(webIdempotent instanceof Annotation){
+        if (webIdempotent instanceof Annotation) {
             WebIdempotent annotation = (WebIdempotent) webIdempotent;
             String webIdempotentKeyValue = String.valueOf(request.getAttribute(IDENTIFY_KEY));
-            if(webIdempotentKeyValue == null){
+            if (webIdempotentKeyValue == null) {
                 return;
             }
             Easy4jIdempotentStorage storage;
-            try{
-                storage = idempotentToolFactory.getStorage(annotation.storageType());
-            }catch (Exception e){
+            try {
+                storage = idempotentToolFactory().getStorage(annotation.storageType());
+            } catch (Exception e) {
                 log.error(SysLog.compact(e.getMessage()));
                 return;
             }

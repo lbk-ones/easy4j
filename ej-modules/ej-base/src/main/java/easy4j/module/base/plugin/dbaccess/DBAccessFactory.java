@@ -51,11 +51,12 @@ public class DBAccessFactory {
      * @param mixTransaction
      * @return
      */
-    public static DBAccess getDBAccess(DataSource dataSource, boolean mixTransaction) {
+    public static DBAccess getDBAccess(DataSource dataSource, boolean mixTransaction, boolean isPrintLog) {
 
         JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
         jdbcDbAccess.init(dataSource);
         jdbcDbAccess.setInTransaction(mixTransaction);
+        jdbcDbAccess.setPrintLog(isPrintLog);
         init(jdbcDbAccess);
         return jdbcDbAccess;
     }
@@ -69,6 +70,8 @@ public class DBAccessFactory {
     public static DBAccess getDBAccess(DataSource dataSource) {
         JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
         jdbcDbAccess.init(dataSource);
+        // 默认打印日志
+        jdbcDbAccess.setPrintLog(true);
         init(jdbcDbAccess);
         return jdbcDbAccess;
     }

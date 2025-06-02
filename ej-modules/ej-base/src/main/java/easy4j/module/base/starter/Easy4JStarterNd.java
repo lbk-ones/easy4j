@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.lang.annotation.*;
 
@@ -58,6 +59,7 @@ import java.lang.annotation.*;
  */
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
+@EnableScheduling
 public @interface Easy4JStarterNd {
 
     @AliasFor(
@@ -111,5 +113,6 @@ public @interface Easy4JStarterNd {
 
 
     String h2ConsoleUsername() default "easy4j";
+
     String h2ConsolePassword() default "easy4j";
 }

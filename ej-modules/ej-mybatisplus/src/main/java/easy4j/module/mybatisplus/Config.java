@@ -38,6 +38,8 @@ import easy4j.module.base.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
+import org.mybatis.spring.annotation.MapperScannerRegistrar;
+import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +52,7 @@ import java.util.List;
 
 /**
  * MYBATIS PLUS 配置
+ *
  * @author bokun.li
  * @date 2023/11/18
  */
@@ -65,12 +68,20 @@ public class Config implements EnvironmentAware {
     }
 
 
+//    @Bean
+//    public MapperScannerConfigurer mapperScannerRegistrar() {
+//        MapperScannerConfigurer mapperScannerRegistrar = new MapperScannerConfigurer();
+//        mapperScannerRegistrar.setBasePackage("");
+//        return mapperScannerRegistrar;
+//    }
+
     /**
      * mybatis 的几个默认配置
      * 1、枚举扫描            xxx.enums
      * 2、xml扫描
      * 3、typeHandler处理器  xxx.domains
      * 4、mapper接口扫描
+     *
      * @param dataSource
      * @param globalConfig
      * @return
@@ -82,7 +93,7 @@ public class Config implements EnvironmentAware {
         String dataType = SqlType.getType();
         DbType dbType = DbType.getDbType(dataType);
         String db = dbType.getDb();
-        log.info(SysLog.compact("判定数据库为,{}",db));
+        log.info(SysLog.compact("判定数据库为,{}", db));
 
         MybatisSqlSessionFactoryBean sqlSessionFactory = new MybatisSqlSessionFactoryBean();
         // 数据源
@@ -91,15 +102,15 @@ public class Config implements EnvironmentAware {
         String enumPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.ENUMS;
         // 枚举扫描
         sqlSessionFactory.setTypeEnumsPackage(enumPath);
-        String xmlLocation = "classpath*:/"+db+"/**/*.xml";
-        log.info(SysLog.compact("xml文件扫描路径,{}",xmlLocation));
+        String xmlLocation = "classpath*:/" + db + "/**/*.xml";
+        log.info(SysLog.compact("xml文件扫描路径,{}", xmlLocation));
         // xml扫描
         sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver()
                 .getResources(xmlLocation));
 
         // 扫描 typeHandler
         String domainPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.DOMAINS;
-        log.info(SysLog.compact("实体domain路径,{}",domainPath));
+        log.info(SysLog.compact("实体domain路径,{}", domainPath));
         sqlSessionFactory.setTypeHandlersPackage(domainPath);
         MybatisConfiguration configuration = new MybatisConfiguration();
         configuration.setJdbcTypeForNull(JdbcType.NULL);
@@ -126,7 +137,7 @@ public class Config implements EnvironmentAware {
         log.info(SysLog.compact("自定义自动审计"));
         globalConfig.setBanner(false);
         sqlSessionFactory.setGlobalConfig(globalConfig);
-        log.info(SysLog.compact("MYBATIS_PLUS 初始化完毕【"+ MybatisPlusVersion.getVersion()+"】"));
+        log.info(SysLog.compact("MYBATIS_PLUS 初始化完毕【" + MybatisPlusVersion.getVersion() + "】"));
         return sqlSessionFactory.getObject();
     }
 

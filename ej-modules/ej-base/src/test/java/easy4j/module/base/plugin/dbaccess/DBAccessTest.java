@@ -16,7 +16,6 @@ import easy4j.module.base.utils.json.JacksonUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -28,7 +27,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 
 @Easy4JStarter(
@@ -151,7 +149,7 @@ class DBAccessTest {
         assertEquals(1, i);
         sysLogRecord.setTag("change name tag");
         sysLogRecord.setCreateDate(new Date());
-        SysLogRecord sysLogRecord1 = dbAccess.updateByPrimaryKey(sysLogRecord, SysLogRecord.class);
+        SysLogRecord sysLogRecord1 = dbAccess.updateByPrimaryKey(sysLogRecord, SysLogRecord.class, true);
 
         assertEquals(JacksonUtil.toJson(sysLogRecord), JacksonUtil.toJson(sysLogRecord1));
 
@@ -186,7 +184,7 @@ class DBAccessTest {
         SysLogRecord sysLogRecord1 = new SysLogRecord();
         sysLogRecord1.setId(sysLogRecord.getId());
         sysLogRecord1.setTag("updateByPrimaryKeySelective");
-        SysLogRecord sysLogRecord2 = dbAccess.updateByPrimaryKeySelective(sysLogRecord1, SysLogRecord.class);
+        SysLogRecord sysLogRecord2 = dbAccess.updateByPrimaryKeySelective(sysLogRecord1, SysLogRecord.class, true);
 
 
         BeanUtil.copyProperties(sysLogRecord1, sysLogRecord, CopyOptions.create().ignoreNullValue());

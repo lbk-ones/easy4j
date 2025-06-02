@@ -27,14 +27,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 public class WebConfig implements WebMvcConfigurer {
 
-    @Autowired
-    @Qualifier("idempotentHandlerInterceptor")
-    IdempotentHandlerInterceptor idempotentHandlerInterceptor;
+//    @Autowired
+//    @Qualifier("idempotentHandlerInterceptor")
+//    IdempotentHandlerInterceptor idempotentHandlerInterceptor;
 
 
     public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
-        registry.addInterceptor(idempotentHandlerInterceptor)
-                .addPathPatterns("/**");
+//        registry.addInterceptor(idempotentHandlerInterceptor)
+//                .addPathPatterns("/**");
     }
 
 }

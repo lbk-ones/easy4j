@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.lang.annotation.*;
 
@@ -49,6 +50,7 @@ import java.lang.annotation.*;
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
 @MapperScan
+@EnableScheduling
 public @interface Easy4JStarter {
     @AliasFor(
             annotation = EnableAutoConfiguration.class

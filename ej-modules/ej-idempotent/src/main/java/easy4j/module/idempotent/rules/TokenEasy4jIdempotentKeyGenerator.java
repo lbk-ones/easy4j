@@ -12,30 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base.web;
+package easy4j.module.idempotent.rules;
 
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.ModelAndView;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
+import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
+import easy4j.module.base.utils.SysConstant;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
- * WebMvcHandler
+ * FormEasy4jIdempotentKeyGenerator
+ * 以token为条件来进行判断
  *
  * @author bokun.li
+ * @date 2025-05
  */
-public interface Easy4JWebMvcHandler {
+public class TokenEasy4jIdempotentKeyGenerator implements Easy4jIdempotentKeyGenerator {
 
-
-    boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod);
-
-    void postHandle(HttpServletRequest request, HttpServletResponse response, ModelAndView modelAndView, HandlerMethod handlerMethod);
-
-    void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handlerMethod);
-
-    default Integer getOrder() {
-        return 1;
+    @Override
+    public String generate(HttpServletRequest request) {
+        return StrUtil.blankToDefault(
+                request.getHeader(SysConstant.X_ACCESS_TOKEN),
+                request.getParameter(SysConstant.X_ACCESS_TOKEN)
+        ) + getUri(request);
     }
-
 }

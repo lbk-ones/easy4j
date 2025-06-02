@@ -23,6 +23,7 @@ import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.lang.annotation.*;
 
@@ -47,6 +48,7 @@ import java.lang.annotation.*;
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
 @MapperScan
+@EnableScheduling
 public @interface Easy4JStarterTest {
 
     int serverPort() default 8080;

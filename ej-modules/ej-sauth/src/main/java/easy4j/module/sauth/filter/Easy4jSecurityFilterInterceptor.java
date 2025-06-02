@@ -71,7 +71,7 @@ public class Easy4jSecurityFilterInterceptor implements HandlerInterceptor {
                 SecurityUserInfo securityUserInfo = null;
                 if (b1) {
                     if (StrUtil.isBlank(token)) {
-                        throw new EasyException(BusCode.A00029 + "," + SysConstant.X_ACCESS_TOKEN);
+                        throw EasyException.wrap(BusCode.A00029, SysConstant.X_ACCESS_TOKEN);
                     }
                     securityUserInfo = securityAuthentication.tokenAuthentication(token);
                     if (

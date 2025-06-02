@@ -14,26 +14,25 @@
  */
 package easy4j.module.idempotent;
 
+import lombok.Getter;
+
 /**
  * StorageTypeEnum
  *
  * @author bokun.li
  * @date 2025-05
  */
+@Getter
 public enum StorageTypeEnum {
 
     DB("db"),
 
     REDIS("redis");
 
-    private String type;
+    private final String type;
 
     StorageTypeEnum(String type) {
         this.type = type;
-    }
-
-    public String getType() {
-        return type;
     }
 
 }

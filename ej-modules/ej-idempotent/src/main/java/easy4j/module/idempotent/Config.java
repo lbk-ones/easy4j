@@ -32,15 +32,15 @@ import javax.sql.DataSource;
 @Configuration
 @ConditionalOnBean(value = {DataSource.class})
 public class Config {
-    @Bean(name = "easy4jIdempotentWebConfig")
-    public WebConfig webConfig() {
-        return new WebConfig();
-    }
+//    @Bean(name = "easy4jIdempotentWebConfig")
+//    public WebConfig webConfig() {
+//        return new WebConfig();
+//    }
 
-    @Bean("idempotentHandlerInterceptor")
-    public IdempotentHandlerInterceptor idempotentHandlerInterceptor() {
-        return new IdempotentHandlerInterceptor();
-    }
+//    @Bean("idempotentHandlerInterceptor")
+//    public IdempotentHandlerInterceptor idempotentHandlerInterceptor() {
+//        return new IdempotentHandlerInterceptor();
+//    }
 
     @Bean
     public IdempotentToolFactory idempotentToolFactory() {
@@ -61,6 +61,11 @@ public class Config {
     @Bean("formKeyGenerator")
     public Easy4jIdempotentKeyGenerator formKeyGenerator() {
         return new FormEasy4jIdempotentKeyGenerator();
+    }
+
+    @Bean("tokenKeyGenerator")
+    public Easy4jIdempotentKeyGenerator tokenKeyGenerator() {
+        return new TokenEasy4jIdempotentKeyGenerator();
     }
 
     @Bean("dbIdempotentStorage")

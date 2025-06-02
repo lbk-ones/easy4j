@@ -48,7 +48,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         DBAccessFactory.INIT_DB_FILE_PATH.add(LEAF_PATH);
         DBAccessFactory.INIT_DB_FILE_PATH.add(SNOWIP_PATH);
-        dbaccess = DBAccessFactory.getDBAccess(dataSource);
+        dbaccess = DBAccessFactory.getDBAccess(dataSource, true, false);
     }
 
     private LeafAllocDomain getByBizTag(String bizTag) {
@@ -68,7 +68,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public LeafAllocDomain updateMaxIdAndGetLeafAlloc(String bizTag) {
         LeafAllocDomain domain = getByBizTag(bizTag);
         domain.setMAX_ID(domain.getMAX_ID() + domain.getSTEP());
-        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
+        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -80,7 +80,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
         long maxId = domain.getSTEP() + domain.getMAX_ID();
         leafAllocDomain.setMAX_ID(maxId);
         leafAllocDomain.setUPDATE_TIME(new Date());
-        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class);
+        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
     }
 
 

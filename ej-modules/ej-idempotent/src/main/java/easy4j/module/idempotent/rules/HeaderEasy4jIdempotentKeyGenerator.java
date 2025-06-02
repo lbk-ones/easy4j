@@ -26,9 +26,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class HeaderEasy4jIdempotentKeyGenerator implements Easy4jIdempotentKeyGenerator {
     public static final String IDEMPOTENT_HEADER_KEY = "XIdempotentKey";
+
     @Override
     public String generate(HttpServletRequest request) {
 
-        return request.getHeader(IDEMPOTENT_HEADER_KEY);
+        return request.getHeader(IDEMPOTENT_HEADER_KEY) + getUri(request);
     }
 }

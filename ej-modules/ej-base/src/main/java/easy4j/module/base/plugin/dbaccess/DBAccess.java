@@ -60,10 +60,11 @@ public interface DBAccess {
      * @param <T>
      * @param beanObject
      * @param aClass
+     * @param isQuery
      * @return
      * @throws SQLException
      */
-    <T> T updateByPrimaryKey(T beanObject, Class<T> aClass);
+    <T> T updateByPrimaryKey(T beanObject, Class<T> aClass, boolean isQuery);
 
     <T> int saveOrUpdateByPrimaryKey(T beanObject, Class<T> aClass);
 
@@ -71,13 +72,14 @@ public interface DBAccess {
     /**
      * 通用型单个跟新 (过滤空值，空值不更新)
      *
+     * @param <T>
      * @param logRecord
      * @param aClass
-     * @param <T>
+     * @param isQuery
      * @return
      * @throws SQLException
      */
-    <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass);
+    <T> T updateByPrimaryKeySelective(T logRecord, Class<T> aClass, boolean isQuery);
 
     /**
      * 通用型批量更新
