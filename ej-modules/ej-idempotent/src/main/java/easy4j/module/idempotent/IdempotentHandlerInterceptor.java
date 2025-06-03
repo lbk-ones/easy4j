@@ -14,6 +14,7 @@
  */
 package easy4j.module.idempotent;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.BusCode;
@@ -22,7 +23,6 @@ import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.base.web.AbstractEasy4JWebMvcHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.MethodParameter;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +70,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
             String generateKey = keyGenerator.generate(request);
             request.setAttribute(WEB_ANNOTATION_KEY, annotation);
             request.setAttribute(IDENTIFY_KEY, generateKey);
-            if (!storage.acquireLock(generateKey, annotation.expireSeconds())) {
+            if (!storage.acquireLock(generateKey, annotation.expireSeconds(), request)) {
                 throw EasyException.wrap(BusCode.A00021, generateKey);
             }
         }
@@ -83,8 +83,9 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         Object webIdempotent = request.getAttribute(WEB_ANNOTATION_KEY);
         if (webIdempotent instanceof Annotation) {
             WebIdempotent annotation = (WebIdempotent) webIdempotent;
-            String webIdempotentKeyValue = String.valueOf(request.getAttribute(IDENTIFY_KEY));
-            if (webIdempotentKeyValue == null) {
+            Object webIdempotentKeyValue = request.getAttribute(IDENTIFY_KEY);
+            Object attribute = request.getAttribute(Easy4jIdempotentStorage.IS_LOCK);
+            if (StrUtil.isBlankIfStr(webIdempotentKeyValue) || !"1".equals(attribute)) {
                 return;
             }
             Easy4jIdempotentStorage storage;
@@ -94,7 +95,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
                 log.error(SysLog.compact(e.getMessage()));
                 return;
             }
-            storage.releaseLock(webIdempotentKeyValue);
+            storage.releaseLock(webIdempotentKeyValue.toString());
         }
     }
 }

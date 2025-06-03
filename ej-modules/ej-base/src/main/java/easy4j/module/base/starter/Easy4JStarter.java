@@ -49,7 +49,6 @@ import java.lang.annotation.*;
 )
 @Import(value = EasyStarterImport.class)
 @EnableSpringUtil
-@MapperScan
 @EnableScheduling
 public @interface Easy4JStarter {
     @AliasFor(

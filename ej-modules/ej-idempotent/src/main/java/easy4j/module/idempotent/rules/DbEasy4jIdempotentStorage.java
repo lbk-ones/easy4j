@@ -29,11 +29,11 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * storage-type db
@@ -102,7 +102,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
     }
 
     @Override
-    public boolean acquireLock(String key, int expireSeconds) {
+    public boolean acquireLock(String key, int expireSeconds, HttpServletRequest request) {
 
         try {
             if (StrUtil.isBlank(key)) {
@@ -116,6 +116,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
             easy4jKeyIdempotent.setExpireDate(da);
             dbAccess.saveOne(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
             cache.add(easy4jKeyIdempotent);
+            request.setAttribute(IS_LOCK, "1");
         } catch (DuplicateKeyException e) {
             return false;
         }

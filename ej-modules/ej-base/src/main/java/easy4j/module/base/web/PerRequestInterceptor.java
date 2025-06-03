@@ -86,7 +86,11 @@ public class PerRequestInterceptor implements HandlerInterceptor {
             return handlerMethods(request, response, handler, null, null, PRE_HANDLER);
 
         } catch (Exception e) {
-            handlerMethods(request, response, handler, null, e, AFTER_COMPLETION);
+            try {
+                handlerMethods(request, response, handler, null, e, AFTER_COMPLETION);
+            } catch (Exception e2) {
+                throw e;
+            }
             return false;
         }
 

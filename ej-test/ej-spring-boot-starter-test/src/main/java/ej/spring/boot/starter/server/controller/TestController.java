@@ -64,7 +64,7 @@ public class TestController {
     @PostMapping("saveLog")
     @RequestLog
     @WebIdempotent
-    @FlowDegradeResource(value = "testSaveLog", flowCount = 10)
+    @FlowDegradeResource(value = "testSaveLog", flowCount = 50)
     public EasyResult<SysLogRecord> saveLog(@RequestBody SysLogRecord sysLogRecord) {
 
         sysLogRecord.setId(CommonKey.gennerString());

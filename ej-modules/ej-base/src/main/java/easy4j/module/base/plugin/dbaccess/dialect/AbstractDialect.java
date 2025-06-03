@@ -103,6 +103,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
             throw JdbcHelper.translateSqlException("preparedBatchInsertAnsi", finalSql, e);
         }
 
+
     }
 
     // 单个添加

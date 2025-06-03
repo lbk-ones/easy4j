@@ -238,6 +238,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         dialect.printPrintLog(this.isPrintLog());
         List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
         PreparedStatement batchInsertSql = null;
+
         try {
             batchInsertSql = dialect.psForBatchInsert(
                     getTableName(aClass, dialect),

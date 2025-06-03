@@ -1,6 +1,5 @@
 package easy4j.module.base.log;
 
-import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.starter.Easy4j;
@@ -11,7 +10,6 @@ import easy4j.module.base.web.AbstractEasy4JWebMvcHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.servlet.ServletInputStream;
@@ -56,7 +54,6 @@ public class LogInterceptor extends AbstractEasy4JWebMvcHandler {
                 tagDesc = method.getDeclaringClass().getName() + "#" + method.getName();
             }
             DbLog.beginLog(tag, tagDesc, JacksonUtil.compress(requestBody));
-
         }
         return true;
     }

@@ -33,15 +33,13 @@ import easy4j.module.base.plugin.lock.Easy4jSysLock;
 import easy4j.module.base.plugin.seed.DefaultEasy4jSeed;
 import easy4j.module.base.plugin.seed.Easy4jSeed;
 import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.EStopWatch;
 import easy4j.module.base.utils.SysConstant;
 import jodd.exception.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 
-import java.util.Date;
-import java.util.Deque;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +56,8 @@ import java.util.function.Function;
 @Slf4j
 public class DbLog {
 
+    public final static Map<String, EStopWatch> stopWatch = new HashMap<>();
+
     public static final String CONTEXT_THREAD_KEY = "easy4j-sys-log-record-context-key";
 
     public static final String DB_LOCK_ID = "delete-sys-log-record-lock";
@@ -65,6 +65,17 @@ public class DbLog {
     private static final DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
 
     private static final ThreadLocal<Deque<SysLogRecord>> threadLocalMap = new TransmittableThreadLocal<>();
+
+    public static EStopWatch getWatch(String name) {
+        return stopWatch.computeIfAbsent(name, EStopWatch::new);
+    }
+
+    public static void stopWatch(String name) {
+        EStopWatch eStopWatch = stopWatch.get(name);
+        if (null != eStopWatch) {
+            stopWatch.remove(name);
+        }
+    }
 
     private DbLog() {
         synchronized (DbLog.class) {
@@ -293,12 +304,18 @@ public class DbLog {
 
     private static String insertDomain(SysLogRecord logRecord) {
         Easy4jContext context = Easy4j.getContext();
-        Easy4jSeed easy4jSeed = context.getOrDefault(Easy4jSeed.class, new DefaultEasy4jSeed());
+        Easy4jSeed easy4jSeed = null;
+        try {
+            easy4jSeed = context.get(Easy4jSeed.class);
+        } catch (Exception e) {
+            // for unit test
+            easy4jSeed = new DefaultEasy4jSeed();
+        }
+
         String id = easy4jSeed.nextIdStr();
         logRecord.setId(id);
         try {
             dbAccess.saveOne(logRecord, SysLogRecord.class);
-
         } catch (DuplicateKeyException exception) {
             logRecord.setId(easy4jSeed.nextIdStr());
             dbAccess.saveOne(logRecord, SysLogRecord.class);

@@ -28,7 +28,7 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
         h2Url = "jdbc:h2:mem:test@easy4j:easy4j"
 )
 @EnableFlowDegrade
-@MapperScan("ej.spring.boot.starter.server.mapper")
+//@MapperScan("ej.spring.boot.starter.server.mapper")
 /**
  * StartTest
  *

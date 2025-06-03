@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
 
 // Redis分布式锁实现
@@ -31,9 +32,13 @@ public class RedisEasy4jIdempotentStorage implements Easy4jIdempotentStorage {
     private RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public boolean acquireLock(String key, int expireSeconds) {
-        return Boolean.TRUE.equals(redisTemplate.opsForValue()
+    public boolean acquireLock(String key, int expireSeconds, HttpServletRequest request) {
+        boolean locked = Boolean.TRUE.equals(redisTemplate.opsForValue()
                 .setIfAbsent(key, "locked", Duration.ofSeconds(expireSeconds)));
+        if (locked) {
+            request.setAttribute(IS_LOCK, "1");
+        }
+        return locked;
     }
 
 

@@ -33,9 +33,17 @@ public class TokenEasy4jIdempotentKeyGenerator implements Easy4jIdempotentKeyGen
 
     @Override
     public String generate(HttpServletRequest request) {
+        String headerToken = request.getHeader(SysConstant.X_ACCESS_TOKEN);
+        String formToken = request.getParameter(SysConstant.X_ACCESS_TOKEN);
+        if (
+                StrUtil.isBlank(headerToken) ||
+                        StrUtil.isBlank(formToken)
+        ) {
+            return "";
+        }
         return StrUtil.blankToDefault(
-                request.getHeader(SysConstant.X_ACCESS_TOKEN),
-                request.getParameter(SysConstant.X_ACCESS_TOKEN)
+                headerToken,
+                formToken
         ) + getUri(request);
     }
 }

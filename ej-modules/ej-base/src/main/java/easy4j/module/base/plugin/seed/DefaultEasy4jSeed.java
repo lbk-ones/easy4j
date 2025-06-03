@@ -25,7 +25,7 @@ import cn.hutool.core.util.RandomUtil;
  */
 public class DefaultEasy4jSeed implements Easy4jSeed {
 
-    Snowflake snowflake = new Snowflake(RandomUtil.randomInt(0, 31));
+    public final static Snowflake snowflake = new Snowflake(RandomUtil.randomInt(0, 31), 2L);
 
     @Override
     public String nextIdStr() {

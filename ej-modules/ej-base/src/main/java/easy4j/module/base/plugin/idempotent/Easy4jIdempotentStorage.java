@@ -14,6 +14,8 @@
  */
 package easy4j.module.base.plugin.idempotent;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Easy4jIdempotentStorage
  *
@@ -21,6 +23,9 @@ package easy4j.module.base.plugin.idempotent;
  * @date 2025-05
  */
 public interface Easy4jIdempotentStorage {
-    boolean acquireLock(String key, int expireSeconds);
+    String IS_LOCK = "IDEMPOTENT_IS_LOCK";
+
+    boolean acquireLock(String key, int expireSeconds, HttpServletRequest request);
+
     void releaseLock(String key);
 }
