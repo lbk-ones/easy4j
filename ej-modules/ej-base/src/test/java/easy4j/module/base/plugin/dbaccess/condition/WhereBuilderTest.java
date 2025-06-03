@@ -87,7 +87,7 @@ public class WhereBuilderTest {
         String condition2 = fSqlBuilder
                 .withLogicOperator(LogicOperator.OR)
                 .like("name", "A%")
-                .inArray("department", ListTs.asList("IT", "HR"))
+                .inArray("department", "IT", "HR")
                 .between("salary", 3000, 5000)
                 .not(WhereBuild.get()
                         .isNull("email")

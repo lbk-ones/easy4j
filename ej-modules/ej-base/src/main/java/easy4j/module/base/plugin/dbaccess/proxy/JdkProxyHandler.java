@@ -84,7 +84,7 @@ public class JdkProxyHandler implements InvocationHandler {
             HikariDataSource dataSource1 = (HikariDataSource) dataSource;
             HikariPoolMXBean hikariPoolMXBean = dataSource1.getHikariPoolMXBean();
             int idleConnections = hikariPoolMXBean.getIdleConnections();
-            log.info(method.getName() + "----idleConnections---->" + type + "---" + idleConnections);
+            //log.info(method.getName() + "----idleConnections---->" + type + "---" + idleConnections);
         }
     }
 }

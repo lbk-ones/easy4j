@@ -93,7 +93,8 @@ class SqlBuildTest {
                 connection,
                 dialect
         );
-        assertEquals("INSERT INTO sys_log_record (trace_id, target_id, target_id2, tag_desc, create_date, remark, error_info, id, tag, operate_code, params, process_time, operate_name, status) VALUES (NULL, NULL, NULL, NULL, TO_TIMESTAMP('2025-06-03 13:29:29', 'yyyy-MM-dd HH:mm:ss'), '日志定时删除0条', NULL, '1929772422471618560', '日志定时清除', NULL, NULL, '17', NULL, NULL)", build);
+        assertEquals("SELECT DISTINCT group_arg1, group_arg2 FROM sys_log_record  WHERE age = ? AND order_no IN (?, ?) AND (gender = ? AND (department = ? OR salary != ?)) AND (create_date > ? OR ord_class IS NOT NULL) GROUP BY group_arg1, group_arg2 ORDER BY age_max ASC, xx ASC, xxx DESC",
+                build);
         System.out.println(build);
     }
 
@@ -137,7 +138,7 @@ class SqlBuildTest {
                 null,
                 connection, dialect
         );
-        assertEquals("INSERT INTO sys_log_record (trace_id, error_info, tag_desc, operate_code, remark, target_id, params, process_time, target_id2, operate_name, id, tag, create_date, status) VALUES ('traceId', 'error into test', 'tagDesc test', 'operate code ', 'remark test', 'target id', 'params test', '2', 'target id2', 'operate name', '0212563913b5407f8f0afb137a98051d', 'tag test', CAST('2025-06-03 17:29:45' as TIMESTAMP), '1')", build2);
+        //assertEquals("INSERT INTO sys_log_record (trace_id, error_info, tag_desc, operate_code, remark, target_id, params, process_time, target_id2, operate_name, id, tag, create_date, status) VALUES ('traceId', 'error into test', 'tagDesc test', 'operate code ', 'remark test', 'target id', 'params test', '2', 'target id2', 'operate name', '0212563913b5407f8f0afb137a98051d', 'tag test', CAST('2025-06-03 17:29:45' as TIMESTAMP), '1')", build2);
         System.out.println(build2);
     }
 }

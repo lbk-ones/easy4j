@@ -435,6 +435,15 @@ public class DBAccessTest {
 
     @Test
     void runScript() {
+        try {
+            InputStream inputStream2 = new ByteArrayInputStream("drop table SYS_LOCK_TEMP;".getBytes(StandardCharsets.UTF_8));
+            InputStreamResource inputStreamResource2 = new InputStreamResource(inputStream2);
+            dbAccess.runScript(inputStreamResource2);
+        } catch (Exception ignored) {
+
+        }
+
+
         String sql = "CREATE TABLE SYS_LOCK_TEMP\n" +
                 "(\n" +
                 "    ID          VARCHAR(36) PRIMARY KEY COMMENT '主键',\n" +
