@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -89,8 +90,10 @@ public class DBAccessFactory {
                     continue;
                 }
                 String s1 = s;
+                Connection connection = null;
                 try {
-                    String databaseType = JdbcHelper.getDatabaseType(jdbcDbAccess.getConnection());
+                    connection = jdbcDbAccess.getConnection();
+                    String databaseType = JdbcHelper.getDatabaseType(connection);
                     s1 = s + "/" + databaseType;
                     ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
                     jdbcDbAccess.runScript(classPathResource);
@@ -98,6 +101,7 @@ public class DBAccessFactory {
                 } catch (Exception e) {
                     log.info(SysLog.compact("the " + s1 + ".sql db has been initialized"));
                 } finally {
+                    JdbcHelper.close(connection);
                     INIT_DB_FILE_TYPE.add(s);
                 }
             }

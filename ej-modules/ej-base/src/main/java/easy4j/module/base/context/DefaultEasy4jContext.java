@@ -85,7 +85,14 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     public <T> T get(Class<T> aclass) {
         String name = aclass.getName();
 
-        return get(name, aclass);
+        return get(name, aclass, null);
+    }
+
+    @Override
+    public <T> T getOrDefault(Class<T> aclass, T object) {
+        String name = aclass.getName();
+
+        return get(name, aclass, object);
     }
 
     @Override
@@ -100,15 +107,23 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     @Override
-    public <T> T get(String name, Class<T> aclass) {
-        return getT(DEFAULT_KEY, name, aclass);
+    public <T> T get(String name, Class<T> aclass, T def) {
+        return getT(DEFAULT_KEY, name, aclass, def);
     }
 
-    private static <T> T getT(String type, String name, Class<T> aclass) {
-        return Optional.ofNullable(contextSingletonNameMap.get(type))
-                .map(e -> e.get(name))
-                .map(aclass::cast)
-                .orElseThrow(() -> EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class"));
+    private static <T> T getT(String type, String name, Class<T> aclass, T def) {
+        if (null == def) {
+            return Optional.ofNullable(contextSingletonNameMap.get(type))
+                    .map(e -> e.get(name))
+                    .map(aclass::cast)
+                    .orElseThrow(() -> EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class"));
+        } else {
+            return Optional.ofNullable(contextSingletonNameMap.get(type))
+                    .map(e -> e.get(name))
+                    .map(aclass::cast)
+                    .orElse(def);
+        }
+
     }
 
     @Override
@@ -126,12 +141,12 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     @Override
-    public <T> T getType(String type, Class<T> aclass) {
-        return getT(type, aclass.getName(), aclass);
+    public Map<String, Object> getType(String type) {
+        return contextSingletonNameMap.get(type);
     }
 
     @Override
     public <T> T getType(String type, String name, Class<T> t) {
-        return getT(type, name, t);
+        return getT(type, name, t, null);
     }
 }

@@ -5,16 +5,20 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import com.google.common.collect.Maps;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcIgnore;
+import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
+import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.SqlPlaceholderReplacer;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.json.JacksonUtil;
 import jodd.util.StringPool;
+import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -25,16 +29,17 @@ import java.util.stream.Collectors;
 
 public abstract class CommonDBAccess {
 
+    @Getter
     private boolean isPrintLog = false;
 
     public void setPrintLog(boolean printLog) {
         isPrintLog = printLog;
     }
 
-    protected static final String UPDATE = "UPDATE";
-    protected static final String DELETE = "DELETE";
-    protected static final String SELECT = "SELECT";
-    protected static final String INSERT = "INSERT";
+    public static final String UPDATE = "UPDATE";
+    public static final String DELETE = "DELETE";
+    public static final String SELECT = "SELECT";
+    public static final String INSERT = "INSERT";
     protected static final String FROM = "FROM";
     protected static final String INTO = "INTO";
     protected static final String SET = "SET";
@@ -97,7 +102,7 @@ public abstract class CommonDBAccess {
         List<String> fields = ListTs.asList(_fields);
         // 更新的时候 字段 形式为 name='xx' 这种所以不需要转下划线
         if (!UPDATE.equalsIgnoreCase(type)) {
-            fields = ListTs.mapT(_fields, String.class, e -> StrUtil.toUnderlineCase(e.toString()));
+            fields = ListTs.objectToListT(_fields, String.class, e -> StrUtil.toUnderlineCase(e.toString()));
         }
 
         List<String> ddlList = ListTs.newLinkedList();
@@ -270,26 +275,47 @@ public abstract class CommonDBAccess {
 
     }
 
+    public String getTableName(Class<?> clazz, Dialect dialect) {
+        StringBuilder sb = new StringBuilder();
+
+        Wrapper wrapper = dialect.getWrapper();
+        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
+        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
+            String schema = StrUtil.blankToDefault(annotation.schema(), "");
+            List<String> list = ListTs.filter(ListTs.asList(wrapper.wrap(schema), wrapper.wrap(annotation.name())), StrUtil::isNotBlank);
+            String join = String.join(".", list);
+            sb.append(join);
+        } else {
+            String simpleName = clazz.getSimpleName();
+            String underlineCase = wrapper.wrap(StrUtil.toUnderlineCase(simpleName)).toLowerCase();
+            sb.append(underlineCase);
+        }
+        return sb.toString();
+    }
+
+    public String getSql(String sql, Connection connection, Object... args) {
+        List<Object> newArrayList = ListTs.newArrayList();
+        if (ArrayUtil.isNotEmpty(args)) {
+            if (1 == args.length && args[0] instanceof Collection) {
+                Object arg = args[0];
+                newArrayList = ListTs.objectToListObject(arg, (object) -> object);
+            } else {
+                ListTs.flatten(args, newArrayList);
+            }
+        }
+        if (CollUtil.isNotEmpty(newArrayList)) {
+            return SqlPlaceholderReplacer.replacePlaceholders(sql, newArrayList, connection);
+        } else {
+            return sql;
+        }
+    }
 
     public void logSql(String sql, Connection connection, Object... args) {
         try {
             boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_PRINT_SYS_DB_SQL, boolean.class);
             if (property && this.isPrintLog) {
-                List<Object> newArrayList = null;
-                if (ArrayUtil.isNotEmpty(args)) {
-                    if (1 == args.length && args[0] instanceof Collection) {
-                        Object arg = args[0];
-                        newArrayList = ListTs.map(arg, (object) -> object);
-                    } else {
-                        newArrayList = ListTs.asList(args);
-                    }
-                }
-                if (CollUtil.isNotEmpty(newArrayList)) {
-                    String s = SqlPlaceholderReplacer.replacePlaceholders(sql, newArrayList, connection);
-                    Easy4j.info("[SQL] -> {}", s);
-                } else {
-                    Easy4j.info("[SQL] -> {}", sql);
-                }
+                String logSql = getSql(sql, connection, args);
+                Easy4j.info("[SQL] -> {}", logSql);
 
             }
         } catch (Exception ignored) {

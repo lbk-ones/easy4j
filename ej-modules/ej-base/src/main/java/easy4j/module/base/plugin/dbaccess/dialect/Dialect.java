@@ -17,7 +17,7 @@ package easy4j.module.base.plugin.dbaccess.dialect;
 
 import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.plugin.dbaccess.Page;
-import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -101,12 +101,12 @@ public interface Dialect {
      *
      * @param tableName
      * @param record
-     * @param sqlBuilder
+     * @param whereBuilder
      * @param ignoreNull
      * @param connection
      * @return
      */
-    PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, SqlBuild sqlBuilder, boolean ignoreNull, Connection connection);
+    PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuilder, boolean ignoreNull, Connection connection);
 
     /**
      * 根据字符串条件来更新
@@ -144,4 +144,6 @@ public interface Dialect {
      * @return
      */
     String strDateToFunc(String str);
+
+    void printPrintLog(boolean isPrintLog);
 }

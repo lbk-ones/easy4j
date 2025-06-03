@@ -22,7 +22,7 @@ import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.CommonDBAccess;
 import easy4j.module.base.plugin.dbaccess.Page;
-import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
 import jodd.util.StringPool;
@@ -126,10 +126,10 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
     }
 
     @Override
-    public PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, SqlBuild sqlBuild, boolean ignoreNull, Connection connection) {
+    public PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuild, boolean ignoreNull, Connection connection) {
 
         List<Object> objects = ListTs.newCopyOnWriteArrayList();
-        String buildSql = sqlBuild.build(objects);
+        String buildSql = whereBuild.build(objects);
 
         return psForUpdateBySqlBuildWith(tableName, record, ignoreNull, connection, objects, buildSql);
 
@@ -139,27 +139,27 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         List<String> nameList = ListTs.newLinkedList();
         Set<String> strings = record.keySet();
         Wrapper wrapper = getWrapper();
+        List<Object> firstObject = ListTs.newArrayList();
         for (String column : strings) {
             Object o = record.get(column);
             if (ignoreNull) {
                 if (!ObjectUtil.isEmpty(o)) {
-                    objects.add(o);
+                    firstObject.add(o);
                     nameList.add(wrapper.wrap(StrUtil.toUnderlineCase(column)) + " = ? ");
                 }
             } else {
-                objects.add(o);
+                firstObject.add(o);
                 nameList.add(wrapper.wrap(StrUtil.toUnderlineCase(column)) + " = ? ");
             }
         }
-        String s = DDlLine(UPDATE, tableName, buildSql, nameList.toArray(new String[]{}));
+        firstObject.addAll(objects);
+        String s = DDlLine(UPDATE, tableName, where(buildSql), nameList.toArray(new String[]{}));
         PreparedStatement preparedStatement = null;
         try {
-            logSql(s, connection, objects);
-            preparedStatement = StatementUtil.prepareStatement(connection, s, objects.toArray(new Object[]{}));
+            logSql(s, connection, firstObject);
+            preparedStatement = StatementUtil.prepareStatement(connection, s, firstObject.toArray(new Object[]{}));
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("psForUpdateBySqlBuider", s, e);
-        } finally {
-            JdbcHelper.close(preparedStatement);
         }
         return preparedStatement;
     }
@@ -301,5 +301,10 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
     @Override
     public String strDateToFunc(String str) {
         return "'" + str + "'";
+    }
+
+    @Override
+    public void printPrintLog(boolean isPrintLog) {
+        this.setPrintLog(isPrintLog);
     }
 }

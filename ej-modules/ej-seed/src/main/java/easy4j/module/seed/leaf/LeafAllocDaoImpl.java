@@ -60,7 +60,7 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
 
     public List<String> getAllTags() {
-        return ListTs.mapListStr(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
+        return ListTs.tListToListString(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
     }
 
     @Transactional(rollbackFor = Exception.class)

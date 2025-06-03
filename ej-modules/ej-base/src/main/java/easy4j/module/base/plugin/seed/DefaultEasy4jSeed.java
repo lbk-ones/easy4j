@@ -12,16 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base;
+package easy4j.module.base.plugin.seed;
 
-import easy4j.module.base.starter.Easy4JStarterNd;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.RandomUtil;
 
 /**
- * Test
+ * DefaultEasy4jSeed
+ * 测试的时候报错 先给个默认的占占位
  *
  * @author bokun.li
- * @date 2025-05
  */
-@Easy4JStarterNd
-public class Test {
+public class DefaultEasy4jSeed implements Easy4jSeed {
+
+    Snowflake snowflake = new Snowflake(RandomUtil.randomInt(0, 31));
+
+    @Override
+    public String nextIdStr() {
+        return snowflake.nextIdStr();
+    }
+
+    @Override
+    public long nextIdLong() {
+        return snowflake.nextId();
+    }
 }

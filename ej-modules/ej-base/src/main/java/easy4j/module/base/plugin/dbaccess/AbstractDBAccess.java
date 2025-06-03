@@ -26,9 +26,8 @@ import cn.hutool.db.sql.Wrapper;
 import com.google.common.collect.Maps;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
 import easy4j.module.base.plugin.dbaccess.condition.LogicOperator;
-import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.BusCode;
@@ -87,26 +86,6 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     // 更新
     protected static final String BATCH_UPDATE = "BATCH_UPDATE";
 
-    public String getTableName(Class<?> clazz, Dialect dialect) {
-        StringBuilder sb = new StringBuilder();
-        if (dialect == null) {
-            dialect = getDialect(getConnection());
-        }
-        assert dialect != null;
-        Wrapper wrapper = dialect.getWrapper();
-        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
-        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
-            String schema = StrUtil.blankToDefault(annotation.schema(), "");
-            List<String> list = ListTs.filter(ListTs.asList(wrapper.wrap(schema), wrapper.wrap(annotation.name())), StrUtil::isNotBlank);
-            String join = String.join(".", list);
-            sb.append(join);
-        } else {
-            String simpleName = clazz.getSimpleName();
-            String underlineCase = wrapper.wrap(StrUtil.toUnderlineCase(simpleName)).toLowerCase();
-            sb.append(underlineCase);
-        }
-        return sb.toString();
-    }
 
     public List<String> getColumns(Class<?> aClass, String sqlType) {
         List<String> nameList = ListTs.newArrayList();
@@ -153,11 +132,8 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
      * @return
      * @throws SQLException
      */
-    public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError) {
-        Dialect dialect = getDialect(getConnection());
-        assert dialect != null;
+    public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError, Dialect dialect) {
         Wrapper wrapper = dialect.getWrapper();
-
         return getSelectByMap(recordMap, newArgsList, wrapper, isThrowError);
     }
 
@@ -179,7 +155,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                     Object o = recordMap.get(e);
                     e = StrUtil.toUnderlineCase(e);
                     String wrapField = wrapper.wrap(e);
-                    List<Object> map = ListTs.map(o, (object) -> object);
+                    List<Object> map = ListTs.objectToListObject(o, (object) -> object);
                     if (map.isEmpty()) {
                         return "";
                     }
@@ -258,7 +234,8 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         }
         Connection connection = getConnection();
         Dialect dialect = getDialect(connection);
-        assert dialect != null;
+
+        dialect.printPrintLog(this.isPrintLog());
         List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
         PreparedStatement batchInsertSql = null;
         try {
@@ -378,13 +355,14 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
 
         Connection connection = getConnection();
         Dialect dialect = getDialect(connection);
-        assert dialect != null;
+
         // 获取参数列表就不考虑sql注入了
         if (CollUtil.isEmpty(columns)) {
             columns = getColumns(aClass, UPDATE);
         }
         PreparedStatement batchInsertSql = null;
         try {
+            dialect.printPrintLog(this.isPrintLog());
             batchInsertSql = dialect.psForBatchUpdate(
                     getTableName(aClass, dialect),
                     columns.toArray(new String[]{}),
@@ -399,15 +377,6 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
 
-    }
-
-
-    public Map<String, Object> buildMap(String sql, String su, Object[] args) {
-        Map<String, Object> pMap = Maps.newHashMap();
-        pMap.put(KEY_SQL, sql);
-        pMap.put(KEY_SU, su);
-        pMap.put(KEY_ARGS, args);
-        return pMap;
     }
 
     public Map<String, Object> buildMap(Connection connection, String sql, String su, Object[] args) {
@@ -503,15 +472,17 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             sql = StrUtil.subPre(sql, orderByIndex);
         }
         String countSQL = DDlLine(SELECT, "(" + sql + ") c", null, "count(1)");
-        Dialect dialect = getDialect(getConnection());
-        assert dialect != null;
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+
+        dialect.printPrintLog(this.isPrintLog());
         querySQL = dialect.getPageSql(querySQL, page);
-        if (log.isDebugEnabled()) {
-            log.debug("查询分页countSQL=\n" + countSQL);
-            log.debug("查询分页querySQL=\n" + querySQL);
-        }
+//        if (log.isDebugEnabled()) {
+//            log.debug("查询分页countSQL=\n" + countSQL);
+//            log.debug("查询分页querySQL=\n" + querySQL);
+//        }
         try {
-            Map<String, Object> stringObjectMap = buildMap(countSQL, QUERY_COUNT, args);
+            Map<String, Object> stringObjectMap = buildMap(connection, countSQL, QUERY_COUNT, args);
             Object count = queryCount(stringObjectMap);
             List<T> list = selectList(querySQL, clazz, args);
             if (list == null) list = Collections.emptyList();
@@ -538,26 +509,33 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     @Override
     public <T> List<T> selectAll(Class<T> clazz, String... fieldNames) {
         Connection connection = getConnection();
-        return selectListWith(DDlLine(SELECT, this.getTableName(clazz, null), null, fieldNames), clazz, null, connection);
+        Dialect dialect = getDialect(connection);
+        return selectListWith(DDlLine(SELECT, this.getTableName(clazz, dialect), null, fieldNames), clazz, null, connection);
     }
 
     @Override
     public <T> int deleteAll(Class<T> tClass) {
 
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+
+        String tableName = this.getTableName(tClass, dialect);
         String sql = DDlLine(DELETE, tableName, null);
-        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, null);
+        Map<String, Object> stringObjectMap = buildMap(connection, sql, DELETE, null);
         return this.saveOrUpdate(stringObjectMap);
     }
 
     @Override
     public <T> int deleteByPrimaryKey(T object, Class<T> tClass) {
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+
+        String tableName = this.getTableName(tClass, dialect);
         Map<String, Object> idMap = this.getIdMap(object, true);
         List<Object> args = ListTs.newLinkedList();
-        String sqlByObject = this.getSqlByObject(idMap, args, true);
+        String sqlByObject = this.getSqlByObject(idMap, args, true, dialect);
         String sql = DDlLine(DELETE, tableName, where(sqlByObject));
-        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, args.toArray(new Object[]{}));
+        Map<String, Object> stringObjectMap = buildMap(connection, sql, DELETE, args.toArray(new Object[]{}));
         return this.saveOrUpdate(stringObjectMap);
     }
 
@@ -567,69 +545,82 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         if (dict.isEmpty()) {
             throw new EasyException(BusCode.A00038);
         }
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String tableName = this.getTableName(tClass, dialect);
         List<Object> args = ListTs.newLinkedList();
-        String sqlByObject = this.getSqlByObject(dict, args, true);
+        String sqlByObject = this.getSqlByObject(dict, args, true, dialect);
         String sql = DDlLine(DELETE, tableName, where(sqlByObject));
-        Map<String, Object> stringObjectMap = buildMap(sql, DELETE, args.toArray(new Object[]{}));
+        Map<String, Object> stringObjectMap = buildMap(connection, sql, DELETE, args.toArray(new Object[]{}));
         return this.saveOrUpdate(stringObjectMap);
     }
 
     @Override
     public <T> List<T> selectByObject(T recordData, Class<T> tClass) {
-
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String tableName = this.getTableName(tClass, dialect);
         Map<String, Object> paramMap = castBeanMap(recordData, true, false);
         List<Object> args = ListTs.newLinkedList();
-        String sqlByObject = this.getSqlByObject(paramMap, args, true);
+        String sqlByObject = this.getSqlByObject(paramMap, args, true, dialect);
         String sql = DDlLine(SELECT, tableName, where(sqlByObject));
-        return this.selectList(sql, tClass, args.toArray(new Object[]{}));
+        return this.selectListWith(sql, tClass, args.toArray(new Object[]{}), connection);
     }
 
     @Override
     public <T> List<T> selectByMap(Dict params, Class<T> tClass) {
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String tableName = this.getTableName(tClass, dialect);
         List<Object> args = ListTs.newLinkedList();
-        String sqlByObject = this.getSqlByObject(params, args, true);
+        String sqlByObject = this.getSqlByObject(params, args, true, dialect);
         String sql = DDlLine(SELECT, tableName, where(sqlByObject));
-        return this.selectList(sql, tClass, args.toArray(new Object[]{}));
+        return this.selectListWith(sql, tClass, args.toArray(new Object[]{}), connection);
     }
 
     @Override
     public <T> T selectOneByMap(Dict dict, Class<T> tClass) {
-        String tableName = this.getTableName(tClass, null);
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String tableName = this.getTableName(tClass, dialect);
         List<Object> args = ListTs.newLinkedList();
-        String sqlByObject = this.getSqlByObject(dict, args, true);
+        String sqlByObject = this.getSqlByObject(dict, args, true, dialect);
         String sql = DDlLine(SELECT, tableName, where(sqlByObject));
-        return ListTs.get(this.selectList(sql, tClass, args.toArray(new Object[]{})), 0);
+        return ListTs.get(this.selectListWith(sql, tClass, args.toArray(new Object[]{}), connection), 0);
     }
 
     @Override
     public long countBy(Object object) {
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
         Class<?> aClass1 = object.getClass();
-        String tableName = getTableName(aClass1, null);
+        String tableName = getTableName(aClass1, dialect);
         if (StrUtil.isNotBlank(tableName)) {
             Map<String, Object> stringObjectMap = castBeanMap(object, true, false);
-            return conditionMap(stringObjectMap, tableName);
+            return conditionMap(stringObjectMap, tableName, connection, dialect);
         }
         return 0;
     }
 
     @Override
-    public long countByMap(Map<String, Object> object, Class<?> aClass) {
-        Class<?> aClass1 = object.getClass();
-        String tableName = getTableName(aClass1, null);
+    public long countByMap(Dict dict, Class<?> aClass) {
+        if (null == aClass || dict == null) {
+            throw new EasyException("dict or aClass is null,is not allow!");
+        }
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String tableName = getTableName(aClass, dialect);
         if (StrUtil.isNotBlank(tableName)) {
-            return conditionMap(object, tableName);
+            return conditionMap(dict, tableName, connection, dialect);
         }
         return 0;
     }
 
-    private long conditionMap(Map<String, Object> object, String tableName) {
+    private long conditionMap(Map<String, Object> object, String tableName, Connection connection, Dialect dialect) {
         List<Object> newArgsList = ListTs.newLinkedList();
-        String sqlByObject = getSqlByObject(object, newArgsList, false);
+        String sqlByObject = getSqlByObject(object, newArgsList, false, dialect);
         String sql = DDlLine(SELECT, tableName, where(sqlByObject), "count(*)");
-        Map<String, Object> buildMap = buildMap(sql, QUERY_COUNT, newArgsList.toArray(new Object[]{}));
+        Map<String, Object> buildMap = buildMap(connection, sql, QUERY_COUNT, newArgsList.toArray(new Object[]{}));
         return (long) queryCount(buildMap);
     }
 
@@ -659,14 +650,14 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
 
             Connection connection = getConnection();
             Dialect dialect = getDialect(connection);
-            assert dialect != null;
+
             List<Object> newArgsList = ListTs.newLinkedList();
 
             String sql = DDlLine(
                     SELECT,
-                    getTableName(clazz, null),
+                    getTableName(clazz, dialect),
                     where(
-                            getSqlByObject(idMap, newArgsList, true)
+                            getSqlByObject(idMap, newArgsList, true, dialect)
                     )
             );
             return selectListWith(sql, clazz, newArgsList.toArray(new Object[]{}), connection);
@@ -675,7 +666,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
 
     @Override
     public <T> List<T> selectByPrimaryKeysT(List<T> args, Class<T> clazz) {
-        List<Object> map = ListTs.map(args, e -> e);
+        List<Object> map = ListTs.objectToListObject(args, e -> e);
         return selectByPrimaryKeysWith(map, clazz);
     }
 
@@ -695,53 +686,58 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         if (idMap.isEmpty()) {
             idMap.put(idNames.get(0), ListTs.asList(object));
         }
-        String sqlByObject = getSqlByObject(idMap, objects, true);
-        String s = DDlLine(SELECT, getTableName(tClass, null), where(sqlByObject), idNames.toArray(new String[]{}));
-        List<T> objectList = selectList(s, tClass, objects.toArray(new Object[]{}));
+        Connection connection = getConnection();
+        Dialect dialect = getDialect(connection);
+        String sqlByObject = getSqlByObject(idMap, objects, true, dialect);
+        String s = DDlLine(SELECT, getTableName(tClass, dialect), where(sqlByObject), idNames.toArray(new String[]{}));
+        List<T> objectList = selectListWith(s, tClass, objects.toArray(new Object[]{}), connection);
         return CollUtil.isNotEmpty(objectList);
     }
 
     @Override
-    public <T> int deleteByCondition(SqlBuild sqlBuilder, Class<T> tClass) {
+    public <T> int deleteByCondition(WhereBuild whereBuilder, Class<T> tClass) {
         Connection connection = getConnection();
-        sqlBuilder.bind(connection);
+        whereBuilder.bind(connection);
         List<Object> objects = new ArrayList<>();
-        String tableName = getTableName(tClass, null);
-        String sql = sqlBuilder.build(objects);
+        Dialect dialect = getDialect(connection);
+        String tableName = getTableName(tClass, dialect);
+        String sql = whereBuilder.build(objects);
         sql = DDlLine(DELETE, tableName, where(sql));
         return saveOrUpdate(buildMap(connection, sql, DELETE, objects.toArray(new Object[]{})));
     }
 
     @Override
-    public long countByCondition(SqlBuild sqlBuilder, Class<?> aClass) {
+    public long countByCondition(WhereBuild whereBuilder, Class<?> aClass) {
 
         Connection connection = getConnection();
-        sqlBuilder.bind(connection);
+        whereBuilder.bind(connection);
         List<Object> objects = new ArrayList<>();
-        String tableName = getTableName(aClass, null);
-        String sql = sqlBuilder.build(objects);
+        Dialect dialect = getDialect(connection);
+        String tableName = getTableName(aClass, dialect);
+        String sql = whereBuilder.build(objects);
         sql = DDlLine(SELECT, tableName, where(sql), "count(1)");
         Map<String, Object> map = buildMap(connection, sql, QUERY_COUNT, objects.toArray(new Object[]{}));
         return ((long) queryCount(map));
     }
 
     @Override
-    public <T> List<T> selectByCondition(SqlBuild sqlBuilder, Class<T> tClass) {
+    public <T> List<T> selectByCondition(WhereBuild whereBuilder, Class<T> tClass) {
         Connection connection = getConnection();
-        sqlBuilder.bind(connection);
+        whereBuilder.bind(connection);
         List<Object> newArgList = ListTs.newArrayList();
 
-        List<String> selectFields = sqlBuilder.getSelectFields();
+        List<String> selectFields = whereBuilder.getSelectFields();
         String[] array = selectFields.toArray(new String[]{});
 
 
-        String build = sqlBuilder.build(newArgList);
+        Dialect dialect = getDialect(connection);
+        String build = whereBuilder.build(newArgList);
         if (StrUtil.isBlank(build)) {
-            return selectListWith(DDlLine(SELECT, this.getTableName(tClass, null), null), tClass, array, connection);
+            return selectListWith(DDlLine(SELECT, this.getTableName(tClass, dialect), null), tClass, array, connection);
         } else {
             String sql = DDlLine(
                     SELECT,
-                    getTableName(tClass, null),
+                    getTableName(tClass, dialect),
                     where(build),
                     array
             );
@@ -750,21 +746,22 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     }
 
     @Override
-    public <T> int updateByCondition(SqlBuild sqlBuilder, T update, Class<T> tClass) {
+    public <T> int updateByCondition(WhereBuild whereBuilder, T update, Class<T> tClass) {
 
         Connection connection = getConnection();
-        sqlBuilder.bind(connection);
+        whereBuilder.bind(connection);
 
         List<Object> newArgList = ListTs.newArrayList();
 
-        String build = sqlBuilder.build(newArgList);
+        String build = whereBuilder.build(newArgList);
         if (StrUtil.isBlank(build)) {
             throw new EasyException("please input update conditions!");
         }
         Dialect dialect = getDialect(connection);
         String tableName = getTableName(tClass, dialect);
         Map<String, Object> stringObjectMap = castBeanMap(update, true, true);
-        assert dialect != null;
+
+        dialect.printPrintLog(this.isPrintLog());
         PreparedStatement preparedStatement = dialect.psForUpdateBySqlBuildStr(tableName, stringObjectMap, build, newArgList, true, connection);
         int effectRows;
         try {
@@ -779,8 +776,12 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     }
 
     @Override
-    public <T> boolean existByCondition(SqlBuild sqlBuilder, Class<T> tClass) {
-        return this.countByCondition(sqlBuilder, tClass) > 0;
+    public <T> boolean existByCondition(WhereBuild whereBuilder, Class<T> tClass) {
+        return this.countByCondition(whereBuilder, tClass) > 0;
     }
 
+    @Override
+    public void printPrintLog(boolean isPrintLog) {
+        this.setPrintLog(isPrintLog);
+    }
 }

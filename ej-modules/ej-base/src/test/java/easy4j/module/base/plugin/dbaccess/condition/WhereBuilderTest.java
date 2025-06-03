@@ -16,26 +16,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@Easy4JStarterTest(
 //        serverPort = 9091,
 //        serverName = "test-sqlbuilder"
 //)
 //@SpringBootTest(classes = SqlBuilderTest.class)
-class SqlBuilderTest {
+public class WhereBuilderTest {
 
     @Mock
     Connection connection;
 
-    FSqlBuild<SysLogRecord> fSqlBuilder;
+    FWhereBuild<SysLogRecord> fSqlBuilder;
 
     Dialect dialect;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        fSqlBuilder = FSqlBuild.get(SysLogRecord.class);
+        fSqlBuilder = FWhereBuild.get(SysLogRecord.class);
         fSqlBuilder.bind(connection);
         dialect = new H2Dialect();
         fSqlBuilder.bind(dialect);
@@ -60,16 +60,16 @@ class SqlBuilderTest {
         String condition1 = fSqlBuilder
                 .select("groupArg1", "groupArg2")
                 .equal("age", 30)
-                .and(SqlBuild.get(connection, dialect)
+                .and(WhereBuild.get(connection, dialect)
                         .equal("gender", "F")
-                        .or(SqlBuild.get(connection, dialect)
+                        .or(WhereBuild.get(connection, dialect)
                                 .equal("department", "IT")
                                 .ne("salary", 5000)
                         )
                 ).or(
-                        SqlBuild.get(connection, dialect)
+                        WhereBuild.get(connection, dialect)
                                 .gt("create_date", new Date()).isNotNull("ord_class")
-                ).in("order_no", "1234151", "2151251651")
+                ).inArray("order_no", "1234151", "2151251651")
                 .asc("ageMax", "xx")
                 .desc("xxx")
                 .groupBy("groupArg1", "groupArg2")
@@ -87,11 +87,11 @@ class SqlBuilderTest {
         String condition2 = fSqlBuilder
                 .withLogicOperator(LogicOperator.OR)
                 .like("name", "A%")
-                .in("department", ListTs.asList("IT", "HR"))
+                .inArray("department", ListTs.asList("IT", "HR"))
                 .between("salary", 3000, 5000)
-                .not(SqlBuild.get()
+                .not(WhereBuild.get()
                         .isNull("email")
-                        .or(SqlBuild.get()
+                        .or(WhereBuild.get()
                                 .equal("status", "INACTIVE")
                         )
                 ).build(argList);

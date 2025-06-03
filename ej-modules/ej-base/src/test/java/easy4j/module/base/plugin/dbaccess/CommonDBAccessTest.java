@@ -1,12 +1,13 @@
 package easy4j.module.base.plugin.dbaccess;
 
+import easy4j.module.base.exception.EasyException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import easy4j.module.base.exception.EasyException;
 
-class CommonDBAccessTest {
+public class CommonDBAccessTest {
 
 
     private final CommonDBAccess dbAccess = new CommonDBAccess() {

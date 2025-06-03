@@ -331,14 +331,14 @@ public abstract class JdbcHelper {
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             String databaseProductName = databaseMetaData.getDatabaseProductName();
             String dbType = databaseTypeMappings.getProperty(databaseProductName);
-            if (StrUtil.isEmpty(dbType)) return null;
+            if (StrUtil.isEmpty(dbType)) return new AbstractDialect();
             if (dbType.equalsIgnoreCase("mysql")) return new MySqlDialect();
             else if (dbType.equalsIgnoreCase("oracle")) return new OracleDialect();
             else if (dbType.equalsIgnoreCase("postgres")) return new PostgresqlDialect();
             else if (dbType.equalsIgnoreCase("mssql")) return new SQLServerDialect();
             else if (dbType.equalsIgnoreCase("db2")) return new Db2Dialect();
             else if (dbType.equalsIgnoreCase("h2")) return new H2Dialect();
-            else return null;
+            else return new AbstractDialect();
         } catch (SQLException e) {
             throw translateSqlException("getDialect", null, e);
         }

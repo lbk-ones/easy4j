@@ -25,11 +25,12 @@ import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.header.EasyResult;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.plugin.dbaccess.condition.FSqlBuild;
-import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.FWhereBuild;
+import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.plugin.lock.Easy4jSysLock;
+import easy4j.module.base.plugin.seed.DefaultEasy4jSeed;
 import easy4j.module.base.plugin.seed.Easy4jSeed;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
@@ -292,7 +293,7 @@ public class DbLog {
 
     private static String insertDomain(SysLogRecord logRecord) {
         Easy4jContext context = Easy4j.getContext();
-        Easy4jSeed easy4jSeed = context.get(Easy4jSeed.class);
+        Easy4jSeed easy4jSeed = context.getOrDefault(Easy4jSeed.class, new DefaultEasy4jSeed());
         String id = easy4jSeed.nextIdStr();
         logRecord.setId(id);
         try {
@@ -371,7 +372,7 @@ public class DbLog {
             logRecord.setCreateDate(new Date());
             logRecord.setTag("日志定时清除");
 
-            SqlBuild lte1 = FSqlBuild.get(SysLogRecord.class)
+            WhereBuild lte1 = FWhereBuild.get(SysLogRecord.class)
                     .lte(SysLogRecord::getCreateDate, startTime);
 
             long i = dbAccess.countByCondition(lte1, SysLogRecord.class);

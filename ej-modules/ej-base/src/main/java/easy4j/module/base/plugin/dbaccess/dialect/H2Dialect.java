@@ -38,7 +38,7 @@ public class H2Dialect extends AbstractDialect {
     public String strDateToFunc(String str) {
 
         if (StrUtil.isNotBlank(str)) {
-            return "TO_TIMESTAMP('" + str + "', 'yyyy-MM-dd HH:mm:ss')";
+            return "CAST('" + str + "' as TIMESTAMP)";
         } else {
             return str;
         }

@@ -16,354 +16,140 @@ package easy4j.module.base.plugin.dbaccess.condition;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
 import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.plugin.dbaccess.Page;
-import easy4j.module.base.plugin.dbaccess.dialect.AbstractDialect;
+import easy4j.module.base.plugin.dbaccess.CommonDBAccess;
 import easy4j.module.base.plugin.dbaccess.dialect.Dialect;
-import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
 import easy4j.module.base.utils.ListTs;
 import jodd.util.StringPool;
-import lombok.Getter;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * SQL 条件构建器，支持 AND、OR、NOT 等逻辑组合，以及各种比较条件。
- * 生成预编译的sql含占位符
- * 字段名称会自动转下化线
- * <p>
- * // 示例 1：简单条件
- * String condition1 = SqlBuilder.get()
- * .equal("age", 30)
- * .and(SqlBuilder.get()
- * .equal("gender", "F")
- * .or(SqlBuilder.get()
- * .equal("department", "IT")
- * .ne("salary", 5000)
- * )).build(argList);
- * System.out.println("条件 1: " + condition1);
- * System.out.println("值 1: " + JacksonUtil.toJson(argList));
- * argList.clear();
- * // 输出: age = 30 AND (gender = 'F' OR (department = 'IT' AND salary != 5000))
- * <p>
- * // 示例 2：复杂条件
- * String condition2 = SqlBuilder.get()
- * .withLogicOperator(LogicOperator.OR)
- * .like("name", "A%")
- * .in("department", ListTs.asList("IT", "HR"))
- * .between("salary", 3000, 5000)
- * .not(SqlBuilder.get()
- * .isNull("email")
- * .or(SqlBuilder.get()
- * .equal("status", "INACTIVE")
- * )).build(argList);
- * System.out.println("条件 2: " + condition2);
- * System.out.println("值 2: " + JacksonUtil.toJson(argList));
- * // 输出: name LIKE 'A%' OR department IN ('IT', 'HR') OR salary BETWEEN 3000 AND 5000 OR NOT (email IS NULL OR status = 'INACTIVE')
- * <p>
- * // 示例 3：用于 SQL 查询
- * String sql = "SELECT * FROM employees WHERE " + condition1;
- * System.out.println("完整 SQL: " + sql);
- * <p>
+ * 构建可执行sql
  *
  * @author bokun.li
+ * @date 2025/6/3
  */
-public class SqlBuild {
-
-    private final List<Condition> conditions = new ArrayList<>();
-    private final List<Condition> groupBy = new ArrayList<>();
-    private final List<Condition> orderBy = new ArrayList<>();
-
-    private final List<Condition> selectFields = new ArrayList<>();
-    private final List<SqlBuild> subBuilders = new ArrayList<>();
-    private LogicOperator logicOperator = LogicOperator.AND; // 默认使用 AND 连接条件
-    private boolean isSubSql = false;
+public class SqlBuild extends CommonDBAccess {
 
 
-    public Connection connection;
-    public Dialect dialect;
+    private SqlBuild() {
 
-    public List<String> getSelectFields() {
-        Wrapper wrapper = getDialect().getWrapper();
-        return selectFields.stream()
-                .map(e -> wrapper.wrap(e.getColumn()))
-                .filter(StrUtil::isNotBlank)
-                .collect(Collectors.toList());
     }
 
-    public Dialect getDialect() {
-        if (this.dialect != null) {
-            return this.dialect;
-        } else if (this.connection != null) {
-            this.dialect = JdbcHelper.getDialect(this.connection);
-            return this.dialect;
-        } else {
-            return new AbstractDialect();
-        }
+    private static class SqlBuildHolder {
+        private static final SqlBuild INSTANCE = new SqlBuild();
     }
 
-    public void bind(Connection connection) {
-        this.connection = connection;
-    }
-
-    public void bind(Dialect dialect) {
-        this.dialect = dialect;
-    }
-
-    // 设置逻辑运算符
-    public SqlBuild withLogicOperator(LogicOperator operator) {
-        this.logicOperator = operator;
-        return this;
-    }
-
-    // 基础比较条件方法
-    public SqlBuild equal(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.EQUAL, value));
-        return this;
-    }
-
-    public SqlBuild ne(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.NOT_EQUAL, value));
-        return this;
-    }
-
-    public SqlBuild gt(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.GREATER_THAN, value));
-        return this;
-    }
-
-    public SqlBuild lt(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.LESS_THAN, value));
-        return this;
-    }
-
-    public SqlBuild gte(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.GREATER_OR_EQUAL, value));
-        return this;
-    }
-
-    public SqlBuild lte(String column, Object value) {
-        conditions.add(new Condition(column, CompareOperator.LESS_OR_EQUAL, value));
-        return this;
-    }
-
-    // LIKE 条件
-    public SqlBuild like(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.LIKE, value));
-        return this;
-    }
-
-    public SqlBuild notLike(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.NOT_LIKE, value));
-        return this;
-    }
-
-    // IN 条件
-    public SqlBuild in(String column, List<?> values) {
-        conditions.add(new Condition(column, CompareOperator.IN, values));
-        return this;
-    }
-
-    public SqlBuild in(String column, Object... values) {
-        conditions.add(new Condition(column, CompareOperator.IN, Arrays.asList(values)));
-        return this;
-    }
-
-    public SqlBuild notIn(String column, List<?> values) {
-        conditions.add(new Condition(column, CompareOperator.NOT_IN, values));
-        return this;
-    }
-
-    public SqlBuild notIn(String column, Object... values) {
-        conditions.add(new Condition(column, CompareOperator.NOT_IN, Arrays.asList(values)));
-        return this;
-    }
-
-    // BETWEEN 条件
-    public SqlBuild between(String column, Object value1, Object value2) {
-        conditions.add(new Condition(column, CompareOperator.BETWEEN, Arrays.asList(value1, value2)));
-        return this;
-    }
-
-    // NULL 条件
-    public SqlBuild isNull(String column) {
-        conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
-        return this;
-    }
-
-    public SqlBuild isNotNull(String column) {
-        conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
-        return this;
-    }
-
-
-    public SqlBuild select(String... columns) {
-        if (!this.isSubSql) {
-            List<Condition> map = ListTs.mapT(columns, Condition.class, e -> {
-                String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, null);
-            });
-            if (CollUtil.isNotEmpty(map)) {
-                selectFields.addAll(map);
-            }
-        }
-        return this;
-    }
-
-    public SqlBuild groupBy(String... column) {
-        if (!this.isSubSql) {
-            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
-                String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, null);
-            });
-            if (CollUtil.isNotEmpty(map)) {
-                groupBy.addAll(map);
-            }
-        }
-        return this;
-    }
-
-    public SqlBuild asc(String... column) {
-        if (!this.isSubSql) {
-            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
-                String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, "ASC");
-            });
-            if (CollUtil.isNotEmpty(map)) {
-                orderBy.addAll(map);
-            }
-        }
-        return this;
-    }
-
-    public SqlBuild desc(String... column) {
-        if (!this.isSubSql) {
-            List<Condition> map = ListTs.mapT(column, Condition.class, e -> {
-                String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, "DESC");
-            });
-            if (CollUtil.isNotEmpty(map)) {
-                orderBy.addAll(map);
-            }
-        }
-        return this;
-    }
-
-    // 构建子条件
-    public SqlBuild and(SqlBuild subBuilder) {
-        subBuilder.withLogicOperator(LogicOperator.AND);
-        subBuilder.isSubSql = true;
-        subBuilders.add(subBuilder);
-        return this;
-    }
-
-    public SqlBuild or(SqlBuild subBuilder) {
-        subBuilder.withLogicOperator(LogicOperator.OR);
-        subBuilders.add(subBuilder);
-        subBuilder.isSubSql = true;
-        return this;
-    }
-
-    public SqlBuild not(SqlBuild subBuilder) {
-        subBuilder.isSubSql = true;
-        subBuilder.withLogicOperator(LogicOperator.NOT);
-        subBuilders.add(subBuilder);
-        return this;
-    }
-
-
-    // 清除条件
-    public void clear() {
-        conditions.clear();
-        subBuilders.clear();
-        orderBy.clear();
-        groupBy.clear();
-        selectFields.clear();
-        withLogicOperator(LogicOperator.AND);
-    }
-
-    // 构建最终 SQL 条件
-    public String build(List<Object> argsList) {
-
-        if (conditions.isEmpty() && subBuilders.isEmpty()) {
-            return "";
-        }
-
-        if (this.connection == null) {
-            throw new EasyException("condition is not bind connection please bind a connection");
-        }
-        Dialect sqlDialect = getDialect();
-        Wrapper wrapper = sqlDialect.getWrapper();
-
-
-        List<String> parts = new ArrayList<>();
-        // 添加基本条件
-        for (Condition condition : conditions) {
-            parts.add(condition.getSqlSegment(argsList, sqlDialect));
-        }
-        // 添加子条件
-        for (SqlBuild subBuilder : subBuilders) {
-            subBuilder.bind(sqlDialect);
-            subBuilder.bind(connection);
-            String subCondition = subBuilder.build(argsList);
-            if (!subCondition.isEmpty()) {
-                if (subBuilder.logicOperator == LogicOperator.NOT) {
-                    parts.add("NOT (" + subCondition + ")");
-                } else {
-                    parts.add("(" + subCondition + ")");
-                }
-            }
-        }
-
-        // 使用逻辑运算符连接所有条件
-        String operator = logicOperator == LogicOperator.AND ? " AND " : " OR ";
-        String join = String.join(operator, parts);
-
-        String groupBySegment = groupBy.stream().map(e -> {
-            String column = e.getColumn();
-            return wrapper.wrap(column);
-        }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
-
-        if (StrUtil.isNotBlank(groupBySegment)) {
-            join += " GROUP BY " + groupBySegment;
-        }
-
-        String orderBySegment = orderBy.stream().map(e -> {
-            String column = e.getColumn();
-            String value = Convert.toStr(e.getValue());
-            return wrapper.wrap(column) + StringPool.SPACE + value;
-        }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
-
-        if (StrUtil.isNotBlank(orderBySegment)) {
-            join += " ORDER BY " + orderBySegment;
-        }
-        return join;
-    }
-
-    // 静态工厂方法
     public static SqlBuild get() {
-        return new SqlBuild();
+        return SqlBuildHolder.INSTANCE;
     }
 
-    public static SqlBuild get(Connection connection, Dialect dialect) {
 
-        SqlBuild sqlBuilder = new SqlBuild();
-        sqlBuilder.bind(connection);
-        sqlBuilder.bind(dialect);
-        return sqlBuilder;
+    /**
+     * 单表简单sql构建
+     * SELECT,INSERT,UPDATE 需要传入值
+     * INSERT 可以不用传条件构造器
+     *
+     * @param sqlType    构建的sql类型
+     * @param whereBuild
+     * @param aclass     实体bean的class
+     * @param obj        如果是要更新则需要携带这个
+     * @param returnZwf  返回字符串是否携带占位符 ?  直接返回sql有风险 返回的sql并不一定能百分百执行
+     * @param argList    参数集合
+     * @param <T>
+     * @return
+     */
+    public <T> String build(
+            String sqlType,
+            WhereBuild whereBuild,
+            Class<T> aclass,
+            T obj,
+            boolean returnZwf,
+            List<Object> argList,
+            Connection connection,
+            Dialect dialect
+    ) {
+        if (!ListTs.asList(SELECT, DELETE, UPDATE, INSERT).contains(sqlType)) {
+            throw new EasyException("SqlType is inValid");
+        }
+        if (INSERT.equals(sqlType) && Objects.nonNull(whereBuild)) {
+            throw new EasyException("insert sql no where segment!");
+        }
+        String tableName = getTableName(aclass, dialect);
+        List<Object> objects = ListTs.newArrayList();
+        String build = Optional.ofNullable(whereBuild).map(e -> e.build(objects)).orElse("");
+        List<String> selectFields = Optional.ofNullable(whereBuild).map(WhereBuild::getSelectFields).orElse(new ArrayList<>());
+        String sql = null;
+        List<Object> frgment1SqlValue = ListTs.newArrayList();
+        switch (sqlType) {
+            case SELECT:
+                sql = DDlLine(sqlType, tableName, where(build), selectFields.toArray(new String[]{}));
+                sql = distinctSql(whereBuild, selectFields, sql);
+                break;
+            case DELETE:
+                sql = DDlLine(sqlType, tableName, where(build));
+                break;
+            case UPDATE:
+                if (obj == null) {
+                    throw new EasyException("please input update obj");
+                }
+                Map<String, Object> stringObjectMap = castBeanMap(obj, true, true);
+                String[] array = (String[]) stringObjectMap.keySet().stream().map(e -> {
+                    Object o = stringObjectMap.get(e);
+                    String re = e + StringPool.SPACE + "=" + StringPool.SPACE;
+                    if (returnZwf) {
+                        re += "?";
+                    } else {
+                        re += Convert.toStr(o);
+                    }
+                    frgment1SqlValue.add(re);
+                    return re;
+                }).toArray();
+                sql = DDlLine(sqlType, tableName, where(build), array);
+                break;
+            case INSERT:
+                Map<String, Object> keyMap = castBeanMap(obj, true, true);
+                List<String> name = ListTs.newArrayList();
+                for (String s : keyMap.keySet()) {
+                    name.add(s);
+                    Object o = keyMap.get(s);
+                    frgment1SqlValue.add(o);
+                }
+                if (CollUtil.isEmpty(frgment1SqlValue)) {
+                    throw new EasyException("insert segment should have values fields!");
+                }
+                String subSql = VALUES +
+                        StringPool.SPACE +
+                        StringPool.LEFT_BRACKET +
+                        frgment1SqlValue.stream().map(e -> "?").collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE)) +
+                        StringPool.RIGHT_BRACKET;
+
+                sql = DDlLine(sqlType, tableName, subSql, name.toArray(new String[]{}));
+
+                break;
+        }
+        if (CollUtil.isNotEmpty(objects)) {
+            frgment1SqlValue.addAll(objects);
+        }
+        if (argList != null && CollUtil.isNotEmpty(frgment1SqlValue)) {
+            argList.addAll(frgment1SqlValue);
+        }
+        if (returnZwf) {
+            return sql;
+        } else {
+            return getSql(sql, connection, frgment1SqlValue.toArray(new Object[]{}));
+        }
     }
 
-    public static SqlBuild get(Connection connection) {
-
-        SqlBuild sqlBuilder = new SqlBuild();
-        sqlBuilder.bind(connection);
-        return sqlBuilder;
+    private static String distinctSql(WhereBuild whereBuild, List<String> selectFields, String sql) {
+        if (whereBuild != null && whereBuild.isDistinct() && CollUtil.isNotEmpty(selectFields)) {
+            sql = sql.replaceAll(SELECT, SELECT + " DISTINCT");
+        }
+        return sql;
     }
+
+
 }

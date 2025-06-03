@@ -68,7 +68,8 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", null, e);
         } finally {
-            DataSourceUtils.releaseConnection(connection, dataSource);
+            JdbcHelper.close(connection);
+//            DataSourceUtils.releaseConnection(connection, dataSource);
         }
 
     }
@@ -81,7 +82,9 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
             if (this.inTransaction) {
                 return DataSourceUtils.getConnection(dataSource);
             } else {
-                return dataSource.getConnection();
+                Connection connection = dataSource.getConnection();
+                connection.setAutoCommit(true);
+                return connection;
             }
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("getConnection", null, e);

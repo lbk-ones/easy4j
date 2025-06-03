@@ -15,13 +15,12 @@
 package easy4j.module.base.plugin.dbaccess;
 
 import cn.hutool.core.lang.Dict;
-import easy4j.module.base.plugin.dbaccess.condition.SqlBuild;
+import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 import org.springframework.core.io.Resource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DBAccess
@@ -31,6 +30,8 @@ import java.util.Map;
  */
 public interface DBAccess {
     void init(Object object);
+
+    void printPrintLog(boolean isPrintLog);
 
     /**
      * 保存一个
@@ -188,10 +189,10 @@ public interface DBAccess {
     /**
      * 根据条件map
      *
-     * @param object
+     * @param dict
      * @return
      */
-    long countByMap(Map<String, Object> object, Class<?> aClass);
+    long countByMap(Dict dict, Class<?> aClass);
 
 
     /**
@@ -272,9 +273,9 @@ public interface DBAccess {
 
 
     // Condition
-    long countByCondition(SqlBuild sqlBuilder, Class<?> aClass);
+    long countByCondition(WhereBuild whereBuilder, Class<?> aClass);
 
-    <T> int deleteByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+    <T> int deleteByCondition(WhereBuild whereBuilder, Class<T> tClass);
 
     /**
      * 根据条件查询
@@ -282,7 +283,7 @@ public interface DBAccess {
      * @author bokun.li
      * @date 2025-05-31 17:52:27
      */
-    <T> List<T> selectByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+    <T> List<T> selectByCondition(WhereBuild whereBuilder, Class<T> tClass);
 
     /**
      * 根据条件更新
@@ -290,7 +291,7 @@ public interface DBAccess {
      * @author bokun.li
      * @date 2025-05-31 17:52:27
      */
-    <T> int updateByCondition(SqlBuild sqlBuilder, T update, Class<T> tClass);
+    <T> int updateByCondition(WhereBuild whereBuilder, T update, Class<T> tClass);
 
     /**
      * 根据条件查询是否存在
@@ -298,7 +299,7 @@ public interface DBAccess {
      * @author bokun.li
      * @date 2025-05-31 17:52:27
      */
-    <T> boolean existByCondition(SqlBuild sqlBuilder, Class<T> tClass);
+    <T> boolean existByCondition(WhereBuild whereBuilder, Class<T> tClass);
 
 
 }

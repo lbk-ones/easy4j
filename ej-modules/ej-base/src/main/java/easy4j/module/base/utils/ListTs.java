@@ -219,6 +219,7 @@ public class ListTs {
         return !isEmpty(map);
     }
 
+    @SafeVarargs
     public static <T> List<T> asList(T... id) {
         List<T> objects = newArrayList();
         objects.addAll(Arrays.asList(id));
@@ -362,6 +363,12 @@ public class ListTs {
         return newArrayList(objects.iterator());
     }
 
+    /**
+     * 遍历传入的Object 如果传入的Object是个数组或者是个集合那么 就将数组或者集合的元素以Object形式来遍历
+     *
+     * @param obj
+     * @param object
+     */
     public static void loop(Object obj, Consumer<Object> object) {
         if (obj == null) {
             return;
@@ -384,26 +391,90 @@ public class ListTs {
         }
     }
 
-    public static List<Object> map(Object obj_, Function<Object, Object> convertFunction) {
+    /**
+     * 将传入obj转为集合集合的类型为Object
+     *
+     * @param obj_
+     * @param convertFunction 可以为null 如果是null那么就不转换
+     * @return
+     */
+    public static List<Object> objectToListObject(Object obj_, Function<Object, Object> convertFunction) {
         List<Object> mapResultList = ListTs.newArrayList();
         loop(obj_, obj -> {
-            Object apply = convertFunction.apply(obj);
-            mapResultList.add(apply);
+            if (null != convertFunction) {
+                Object apply = convertFunction.apply(obj);
+                mapResultList.add(apply);
+            } else {
+                mapResultList.add(obj);
+            }
         });
         return mapResultList;
     }
 
-    public static <T> List<T> mapT(Object obj_, Class<T> aclass, Function<Object, Object> convertFunction) {
+    /**
+     * 数组展开
+     *
+     * @param array
+     * @param flattened
+     */
+    public static void flatten(Object[] array, List<Object> flattened) {
+        for (Object element : array) {
+            if (element instanceof Object[]) {
+                // 递归处理嵌套数组
+                flatten((Object[]) element, flattened);
+            } else if (element instanceof Iterable<?>) {
+                Iterable<?> element1 = (Iterable<?>) element;
+                element1.forEach(flattened::add);
+            } else {
+                flattened.add(element);
+            }
+        }
+    }
+
+    /**
+     * 将传入的对象 遍历 将转换结果i 转为想要的类型 T
+     * 如果传入的对象不是集合那么也转换为集合
+     *
+     * @param obj_            传入要转换的对象
+     * @param aclass          要转换的类型class
+     * @param convertFunction 转换函数
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> objectToListT(Object obj_, Class<T> aclass, Function<Object, Object> convertFunction) {
         List<T> mapResultList = ListTs.newArrayList();
         loop(obj_, obj -> {
-            Object apply = convertFunction.apply(obj);
-            T convert = Convert.convert(aclass, apply);
-            mapResultList.add(convert);
+            if (null != convertFunction) {
+                Object apply = convertFunction.apply(obj);
+                T convert = Convert.convert(aclass, apply);
+                mapResultList.add(convert);
+            } else {
+                mapResultList.add(Convert.convert(aclass, obj));
+            }
         });
         return mapResultList;
     }
 
-    public static <T> List<Object> mapList(List<T> obj_, Function<T, Object> convertFunction) {
+    /**
+     * 将传入的集合对象中的指定属性转为List<Object>
+     * 如果传入的对象是个null 那么也返回一个空集合
+     * 如果传入的对象是个空集合那么原路返回
+     * 如果转换函数为空那么也原路返回
+     *
+     * @param obj_
+     * @param convertFunction
+     * @param <T>
+     * @return
+     */
+    public static <T> List<Object> objListToListObjectByT(List<T> obj_, Function<T, Object> convertFunction) {
+        if (obj_ == null) {
+            return newArrayList();
+        } else if (obj_.isEmpty()) {
+            return objectToListObject(obj_, null);
+        }
+        if (Objects.isNull(convertFunction)) {
+            return objectToListObject(obj_, null);
+        }
         List<Object> mapResultList = ListTs.newArrayList();
         if (CollUtil.isEmpty(obj_)) {
             return mapResultList;
@@ -411,7 +482,7 @@ public class ListTs {
         return obj_.stream().map(convertFunction).collect(Collectors.toList());
     }
 
-    public static <T> List<String> mapListStr(List<T> obj_, Function<T, String> convertFunction) {
+    public static <T> List<String> tListToListString(List<T> obj_, Function<T, String> convertFunction) {
         List<String> mapResultList = ListTs.newArrayList();
         if (CollUtil.isEmpty(obj_)) {
             return mapResultList;

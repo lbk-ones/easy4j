@@ -163,7 +163,7 @@ public class AppTest {
             sysLogRecord.setErrorInfo(null);
         }
         int i = dbAccess.updateListByPrimaryKey(needUpdateList, SysLogRecord.class);
-        List<SysLogRecord> objectByPrimaryKeys = dbAccess.selectByPrimaryKeys(ListTs.mapList(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
+        List<SysLogRecord> objectByPrimaryKeys = dbAccess.selectByPrimaryKeys(ListTs.objListToListObjectByT(needUpdateList, SysLogRecord::getId), SysLogRecord.class);
         for (SysLogRecord sysLogRecord : objectByPrimaryKeys) {
             System.out.println(JacksonUtil.toJson(sysLogRecord));
         }
