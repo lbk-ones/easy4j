@@ -2,7 +2,7 @@
 
 > - 系统参数按照命名规则来 短横线命名规则
 > - 这些参数可以加在application.properties/yaml/yml中去 也可以从nacos和apollo等远程配置中心去获取
-> - 拿取以easy4j.开头的系统参数统一使用Easy4j.getEjSysProperties()
+> - 拿取以easy4j.开头的系统参数统一使用Easy4j.getProperty("xxx") 或者 Easy4j.getEjSysProperties()
     来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
 >
 
@@ -48,3 +48,4 @@
 - **easy4j.auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
+- **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
