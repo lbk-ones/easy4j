@@ -55,6 +55,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public SecuritySession saveSession(SecuritySession securitySession) {
+        super.saveSession(securitySession);
         int i = dbAccess.saveOne(securitySession, SecuritySession.class);
         if (i > 0) {
             return securitySession;
@@ -66,5 +67,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     public void deleteSession(String token) {
         Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
         dbAccess.deleteByMap(dict, SecuritySession.class);
+    }
+
+    @Override
+    public SecuritySession getSessionByUserName(String userName) {
+        return super.getSessionByUserName(userName);
     }
 }

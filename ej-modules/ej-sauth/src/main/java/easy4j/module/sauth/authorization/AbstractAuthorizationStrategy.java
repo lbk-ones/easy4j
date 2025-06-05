@@ -17,13 +17,18 @@ package easy4j.module.sauth.authorization;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.utils.SysConstant;
+import easy4j.module.sauth.annotations.NoLogin;
+import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -40,9 +45,15 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
         return null;
     }
 
+    // 默认通过
     @Override
-    public boolean checkMethod(HandlerMethod handlerMethod) {
-        return false;
+    public void customAuthenticationByMethod(SecurityUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException {
+        Set<SecurityAuthority> authorities = securityUserInfo.getAuthorities();
+        Method method = handlerMethod.getMethod();
+        NoLogin annotation = method.getAnnotation(NoLogin.class);
+        if (Objects.nonNull(annotation)) {
+
+        }
     }
 
     @Override
@@ -58,11 +69,18 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     @Override
     public boolean needTakeToken(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse) {
         String header = httpServerRequest.getHeader(SysConstant.EASY4J_NO_NEED_TOKEN);
+        Method method = handlerMethod.getMethod();
+        if (method.isAnnotationPresent(NoLogin.class)) {
+            return false;
+        }
+        if (method.isAnnotationPresent(OpenApi.class)) {
+            return false;
+        }
         return !StrUtil.equals(header, "1");
     }
 
     @Override
     public boolean checkByUserInfo(SecurityUserInfo securityUserInfo) {
-        return false;
+        return true;
     }
 }

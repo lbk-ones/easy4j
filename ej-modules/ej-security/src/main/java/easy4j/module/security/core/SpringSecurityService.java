@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * SpringSecurityService
@@ -103,7 +104,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser) {
+    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
         String username = securityUser.getUsername();
         String password = securityUser.getPassword();
         // 1. 创建认证请求
@@ -125,6 +126,9 @@ public class SpringSecurityService extends AbstractSecurityService {
 //        List<String> roles = userDetails.getAuthorities().stream()
 //                .map(GrantedAuthority::getAuthority)
 //                .collect(Collectors.toList());
+        if (null != loginAware) {
+            loginAware.accept(securityUser);
+        }
         return null;
     }
 }

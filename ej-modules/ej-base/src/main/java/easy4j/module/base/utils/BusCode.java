@@ -127,4 +127,7 @@ public class BusCode {
 
     @Desc("JSON不合法")
     public static final String A00040 = "A00040";
+
+    @Desc("暂时不支持这个功能")
+    public static final String A00041 = "A00041";
 }

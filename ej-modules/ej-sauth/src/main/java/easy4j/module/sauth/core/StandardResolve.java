@@ -34,6 +34,12 @@ public abstract class StandardResolve {
     public abstract SecurityAuthorization getAuthorizationStrategy();
 
 
+    /**
+     * 为了性能这里不查库 只单纯的转换
+     *
+     * @param session
+     * @return
+     */
     public SecurityUserInfo sessionToSecurityUserInfo(SecuritySession session) {
         String userName = session.getUserName();
         SecurityUserInfo securityUser = new SecurityUserInfo();
@@ -60,7 +66,8 @@ public abstract class StandardResolve {
         securityUser.setUsername(userName);
         securityUser.setUsernameCn(session.getUserNameCn());
         securityUser.setUsernameEn(session.getUserNameEn());
-        // securityUser.setShaToken(session.getShaToken());
+        securityUser.setShaToken(session.getShaToken());
+        securityUser.setJwtToken(session.getJwtToken());
         return securityUser;
     }
 }

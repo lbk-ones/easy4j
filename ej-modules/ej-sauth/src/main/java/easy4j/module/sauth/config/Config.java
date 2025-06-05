@@ -16,14 +16,13 @@ package easy4j.module.sauth.config;
 
 
 import easy4j.module.base.module.Module;
-import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
-import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
+import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.DefaultEncryptionService;
@@ -32,7 +31,6 @@ import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.core.SecurityService;
 import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.filter.Easy4jSecurityFilterInterceptor;
-import easy4j.module.sauth.filter.FilterConfig;
 import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -61,12 +59,14 @@ public class Config implements InitializingBean {
 
     }
 
+    // 上下文
     @Bean
     @ConditionalOnMissingBean(SecurityContext.class)
     public SecurityContext securityContext() {
         return new Easy4jSecurityContext();
     }
 
+    // 会话策略
     @Bean
     @ConditionalOnMissingBean(SessionStrategy.class)
     public SessionStrategy sessionStrategy() {
@@ -78,6 +78,7 @@ public class Config implements InitializingBean {
         }
     }
 
+    // 授权机制
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(SecurityAuthorization.class)
@@ -85,6 +86,7 @@ public class Config implements InitializingBean {
         return new DefaultAuthorizationStrategy();
     }
 
+    // 核心业务类
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnBean(DataSource.class)
@@ -97,13 +99,14 @@ public class Config implements InitializingBean {
         );
     }
 
-    @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnBean(DataSource.class)
-    public FilterConfig filterConfig() {
-        return new FilterConfig(easy4jSecurityFilterInterceptor());
-    }
+//    @Bean
+//    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+//    @ConditionalOnBean(DataSource.class)
+//    public FilterConfig filterConfig() {
+//        return new FilterConfig(easy4jSecurityFilterInterceptor());
+//    }
 
+    // 拦截器
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnBean(value = {DataSource.class})
@@ -116,6 +119,7 @@ public class Config implements InitializingBean {
         );
     }
 
+    // 权限认证
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(SecurityAuthentication.class)
@@ -128,6 +132,7 @@ public class Config implements InitializingBean {
         );
     }
 
+    //密码加密方式
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(EncryptionService.class)

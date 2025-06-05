@@ -108,7 +108,7 @@ public class SecuritySession {
     /**
      * 过期时间（秒为单位）
      */
-    private int expireTimeSeconds;
+    private long expireTimeSeconds;
 
 
     /**

@@ -38,4 +38,10 @@ public class Easy4jSecurityContext implements SecurityContext {
         Easy4jContext context = Easy4jContextFactory.getContext();
         context.registerThreadHash(SysConstant.EASY4J_SECURITY_CONTEXT_KEY, SysConstant.EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY, securitySession);
     }
+
+    @Override
+    public void removeSession() {
+        Easy4jContext context = Easy4jContextFactory.getContext();
+        context.registerThreadHash(SysConstant.EASY4J_SECURITY_CONTEXT_KEY, SysConstant.EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY, null);
+    }
 }

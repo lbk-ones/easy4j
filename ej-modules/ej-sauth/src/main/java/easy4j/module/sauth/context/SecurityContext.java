@@ -23,6 +23,8 @@ public interface SecurityContext {
 
     SecuritySession getSession();
 
+    void removeSession();
+
     void setSession(SecuritySession securitySession);
 
 }

@@ -15,10 +15,7 @@
 package easy4j.module.sauth.core;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.plugin.dbaccess.DBAccess;
-import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.utils.BusCode;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
@@ -26,10 +23,8 @@ import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import easy4j.module.sauth.session.SessionStrategy;
-import org.springframework.beans.factory.InitializingBean;
 
-import javax.sql.DataSource;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 
 /**
@@ -38,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * @author bokun.li
  * @date 2025-05
  */
-public class Easy4jSecurityService extends AbstractSecurityService implements InitializingBean {
+public class Easy4jSecurityService extends AbstractSecurityService {
 
 
     SecurityAuthentication securityAuthentication;
@@ -67,18 +62,6 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
         return securityContext;
     }
 
-    private static DBAccess dbAccess;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
-    }
-
-    @Override
-    public SecurityUserInfo getOnlineUser() {
-        return null;
-    }
 
     @Override
     public SessionStrategy getSessionStrategy() {
@@ -90,14 +73,9 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
         return authorizationStrategy;
     }
 
-    @Override
-    public SecurityUserInfo getOnlineUser(String token) {
-        return null;
-    }
-
 
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser) {
+    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
         SecurityUserInfo securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser);
         String errorCode = securityUserInfo.getErrorCode();
         if (StrUtil.isNotBlank(errorCode)) {
@@ -109,6 +87,11 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
         SecuritySession init = new SecuritySession().init(securityUser);
         saveSession(init);
         securityUserInfo.setPassword(null);
+
+        if (null != loginAware) {
+            loginAware.accept(securityUserInfo);
+        }
+
         return securityUserInfo;
     }
 
@@ -121,26 +104,7 @@ public class Easy4jSecurityService extends AbstractSecurityService implements In
      * @param init
      */
     private void saveSession(SecuritySession init) {
-
-    }
-
-    @Override
-    public boolean isOnline(String token) {
-        return false;
-    }
-
-    @Override
-    public SecurityUserInfo logout() {
-        return null;
-    }
-
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public String refreshToken(int expireTime, TimeUnit timeUnit) {
-        return null;
+        SessionStrategy sessionStrategy1 = getSessionStrategy();
+        sessionStrategy1.saveSession(init);
     }
 }

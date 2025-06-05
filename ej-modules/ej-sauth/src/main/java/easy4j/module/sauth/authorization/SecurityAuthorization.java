@@ -16,6 +16,7 @@ package easy4j.module.sauth.authorization;
 
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
+import easy4j.module.base.exception.EasyException;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import org.springframework.web.method.HandlerMethod;
@@ -30,12 +31,11 @@ import java.util.Set;
 public interface SecurityAuthorization {
 
     /**
-     * 根据方法来拦截是否该过
+     * 自定义鉴权根据方法来拦截是否该过
      *
      * @param handlerMethod
-     * @return
      */
-    boolean checkMethod(HandlerMethod handlerMethod);
+    void customAuthenticationByMethod(SecurityUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException;
 
     /**
      * 根究url来检查

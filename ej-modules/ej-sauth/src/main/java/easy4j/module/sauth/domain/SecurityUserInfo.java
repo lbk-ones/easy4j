@@ -133,4 +133,15 @@ public class SecurityUserInfo {
      */
     private String errorCode;
 
+
+    /**
+     * 登录token
+     */
+    private String shaToken;
+
+    /**
+     * 登录token
+     */
+    private String jwtToken;
+
 }

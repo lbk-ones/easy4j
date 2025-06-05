@@ -12,27 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.sauth.core;
+package easy4j.module.sauth.annotations;
 
-import easy4j.module.sauth.domain.SecurityUserInfo;
-import org.springframework.stereotype.Service;
+import java.lang.annotation.*;
 
 /**
- * Easy4jEncryptionService
- *
- * @author bokun.li
- * @date 2025-05
+ * 不需要登陆
  */
-@Service
-public class Easy4jEncryptionService implements EncryptionService {
-
-    @Override
-    public String encrypt(String str, SecurityUserInfo securityUser) {
-        return null;
-    }
-
-    @Override
-    public String decrypt(String str, SecurityUserInfo securityUser) {
-        return null;
-    }
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface NoLogin {
 }

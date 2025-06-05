@@ -80,6 +80,7 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         }
         SecurityUserInfo userByUserName = getUserByUserName(username);
         if (userByUserName == null) {
+            user.setErrorCode(BusCode.A00037);
             return user;
         }
         // 跳过密码直接认证成功
@@ -134,7 +135,7 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         SecurityUserInfo userByUserName = getUserByUserName(session.getUserName());
         if (getAuthorizationStrategy().checkByUserInfo(userByUserName)) {
             // refresh session
-            session = securitySession.refreshSession(token);
+            session = securitySession.refreshSession(token, null, null);
             getSecurityContext().setSession(session);
         }
         return securityUserInfo;

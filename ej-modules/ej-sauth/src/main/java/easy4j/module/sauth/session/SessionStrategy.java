@@ -16,6 +16,8 @@ package easy4j.module.sauth.session;
 
 import easy4j.module.sauth.domain.SecuritySession;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * SessionStrategy
  *
@@ -59,9 +61,11 @@ public interface SessionStrategy {
      * 刷新会话信息
      *
      * @param token
+     * @param expireTime
+     * @param timeUnit
      * @return
      */
-    SecuritySession refreshSession(String token);
+    SecuritySession refreshSession(String token, Integer expireTime, TimeUnit timeUnit);
 
 
     void clearInValidSession();
