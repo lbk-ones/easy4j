@@ -12,22 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base.resolve;
-
-import easy4j.module.base.utils.SysConstant;
+package easy4j.module.sadmin;
 
 /**
- * 处理连接加密码
+ * Test
+ *
+ * @author bokun.li
+ * @date 2025-06-05 20:36:59
  */
-public class DataSourceUrlResolve extends ObjectStringAbstractResolve {
-
-    @Override
-    public Object handler(Object properties, String p) {
-        setSpringProperty(properties, SysConstant.DB_URL_STR, getUrl(p));
-        setSpringProperty(properties, SysConstant.DB_USER_NAME, getUsername(p));
-        setSpringProperty(properties, SysConstant.DB_USER_PASSWORD, getPassword(p));
-        return properties;
-    }
-
-
+public class Test {
 }

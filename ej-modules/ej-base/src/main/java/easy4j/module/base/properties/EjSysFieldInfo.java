@@ -35,12 +35,12 @@ public class EjSysFieldInfo {
     private String[] vs;
 
 
-    public static List<EjSysFieldInfo> getAllEjSysInfoList(){
+    public static List<EjSysFieldInfo> getAllEjSysInfoList() {
         List<EjSysFieldInfo> res = ListTs.newArrayList();
         Field[] fieldsValue = ReflectUtil.getFields(EjSysProperties.class);
         for (Field field : fieldsValue) {
             String ejSysPropertyName = Easy4j.getEjSysPropertyName(field);
-            if(StrUtil.isBlank(ejSysPropertyName)){
+            if (StrUtil.isBlank(ejSysPropertyName)) {
                 continue;
             }
             SpringVs annotation = field.getAnnotation(SpringVs.class);
@@ -48,9 +48,8 @@ public class EjSysFieldInfo {
             EjSysFieldInfo ejSysFieldInfo = new EjSysFieldInfo();
             ejSysFieldInfo.setFieldName(name);
             ejSysFieldInfo.setSysConstantName(ejSysPropertyName);
-            if(Objects.nonNull(annotation)){
+            if (Objects.nonNull(annotation)) {
                 ejSysFieldInfo.setDesc(annotation.desc());
-                ejSysFieldInfo.setVs(annotation.vs());
                 ejSysFieldInfo.setVs(annotation.vs());
             }
             res.add(ejSysFieldInfo);

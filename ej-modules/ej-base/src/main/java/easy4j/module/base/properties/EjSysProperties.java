@@ -371,6 +371,14 @@ public class EjSysProperties {
     @SpringVs(desc = "请求体缓存字节流最大大小，默认5M")
     private int cacheHttpContentLength = 5 * 1024 * 1024;
 
+    /**
+     * BootAdminServer地址
+     */
+    @SpringVs(desc = "BootAdmin监控地址,配置了代表自动开启admin-client", vs = {
+            "spring.boot.admin.client.url"
+    })
+    private String adminServerUrl;
+
 
     /**
      * 根据常量获取 对应的springboot变量
@@ -379,8 +387,15 @@ public class EjSysProperties {
      * @return
      */
     public String[] getVs(String constant) {
-        Field[] fields = ReflectUtil.getFields(this.getClass());
-        for (Field field : fields) {
+        return getVsWith(ReflectUtil.getFields(this.getClass()), constant);
+    }
+
+    public static String[] getStaticVs(String constant) {
+        return getVsWith(ReflectUtil.getFields(EjSysProperties.class), constant);
+    }
+
+    private static String[] getVsWith(Field[] Fields, String constant) {
+        for (Field field : Fields) {
             String name = field.getName();
             String lowerCase = SysConstant.PARAM_PREFIX + StringPool.DOT + StrUtil.replace(
                     StrUtil.toUnderlineCase(name), StringPool.UNDERSCORE, StringPool.DASH

@@ -12,22 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base.resolve;
+package ej.spring.boot.admin;
 
-import easy4j.module.base.utils.SysConstant;
+
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
+import easy4j.module.base.starter.Easy4JStarterNd;
+import org.springframework.boot.SpringApplication;
 
 /**
- * 处理连接加密码
+ * BootAdminServer
+ * 文档：https://docs.spring-boot-admin.com/2.7.4/#_what_is_spring_boot_admin
+ * <p>
+ * boot admin 监控不要数据源
+ *
+ * @author bokun.li
+ * @date 2025-06-05 21:53:25
  */
-public class DataSourceUrlResolve extends ObjectStringAbstractResolve {
-
-    @Override
-    public Object handler(Object properties, String p) {
-        setSpringProperty(properties, SysConstant.DB_URL_STR, getUrl(p));
-        setSpringProperty(properties, SysConstant.DB_USER_NAME, getUsername(p));
-        setSpringProperty(properties, SysConstant.DB_USER_PASSWORD, getPassword(p));
-        return properties;
+@Easy4JStarterNd(
+        enableH2 = true
+)
+@EnableAdminServer
+public class BootAdminServer {
+    public static void main(String[] args) {
+        SpringApplication.run(BootAdminServer.class, args);
     }
-
-
 }

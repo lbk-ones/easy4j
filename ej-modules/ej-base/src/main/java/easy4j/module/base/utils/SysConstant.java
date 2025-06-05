@@ -132,6 +132,8 @@ public class SysConstant {
 
     public static final String EASY4J_RPC_TRACE = PARAM_PREFIX + StringPool.DOT + "rpc-trace-id";
 
+    public static final String EASY4J_BOOT_ADMIN_SERVER_URL = PARAM_PREFIX + StringPool.DOT + "admin-server-url";
+
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
 
@@ -202,6 +204,13 @@ public class SysConstant {
     public static final String SPRING_JPA_PROPERTIES_HIBERNATE_HBM2DDL_AUTO = "spring.jpa.properties.hibernate.hbm2ddl.auto";
     public static final String SPRING_JPA_GENERATE_DDL = "spring.jpa.generate-ddl";
     public static final String SPRING_JPA_HIBERNATE_DDL_AUTO = "spring.jpa.hibernate.ddl-auto";
+    public static final String SPRING_BOOT_ADMIN_ENABLE = "spring.application.admin.enabled";
+    public static final String SPRING_BOOT_ADMIN_URL = "spring.boot.admin.client.url";
+    public static final String SPRING_BOOT_ADMIN_USERNAME = "spring.boot.admin.client.username";
+    public static final String SPRING_BOOT_ADMIN_PASSWORD = "spring.boot.admin.client.password";
+    public static final String SPRING_BOOT_ADMIN_HOST_TYPE = "spring.boot.admin.client.instance.service-host-type";
+    public static final String SPRING_BOOT_ADMIN_CONNECTION_TIMEOUT = "spring.boot.admin.client.connect-timeout";
+    public static final String SPRING_BOOT_ADMIN_READ_TIMEOUT = "spring.boot.admin.client.read-timeout";
 
 
     // h2

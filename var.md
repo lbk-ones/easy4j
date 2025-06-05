@@ -49,3 +49,4 @@
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
+- **easy4j.admin-server-url**: BootAdmin监控地址,配置了代表自动开启admin-client

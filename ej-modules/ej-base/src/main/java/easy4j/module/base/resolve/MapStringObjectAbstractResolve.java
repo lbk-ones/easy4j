@@ -14,20 +14,14 @@
  */
 package easy4j.module.base.resolve;
 
-import easy4j.module.base.utils.SysConstant;
+import java.util.Map;
 
 /**
- * 处理连接加密码
+ * MapEasy4jResolve
+ *
+ * @author bokun.li
+ * @date 2025-05
  */
-public class DataSourceUrlResolve extends ObjectStringAbstractResolve {
-
-    @Override
-    public Object handler(Object properties, String p) {
-        setSpringProperty(properties, SysConstant.DB_URL_STR, getUrl(p));
-        setSpringProperty(properties, SysConstant.DB_USER_NAME, getUsername(p));
-        setSpringProperty(properties, SysConstant.DB_USER_PASSWORD, getPassword(p));
-        return properties;
-    }
-
+public abstract class MapStringObjectAbstractResolve extends UrlEasy4jResolve<Map<String, Object>, String> {
 
 }

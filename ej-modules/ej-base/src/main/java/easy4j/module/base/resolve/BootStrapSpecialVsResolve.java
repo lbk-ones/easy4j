@@ -15,6 +15,7 @@
 package easy4j.module.base.resolve;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.utils.SysConstant;
 
 import java.security.InvalidParameterException;
@@ -25,7 +26,7 @@ import java.util.Set;
 /**
  * 引导阶段特殊参数对照
  */
-public class BootStrapSpecialVsResolve extends MapEasy4jResolve {
+public class BootStrapSpecialVsResolve extends MapStringObjectAbstractResolve {
     @Override
     public Map<String, Object> handler(Map<String, Object> mapProperties, String p) {
         Set<String> setCopy = new HashSet<>(mapProperties.keySet());
@@ -41,6 +42,10 @@ public class BootStrapSpecialVsResolve extends MapEasy4jResolve {
                         throw new InvalidParameterException("invalid port:" + o);
                     }
                     break;
+                case SysConstant.EASY4J_BOOT_ADMIN_SERVER_URL:
+                    String string = StrUtil.toStringOrNull(o);
+                    BootAdminPropertiesResolve.get().handler(mapProperties, string);
+                    break;
                 case SysConstant.EASY4J_SERVER_NAME:
                     mapProperties.put(SysConstant.SPRING_SERVER_NAME, Convert.toStr(o));
                     break;
@@ -50,8 +55,8 @@ public class BootStrapSpecialVsResolve extends MapEasy4jResolve {
 //                    break;
                 case SysConstant.DB_URL_STR_NEW:
                     DataSourceUrlResolve dataSourceUrlResolve = new DataSourceUrlResolve();
-                    dataSourceUrlResolve.handlerMap(mapProperties,Convert.toStr(o));
-                 break;
+                    dataSourceUrlResolve.handler(mapProperties, Convert.toStr(o));
+                    break;
                 default:
                     break;
             }

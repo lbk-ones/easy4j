@@ -91,7 +91,7 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         String name = getName();
         // avoid repeat load This is necessary
-        AtomicBoolean atomicBoolean = Easy4j.isInitPreLoadApplication.getOrDefault(name,new AtomicBoolean(false));
+        AtomicBoolean atomicBoolean = Easy4j.isInitPreLoadApplication.getOrDefault(name, new AtomicBoolean(false));
         if (atomicBoolean.get()) {
             return;
         }
@@ -106,7 +106,7 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
                     try {
                         PropertySource<?> propertySource = loader.load(name, resource).get(0);
                         environment.getPropertySources().addLast(propertySource);
-                        getLogger().info(SysLog.compact(name.toLowerCase() + "参数完成覆盖"));
+                        getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to load custom YAML configuration", e);
                     }
@@ -115,7 +115,7 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
                 if (Objects.nonNull(properties) && !properties.isEmpty()) {
                     PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name, properties);
                     propertySources.addLast(propertiesPropertySource);
-                    getLogger().info(SysLog.compact(name.toLowerCase() + "参数完成覆盖"));
+                    getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
                 }
             }
         }
@@ -123,7 +123,7 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
         handlerEnvironMent(environment, application);
 
         if (atomicBoolean.compareAndSet(false, true)) {
-            Easy4j.isInitPreLoadApplication.put(name,atomicBoolean);
+            Easy4j.isInitPreLoadApplication.put(name, atomicBoolean);
         }
     }
 
@@ -231,8 +231,8 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
         sysNames.forEach(e -> {
             // once again from env take property
             String property1 = System.getProperty(e);
-            if(StrUtil.isNotBlank(property1)){
-                mapProperties.put(e,property1);
+            if (StrUtil.isNotBlank(property1)) {
+                mapProperties.put(e, property1);
                 return;
             }
             // loop all properties order by sort
@@ -249,7 +249,7 @@ public abstract class AbstractEnvironmentForEj extends StandAbstractEasy4jResolv
         // unnecessary parameters need not be converted here during early loading
         if (!mapProperties.isEmpty()) {
             BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
-            bootStrapSpecialVsResolve.handler(mapProperties,null);
+            bootStrapSpecialVsResolve.handler(mapProperties, null);
             propertySources.addLast(new MapPropertySource(FIRST_ENV_NAME, mapProperties));
         }
     }

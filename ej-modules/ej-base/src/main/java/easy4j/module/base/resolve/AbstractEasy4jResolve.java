@@ -14,7 +14,9 @@
  */
 package easy4j.module.base.resolve;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.module.base.properties.EjSysProperties;
 import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SP;
@@ -25,6 +27,8 @@ import org.springframework.boot.context.properties.bind.Binder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -140,4 +144,37 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         return StrUtil.blankToDefault(ListTs.get(strings, 1), group);
     }
 
+
+    /**
+     * 设置Spring环境值
+     *
+     * @author bokun.li
+     * @date 2025-06-05 21:38:46
+     */
+    public void setSpringProperty(Object properties, String name, Object value) {
+        if (null == properties || StrUtil.isBlank(name)) {
+            return;
+        }
+        String[] staticVs = EjSysProperties.getStaticVs(name);
+
+        if (null == staticVs || staticVs.length == 0) {
+            staticVs = new String[]{name};
+        }
+
+        for (String staticV : staticVs) {
+            if (Properties.class.getName().equals(properties.getClass().getName())) {
+                Properties properties1 = (Properties) properties;
+                if (Objects.nonNull(value)) {
+                    properties1.setProperty(staticV, value.toString());
+                }
+            } else if (properties instanceof Map) {
+                if (ObjectUtil.isNotEmpty(value)) {
+                    Map properties1 = (Map) properties;
+                    properties1.put(staticV, value);
+                }
+            }
+        }
+
+
+    }
 }

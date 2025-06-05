@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+easy4j.module.base.starter.Easy4jEnvironmentFirst
