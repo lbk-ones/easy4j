@@ -4,11 +4,10 @@
     <parent>
         <groupId>easy4j.infra.ejmodules</groupId>
         <artifactId>ej-modules</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <groupId>easy4j.module.sca</groupId>
     <artifactId>ej-sca</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>ej-sca</name>
