@@ -14,10 +14,15 @@
  */
 package easy4j.module.redis;
 
+import easy4j.module.base.module.Module;
 import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import easy4j.module.base.utils.SysConstant;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Config
@@ -25,12 +30,37 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @author bokun.li
  * @date 2025-05
  */
+@Configuration(proxyBeanMethods = false)
+@Module(SysConstant.EASY4J_REDIS_ENABLE)
 public class Config {
 
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+
+        // 设置键的序列化方式
+        template.setKeySerializer(new StringRedisSerializer());
+        // 设置值的序列化方式（JSON格式）
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        // 设置Hash键的序列化方式
+        template.setHashKeySerializer(new StringRedisSerializer());
+        // 设置Hash值的序列化方式
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
     @Bean("redisIdempotentStorage")
-    @ConditionalOnBean(RedisTemplate.class)
-    public Easy4jIdempotentStorage redisIdempotentStorage(){
+    public Easy4jIdempotentStorage redisIdempotentStorage() {
         return new RedisEasy4jIdempotentStorage();
     }
 
+
+    @Bean
+    RedisStartRunner redisStartRunner() {
+        return new RedisStartRunner();
+    }
 }

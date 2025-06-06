@@ -45,10 +45,7 @@ import org.springframework.core.env.MutablePropertySources;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -106,7 +103,9 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static <T> T getProperty(String name, Class<T> aclass) {
-        T property = environment.getProperty(name, aclass);
+        T property = Optional.ofNullable(environment)
+                .map(e -> e.getProperty(name, aclass))
+                .orElse(null);
         if (ObjectUtil.isEmpty(property)) {
             initExtProperties();
             property = aclass.cast(extProperties.getProperty(name));
@@ -118,6 +117,25 @@ public class Easy4j implements ApplicationContextAware {
             }
         }
         return property;
+    }
+
+    /**
+     * 先从给定的map拿、如果没有再走getProperty接下来的流程
+     *
+     * @param init
+     * @param name
+     * @param aclass
+     * @param <T>
+     * @return
+     */
+    public static <T> T getProperty(Map<String, Object> init, String name, Class<T> aclass) {
+        Object o = Optional.ofNullable(init)
+                .map(e -> e.get(name))
+                .orElse(null);
+        if (Objects.nonNull(o)) {
+            return Convert.convert(aclass, o);
+        }
+        return getProperty(name, aclass);
     }
 
 
@@ -272,7 +290,7 @@ public class Easy4j implements ApplicationContextAware {
         String name = field.getName();
         String underlineCase = StrUtil.toUnderlineCase(name);
         String lowerCase = underlineCase.toLowerCase();
-        String s = lowerCase.replaceAll("_", "-");
+        String s = lowerCase.replaceAll(StringPool.UNDERSCORE, StringPool.DASH);
         return SysConstant.PARAM_PREFIX + StringPool.DOT + s;
     }
 

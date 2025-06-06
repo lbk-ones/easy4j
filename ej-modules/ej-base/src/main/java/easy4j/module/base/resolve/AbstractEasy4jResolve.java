@@ -27,10 +27,8 @@ import org.springframework.boot.context.properties.bind.Binder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * AbstractEasy4jResolve
@@ -55,13 +53,47 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         } catch (Exception e) {
 
         }
-        return ListTs.asList(url, userName, password);
+        return ListTs.asList(url, userName, password)
+                .stream()
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toList());
 
     }
 
     public String getUrl(String p) {
         List<String> strings = splitUrl(p);
         return ListTs.get(strings, 0);
+    }
+
+    public String getHost(String p) {
+        return Optional.ofNullable(p).map(e ->
+                getUrl(p)
+        ).map(e -> {
+            String[] split = e.split("//");
+            return ListTs.get(ListTs.asList(split), split.length - 1);
+        }).map(e -> {
+            String[] split = e.split(":");
+            return ListTs.get(ListTs.asList(split), 0);
+        }).orElse(null);
+    }
+
+    public String getPort(String p) {
+        return Optional.ofNullable(p).map(e ->
+                getUrl(p)
+        ).map(e -> {
+            String[] split = e.split("//");
+            return ListTs.get(ListTs.asList(split), split.length - 1);
+        }).map(e -> {
+            String[] split = e.split(":");
+            return ListTs.get(ListTs.asList(split), split.length - 1);
+        }).map(e -> {
+            try {
+                int i = Integer.parseInt(e);
+                return String.valueOf(i);
+            } catch (Exception e2) {
+                return "80";
+            }
+        }).orElse(null);
     }
 
     public String getUsername(String p) {
@@ -71,7 +103,7 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
 
     public String getPassword(String p) {
         List<String> strings = splitUrl(p);
-        return ListTs.get(strings, 2);
+        return StrUtil.blankToDefault(ListTs.get(strings, 2), ListTs.get(strings, 1));
     }
 
 
@@ -158,7 +190,7 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         }
         String[] staticVs = EjSysProperties.getStaticVs(name);
 
-        if (null == staticVs || staticVs.length == 0) {
+        if (null == staticVs || staticVs.length == 0 || Arrays.stream(staticVs).noneMatch(StrUtil::isNotBlank)) {
             staticVs = new String[]{name};
         }
 
@@ -166,12 +198,12 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
             if (Properties.class.getName().equals(properties.getClass().getName())) {
                 Properties properties1 = (Properties) properties;
                 if (Objects.nonNull(value)) {
-                    properties1.setProperty(staticV, value.toString());
+                    properties1.setProperty(staticV, Convert.toStr(value));
                 }
             } else if (properties instanceof Map) {
                 if (ObjectUtil.isNotEmpty(value)) {
-                    Map<String, Object> properties1 = Convert.toMap(String.class, Object.class, properties);
-                    properties1.put(staticV, value);
+                    Map properties2 = (Map) properties;
+                    properties2.put(staticV, value);
                 }
             }
         }

@@ -14,8 +14,6 @@
  */
 package easy4j.module.base.starter;
 
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.utils.SysConstant;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.core.annotation.Order;

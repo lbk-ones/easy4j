@@ -38,13 +38,15 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.env.*;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -88,7 +90,7 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
         ConfigService configService = nacosConfigManager.getConfigService();
         for (String dataId : dataIds.split(StringPool.COMMA)) {
             String dataId1 = getDataId(dataId);
-            String group1 = getGroup(dataId,group);
+            String group1 = getGroup(dataId, group);
             configService.addListener(dataId1, group1, new Listener() {
                 @Override
                 public Executor getExecutor() {
@@ -102,8 +104,8 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
                         ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
                         MutablePropertySources propertySources = environment.getPropertySources();
                         PropertySource<?> propertySourceEnv = propertySources.get(AbstractEnvironmentForEj.FIRST_ENV_NAME);
-                        if(Objects.isNull(propertySourceEnv)){
-                            log.info(SysLog.compact("not get "+AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
+                        if (Objects.isNull(propertySourceEnv)) {
+                            log.info(SysLog.compact("not get " + AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
                             return;
                         }
                         String trim = StrUtil.trim(configInfo);
@@ -124,18 +126,14 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
                             Resource byteArrayResource = new ByteArrayResource(trim.getBytes());
                             PropertySource<?> propertySource = new YamlPropertySourceLoader().load(Easy4jEnvironmentFirst.SCA_PROPERTIES_NAME, byteArrayResource).get(0);
                             Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
-                            Arrays.stream(fields).filter(e -> {
-                                int modifiers = e.getModifiers();
-                                return !(Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers));
-                            }).map(e -> {
-                                String replace = StrUtil.replace(StrUtil.toUnderlineCase(e.getName()).toLowerCase(), StringPool.UNDERSCORE, StringPool.DASH);
-                                return SysConstant.PARAM_PREFIX + StringPool.DOT + replace;
-                            }).forEach(e -> {
-                                Object source = propertySource.getProperty(e);
-                                if(ObjectUtil.isNotEmpty(source)){
-                                    map.put(e, source);
-                                }
-                            });
+                            Arrays.stream(fields).map(Easy4j::getEjSysPropertyName)
+                                    .filter(Objects::nonNull)
+                                    .forEach(e -> {
+                                        Object source = propertySource.getProperty(e);
+                                        if (ObjectUtil.isNotEmpty(source)) {
+                                            map.put(e, source);
+                                        }
+                                    });
                         }
                         if (!map.isEmpty()) {
                             MapPropertySource propertiesPropertySource = new MapPropertySource(AbstractEnvironmentForEj.FIRST_ENV_NAME, map);

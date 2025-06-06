@@ -14,11 +14,48 @@
  */
 package easy4j.module.redis;
 
+import easy4j.module.base.properties.EjSysProperties;
+import easy4j.module.base.resolve.RedisPropertiesResolve;
+import easy4j.module.base.starter.AbstractEnvironmentForEj;
+import easy4j.module.base.starter.Easy4j;
+import easy4j.module.base.utils.SysConstant;
+import easy4j.module.base.utils.SysLog;
+import jodd.util.StringPool;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.SpringApplication;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.Map;
+import java.util.Properties;
+
 /**
  * Easys4jRedisEnvironment
  *
  * @author bokun.li
  * @date 2025-05
  */
-public class Easys4jRedisEnvironment {
+@Slf4j
+public class Easys4jRedisEnvironment extends AbstractEnvironmentForEj {
+
+    public static final String REDIS_ENV_NAME = SysConstant.PARAM_PREFIX + StringPool.DOT + "redis.env.name";
+
+    @Override
+    public String getName() {
+        return REDIS_ENV_NAME;
+    }
+
+    @Override
+    public Properties getProperties() {
+        Properties properties = new Properties();
+        RedisPropertiesResolve redisPropertiesResolve = new RedisPropertiesResolve();
+        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+        Map<String, Object> beanMap = ejSysProperties.getBeanMap();
+        redisPropertiesResolve.handler(properties, beanMap);
+        return properties;
+    }
+
+    @Override
+    public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
+        Easy4j.info(SysLog.compact("redis module has been init success!"));
+    }
 }

@@ -17,13 +17,16 @@ package easy4j.module.base.properties;
 
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
+import easy4j.module.base.starter.Easy4j;
 import easy4j.module.base.utils.SysConstant;
 import jodd.util.StringPool;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.lang.reflect.Field;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 驼峰转短横线
@@ -381,6 +384,33 @@ public class EjSysProperties {
 
 
     /**
+     * BootAdminServer地址
+     */
+    @SpringVs(desc = "redis server 地址 127.0.0.1:6379@user:123456 用户名如果省略第一位就是密码")
+    private String redisServerUrl = "";
+
+    /**
+     * Redis连接方式: Single、Sentinel、Cluster
+     */
+    @SpringVs(desc = "Redis连接方式: Single、Sentinel、Cluster 默认单点")
+    private String redisConnectionType = "Single";
+
+    /**
+     * Redis连接方式: Single、Sentinel、Cluster
+     */
+    @SpringVs(desc = "Redis连接池类型: LETTUCE、JEDIS", vs = {
+            "spring.redis.client-type"
+    })
+    private String redisPoolType = "LETTUCE";
+
+    /**
+     * 是否启用redis 如果配置了 redis-server-url 那么这个自动变成true
+     */
+    @SpringVs(desc = "是否启用redis 如果配置了 redis-server-url 那么这个自动变成true")
+    private boolean redisEnable = false;
+
+
+    /**
      * 根据常量获取 对应的springboot变量
      *
      * @param constant
@@ -403,13 +433,23 @@ public class EjSysProperties {
             if (StrUtil.equals(constant, lowerCase)) {
                 if (field.isAnnotationPresent(SpringVs.class)) {
                     SpringVs annotation = field.getAnnotation(SpringVs.class);
-                    if (Objects.nonNull(annotation)) {
-                        return annotation.vs();
-                    }
+                    return Optional.ofNullable(annotation).map(SpringVs::vs).orElse(null);
                 }
             }
         }
         return null;
+    }
+
+    public Map<String, Object> getBeanMap() {
+        Map<String, Object> objectMap = Maps.newHashMap();
+        Class<? extends EjSysProperties> aClass = this.getClass();
+        Field[] fields = ReflectUtil.getFields(aClass);
+        for (Field field : fields) {
+            String ejSysPropertyName = Easy4j.getEjSysPropertyName(field);
+            Object fieldValue = ReflectUtil.getFieldValue(this, field);
+            objectMap.put(ejSysPropertyName, fieldValue);
+        }
+        return objectMap;
     }
 
 }

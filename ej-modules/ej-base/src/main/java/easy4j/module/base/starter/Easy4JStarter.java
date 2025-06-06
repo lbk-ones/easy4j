@@ -15,15 +15,19 @@
 package easy4j.module.base.starter;
 
 import cn.hutool.extra.spring.EnableSpringUtil;
-
 import easy4j.module.base.annotations.Desc;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -37,7 +41,11 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @SpringBootConfiguration
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude = {
+        RedisAutoConfiguration.class,
+        RedisReactiveAutoConfiguration.class,
+        RedisRepositoriesAutoConfiguration.class
+})
 @ComponentScan(
         excludeFilters = {@ComponentScan.Filter(
                 type = FilterType.CUSTOM,

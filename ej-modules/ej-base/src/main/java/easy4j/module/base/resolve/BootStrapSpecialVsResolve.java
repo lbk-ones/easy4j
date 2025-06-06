@@ -30,6 +30,8 @@ public class BootStrapSpecialVsResolve extends MapStringObjectAbstractResolve {
     @Override
     public Map<String, Object> handler(Map<String, Object> mapProperties, String p) {
         Set<String> setCopy = new HashSet<>(mapProperties.keySet());
+        RedisPropertiesResolve redisPropertiesResolve = new RedisPropertiesResolve();
+        redisPropertiesResolve.handler(mapProperties, mapProperties);
         // transform
         for (String key : setCopy) {
             Object o = mapProperties.get(key);
