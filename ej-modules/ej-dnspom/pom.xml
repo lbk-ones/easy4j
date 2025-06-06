@@ -23,19 +23,19 @@
         <dependency>
             <groupId>easy4j.module.dubbo3</groupId>
             <artifactId>ej-dubbo3</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${revision}</version>
         </dependency>
         <!--naocs-->
         <dependency>
             <groupId>easy4j.module.nacosdubbo3</groupId>
             <artifactId>ej-nacos-dubbo3</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${revision}</version>
         </dependency>
         <!--sentinel-->
         <dependency>
             <groupId>easy4j.module.sentineldubbo3</groupId>
             <artifactId>ej-sentinel-dubbo3</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${revision}</version>
         </dependency>
 
     </dependencies>

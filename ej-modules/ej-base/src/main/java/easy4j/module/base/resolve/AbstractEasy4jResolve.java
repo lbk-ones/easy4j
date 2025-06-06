@@ -14,6 +14,7 @@
  */
 package easy4j.module.base.resolve;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.base.properties.EjSysProperties;
@@ -169,7 +170,7 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
                 }
             } else if (properties instanceof Map) {
                 if (ObjectUtil.isNotEmpty(value)) {
-                    Map properties1 = (Map) properties;
+                    Map<String, Object> properties1 = Convert.toMap(String.class, Object.class, properties);
                     properties1.put(staticV, value);
                 }
             }

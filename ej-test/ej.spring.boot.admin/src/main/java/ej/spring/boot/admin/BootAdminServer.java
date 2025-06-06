@@ -28,9 +28,7 @@ import org.springframework.boot.SpringApplication;
  * @author bokun.li
  * @date 2025-06-05 21:53:25
  */
-@Easy4JStarterNd(
-        enableH2 = true
-)
+@Easy4JStarterNd
 @EnableAdminServer
 public class BootAdminServer {
     public static void main(String[] args) {
