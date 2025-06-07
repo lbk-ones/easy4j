@@ -21,6 +21,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import easy4j.module.base.context.Easy4jContext;
 import easy4j.module.base.context.Easy4jContextFactory;
+import easy4j.module.base.context.api.lock.DbLock;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.header.EasyResult;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
@@ -29,7 +30,6 @@ import easy4j.module.base.plugin.dbaccess.condition.FWhereBuild;
 import easy4j.module.base.plugin.dbaccess.condition.WhereBuild;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
-import easy4j.module.base.plugin.lock.Easy4jSysLock;
 import easy4j.module.base.plugin.seed.DefaultEasy4jSeed;
 import easy4j.module.base.plugin.seed.Easy4jSeed;
 import easy4j.module.base.starter.Easy4j;
@@ -375,8 +375,9 @@ public class DbLog {
 
     public void clearLog(Date startTime) {
 
+        DbLock dbLock = Easy4jContextFactory.sysLock();
         try {
-            Easy4jSysLock.lock(DB_LOCK_ID, 5, "to delete log record");
+            dbLock.lock(DB_LOCK_ID, 5, "to delete log record");
         } catch (Exception e) {
             // 没抢到这一次就跳过
             lastExeTime.addAndGet(new Date().getTime());
@@ -403,7 +404,7 @@ public class DbLog {
             lastExeTime.addAndGet(new Date().getTime());
             firstEd = true;
         } finally {
-            Easy4jSysLock.unLock(DB_LOCK_ID);
+            dbLock.unLock(DB_LOCK_ID);
         }
 
     }

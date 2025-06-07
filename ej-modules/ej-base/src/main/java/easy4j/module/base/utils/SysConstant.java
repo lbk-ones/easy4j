@@ -227,7 +227,10 @@ public class SysConstant {
     public static final String SPRING_REDIS_SENTINEL_PASSWORD = "spring.redis.sentinel.password";
     public static final String SPRING_REDIS_CLUSTER_NODES = "spring.redis.cluster.nodes";
     public static final String SPRING_REDIS_CLUSTER_MAX_REDIRECTS = "spring.redis.cluster.max-redirects";
+    // read timeout
     public static final String SPRING_REDIS_TIMEOUT = "spring.redis.timeout";
+    // connection_timeout
+    public static final String SPRING_REDIS_CONNECT_TIMEOUT = "spring.redis.connect-timeout";
     public static final String SPRING_REDIS_DATABASE = "spring.redis.database";
     public static final String SPRING_REDIS_SSL = "spring.redis.ssl";
     public static final String SPRING_REDIS_LETTUCE_POOL_ENABLE = "spring.redis.lettuce.pool.enabled";

@@ -16,10 +16,11 @@ package easy4j.module.idempotent.rules;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import easy4j.module.base.context.Easy4jContextFactory;
+import easy4j.module.base.context.api.lock.DbLock;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
-import easy4j.module.base.plugin.lock.Easy4jSysLock;
 import easy4j.module.base.utils.ListTs;
 import easy4j.module.base.utils.SysLog;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
@@ -60,11 +61,13 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
 //        schedule();
     }
 
-    // 十秒一次
+    // 初始延迟十秒
+//    @Scheduled(fixedRate = 1000 * 60 * 5, initialDelay = 1000 * 10)
     @Scheduled(fixedRate = 1000 * 60 * 5)
     public void scheduleIdempotentDb() {
+        DbLock dbLock = Easy4jContextFactory.sysLock();
         try {
-            Easy4jSysLock.lock(DB_EASY4J_IDEMPOTENT_KEY, 5, "web-idempotent-db-clear-lock");
+            dbLock.lock(DB_EASY4J_IDEMPOTENT_KEY, 5, "web-idempotent-db-clear-lock");
         } catch (Exception e) {
             return;
         }
@@ -96,7 +99,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
                 }
             }
         } finally {
-            Easy4jSysLock.unLock(DB_EASY4J_IDEMPOTENT_KEY);
+            dbLock.unLock(DB_EASY4J_IDEMPOTENT_KEY);
         }
 
     }

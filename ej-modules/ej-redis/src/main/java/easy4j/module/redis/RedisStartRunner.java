@@ -24,6 +24,7 @@ public class RedisStartRunner implements CommandLineRunner {
     public void isRedisAvailable() {
         RedisConnection connection = null;
         try {
+            log.info(SysLog.compact("check redis"));
             // 获取Redis连接
             RedisConnectionFactory connectionFactory = redisTemplate.getConnectionFactory();
             if (connectionFactory == null) {

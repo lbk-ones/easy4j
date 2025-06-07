@@ -12,27 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base.context;
-
-import easy4j.module.base.context.api.lock.DbLock;
+package easy4j.module.base.context.api.lock;
 
 /**
- * Easy4jContextFactory
+ * DbLock
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025-06-07 14:51:38
  */
-public class Easy4jContextFactory {
+public interface DbLock extends Easy4jLock {
 
-
-    public static Easy4jContext getContext() {
-
-        return DefaultEasy4jContext.getContext();
-    }
-
-    public static DbLock sysLock() {
-        return getContext().get(DbLock.class);
-
-    }
+    void lock(String key, int minutes, String remark);
 
 }

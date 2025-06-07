@@ -1,21 +1,10 @@
-/**
- * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package easy4j.module.base.plugin.lock;
+package easy4j.module.lock.db;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.module.base.context.AutoRegisterContext;
+import easy4j.module.base.context.Easy4jContext;
+import easy4j.module.base.context.api.lock.DbLock;
 import easy4j.module.base.exception.EasyException;
 import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
@@ -27,23 +16,21 @@ import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Date;
 
-/**
- * 很简单的数据库锁
- * 过期之后下一次上锁会自动解锁 然后再次锁定
- *
- * @author bokun.li
- * @date 2025/5/29
- */
 @Slf4j
-public class Easy4jSysLock {
+public class DbLockImpl implements DbLock, AutoRegisterContext {
 
     private final static DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, false);
 
-    public static void lock(String id, int minutes, String remark) {
-        lockWith(id, minutes, remark);
+    @Override
+    public void lock(String key, Integer expire) {
+        lock(key, expire, "none remark");
     }
 
-    private static void lockWith(String resourceId, int minutes, String remark) {
+    public void lock(String key, int minutes, String remark) {
+        lockWith(key, minutes, remark);
+    }
+
+    private void lockWith(String resourceId, int minutes, String remark) {
 
         if (StrUtil.isBlank(resourceId) || minutes < 0 || StrUtil.isBlank(remark)) {
             log.info("The resource does not meet the locking conditions " + resourceId + ":" + minutes + ":" + remark);
@@ -82,14 +69,17 @@ public class Easy4jSysLock {
         }
     }
 
-    public static void unLock(String id) {
-        if (StrUtil.isBlank(id)) {
+    public void unLock(String key) {
+        if (StrUtil.isBlank(key)) {
             return;
         }
         SysLock sysLock = new SysLock();
-        sysLock.setId(id);
+        sysLock.setId(key);
         dbAccess.deleteByPrimaryKey(sysLock, SysLock.class);
     }
 
-
+    @Override
+    public void registerToContext(Easy4jContext easy4jContext) {
+        easy4jContext.set(DbLock.class, this);
+    }
 }

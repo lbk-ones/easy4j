@@ -55,6 +55,12 @@ import java.util.Optional;
 public class EjSysProperties {
 
     /**
+     * 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度
+     */
+    @SpringVs(desc = "是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度")
+    private boolean dev = false;
+
+    /**
      * 系统负责人作者
      */
     @SpringVs(desc = "业务模块负责人")
@@ -398,16 +404,28 @@ public class EjSysProperties {
     /**
      * Redis连接方式: Single、Sentinel、Cluster
      */
-    @SpringVs(desc = "Redis连接池类型: LETTUCE、JEDIS", vs = {
-            "spring.redis.client-type"
-    })
-    private String redisPoolType = "LETTUCE";
+//    @SpringVs(desc = "Redis连接池类型: LETTUCE、JEDIS", vs = {
+//            "spring.redis.client-type"
+//    })
+//    private String redisPoolType = "LETTUCE";
 
     /**
      * 是否启用redis 如果配置了 redis-server-url 那么这个自动变成true
      */
     @SpringVs(desc = "是否启用redis 如果配置了 redis-server-url 那么这个自动变成true")
     private boolean redisEnable = false;
+
+    /**
+     * redis最小空闲连接数 默认30
+     */
+    @SpringVs(desc = "redis最小空闲连接数 默认30")
+    private int redisMinIdeSize = 30;
+
+    /**
+     * redis连接池最大连接数量 默认500
+     */
+    @SpringVs(desc = "redis连接池最大连接数量 默认500")
+    private int redisConnectionPoolSize = 500;
 
 
     /**

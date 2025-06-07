@@ -42,6 +42,10 @@ public final class DefaultEasy4jContext implements Easy4jContext {
 
     private static class ContextHolder {
         private static final Easy4jContext INSTANCE = new DefaultEasy4jContext();
+
+        static {
+            ContextPlugins.init(INSTANCE);
+        }
     }
 
     public static Easy4jContext getContext() {
@@ -100,7 +104,7 @@ public final class DefaultEasy4jContext implements Easy4jContext {
         setWith(DEFAULT_KEY, name, t);
     }
 
-    private static void setWith(String type, String name, Object t) {
+    private synchronized static void setWith(String type, String name, Object t) {
         contextSingletonNameMap
                 .computeIfAbsent(type, k -> new HashMap<>())
                 .put(name, t);
@@ -112,18 +116,26 @@ public final class DefaultEasy4jContext implements Easy4jContext {
     }
 
     private static <T> T getT(String type, String name, Class<T> aclass, T def) {
+        T t = Optional.ofNullable(contextSingletonNameMap.get(type))
+                .map(e -> e.get(name))
+                .map(aclass::cast)
+                .orElseGet(() -> {
+                    T call = ContextPlugins.call(type, name, aclass);
+                    if (call != null) {
+                        setWith(type, name, call);
+                    }
+                    return call;
+                });
         if (null == def) {
-            return Optional.ofNullable(contextSingletonNameMap.get(type))
-                    .map(e -> e.get(name))
-                    .map(aclass::cast)
-                    .orElseThrow(() -> EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class"));
+            if (t == null) {
+                throw EasyException.wrap(BusCode.A000031, "context is not find:" + aclass.getName() + "impl class");
+            }
         } else {
-            return Optional.ofNullable(contextSingletonNameMap.get(type))
-                    .map(e -> e.get(name))
-                    .map(aclass::cast)
-                    .orElse(def);
+            if (t == null) {
+                return def;
+            }
         }
-
+        return t;
     }
 
     @Override

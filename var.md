@@ -6,6 +6,7 @@
     来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
 >
 
+- **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port
 - **easy4j.server-name**: 服务名称 等同于 spring.application.name
@@ -50,3 +51,8 @@
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
 - **easy4j.admin-server-url**: BootAdmin监控地址,配置了代表自动开启admin-client
+- **easy4j.redis-server-url**: redis server 地址 127.0.0.1:6379@user:123456 用户名如果省略第一位就是密码
+- **easy4j.redis-connection-type**: Redis连接方式: Single、Sentinel、Cluster 默认单点
+- **easy4j.redis-enable**: 是否启用redis 如果配置了 redis-server-url 那么这个自动变成true
+- **easy4j.redis-min-ide-size**: redis最小空闲连接数 默认30
+- **easy4j.redis-connection-pool-size**: redis连接池最大连接数量 默认500

@@ -14,25 +14,17 @@
  */
 package easy4j.module.base.context;
 
-import easy4j.module.base.context.api.lock.DbLock;
-
 /**
- * Easy4jContextFactory
+ * ContextChannel
+ * Spi
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025-06-07 18:36:44
  */
-public class Easy4jContextFactory {
+public interface ContextChannel {
 
+    <T> T listener(String type, String name, Class<T> aclass);
 
-    public static Easy4jContext getContext() {
-
-        return DefaultEasy4jContext.getContext();
-    }
-
-    public static DbLock sysLock() {
-        return getContext().get(DbLock.class);
-
-    }
+    void init(Easy4jContext easy4jContext);
 
 }

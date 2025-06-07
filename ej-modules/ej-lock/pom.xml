@@ -6,39 +6,28 @@
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
-    <groupId>easy4j.module.redis</groupId>
-    <artifactId>ej-redis</artifactId>
+
+    <groupId>easy4j.module.lock</groupId>
+    <artifactId>ej-lock</artifactId>
     <packaging>jar</packaging>
 
-    <name>ej-redis</name>
+    <name>ej-lock</name>
     <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
+
         <dependency>
             <groupId>easy4j.module.base</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-data-redis</artifactId>-->
-        <!--        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
 
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.commons</groupId>-->
-        <!--            <artifactId>commons-pool2</artifactId>-->
-        <!--        </dependency>-->
-
-
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
-            <version>${redissioin.version}</version>
-        </dependency>
     </dependencies>
 </project>

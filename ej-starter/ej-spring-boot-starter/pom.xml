@@ -105,6 +105,12 @@
         <!--            <version>1.0-SNAPSHOT</version>-->
         <!--        </dependency>-->
 
+        <dependency>
+            <groupId>easy4j.module.lock</groupId>
+            <artifactId>ej-lock</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
 

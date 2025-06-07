@@ -78,15 +78,18 @@ public class RedisPropertiesResolve extends ObjectMapStrObjectAbstractResovle {
             default:
                 throw new EasyException("redis connection type is not allow" + easy4jRedisConnectionType);
         }
-        
-        // 连接池
-        setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_ENABLE, "true");
+
+        // 不使用 lettuce
+        setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_ENABLE, "false");
         setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_MAX_ACTIVE, 1000);
         setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_MAX_IDLE, 200);
         setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_MIN_IDLE, 100);
-        setSpringProperty(t, SysConstant.SPRING_REDIS_TIMEOUT, 10000);
         setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_SHUTDOWN_TIMEOUT, 1000);
         setSpringProperty(t, SysConstant.SPRING_REDIS_LETTUCE_POOL_MAX_WAIT, 5000);
+        // read
+        setSpringProperty(t, SysConstant.SPRING_REDIS_TIMEOUT, 1000);
+        // connection
+        setSpringProperty(t, SysConstant.SPRING_REDIS_CONNECT_TIMEOUT, 2000);
         setSpringProperty(t, SysConstant.EASY4J_REDIS_ENABLE, true);
 
         return t;

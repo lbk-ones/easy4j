@@ -1,0 +1,58 @@
+/**
+ * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package easy4j.module.lock.config;
+
+import easy4j.module.base.module.Module;
+import easy4j.module.base.utils.SysConstant;
+import easy4j.module.base.context.api.lock.DbLock;
+import easy4j.module.lock.db.DbLockImpl;
+import easy4j.module.base.context.api.lock.RedissonLock;
+import easy4j.module.lock.redisson.RedissonLockImpl;
+import easy4j.module.base.context.api.lock.ZkLock;
+import easy4j.module.lock.zk.ZkLockImpl;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+
+import javax.sql.DataSource;
+
+/**
+ * Config
+ *
+ * @author bokun.li
+ * @date 2025-06-07 15:00:29
+ */
+@Configuration(proxyBeanMethods = false)
+public class Config {
+
+
+//    @Bean
+//    public DbLock dbLock() {
+//        return new DbLockImpl();
+//    }
+
+    @Bean
+    @Module(SysConstant.EASY4J_REDIS_ENABLE)
+    public RedissonLock redissonLock() {
+        return new RedissonLockImpl();
+    }
+
+    @Bean
+    public ZkLock zkLock() {
+        return new ZkLockImpl();
+    }
+
+}

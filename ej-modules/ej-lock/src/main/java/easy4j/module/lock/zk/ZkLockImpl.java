@@ -12,27 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.base.context;
+package easy4j.module.lock.zk;
 
-import easy4j.module.base.context.api.lock.DbLock;
+import easy4j.module.base.context.api.lock.ZkLock;
 
 /**
- * Easy4jContextFactory
+ * ZkLockImpl
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025-06-07 15:03:33
  */
-public class Easy4jContextFactory {
+public class ZkLockImpl implements ZkLock {
 
-
-    public static Easy4jContext getContext() {
-
-        return DefaultEasy4jContext.getContext();
-    }
-
-    public static DbLock sysLock() {
-        return getContext().get(DbLock.class);
+    @Override
+    public void lock(String key, Integer expire) {
 
     }
 
+    @Override
+    public void unLock(String key) {
+
+    }
 }

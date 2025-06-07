@@ -31,6 +31,7 @@
         <module>ej-sca</module>
         <module>ej-security</module>
         <module>ej-sauth</module>
+        <module>ej-lock</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
@@ -66,6 +67,7 @@
         <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
         <jaeger.client.version>1.5.0</jaeger.client.version>
         <openfeign.fastjson.version>2.0.56</openfeign.fastjson.version>
+        <redissioin.version>3.49.0</redissioin.version>
 
         <!-- SpringCloud -->
         <spring-cloud.version>2021.0.8</spring-cloud.version>
