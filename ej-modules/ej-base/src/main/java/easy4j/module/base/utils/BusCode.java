@@ -130,4 +130,7 @@ public class BusCode {
 
     @Desc("暂时不支持这个功能")
     public static final String A00041 = "A00041";
+
+    @Desc("资源{0}锁定失败，有其他人正在操作")
+    public static final String A00042 = "A00042";
 }

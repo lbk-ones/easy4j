@@ -28,6 +28,12 @@
 
         <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
 
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>${redissioin.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 </project>

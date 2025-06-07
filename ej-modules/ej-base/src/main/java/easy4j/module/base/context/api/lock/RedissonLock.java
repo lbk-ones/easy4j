@@ -31,8 +31,9 @@ public interface RedissonLock extends Easy4jLock {
      *
      * @param key          锁的键
      * @param expireSecond 好多秒之后过期
+     * @throws easy4j.module.base.exception.EasyException 抢不到就抛出异常A00042
      */
-    boolean lock(List<String> key, int expireSecond);
+    void lock(List<String> key, int expireSecond);
 
     /**
      * 抢不到锁就快速返回 可以选择是否公平锁
@@ -41,7 +42,7 @@ public interface RedissonLock extends Easy4jLock {
      * @param isFaire      是否是公平锁
      * @param expireSecond 好多秒之后过期
      */
-    boolean lock(List<String> key, boolean isFaire, int expireSecond);
+    void lock(List<String> key, boolean isFaire, int expireSecond);
 
     /**
      * 直接锁业务 不用手动释放锁
@@ -77,7 +78,7 @@ public interface RedissonLock extends Easy4jLock {
      * @param isFaire    是否是公平锁
      * @param expireTime 上锁时间
      */
-    boolean tryLock(List<String> key, boolean isSpin, boolean isFaire, int expireTime);
+    void tryLock(List<String> key, boolean isSpin, boolean isFaire, int expireTime);
 
     /**
      * 解锁
