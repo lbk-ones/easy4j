@@ -8,4 +8,5 @@ easy4j.module.base.plugin.i18n.Config,\
 easy4j.module.base.properties.Config,\
 easy4j.module.base.plugin.doc.OpenAPIConfig,\
 easy4j.module.base.web.Config,\
-easy4j.module.base.plugin.dbaccess.Config
+easy4j.module.base.plugin.dbaccess.Config,\
+easy4j.module.base.context.Config

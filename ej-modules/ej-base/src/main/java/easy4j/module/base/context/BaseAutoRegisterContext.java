@@ -12,37 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.seed.leaf;
+package easy4j.module.base.context;
 
-import easy4j.module.base.context.AutoRegisterContext;
-import easy4j.module.base.context.Easy4jContext;
+
+import easy4j.module.base.log.DbLog;
+import easy4j.module.base.plugin.seed.DefaultEasy4jSeed;
 import easy4j.module.base.plugin.seed.Easy4jSeed;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.seed.CommonKey;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
-
-import javax.annotation.Resource;
 
 /**
- * StarterRunner
+ * Config
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025-06-07 13:48:41
  */
-@Slf4j
-public class StarterRunner implements CommandLineRunner, AutoRegisterContext {
+public class BaseAutoRegisterContext implements AutoRegisterContext {
 
-    @Resource
-    private LeafGenIdService idGenService;
-
-    @Override
-    public void run(String... args) throws Exception {
-        idGenService.init();
-    }
-
+    // base module auto register
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.set(Easy4jSeed.class, CommonKey.getCommonKey());
+        easy4jContext.set(DbLog.class, DbLog.getDbLog());
+        // give a default Easy4jSeed
+        easy4jContext.set(Easy4jSeed.class, new DefaultEasy4jSeed());
     }
 }

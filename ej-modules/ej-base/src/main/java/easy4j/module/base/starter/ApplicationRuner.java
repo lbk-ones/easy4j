@@ -44,7 +44,7 @@ public class ApplicationRuner implements InitializingBean, CommandLineRunner, Di
     public void run(String... args) throws Exception {
         SysLog.settingLog();
 
-        Easy4j.getContext().set(DbLog.class, DbLog.getDbLog());
+//        Easy4j.getContext().set(DbLog.class, DbLog.getDbLog());
 
         try {
             // dont delete the line code
