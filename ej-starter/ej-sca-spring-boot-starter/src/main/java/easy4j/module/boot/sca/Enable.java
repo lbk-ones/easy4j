@@ -14,7 +14,7 @@
  */
 package easy4j.module.boot.sca;
 
-import easy4j.module.base.annotations.Desc;
+import easy4j.infra.common.annotations.Desc;
 
 /**
  * Enable

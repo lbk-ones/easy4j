@@ -14,7 +14,7 @@
  */
 package easy4j.module.redis;
 
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.RedisTemplate;

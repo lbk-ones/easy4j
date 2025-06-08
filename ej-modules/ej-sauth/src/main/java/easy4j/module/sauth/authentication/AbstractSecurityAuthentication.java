@@ -15,8 +15,8 @@
 package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.utils.BusCode;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.EncryptionService;
 import easy4j.module.sauth.core.StandardResolve;

@@ -2,7 +2,7 @@ package ej.spring.boot.starter.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
+import easy4j.infra.dbaccess.domain.SysLogRecord;
 import ej.spring.boot.starter.server.mapper.SysLogRecordMapper;
 import ej.spring.boot.starter.server.service.SysLogRecordService;
 import org.springframework.stereotype.Service;

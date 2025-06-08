@@ -21,11 +21,9 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowException;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.header.EasyResult;
-import easy4j.module.base.utils.BusCode;
-import easy4j.module.base.utils.SysConstant;
-import org.springframework.context.annotation.Configuration;
+import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.SysConstant;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

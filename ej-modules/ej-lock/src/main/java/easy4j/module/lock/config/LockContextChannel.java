@@ -1,11 +1,11 @@
 package easy4j.module.lock.config;
 
-import easy4j.module.base.context.ContextChannel;
-import easy4j.module.base.context.Easy4jContext;
-import easy4j.module.base.context.api.lock.DbLock;
-import easy4j.module.base.context.api.lock.RedissonLock;
-import easy4j.module.base.context.api.lock.ZkLock;
-import easy4j.module.base.starter.Easy4j;
+import easy4j.infra.context.ContextChannel;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.context.api.lock.DbLock;
+import easy4j.infra.context.api.lock.RedissonLock;
+import easy4j.infra.context.api.lock.ZkLock;
 import easy4j.module.lock.db.DbLockImpl;
 import easy4j.module.lock.redisson.RedissonLockImpl;
 import easy4j.module.lock.zk.ZkLockImpl;

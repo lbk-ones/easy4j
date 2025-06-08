@@ -27,8 +27,7 @@
  */
 package easy4j.module.jaeger.opentracing.web;
 
-import easy4j.module.base.utils.ListTs;
-import easy4j.module.jaeger.ThreadLocalTools;
+import easy4j.infra.common.utils.ListTs;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -56,7 +55,7 @@ import java.util.regex.Pattern;
  * @author bokun.li
  * @date 2025-05
  */
-@WebFilter(urlPatterns = "/*",filterName = "easy4jJaegerWebFilter")
+@WebFilter(urlPatterns = "/*", filterName = "easy4jJaegerWebFilter")
 public class TracingFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(TracingFilter.class);
 
@@ -95,10 +94,9 @@ public class TracingFilter implements Filter {
     }
 
     /**
-     *
-     * @param tracer tracer
+     * @param tracer         tracer
      * @param spanDecorators decorators
-     * @param skipPattern null or pattern to exclude certain paths from tracing e.g. "/health"
+     * @param skipPattern    null or pattern to exclude certain paths from tracing e.g. "/health"
      */
     public TracingFilter(Tracer tracer, List<ServletFilterSpanDecorator> spanDecorators, Pattern skipPattern) {
         this.tracer = tracer;
@@ -114,7 +112,7 @@ public class TracingFilter implements Filter {
 
         Object tracerObj = servletContext.getAttribute(Tracer.class.getName());
         if (tracerObj instanceof Tracer) {
-            tracer = (Tracer)tracerObj;
+            tracer = (Tracer) tracerObj;
         } else {
             servletContext.setAttribute(Tracer.class.getName(), tracer);
         }
@@ -123,7 +121,7 @@ public class TracingFilter implements Filter {
         Object contextAttribute = servletContext.getAttribute(SPAN_DECORATORS);
         if (contextAttribute instanceof Collection) {
             List<ServletFilterSpanDecorator> decorators = new ArrayList<>();
-            for (Object decorator: (Collection)contextAttribute) {
+            for (Object decorator : (Collection) contextAttribute) {
                 if (decorator instanceof ServletFilterSpanDecorator) {
                     decorators.add((ServletFilterSpanDecorator) decorator);
                 } else {
@@ -166,18 +164,18 @@ public class TracingFilter implements Filter {
 
             httpRequest.setAttribute(SERVER_SPAN_CONTEXT, span.context());
 
-            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
+            for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                 spanDecorator.onRequest(httpRequest, span);
             }
 
-            try(Scope scope = tracer.activateSpan(span)){
+            try (Scope scope = tracer.activateSpan(span)) {
                 chain.doFilter(servletRequest, servletResponse);
                 if (!httpRequest.isAsyncStarted()) {
                     for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                         spanDecorator.onResponse(httpRequest, httpResponse, span);
                     }
                 }
-            // catch all exceptions (e.g. RuntimeException, ServletException...)
+                // catch all exceptions (e.g. RuntimeException, ServletException...)
             } catch (Throwable ex) {
                 for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
                     spanDecorator.onError(httpRequest, httpResponse, ex, span);
@@ -188,46 +186,46 @@ public class TracingFilter implements Filter {
                     // 如果async已经完成了怎么办？这不会被调用
                     httpRequest.getAsyncContext()
                             .addListener(new AsyncListener() {
-                        @Override
-                        public void onComplete(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                                    spanDecorator.onResponse(httpRequest,
-                                    httpResponse,
-                                    span);
-                            }
-                            span.finish();
-                        }
+                                @Override
+                                public void onComplete(AsyncEvent event) throws IOException {
+                                    HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                                    HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                                    for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                                        spanDecorator.onResponse(httpRequest,
+                                                httpResponse,
+                                                span);
+                                    }
+                                    span.finish();
+                                }
 
-                        @Override
-                        public void onTimeout(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
-                                  spanDecorator.onTimeout(httpRequest,
-                                      httpResponse,
-                                      event.getAsyncContext().getTimeout(),
-                                      span);
-                            }
-                        }
+                                @Override
+                                public void onTimeout(AsyncEvent event) throws IOException {
+                                    HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                                    HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                                    for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                                        spanDecorator.onTimeout(httpRequest,
+                                                httpResponse,
+                                                event.getAsyncContext().getTimeout(),
+                                                span);
+                                    }
+                                }
 
-                        @Override
-                        public void onError(AsyncEvent event) throws IOException {
-                            HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
-                            HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
-                            for (ServletFilterSpanDecorator spanDecorator: spanDecorators) {
-                                spanDecorator.onError(httpRequest,
-                                    httpResponse,
-                                    event.getThrowable(),
-                                    span);
-                            }
-                        }
+                                @Override
+                                public void onError(AsyncEvent event) throws IOException {
+                                    HttpServletRequest httpRequest = (HttpServletRequest) event.getSuppliedRequest();
+                                    HttpServletResponse httpResponse = (HttpServletResponse) event.getSuppliedResponse();
+                                    for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
+                                        spanDecorator.onError(httpRequest,
+                                                httpResponse,
+                                                event.getThrowable(),
+                                                span);
+                                    }
+                                }
 
-                        @Override
-                        public void onStartAsync(AsyncEvent event) throws IOException {
-                        }
-                    });
+                                @Override
+                                public void onStartAsync(AsyncEvent event) throws IOException {
+                                }
+                            });
                 } else {
                     // If not async, then need to explicitly finish the span associated with the scope.
                     // This is necessary, as we don't know whether this request is being handled
@@ -246,7 +244,7 @@ public class TracingFilter implements Filter {
     /**
      * It checks whether a request should be traced or not.
      *
-     * @param httpServletRequest request
+     * @param httpServletRequest  request
      * @param httpServletResponse response
      * @return whether request should be traced or not
      */
@@ -254,7 +252,7 @@ public class TracingFilter implements Filter {
         // skip URLs matching skip pattern
         // e.g. pattern is defined as '/health|/status' then URL 'http://localhost:5000/context/health' won't be traced
         if (skipPattern != null) {
-        	int contextLength = httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length();
+            int contextLength = httpServletRequest.getContextPath() == null ? 0 : httpServletRequest.getContextPath().length();
             String url = httpServletRequest.getRequestURI().substring(contextLength);
             return !skipPattern.matcher(url).matches();
         }

@@ -14,7 +14,7 @@
  */
 package easy4j.module.mapstruct;
 
-import easy4j.module.base.plugin.gen.BaseConfigCodeGen;
+import easy4j.infra.context.api.gen.BaseConfigCodeGen;
 import lombok.Getter;
 
 /**
@@ -37,7 +37,7 @@ public class GenMapStructConfig extends BaseConfigCodeGen {
     private final Class<?> currentMapperStructInterfaceClass;
 
 
-    public static class Builder extends BaseConfigCodeGen.Builder<Builder>{
+    public static class Builder extends BaseConfigCodeGen.Builder<Builder> {
 
 
         private String mapperStructInterfaceName = "MapperStruct";
@@ -54,9 +54,10 @@ public class GenMapStructConfig extends BaseConfigCodeGen {
             return this;
         }
 
-        public GenMapStructConfig build(){
+        public GenMapStructConfig build() {
             return new GenMapStructConfig(this);
         }
+
         @Override
         public Builder self() {
             return this;

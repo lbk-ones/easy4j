@@ -15,10 +15,10 @@
 package easy4j.module.sauth.config;
 
 
-import easy4j.module.base.module.Module;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.common.module.Module;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;

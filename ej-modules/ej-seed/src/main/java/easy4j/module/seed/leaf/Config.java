@@ -14,7 +14,7 @@
  */
 package easy4j.module.seed.leaf;
 
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.common.utils.SysLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

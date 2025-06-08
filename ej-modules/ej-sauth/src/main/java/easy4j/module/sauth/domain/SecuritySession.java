@@ -18,10 +18,10 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.jwt.JWT;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.Easy4j;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.module.seed.CommonKey;
 import lombok.Data;
 

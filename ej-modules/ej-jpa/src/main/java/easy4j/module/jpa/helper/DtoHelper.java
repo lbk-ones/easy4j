@@ -15,7 +15,7 @@
 package easy4j.module.jpa.helper;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.exception.EasyException;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.module.jpa.annotations.CopyToNewEntity;
 import easy4j.module.jpa.annotations.CopyToOldEntity;
 import easy4j.module.jpa.base.BaseDto;
@@ -34,6 +34,7 @@ public class DtoHelper {
 
     /**
      * 生成新的实体，但字段对应关系不包含supper类的字段
+     *
      * @param dto
      * @param clazz
      * @param <T>
@@ -42,42 +43,43 @@ public class DtoHelper {
      * @throws EasyException
      * @throws InstantiationException
      */
-    public static <T>T copyDtoToNewEntity(Object dto, Class clazz) throws IllegalAccessException, EasyException, InstantiationException {
-        if(!(dto instanceof BaseDto)){
+    public static <T> T copyDtoToNewEntity(Object dto, Class clazz) throws IllegalAccessException, EasyException, InstantiationException {
+        if (!(dto instanceof BaseDto)) {
             throw new EasyException("The object type is not a BaseDto");
         }
         Object entity = clazz.newInstance();
         Class<? extends Object> dtoClazz = dto.getClass();
-        for(Field field : dtoClazz.getDeclaredFields()){
+        for (Field field : dtoClazz.getDeclaredFields()) {
             field.setAccessible(true);
-            if(field.isAnnotationPresent(CopyToNewEntity.class)){
+            if (field.isAnnotationPresent(CopyToNewEntity.class)) {
                 Object o = field.get(dto);
-                if(o == null){
+                if (o == null) {
                     continue;
                 }
                 CopyToNewEntity annotation = field.getAnnotation(CopyToNewEntity.class);
                 String fieldName = annotation.filed();
-                if(StrUtil.isEmpty(fieldName)) continue;
+                if (StrUtil.isEmpty(fieldName)) continue;
                 boolean isInParent = true;
-                for(Field entityField : clazz.getDeclaredFields()){
+                for (Field entityField : clazz.getDeclaredFields()) {
                     entityField.setAccessible(true);
-                    if(fieldName.equals(entityField.getName())){
+                    if (fieldName.equals(entityField.getName())) {
                         //Object entityFieldObject = entityField.get(entity);
-                        entityField.set(entity,o);
+                        entityField.set(entity, o);
                         isInParent = false;
                         break;
                     }
                 }
-                if(isInParent){
+                if (isInParent) {
                     setSuperField(entity, fieldName, o);
                 }
             }
         }
-        return (T)entity;
+        return (T) entity;
     }
 
     /**
      * 修改原来的实体，但字段对应关系中不包括修改supper类
+     *
      * @param dto
      * @param old
      * @param <T>
@@ -86,32 +88,32 @@ public class DtoHelper {
      * @throws IllegalAccessException
      */
     public static <T> T copyDtoToOldEntity(Object dto, T old) throws EasyException, IllegalAccessException {
-        if(!(dto instanceof BaseDto)){
+        if (!(dto instanceof BaseDto)) {
             throw new EasyException("The object type is not a BaseDto");
         }
         Class<? extends Object> clazz = old.getClass();
         Class<? extends Object> dtoClazz = dto.getClass();
-        for(Field field : dtoClazz.getDeclaredFields()){
+        for (Field field : dtoClazz.getDeclaredFields()) {
             field.setAccessible(true);
-            if(field.isAnnotationPresent(CopyToOldEntity.class)){
+            if (field.isAnnotationPresent(CopyToOldEntity.class)) {
                 Object o = field.get(dto);
-                if(o == null){
+                if (o == null) {
                     continue;
                 }
                 CopyToOldEntity annotation = field.getAnnotation(CopyToOldEntity.class);
                 String fieldName = annotation.filed();
-                if(StrUtil.isEmpty(fieldName)) continue;
+                if (StrUtil.isEmpty(fieldName)) continue;
                 boolean isInParent = true;
-                for(Field entityField : clazz.getDeclaredFields()){
+                for (Field entityField : clazz.getDeclaredFields()) {
                     entityField.setAccessible(true);
-                    if(fieldName.equals(entityField.getName())){
+                    if (fieldName.equals(entityField.getName())) {
                         //Object entityFieldObject = entityField.get(entity);
-                        entityField.set(old,o);
+                        entityField.set(old, o);
                         isInParent = false;
                         break;
                     }
                 }
-                if(isInParent){
+                if (isInParent) {
                     setSuperField(old, fieldName, o);
                 }
             }
@@ -124,14 +126,14 @@ public class DtoHelper {
         Field field = null;
         try {
             Class parent = childrenClass.getClass().getSuperclass();
-            if(parent == null || parent.getName().toLowerCase().equals("java.lang.object")){
+            if (parent == null || parent.getName().toLowerCase().equals("java.lang.object")) {
                 return;
             }
             field = parent.getDeclaredField(filedName);
             field.setAccessible(true);
             field.set(childrenClass, filedValue);
         } catch (Exception e) {
-            log.warn("set field value to parent failed: "+e.getMessage());
+            log.warn("set field value to parent failed: " + e.getMessage());
         }
     }
 }

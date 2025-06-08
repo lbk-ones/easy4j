@@ -15,10 +15,10 @@
 package easy4j.module.sca.util;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.json.JacksonUtil;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.DigestUtils;
 

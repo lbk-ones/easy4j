@@ -16,7 +16,7 @@
  */
 package easy4j.module.dubbo3;
 
-import easy4j.module.base.exception.EasyException;
+import easy4j.infra.common.exception.EasyException;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTE
  * <li>Wrap the exception not introduced in API package into RuntimeException. Framework will serialize the outer exception but stringnize its cause in order to avoid of possible serialization problem on client side</li>
  * </ol>
  */
-@Activate(group = CommonConstants.PROVIDER,order = 9)
+@Activate(group = CommonConstants.PROVIDER, order = 9)
 public class ExceptionFilter implements Filter, Filter.Listener {
     private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExceptionFilter.class);
 
@@ -76,9 +76,9 @@ public class ExceptionFilter implements Filter, Filter.Listener {
 
                 // for the exception not found in method's signature, print ERROR message in server's log.
                 logger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "",
-                    "Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() +
-                        ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
-                        ", exception: " + exception.getClass().getName() + ": " + exception.getMessage(), exception);
+                        "Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() +
+                                ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
+                                ", exception: " + exception.getClass().getName() + ": " + exception.getMessage(), exception);
 
                 // directly throw if exception class and interface class are in the same jar file.
                 String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
@@ -104,9 +104,9 @@ public class ExceptionFilter implements Filter, Filter.Listener {
                 appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
             } catch (Throwable e) {
                 logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "",
-                    "Fail to ExceptionFilter when called by " + RpcContext.getServiceContext().getRemoteHost() +
-                        ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
-                        ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
+                        "Fail to ExceptionFilter when called by " + RpcContext.getServiceContext().getRemoteHost() +
+                                ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
+                                ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
             }
         }
     }
@@ -114,9 +114,9 @@ public class ExceptionFilter implements Filter, Filter.Listener {
     @Override
     public void onError(Throwable e, Invoker<?> invoker, Invocation invocation) {
         logger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "",
-            "Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() +
-                ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
-                ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
+                "Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() +
+                        ". service: " + invoker.getInterface().getName() + ", method: " + RpcUtils.getMethodName(invocation) +
+                        ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
     }
 
     // For test purpose

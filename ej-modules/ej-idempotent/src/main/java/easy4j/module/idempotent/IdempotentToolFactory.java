@@ -14,14 +14,11 @@
  */
 package easy4j.module.idempotent;
 
-import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 

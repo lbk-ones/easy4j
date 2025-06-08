@@ -16,8 +16,8 @@ package easy4j.module.sentinel.annotation;
 
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import easy4j.module.base.annotations.Desc;
-import easy4j.module.base.exception.EasyException;
+import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.module.sentinel.GlobalFallbackHandler;
 
 import java.lang.annotation.*;
@@ -122,7 +122,6 @@ public @interface FlowDegradeResource {
 
     @Desc("熔断时间 默认10秒")
     int timeWindow() default 10;
-
 
 
 }

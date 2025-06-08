@@ -16,7 +16,7 @@ package easy4j.module.sca.util;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
-import easy4j.module.base.utils.json.JacksonUtil;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;

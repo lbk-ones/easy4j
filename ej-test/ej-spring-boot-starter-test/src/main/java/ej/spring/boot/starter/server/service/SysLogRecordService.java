@@ -1,7 +1,7 @@
 package ej.spring.boot.starter.server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
+import easy4j.infra.dbaccess.domain.SysLogRecord;
 
 import java.util.Date;
 import java.util.List;

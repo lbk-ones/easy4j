@@ -15,11 +15,11 @@
 package easy4j.module.sadmin.config;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.resolve.BootAdminPropertiesResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.base.resolve.BootAdminPropertiesResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -32,7 +32,7 @@ import java.util.Properties;
  * @author bokun.li
  * @date 2025-06-05 20:38:28
  */
-public class BootAdminConfig extends AbstractEnvironmentForEj {
+public class BootAdminConfig extends AbstractEasy4jEnvironment {
     public static boolean isInit = false;
 
     public static final String ENV_NAME = SysConstant.PARAM_PREFIX + StringPool.DOT + "spring.boot.admin.env";

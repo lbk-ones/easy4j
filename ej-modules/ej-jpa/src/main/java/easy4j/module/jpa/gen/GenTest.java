@@ -15,8 +15,6 @@
 package easy4j.module.jpa.gen;
 
 
-import easy4j.module.base.plugin.gen.BaseConfigCodeGen;
-
 /**
  * GenTest
  *

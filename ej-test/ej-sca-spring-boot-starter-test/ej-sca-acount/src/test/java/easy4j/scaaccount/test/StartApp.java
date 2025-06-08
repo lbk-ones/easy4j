@@ -16,7 +16,7 @@ package easy4j.scaaccount.test;
 
 import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.ConfigService;
-import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.infra.base.starter.Easy4JStarter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

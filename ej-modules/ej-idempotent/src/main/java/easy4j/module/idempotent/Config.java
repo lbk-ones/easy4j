@@ -14,8 +14,8 @@
  */
 package easy4j.module.idempotent;
 
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import easy4j.module.idempotent.rules.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;

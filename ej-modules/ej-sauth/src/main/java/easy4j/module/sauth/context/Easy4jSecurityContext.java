@@ -14,9 +14,9 @@
  */
 package easy4j.module.sauth.context;
 
-import easy4j.module.base.context.Easy4jContext;
-import easy4j.module.base.context.Easy4jContextFactory;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.Easy4jContextFactory;
 import easy4j.module.sauth.domain.SecuritySession;
 
 /**

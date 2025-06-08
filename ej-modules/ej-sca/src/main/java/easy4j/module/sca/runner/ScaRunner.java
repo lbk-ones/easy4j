@@ -22,14 +22,14 @@ import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.google.common.collect.Maps;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.resolve.StandAbstractEasy4jResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.starter.Easy4jEnvironmentFirst;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
-import easy4j.module.base.utils.ThreadPoolUtils;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.base.starter.env.Easy4jEnvironmentFirst;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.ThreadPoolUtils;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -103,9 +103,9 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
                     try {
                         ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
                         MutablePropertySources propertySources = environment.getPropertySources();
-                        PropertySource<?> propertySourceEnv = propertySources.get(AbstractEnvironmentForEj.FIRST_ENV_NAME);
+                        PropertySource<?> propertySourceEnv = propertySources.get(AbstractEasy4jEnvironment.FIRST_ENV_NAME);
                         if (Objects.isNull(propertySourceEnv)) {
-                            log.info(SysLog.compact("not get " + AbstractEnvironmentForEj.FIRST_ENV_NAME + " from spring env"));
+                            log.info(SysLog.compact("not get " + AbstractEasy4jEnvironment.FIRST_ENV_NAME + " from spring env"));
                             return;
                         }
                         String trim = StrUtil.trim(configInfo);
@@ -136,8 +136,8 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
                                     });
                         }
                         if (!map.isEmpty()) {
-                            MapPropertySource propertiesPropertySource = new MapPropertySource(AbstractEnvironmentForEj.FIRST_ENV_NAME, map);
-                            propertySources.replace(AbstractEnvironmentForEj.FIRST_ENV_NAME, propertiesPropertySource);
+                            MapPropertySource propertiesPropertySource = new MapPropertySource(AbstractEasy4jEnvironment.FIRST_ENV_NAME, map);
+                            propertySources.replace(AbstractEasy4jEnvironment.FIRST_ENV_NAME, propertiesPropertySource);
                         }
                     } catch (Exception e) {
                         log.error(SysLog.compact("nacos config receiveConfigInfo error--->"), e);

@@ -1,0 +1,4 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+easy4j.infra.knife4j.DocEnvironment
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+easy4j.infra.knife4j.OpenAPIConfig

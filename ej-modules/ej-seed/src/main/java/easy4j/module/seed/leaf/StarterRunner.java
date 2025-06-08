@@ -14,10 +14,9 @@
  */
 package easy4j.module.seed.leaf;
 
-import easy4j.module.base.context.AutoRegisterContext;
-import easy4j.module.base.context.Easy4jContext;
-import easy4j.module.base.plugin.seed.Easy4jSeed;
-import easy4j.module.base.starter.Easy4j;
+import easy4j.infra.context.AutoRegisterContext;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.api.seed.Easy4jSeed;
 import easy4j.module.seed.CommonKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

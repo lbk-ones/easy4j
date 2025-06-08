@@ -32,7 +32,14 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 
 Easy4J 框架包含以下核心模块：
 
-- **ej-base**：核心模块，提供基础功能和框架核心组件（异常处理，i18n，启动类，代码生成基础组件，knife4j文档整合，底层数据库操作引擎，以及其他模块使用到的接口、抽象类）
+- **ej-base**：核心模块，提供基础功能和框架核心组件（启动类，代码生成基础组件，knife4j文档整合等）
+- **ej-common**：通用模块工具等 （异常处理，i18n，返回体等）
+- **ej-context**：全局上下文、全局接口
+- **ej-db-access**：自实现数据库访问模块，是一个相对使用简单的orm框架
+- **ej-log**：日志模块，包括数据库日志和接口日志
+- **ej-lock**：分布式锁，各种分布式锁实现
+- **ej-webmvc**：整合springmvc相关通用功能
+- **ej-knife4j**：整合api文档相关
 - **ej-sca**：spring-cloud-alibaba 整合
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合
@@ -207,7 +214,7 @@ import easy4j.module.base.plugin.dbaccess.DBAccess;
 import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
 import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
 import easy4j.module.base.starter.Easy4JStarter;
-import easy4j.module.base.utils.ListTs;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import org.junit.jupiter.api.Test;

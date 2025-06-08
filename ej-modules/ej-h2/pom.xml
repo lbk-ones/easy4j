@@ -3,11 +3,10 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra.ejmodules</groupId>
-        <artifactId>ej-modules</artifactId>
+        <groupId>easy4j.infra</groupId>
+        <artifactId>ej-dependence</artifactId>
         <version>${revision}</version>
     </parent>
-    <groupId>easy4j.module.h2</groupId>
     <artifactId>ej-h2</artifactId>
     <packaging>jar</packaging>
 
@@ -20,7 +19,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>easy4j.module.base</groupId>
+            <groupId>easy4j.infra</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>

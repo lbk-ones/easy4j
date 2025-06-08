@@ -15,10 +15,10 @@
 package easy4j.module.logback;
 
 import ch.qos.logback.classic.PatternLayout;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import jodd.util.SystemUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -44,7 +44,7 @@ import java.util.Properties;
  * logging.logback.rollingpolicy.file-name-pattern=logs/app.%d{yyyy-MM-dd}.%i.log
  */
 //@Order(value = Integer.MIN_VALUE)
-public class LogbackEnvironment extends AbstractEnvironmentForEj {
+public class LogbackEnvironment extends AbstractEasy4jEnvironment {
 
     public static final String LOG_BACK_NAME = "ej-log-back-environment";
 

@@ -13,11 +13,12 @@
  * limitations under the License.
  */
 package easy4j.module.datasource;
+
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.druid.filter.FilterChain;
 import com.alibaba.druid.proxy.jdbc.ResultSetProxy;
 import com.alibaba.druid.sql.SQLUtils;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.common.utils.SysLog;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,6 +26,7 @@ import java.sql.SQLException;
 
 /**
  * 数据源日志过滤
+ *
  * @author bokun.li
  * @date 2023/11/21
  */
@@ -42,7 +44,7 @@ public class Log4j3Filter extends LogFilter implements Log4j3FilterMBean {
         super.setStatementCloseAfterLogEnabled(false);
         super.setStatementCreateAfterLogEnabled(false);
         super.setStatementParameterClearLogEnable(false);
-        super.setStatementSqlFormatOption(new SQLUtils.FormatOption(true,false));
+        super.setStatementSqlFormatOption(new SQLUtils.FormatOption(true, false));
         super.setResultSetOpenAfterLogEnabled(false);
         super.setStatementPrepareAfterLogEnabled(false);
         super.setStatementPrepareCallAfterLogEnabled(false);
@@ -135,26 +137,26 @@ public class Log4j3Filter extends LogFilter implements Log4j3FilterMBean {
     }
 
     protected void connectionLog(String message) {
-        if(StrUtil.isNotEmpty(message)){
-            message = message.replaceAll("\n","");
+        if (StrUtil.isNotEmpty(message)) {
+            message = message.replaceAll("\n", "");
             // message = message.replaceAll("\\{[^{}]*\\}", "");
         }
         this.connectionLogger.info(message);
     }
 
     protected void statementLog(String message) {
-        if(StrUtil.isNotEmpty(message)){
-            message = message.replaceAll("\n","");
+        if (StrUtil.isNotEmpty(message)) {
+            message = message.replaceAll("\n", "");
         }
-        boolean skip = SysLog.checkDbPrintException(message,true);
-        if(!skip){
+        boolean skip = SysLog.checkDbPrintException(message, true);
+        if (!skip) {
             this.statementLogger.info(message);
         }
     }
 
     protected void resultSetLog(String message) {
-        if(StrUtil.isNotEmpty(message)){
-            message = message.replaceAll("\n","");
+        if (StrUtil.isNotEmpty(message)) {
+            message = message.replaceAll("\n", "");
         }
         this.resultSetLogger.info(message);
     }
@@ -165,8 +167,8 @@ public class Log4j3Filter extends LogFilter implements Log4j3FilterMBean {
 
     protected void statementLogError(String message, Throwable error) {
         String message1 = error.getMessage();
-        boolean skip = SysLog.checkDbPrintException(message1,false);
-        if(!skip){
+        boolean skip = SysLog.checkDbPrintException(message1, false);
+        if (!skip) {
             // 数据库报错使用这种形式的打印
             error.printStackTrace();
         }
@@ -183,7 +185,7 @@ public class Log4j3Filter extends LogFilter implements Log4j3FilterMBean {
     @Override
     public boolean resultSet_next(FilterChain chain, ResultSetProxy resultSet) throws SQLException {
         boolean b = chain.resultSet_next(resultSet);
-        if(b){
+        if (b) {
             /*try {
                 int currentRows = resultSet.getRow();
                 if(currentRows == 6){
@@ -229,9 +231,9 @@ public class Log4j3Filter extends LogFilter implements Log4j3FilterMBean {
             } catch (SQLException ex) {
                 resultSetLogError("logging error", ex);
             }*/
-        }else{
+        } else {
             // print current cursor index
-            resultSetLog("<== all rows is "+ resultSet.getCursorIndex());
+            resultSetLog("<== all rows is " + resultSet.getCursorIndex());
         }
 
         return b;

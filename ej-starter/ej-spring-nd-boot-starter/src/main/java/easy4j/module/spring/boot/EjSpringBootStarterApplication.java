@@ -14,7 +14,7 @@
  */
 package easy4j.module.spring.boot;
 
-import easy4j.module.base.starter.Easy4JStarterNd;
+import easy4j.infra.base.starter.Easy4JStarterNd;
 import org.springframework.boot.SpringApplication;
 
 /**

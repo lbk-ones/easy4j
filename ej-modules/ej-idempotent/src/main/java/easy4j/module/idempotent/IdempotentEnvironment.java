@@ -14,7 +14,7 @@
  */
 package easy4j.module.idempotent;
 
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -26,7 +26,7 @@ import java.util.Properties;
  * @author bokun.li
  * @date 2025-05
  */
-public class IdempotentEnvironment extends AbstractEnvironmentForEj {
+public class IdempotentEnvironment extends AbstractEasy4jEnvironment {
 
     @Override
     public String getName() {

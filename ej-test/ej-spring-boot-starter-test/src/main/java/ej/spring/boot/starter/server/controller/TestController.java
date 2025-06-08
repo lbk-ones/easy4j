@@ -15,14 +15,13 @@
 package ej.spring.boot.starter.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import easy4j.module.base.header.EasyResult;
-import easy4j.module.base.log.RequestLog;
-import easy4j.module.base.plugin.dbaccess.DBAccess;
-import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
-import easy4j.module.base.utils.json.JacksonUtil;
+import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.dbaccess.DBAccess;
+import easy4j.infra.dbaccess.domain.SysLogRecord;
+import easy4j.infra.log.RequestLog;
 import easy4j.module.idempotent.WebIdempotent;
 import easy4j.module.seed.CommonKey;
-import easy4j.module.sentinel.EnableFlowDegrade;
 import easy4j.module.sentinel.annotation.FlowDegradeResource;
 import ej.spring.boot.starter.server.mapper.SysLogRecordMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * TestController

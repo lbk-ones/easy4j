@@ -14,15 +14,13 @@
  */
 package easy4j.module.mapstruct;
 
-import easy4j.module.base.annotations.Desc;
-import org.mapstruct.Mapper;
+import easy4j.infra.common.annotations.Desc;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 
 
 @Desc("")
@@ -55,8 +53,8 @@ public interface ExampleTargetMapper {
 
     // 定义映射方法
     @Mapping(source = "dateString", target = "date", qualifiedByName = "")
-    <T,R> T sourceToTarget(R source);
+    <T, R> T sourceToTarget(R source);
 
     @Mapping(source = "date", target = "dateString", qualifiedByName = "")
-    <T,R> T targetToSource(R target);
+    <T, R> T targetToSource(R target);
 }

@@ -15,8 +15,8 @@
 package easy4j.module.redis;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import org.springframework.boot.autoconfigure.AutoConfigurationImportFilter;
 import org.springframework.boot.autoconfigure.AutoConfigurationMetadata;
 

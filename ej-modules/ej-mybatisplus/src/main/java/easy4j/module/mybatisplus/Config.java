@@ -31,15 +31,12 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SqlType;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
-import org.mybatis.spring.annotation.MapperScannerRegistrar;
-import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -90,7 +87,7 @@ public class Config implements EnvironmentAware {
     @Bean("sqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource, GlobalConfig globalConfig) throws Exception {
         log.info(SysLog.compact("开始配置MYBATIS_PLUS"));
-        String dataType = SqlType.getType();
+        String dataType = Easy4j.getType();
         DbType dbType = DbType.getDbType(dataType);
         String db = dbType.getDb();
         log.info(SysLog.compact("判定数据库为,{}", db));

@@ -14,7 +14,7 @@
  */
 package easy4j.sca.account.test;
 
-import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.module.sca.annotations.EnableSca;
 import org.springframework.boot.SpringApplication;
 

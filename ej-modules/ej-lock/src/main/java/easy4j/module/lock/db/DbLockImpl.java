@@ -2,15 +2,15 @@ package easy4j.module.lock.db;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.context.AutoRegisterContext;
-import easy4j.module.base.context.Easy4jContext;
-import easy4j.module.base.context.api.lock.DbLock;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.plugin.dbaccess.DBAccess;
-import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.plugin.dbaccess.domain.SysLock;
-import easy4j.module.base.plugin.dbaccess.helper.JdbcHelper;
-import easy4j.module.base.utils.BusCode;
+import easy4j.infra.context.AutoRegisterContext;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.context.api.lock.DbLock;
+import easy4j.infra.dbaccess.DBAccess;
+import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.domain.SysLock;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 

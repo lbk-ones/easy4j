@@ -14,7 +14,7 @@
  */
 package easy4j.module.sauth.authentication;
 
-import easy4j.module.base.exception.EasyException;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 
 /**

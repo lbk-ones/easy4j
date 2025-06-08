@@ -14,7 +14,7 @@
  */
 package easy4j.module.dubbo3;
 
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -26,7 +26,7 @@ import java.util.Properties;
  * @author bokun.li
  * @date 2025-05
  */
-public class Dubbo3Environment extends AbstractEnvironmentForEj {
+public class Dubbo3Environment extends AbstractEasy4jEnvironment {
     @Override
     public String getName() {
         return null;
@@ -36,8 +36,8 @@ public class Dubbo3Environment extends AbstractEnvironmentForEj {
     public Properties getProperties() {
 
         Properties properties = new Properties();
-        properties.setProperty("","");
-        properties.setProperty("","");
+        properties.setProperty("", "");
+        properties.setProperty("", "");
         return null;
     }
 

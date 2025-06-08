@@ -14,7 +14,7 @@
  */
 package easy4j.module.security.filter;
 
-import easy4j.module.base.utils.ListTs;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.module.security.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

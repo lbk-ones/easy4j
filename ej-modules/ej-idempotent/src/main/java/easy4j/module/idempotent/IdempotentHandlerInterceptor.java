@@ -16,12 +16,12 @@ package easy4j.module.idempotent;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.utils.BusCode;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
-import easy4j.module.base.utils.SysLog;
-import easy4j.module.base.web.AbstractEasy4JWebMvcHandler;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
+import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.method.HandlerMethod;
 

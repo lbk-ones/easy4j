@@ -15,10 +15,10 @@
 package easy4j.module.sauth.filter;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.exception.EasyException;
-import easy4j.module.base.utils.BusCode;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.web.AbstractEasy4JWebMvcHandler;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.SecurityAuthorization;

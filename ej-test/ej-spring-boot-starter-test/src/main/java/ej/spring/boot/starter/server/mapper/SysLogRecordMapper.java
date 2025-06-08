@@ -1,7 +1,7 @@
 package ej.spring.boot.starter.server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import easy4j.module.base.plugin.dbaccess.domain.SysLogRecord;
+import easy4j.infra.dbaccess.domain.SysLogRecord;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;

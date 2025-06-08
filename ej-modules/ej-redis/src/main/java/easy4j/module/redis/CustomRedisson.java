@@ -14,8 +14,8 @@
  */
 package easy4j.module.redis;
 
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.Easy4j;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
 import org.redisson.config.*;
 import org.redisson.config.Config;
 import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;

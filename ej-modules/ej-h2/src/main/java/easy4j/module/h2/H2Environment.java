@@ -15,20 +15,17 @@
 package easy4j.module.h2;
 
 
-import easy4j.module.base.annotations.Desc;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.resolve.DataSourceUrlResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4JStarter;
-import easy4j.module.base.starter.Easy4JStarterNd;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.resolve.DataSourceUrlResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import org.h2.Driver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -38,7 +35,7 @@ import java.util.Properties;
  * @date 2025-05
  */
 @Order(value = 14)
-public class H2Environment extends AbstractEnvironmentForEj {
+public class H2Environment extends AbstractEasy4jEnvironment {
 
     public static final String H2_SERVER_NAME = "EASY4j_H2_ENV_NAME";
 
@@ -65,7 +62,7 @@ public class H2Environment extends AbstractEnvironmentForEj {
                 DataSourceUrlResolve dataSourceUrlResolve = new DataSourceUrlResolve();
                 properties.setProperty(SysConstant.DB_USER_NAME, ejSysProperties.getH2ConsoleUsername());
                 properties.setProperty(SysConstant.DB_USER_PASSWORD, ejSysProperties.getH2ConsolePassword());
-                dataSourceUrlResolve.handler(properties,h2Url);
+                dataSourceUrlResolve.handler(properties, h2Url);
 
                 return properties;
             }

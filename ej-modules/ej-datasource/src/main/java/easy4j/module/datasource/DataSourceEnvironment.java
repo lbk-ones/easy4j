@@ -18,15 +18,12 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.druid.DbType;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.util.JdbcUtils;
-import easy4j.module.base.resolve.DataSourceUrlResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4JStarter;
-import easy4j.module.base.starter.Easy4JStarterNd;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SP;
-import easy4j.module.base.utils.SqlType;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.base.resolve.DataSourceUrlResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SqlType;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -44,7 +41,7 @@ import java.util.Properties;
  * @date 2023/11/20
  */
 @Order(value = 16)  // 要在 h2 后面加载
-public class DataSourceEnvironment extends AbstractEnvironmentForEj {
+public class DataSourceEnvironment extends AbstractEasy4jEnvironment {
 
     // 使用的是什么数据源
     public static final Class<? extends DataSource> DATA_SOURCE_CLASS = DruidDataSource.class;

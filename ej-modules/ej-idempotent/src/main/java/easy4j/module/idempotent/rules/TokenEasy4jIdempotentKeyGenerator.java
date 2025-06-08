@@ -14,13 +14,11 @@
  */
 package easy4j.module.idempotent.rules;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentKeyGenerator;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
+import easy4j.infra.common.utils.SysConstant;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
 
 /**
  * FormEasy4jIdempotentKeyGenerator

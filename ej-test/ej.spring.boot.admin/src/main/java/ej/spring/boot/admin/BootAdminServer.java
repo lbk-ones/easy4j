@@ -16,7 +16,7 @@ package ej.spring.boot.admin;
 
 
 import de.codecentric.boot.admin.server.config.EnableAdminServer;
-import easy4j.module.base.starter.Easy4JStarterNd;
+import easy4j.infra.base.starter.Easy4JStarterNd;
 import org.springframework.boot.SpringApplication;
 
 /**

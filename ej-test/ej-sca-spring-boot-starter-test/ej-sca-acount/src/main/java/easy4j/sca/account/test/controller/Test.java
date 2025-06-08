@@ -14,15 +14,14 @@
  */
 package easy4j.sca.account.test.controller;
 
-import easy4j.module.base.header.EasyResult;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.json.JacksonUtil;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Test

@@ -14,8 +14,8 @@
  */
 package easy4j.module.security.config;
 
-import easy4j.module.base.module.Module;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.common.module.Module;
+import easy4j.infra.common.utils.SysConstant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.BadCredentialsException;

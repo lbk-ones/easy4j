@@ -15,7 +15,7 @@
 package ej.spring.boot.starter.server;
 
 
-import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import org.mybatis.spring.annotation.MapperScan;
 import org.redisson.api.RLock;

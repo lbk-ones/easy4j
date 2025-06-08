@@ -14,20 +14,14 @@
  */
 package easy4j.module.lock.config;
 
-import easy4j.module.base.module.Module;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.context.api.lock.DbLock;
-import easy4j.module.lock.db.DbLockImpl;
-import easy4j.module.base.context.api.lock.RedissonLock;
+import easy4j.infra.common.module.Module;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.api.lock.RedissonLock;
+import easy4j.infra.context.api.lock.ZkLock;
 import easy4j.module.lock.redisson.RedissonLockImpl;
-import easy4j.module.base.context.api.lock.ZkLock;
 import easy4j.module.lock.zk.ZkLockImpl;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-
-import javax.sql.DataSource;
 
 /**
  * Config

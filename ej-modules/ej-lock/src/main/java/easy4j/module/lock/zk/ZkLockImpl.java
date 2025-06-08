@@ -14,7 +14,8 @@
  */
 package easy4j.module.lock.zk;
 
-import easy4j.module.base.context.api.lock.ZkLock;
+
+import easy4j.infra.context.api.lock.ZkLock;
 
 /**
  * ZkLockImpl

@@ -2,11 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra.ejmodules</groupId>
-        <artifactId>ej-modules</artifactId>
+        <groupId>easy4j.infra</groupId>
+        <artifactId>ej-dependence</artifactId>
         <version>${revision}</version>
     </parent>
-    <groupId>easy4j.module.nacosdubbo3</groupId>
     <artifactId>ej-nacos-dubbo3</artifactId>
     <packaging>jar</packaging>
 
@@ -21,7 +20,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>easy4j.module.dubbo3</groupId>
+                <groupId>easy4j.infra</groupId>
                 <artifactId>ej-dubbo3</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
@@ -33,7 +32,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>easy4j.module.base</groupId>
+            <groupId>easy4j.infra</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>

@@ -14,38 +14,15 @@
  */
 package easy4j.module.redis;
 
-import easy4j.module.base.module.Module;
-import easy4j.module.base.plugin.idempotent.Easy4jIdempotentStorage;
-import easy4j.module.base.utils.SysConstant;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.BaseConfig;
-import org.redisson.config.ClusterServersConfig;
-import org.redisson.config.SentinelServersConfig;
-import org.redisson.config.SingleServerConfig;
-import org.redisson.misc.RedisURI;
-import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import easy4j.infra.common.module.Module;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
+import easy4j.infra.common.utils.SysConstant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.util.ReflectionUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Config

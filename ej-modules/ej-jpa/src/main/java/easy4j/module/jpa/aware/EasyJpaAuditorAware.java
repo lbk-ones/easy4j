@@ -14,7 +14,7 @@
  */
 package easy4j.module.jpa.aware;
 
-import easy4j.module.base.annotations.Desc;
+import easy4j.infra.common.annotations.Desc;
 
 import java.util.Optional;
 

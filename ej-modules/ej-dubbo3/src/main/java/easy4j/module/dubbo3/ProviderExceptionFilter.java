@@ -15,7 +15,7 @@
 package easy4j.module.dubbo3;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.module.base.header.EasyResult;
+import easy4j.infra.common.header.EasyResult;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Locale;
 
 @Activate(
-    group = {CommonConstants.PROVIDER},
-    order = 10
+        group = {CommonConstants.PROVIDER},
+        order = 10
 )
 /**
  * ProviderExceptionFilter
@@ -60,18 +60,18 @@ public class ProviderExceptionFilter implements Filter {
                 EasyResult<Object> i18n = EasyResult.toI18n(throwable, locale);
                 i18n.setRpcMethod(rpcMethod);
                 String message = throwable.getMessage();
-                if(throwable instanceof NullPointerException){
+                if (throwable instanceof NullPointerException) {
                     message = "java.lang.NullPointerException";
                 }
                 i18n.setErrorInfo(message);
-                return AsyncRpcResult.newDefaultAsyncResult(new AppResponse(i18n),invocation);
+                return AsyncRpcResult.newDefaultAsyncResult(new AppResponse(i18n), invocation);
             } else {
                 return result;
             }
         } catch (Throwable var7) {
             EasyResult<Object> i18n = EasyResult.toI18n(var7, locale);
             i18n.setRpcMethod(rpcMethod);
-            return AsyncRpcResult.newDefaultAsyncResult(new AppResponse(i18n),invocation);
+            return AsyncRpcResult.newDefaultAsyncResult(new AppResponse(i18n), invocation);
         }
     }
 }

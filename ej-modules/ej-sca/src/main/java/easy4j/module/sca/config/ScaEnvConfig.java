@@ -15,15 +15,14 @@
 package easy4j.module.sca.config;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.resolve.NacosUrlResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.ListTs;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.resolve.NacosUrlResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.base.starter.env.Easy4jEnvironmentFirst;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -37,11 +36,11 @@ import java.util.Properties;
 /**
  * 晚于
  *
- * @see easy4j.module.base.starter.Easy4jEnvironmentFirst
+ * @see Easy4jEnvironmentFirst
  */
 @Slf4j
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 1)
-public class ScaEnvConfig extends AbstractEnvironmentForEj {
+public class ScaEnvConfig extends AbstractEasy4jEnvironment {
 
     public static final String SCA_ENV = "sca-env-config";
 

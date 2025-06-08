@@ -14,21 +14,9 @@
  */
 package easy4j.module.sca.annotations;
 
-import cn.hutool.extra.spring.EnableSpringUtil;
-import easy4j.module.base.annotations.Desc;
-import easy4j.module.base.starter.EasyStarterImport;
-import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.TypeExcludeFilter;
+import easy4j.infra.common.annotations.Desc;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
 

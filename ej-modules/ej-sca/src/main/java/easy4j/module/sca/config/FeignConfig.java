@@ -14,7 +14,7 @@
  */
 package easy4j.module.sca.config;
 
-import easy4j.module.base.properties.EjSysProperties;
+import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
 import easy4j.module.sca.interceptor.DefaultRequestOriginParser;
 import easy4j.module.sca.interceptor.Easy4jRequestInterceptor;

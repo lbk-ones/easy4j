@@ -14,7 +14,8 @@
  */
 package easy4j.sca.order.test;
 
-import easy4j.module.base.starter.Easy4JStarter;
+
+import easy4j.infra.base.starter.Easy4JStarter;
 
 @Easy4JStarter(
         serverPort = 10002,

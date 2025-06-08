@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 package easy4j.module.mapstruct;
-import easy4j.module.base.plugin.gen.JavaBaseGen;
+
+import easy4j.infra.context.api.gen.JavaBaseGen;
 import lombok.*;
 
 

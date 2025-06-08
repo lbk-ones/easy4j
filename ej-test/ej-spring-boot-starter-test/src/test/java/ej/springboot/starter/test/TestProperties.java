@@ -14,7 +14,7 @@
  */
 package ej.springboot.starter.test;
 
-import easy4j.module.base.starter.Easy4JStarter;
+import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
 import ej.spring.boot.starter.server.StartTest;
 import org.junit.jupiter.api.Test;

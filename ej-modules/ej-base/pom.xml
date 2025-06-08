@@ -2,12 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra.ejmodules</groupId>
-        <artifactId>ej-modules</artifactId>
+        <groupId>easy4j.infra</groupId>
+        <artifactId>ej-dependence</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <groupId>easy4j.module.base</groupId>
     <artifactId>ej-base</artifactId>
     <packaging>jar</packaging>
 
@@ -37,6 +36,18 @@
             </exclusions>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-context</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>easy4j.infra</groupId>-->
+        <!--            <artifactId>ej-log</artifactId>-->
+        <!--            <version>${revision}</version>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <!--<build>

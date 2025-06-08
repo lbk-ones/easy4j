@@ -15,9 +15,9 @@
 package easy4j.module.seed.leaf;
 
 
-import easy4j.module.base.plugin.dbaccess.DBAccess;
-import easy4j.module.base.plugin.dbaccess.DBAccessFactory;
-import easy4j.module.base.utils.ListTs;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.DBAccess;
+import easy4j.infra.dbaccess.DBAccessFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

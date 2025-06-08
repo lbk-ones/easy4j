@@ -14,12 +14,12 @@
  */
 package easy4j.module.redis;
 
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.resolve.RedisPropertiesResolve;
-import easy4j.module.base.starter.AbstractEnvironmentForEj;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.SysConstant;
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.resolve.RedisPropertiesResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -35,7 +35,7 @@ import java.util.Properties;
  * @date 2025-05
  */
 @Slf4j
-public class Easys4jRedisEnvironment extends AbstractEnvironmentForEj {
+public class Easys4jRedisEnvironment extends AbstractEasy4jEnvironment {
 
     public static final String REDIS_ENV_NAME = SysConstant.PARAM_PREFIX + StringPool.DOT + "redis.env.name";
 

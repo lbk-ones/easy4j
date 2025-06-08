@@ -1,6 +1,6 @@
 package easy4j.module.redis;
 
-import easy4j.module.base.utils.SysLog;
+import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.redis.connection.RedisConnection;

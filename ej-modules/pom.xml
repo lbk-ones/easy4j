@@ -4,8 +4,8 @@
 
     <!--easy4模块的基础依赖-->
 
-    <groupId>easy4j.infra.ejmodules</groupId>
-    <artifactId>ej-modules</artifactId>
+    <groupId>easy4j.infra</groupId>
+    <artifactId>ej-dependence</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
@@ -32,6 +32,12 @@
         <module>ej-security</module>
         <module>ej-sauth</module>
         <module>ej-lock</module>
+        <module>ej-context</module>
+        <module>ej-common</module>
+        <module>ej-log</module>
+        <module>ej-db-access</module>
+        <module>ej-webmvc</module>
+        <module>ej-knife4j</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
@@ -129,6 +135,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
         <!--UTILS-->

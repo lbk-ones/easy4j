@@ -14,7 +14,7 @@
  */
 package easy4j.module.sauth.core;
 
-import easy4j.module.base.annotations.Desc;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 
 import java.util.concurrent.TimeUnit;

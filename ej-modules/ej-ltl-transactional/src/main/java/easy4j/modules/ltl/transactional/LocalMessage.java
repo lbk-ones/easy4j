@@ -14,8 +14,8 @@
  */
 package easy4j.modules.ltl.transactional;
 
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcColumn;
-import easy4j.module.base.plugin.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.annotations.JdbcTable;
 import lombok.Data;
 
 import java.io.Serializable;

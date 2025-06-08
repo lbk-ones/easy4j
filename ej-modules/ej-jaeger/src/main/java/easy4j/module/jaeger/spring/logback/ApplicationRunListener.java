@@ -15,7 +15,7 @@
 package easy4j.module.jaeger.spring.logback;
 
 import ch.qos.logback.classic.PatternLayout;
-import easy4j.module.base.utils.SysConstant;
+import easy4j.infra.common.utils.SysConstant;
 import org.springframework.boot.context.event.ApplicationStartingEvent;
 import org.springframework.context.ApplicationListener;
 

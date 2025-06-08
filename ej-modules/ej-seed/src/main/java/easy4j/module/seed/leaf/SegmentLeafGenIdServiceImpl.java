@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 package easy4j.module.seed.leaf;
-import easy4j.module.base.utils.SysLog;
+
+import easy4j.infra.common.utils.SysLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
     private ExecutorService service = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new UpdateThreadFactory());
     private volatile boolean initOK = false;
     private Map<String, SegmentBuffer> cache = new ConcurrentHashMap<>();
-
 
 
     public static class UpdateThreadFactory implements ThreadFactory {
@@ -139,7 +139,7 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
         if (!initOK) {
             int count = 1;
             do {
-                logger.info("leaf未初始化完毕，尝试等待...."+count+"次");
+                logger.info("leaf未初始化完毕，尝试等待...." + count + "次");
                 try {
                     TimeUnit.SECONDS.sleep(1L);
                     if (initOK) {
@@ -150,7 +150,7 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
                     count++;
                 }
             } while (count <= 3);
-            if(!initOK){
+            if (!initOK) {
                 return null;
             }
         }
@@ -170,8 +170,8 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
                 }
             }
             return getIdFromSegmentBuffer(cache.get(key));
-        }else{
-            logger.info("leaf未配置该key【"+key+"】");
+        } else {
+            logger.info("leaf未配置该key【" + key + "】");
         }
         return null;
     }

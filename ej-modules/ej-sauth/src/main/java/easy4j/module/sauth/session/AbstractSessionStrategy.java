@@ -14,9 +14,9 @@
  */
 package easy4j.module.sauth.session;
 
-import easy4j.module.base.properties.EjSysProperties;
-import easy4j.module.base.starter.Easy4j;
-import easy4j.module.base.utils.ListTs;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.module.sauth.domain.SecuritySession;
 
 import java.util.List;
