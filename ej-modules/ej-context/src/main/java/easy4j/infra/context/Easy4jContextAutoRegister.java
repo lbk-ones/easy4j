@@ -46,7 +46,7 @@ public class Easy4jContextAutoRegister implements ApplicationListener<ContextRef
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
         if (!isInit && applicationContext.getParent() == null) {
-            isInit = false;
+            isInit = true;
 
             Map<String, AutoRegisterContext> contextBeans =
                     applicationContext.getBeansOfType(AutoRegisterContext.class);
