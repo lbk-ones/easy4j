@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>easy4j.infra</groupId>
-        <artifactId>ej-dependence</artifactId>
+        <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
     <artifactId>ej-h2</artifactId>
