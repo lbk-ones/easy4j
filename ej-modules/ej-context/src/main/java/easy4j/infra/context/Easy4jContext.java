@@ -15,143 +15,76 @@
 package easy4j.infra.context;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Easy4jContext
- * 底层为三层键值对
- * 1、type
- * 2、name
- * 3、value
+ * 算了 把这个上下文挂在 ioc容器里面吧
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025-06-07 18:36:12
  */
-public interface Easy4jContext {
+public interface Easy4jContext extends Easy4jContextThread {
 
     /**
-     * 将value的值注入到当前线程中去
+     * 注册对象
      *
-     * @param key   第一层key
-     * @param key2  第二层key
-     * @param value 要注入的值
+     * @param object
      */
-    void registerThreadHash(String key, String key2, Object value);
-
+    void register(Object object);
 
     /**
-     * 从当前线程中拿取key和key2对应的值
-     *
-     * @param key
-     * @param key2
-     * @return
-     */
-    Optional<Object> getThreadHashValue(String key, String key2);
-
-    /**
-     * 根据第一层key从当前线程拿取对应的第二层Map
-     *
-     * @param key
-     * @return
-     */
-    Optional<Object> getThreadHash(String key);
-
-    /**
-     * 清除掉当前线程中缓存的所有变量
-     */
-    void clearHash();
-
-    /**
-     * 往当前上下文注入值
-     * 第一层为DEFAULT
-     * 第二层为传入的aclass的全类名
-     * 第三层为对应的值t
-     *
-     * @param aclass
-     * @param t
-     */
-    <T, R extends T> void set(Class<T> aclass, R t);
-
-    /**
-     * 往当前上下文注入值
-     * 第一层为传入的type
-     * 第二层为传入的aclass的全类名
-     * 第三层为对应的值t
-     *
-     * @param aclass
-     * @param t
-     */
-    void setType(String type, Class<?> aclass, Object t);
-
-    /**
-     * 根据第一层变量 拿取所有第二层的值
-     *
-     * @param type
-     * @return
-     */
-    Map<String, Object> getType(String type);
-
-    /**
-     * 第一层键的名称为 DEFAULTTYPE
-     * 第二层键的名称为传入的name
-     * 第三层为传入的t
+     * 根据名称注册对象
      *
      * @param name
-     * @param t
+     * @param object
      */
-    void set(String name, Object t);
+    void register(String name, Object object);
 
     /**
-     * 第一层键的名称为 传入的type
-     * 第二层键的名称为传入的name
-     * 第三层为传入的t
+     * 根据名称（这个名称要么就是注册的时候指定的、要么就是默认名称）获取
      *
-     * @param type 第一层键的名称
-     * @param name 第二层键的名称
-     * @param t
+     * @param name
+     * @return
      */
-    void setType(String type, String name, Object t);
+    Object get(String name);
 
     /**
-     * 根据传入的第一层键和第二层键返回存储的值，并转化为想要的类型(传入的t)，如果没有会抛出异常
+     * 根据名称（这个名称要么就是注册的时候指定的、要么就是默认名称）获取，获取之后 同时转成对应的类型
      *
-     * @param type 第一层键
-     * @param name 第二层键
-     * @param t    将要转换的类型
+     * @param name
+     * @param aClass
      * @param <T>
      * @return
      */
-    <T> T getType(String type, String name, Class<T> t);
+    <T> T get(String name, Class<T> aClass);
 
     /**
-     * 根据class的全类名来从DEFAULTTYPE中拿取值 如果没有会抛出异常
+     * 根据类型获取
      *
-     * @author bokun.li
-     * @date 2025/6/3
-     */
-    <T> T get(Class<T> aclass);
-
-    /**
-     * 根据class类型来从上下文拿取 如果没有给个默认值
-     * 其实是根据class的全类名为name来拿取
-     * type = easy4j.module.base.context.DefaultEasy4jContext#DEFAULT_KEY
-     *
-     * @author bokun.li
-     * @date 2025/6/3
-     */
-    <T> T getOrDefault(Class<T> aclass, T object);
-
-
-    /**
-     * 从DEFAULT_KEY中拿取key为name的值并转换成Class<T> 如果没有就返回传入的默认值
-     *
-     * @param name   根据名称
-     * @param aclass 类型转换
-     * @param def
+     * @param tClass
      * @param <T>
      * @return
      */
-    <T> T get(String name, Class<T> aclass, T def);
+    <T> T get(Class<T> tClass);
+
+
+    /**
+     * 根据类型获取所有实现
+     *
+     * @param tClass
+     * @param <T>
+     * @return
+     */
+    <T> Map<String, T> getMapOfType(Class<T> tClass);
+
+    /**
+     * 根据类型获取所有实现
+     *
+     * @param tClass
+     * @param <T>
+     * @return
+     */
+    <T> String[] getNamesOfType(Class<T> tClass);
 
 
 }

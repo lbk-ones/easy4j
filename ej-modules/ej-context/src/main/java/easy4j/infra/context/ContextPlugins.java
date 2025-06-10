@@ -35,9 +35,9 @@ public class ContextPlugins {
     }
 
     // 主动调用子模块去获取
-    public static <T> T call(String type, String name, Class<T> aclass) {
+    public static <T> T call(String name, Class<T> aclass) {
         for (ContextChannel contextChannel : contextChannelList) {
-            T listener = contextChannel.listener(type, name, aclass);
+            T listener = contextChannel.listener(name, aclass);
             if (listener != null) return listener;
         }
         return null;

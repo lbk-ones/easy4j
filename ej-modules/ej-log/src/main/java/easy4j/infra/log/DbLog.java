@@ -20,6 +20,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.EStopWatch;
 import easy4j.infra.common.utils.SysConstant;
@@ -28,7 +29,6 @@ import easy4j.infra.context.Easy4jContextFactory;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.context.api.seed.DefaultEasy4jSeed;
 import easy4j.infra.context.api.seed.Easy4jSeed;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.condition.FWhereBuild;
@@ -375,8 +375,9 @@ public class DbLog {
 
     public void clearLog(Date startTime) {
 
-        DbLock dbLock = Easy4jContextFactory.sysLock();
+        DbLock dbLock;
         try {
+            dbLock = Easy4jContextFactory.sysLock();
             dbLock.lock(DB_LOCK_ID, 5, "to delete log record");
         } catch (Exception e) {
             // 没抢到这一次就跳过
@@ -404,7 +405,9 @@ public class DbLog {
             lastExeTime.addAndGet(new Date().getTime());
             firstEd = true;
         } finally {
-            dbLock.unLock(DB_LOCK_ID);
+            if (null != dbLock) {
+                dbLock.unLock(DB_LOCK_ID);
+            }
         }
 
     }

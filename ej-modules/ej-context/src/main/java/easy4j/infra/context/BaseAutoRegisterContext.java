@@ -15,9 +15,6 @@
 package easy4j.infra.context;
 
 
-import easy4j.infra.context.api.seed.DefaultEasy4jSeed;
-import easy4j.infra.context.api.seed.Easy4jSeed;
-
 /**
  * Config
  *
@@ -28,9 +25,9 @@ public class BaseAutoRegisterContext implements AutoRegisterContext {
 
     // base module auto register
     @Override
-    public void registerToContext(Easy4jContext easy4jContext) {
+    public void registerToContext(Easy4jContext easy4JContextThread) {
 //        easy4jContext.set(DbLog.class, DbLog.getDbLog());
         // give a default Easy4jSeed
-        easy4jContext.set(Easy4jSeed.class, new DefaultEasy4jSeed());
+        // easy4JContextThread.register(new DefaultEasy4jSeed());
     }
 }

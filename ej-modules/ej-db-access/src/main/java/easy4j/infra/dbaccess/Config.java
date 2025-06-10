@@ -22,6 +22,6 @@ public class Config implements AutoRegisterContext {
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.set(DBAccess.class, dbAccess());
+        easy4jContext.register(dbAccess());
     }
 }

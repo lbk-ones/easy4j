@@ -16,7 +16,6 @@ package easy4j.module.seed.leaf;
 
 import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
-import easy4j.infra.context.api.seed.Easy4jSeed;
 import easy4j.module.seed.CommonKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -42,6 +41,6 @@ public class StarterRunner implements CommandLineRunner, AutoRegisterContext {
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.set(Easy4jSeed.class, CommonKey.getCommonKey());
+        easy4jContext.register(CommonKey.getCommonKey());
     }
 }

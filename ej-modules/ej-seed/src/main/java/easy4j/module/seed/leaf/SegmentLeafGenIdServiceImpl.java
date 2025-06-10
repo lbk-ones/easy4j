@@ -14,7 +14,11 @@
  */
 package easy4j.module.seed.leaf;
 
+import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.AutoRegisterContext;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.api.seed.LeafSeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author bokun.li
  * @date 2025-05
  */
-public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
+public class SegmentLeafGenIdServiceImpl extends LeafSeed implements LeafGenIdService, AutoRegisterContext {
     @Resource
     private LeafAllocDao leafAllocDao;
 
@@ -291,4 +295,9 @@ public class SegmentLeafGenIdServiceImpl implements LeafGenIdService {
         }
     }
 
+    @Override
+    public void registerToContext(Easy4jContext easy4jContext) {
+        LeafSeed bean = SpringUtil.getBean(LeafSeed.class);
+        easy4jContext.register(bean);
+    }
 }

@@ -15,6 +15,7 @@
 package easy4j.infra.context;
 
 
+import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.context.api.lock.DbLock;
 
 /**
@@ -28,12 +29,11 @@ public class Easy4jContextFactory {
 
     public static Easy4jContext getContext() {
 
-        return DefaultEasy4jContext.getContext();
+        return SpringUtil.getBean(Easy4jContext.class);
     }
 
     public static DbLock sysLock() {
         return getContext().get(DbLock.class);
-
     }
 
 }

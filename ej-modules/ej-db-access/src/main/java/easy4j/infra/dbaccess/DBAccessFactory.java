@@ -15,12 +15,14 @@
 package easy4j.infra.dbaccess;
 
 
-import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.dbaccess.helper.DDlHelper;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -90,18 +92,19 @@ public class DBAccessFactory {
                     continue;
                 }
                 String s1 = s;
-                Connection connection = null;
+                Connection connection;
                 try {
                     connection = jdbcDbAccess.getConnection();
                     String databaseType = JdbcHelper.getDatabaseType(connection);
-                    s1 = s + "/" + databaseType;
-                    ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
-                    jdbcDbAccess.runScript(classPathResource);
+                    s1 = s + "/" + databaseType + SP.DOT + "sql";
+                    DDlHelper.execDDL(connection, null, ListTs.asList(s1), true);
+//                    ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
+//                    jdbcDbAccess.runScript(classPathResource);
                     log.info(SysLog.compact("the " + s1 + ".sql db initialization succeeded"));
                 } catch (Exception e) {
                     log.info(SysLog.compact("the " + s1 + ".sql db has been initialized"));
                 } finally {
-                    JdbcHelper.close(connection);
+//                    JdbcHelper.close(connection);
                     INIT_DB_FILE_TYPE.add(s);
                 }
             }

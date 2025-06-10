@@ -21,16 +21,16 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.Easy4JStarterTest;
 import easy4j.infra.common.enums.DbType;
-import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.context.DefaultEasy4jContext;
 import easy4j.infra.context.Easy4jContext;
 import jodd.util.StringPool;
 import lombok.Getter;
@@ -303,7 +303,7 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static Easy4jContext getContext() {
-        return DefaultEasy4jContext.getContext();
+        return SpringUtil.getBean(Easy4jContext.class);
     }
 
 

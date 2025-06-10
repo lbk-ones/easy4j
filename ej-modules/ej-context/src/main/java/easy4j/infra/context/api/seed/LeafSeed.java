@@ -12,23 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.log;
-
-import easy4j.infra.context.AutoRegisterContext;
-import easy4j.infra.context.Easy4jContext;
-import org.springframework.context.annotation.Configuration;
+package easy4j.infra.context.api.seed;
 
 /**
- * Config
+ * LeafSeed
  *
  * @author bokun.li
- * @date 2025-06-08 18:45:45
+ * @date 2025-05
  */
-@Configuration(proxyBeanMethods = false)
-public class Config implements AutoRegisterContext {
+public abstract class LeafSeed implements Easy4jSeed {
+
+
+    public abstract Long get(String key);
 
     @Override
-    public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.register(DbLog.getDbLog());
+    public String nextIdStr() {
+        return null;
+    }
+
+    @Override
+    public long nextIdLong() {
+        return 0;
     }
 }

@@ -14,6 +14,8 @@
  */
 package easy4j.infra.context;
 
+import cn.hutool.core.util.StrUtil;
+
 /**
  * ContextChannel
  * Spi
@@ -23,8 +25,16 @@ package easy4j.infra.context;
  */
 public interface ContextChannel {
 
-    <T> T listener(String type, String name, Class<T> aclass);
+    <T> T listener(String name, Class<T> aclass);
 
-    void init(Easy4jContext easy4jContext);
+    void init(Easy4jContext easy4JContextThread);
+
+    default String getDefaultName(Class<?> aclass) {
+        if (null == aclass) {
+            return "";
+        }
+        String name = aclass.getSimpleName();
+        return StrUtil.lowerFirst(name);
+    }
 
 }

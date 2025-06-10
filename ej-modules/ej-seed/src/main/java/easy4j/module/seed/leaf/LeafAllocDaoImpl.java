@@ -55,7 +55,6 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
         leafAllocDomain.setBIZ_TAG(bizTag);
         return dbaccess.selectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
-
     }
 
 

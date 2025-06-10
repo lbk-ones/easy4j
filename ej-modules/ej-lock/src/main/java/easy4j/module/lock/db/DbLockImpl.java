@@ -2,10 +2,11 @@ package easy4j.module.lock.db;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import easy4j.infra.context.AutoRegisterContext;
-import easy4j.infra.context.Easy4jContext;
+import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.context.AutoRegisterContext;
+import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
@@ -80,6 +81,7 @@ public class DbLockImpl implements DbLock, AutoRegisterContext {
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.set(DbLock.class, this);
+        DbLock dbLock = SpringUtil.getBean(DbLock.class);
+        easy4jContext.register(dbLock);
     }
 }

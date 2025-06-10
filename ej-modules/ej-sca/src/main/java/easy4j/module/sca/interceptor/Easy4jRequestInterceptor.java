@@ -15,10 +15,10 @@
 package easy4j.module.sca.interceptor;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.Easy4jContext;
 import easy4j.module.sca.util.HttpUtils;
 import easy4j.module.sca.util.PathMatcherUtil;
 import easy4j.module.sca.util.SignUtil;

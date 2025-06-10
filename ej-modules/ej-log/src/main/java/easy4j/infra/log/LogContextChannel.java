@@ -4,15 +4,15 @@ import easy4j.infra.context.ContextChannel;
 import easy4j.infra.context.Easy4jContext;
 
 public class LogContextChannel implements ContextChannel {
-    public static Easy4jContext easy4jContext;
+    public static Easy4jContext easy4jContext2;
 
     @Override
-    public <T> T listener(String type, String name, Class<T> aclass) {
+    public <T> T listener(String name, Class<T> aclass) {
 
         if (aclass == null) {
             return null;
         }
-        if (DbLog.class.getName().equals(name)) {
+        if (DbLog.class == aclass || getDefaultName(DbLog.class).equals(name)) {
             DbLog dbLog = DbLog.getDbLog();
             return aclass.cast(dbLog);
         }
@@ -20,7 +20,7 @@ public class LogContextChannel implements ContextChannel {
     }
 
     @Override
-    public void init(Easy4jContext easy4jContext2) {
-        easy4jContext = easy4jContext2;
+    public void init(Easy4jContext easy4jContext) {
+        easy4jContext2 = easy4jContext;
     }
 }

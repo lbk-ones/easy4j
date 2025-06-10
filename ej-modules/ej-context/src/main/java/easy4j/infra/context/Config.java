@@ -14,10 +14,8 @@
  */
 package easy4j.infra.context;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -32,9 +30,8 @@ public class Config {
 
     @Bean
     @Primary
-    @ConditionalOnMissingBean(Easy4jContext.class)
     public Easy4jContext easy4jContext() {
-        return DefaultEasy4jContext.getContext();
+        return new SingleEasy4J4jContext();
     }
 
 
