@@ -19,10 +19,16 @@
     <dependencies>
 
         <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-base</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>${flyway2.version}</version>
-            <scope>provided</scope>
+            <!--<version>${flyway2.version}</version>-->
+            <!--<scope>provided</scope>-->
         </dependency>
     </dependencies>
 </project>

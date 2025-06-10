@@ -1,0 +1,6 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+easy4j.infra.flyway.FlywayEnviroment
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+easy4j.infra.flyway.FlywayConfig
+org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
+easy4j.infra.flyway.ImportFilter

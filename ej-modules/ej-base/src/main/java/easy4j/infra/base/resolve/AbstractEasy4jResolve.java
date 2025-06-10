@@ -210,4 +210,28 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
 
 
     }
+
+    /**
+     * 兼容获取数据库地址 以 url+@+username+:+password 方式拼接
+     *
+     * @author bokun.li
+     * @date 2025/6/10
+     */
+    public String getNormalDbUrl() {
+        String url1 = Easy4j.getProperty(SysConstant.DB_URL_STR);
+        String username = Easy4j.getProperty(SysConstant.DB_USER_NAME);
+        String password = Easy4j.getProperty(SysConstant.DB_USER_PASSWORD);
+        if (StrUtil.isNotBlank(url1)) {
+            if (StrUtil.isNotBlank(username) && StrUtil.isNotBlank(password)) {
+                url1 += SP.AT + username + SP.COLON + password;
+            }
+        } else {
+            url1 = Easy4j.getProperty(SysConstant.DB_URL_STR_NEW);
+            String username1 = StrUtil.blankToDefault(getUsername(url1), username);
+            String password1 = StrUtil.blankToDefault(getPassword(url1), password);
+            url1 = getUrl(url1) + SP.AT + username1 + SP.COLON + password1;
+        }
+        return url1;
+
+    }
 }

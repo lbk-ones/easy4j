@@ -56,3 +56,4 @@
 - **easy4j.redis-enable**: 是否启用redis 如果配置了 redis-server-url 那么这个自动变成true
 - **easy4j.redis-min-ide-size**: redis最小空闲连接数 默认30
 - **easy4j.redis-connection-pool-size**: redis连接池最大连接数量 默认500
+- **easy4j.flyway-enable**: 是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效

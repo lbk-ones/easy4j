@@ -138,6 +138,7 @@ public class SysConstant {
     // 代表是否启用了redis模块
     public static final String EASY4J_REDIS_ENABLE = PARAM_PREFIX + StringPool.DOT + "redis-enable";
     public static final String EASY4J_REDIS_CONNECTION_TYPE = PARAM_PREFIX + StringPool.DOT + "redis-connection-type";
+    public static final String EASY4J_FLYWAY_ENABLE = PARAM_PREFIX + StringPool.DOT + "flyway-enable";
 
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
