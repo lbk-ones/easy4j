@@ -6,11 +6,11 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>ej-dubbo3-mp-starter</module>
+        <module>dubbo3-spring-boot-starter</module>
         <module>ej-spring-boot-starter</module>
         <module>ej-spring-nd-boot-starter</module>
-        <module>ej-jpa-boot-starter</module>
-        <module>ej-sca-spring-boot-starter</module>
+        <module>jpa-spring-boot-starter</module>
+        <module>sca-spring-boot-starter</module>
     </modules>
     <name>ej-starter</name>
     <url>http://maven.apache.org</url>
