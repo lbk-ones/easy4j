@@ -404,10 +404,10 @@ public class DbLog {
             insertDomain(logRecord);
             lastExeTime.addAndGet(new Date().getTime());
             firstEd = true;
+        } catch (Exception e) {
+            lastExeTime.addAndGet(new Date().getTime());
         } finally {
-            if (null != dbLock) {
-                dbLock.unLock(DB_LOCK_ID);
-            }
+            dbLock.unLock(DB_LOCK_ID);
         }
 
     }

@@ -30,7 +30,7 @@ import java.util.List;
  * @date 2025-05
  */
 @Slf4j
-@Configuration
+//@Configuration
 public class WebMvcConvertConfig implements WebMvcConfigurer {
 
     @Override

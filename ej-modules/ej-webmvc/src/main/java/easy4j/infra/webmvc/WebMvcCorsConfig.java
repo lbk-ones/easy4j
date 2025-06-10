@@ -32,7 +32,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @date 2025-05
  */
 @Slf4j
-@Configuration
+//@Configuration
 @Module(SysConstant.GLOBAL_CORS_ENABLE + ":true")
 public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
 

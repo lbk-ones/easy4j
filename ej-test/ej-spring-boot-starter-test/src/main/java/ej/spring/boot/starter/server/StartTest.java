@@ -29,9 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 @Easy4JStarter(
         serverPort = 9052,
-        serverName = "test-ej-service",
-        enableH2 = true,
-        h2Url = "jdbc:h2:mem:test@easy4j:easy4j"
+        serverName = "test-ej-service"
+//        enableH2 = true,
+//        h2Url = "jdbc:h2:mem:test@easy4j:easy4j"
 )
 @EnableFlowDegrade
 //@MapperScan("ej.spring.boot.starter.server.mapper")

@@ -9,10 +9,10 @@
     </parent>
 
     <groupId>ej.spring.boot.admin</groupId>
-    <artifactId>ej.spring.boot.admin</artifactId>
+    <artifactId>ej-spring-boot-admin</artifactId>
     <packaging>jar</packaging>
 
-    <name>ej.spring.boot.admin</name>
+    <name>ej-spring-boot-admin</name>
     <url>http://maven.apache.org</url>
 
     <properties>

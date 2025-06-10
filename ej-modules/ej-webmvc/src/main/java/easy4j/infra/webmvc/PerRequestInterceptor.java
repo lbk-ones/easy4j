@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  * @author bokun.li
  */
 @Slf4j
-@Component
+//@Component
 public class PerRequestInterceptor implements HandlerInterceptor {
     public static final String PRE_HANDLER = "preHandle";
     public static final String POST_HANDLE = "postHandle";

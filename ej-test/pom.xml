@@ -16,7 +16,8 @@
     <modules>
         <module>ej-spring-boot-starter-test</module>
         <module>ej-sca-spring-boot-starter-test</module>
-        <module>ej.spring.boot.admin</module>
+        <module>ej-spring-boot-admin</module>
+        <module>ej-nacos-server</module>
     </modules>
 
     <properties>
