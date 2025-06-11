@@ -58,6 +58,7 @@
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
         <log4j.version>2.17.2</log4j.version>
         <mplus.version>3.5.4</mplus.version>
+        <mplus.gen.version>3.5.12</mplus.gen.version>
         <hutool.version>5.8.22</hutool.version>
         <alibaba.ttl.version>2.11.4</alibaba.ttl.version>
         <flyway2.version>5.2.1</flyway2.version>

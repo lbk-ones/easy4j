@@ -23,6 +23,14 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mplus.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>${mplus.gen.version}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-base</artifactId>
