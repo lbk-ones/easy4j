@@ -21,6 +21,7 @@ public class SecurityConfig {
         SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
         successHandler.setTargetUrlParameter("redirectTo");
         successHandler.setDefaultTargetUrl(adminServer.path("/"));
+        successHandler.setAlwaysUseDefaultTargetUrl(true);
 
         http.authorizeRequests()
                 // 允许访问静态资源
