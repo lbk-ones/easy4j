@@ -28,6 +28,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.google.common.collect.Maps;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -46,6 +47,7 @@ import java.util.Map;
  */
 public class JacksonUtil {
 
+    @Getter
     private static final ObjectMapper mapper;
     private static final ObjectMapper mapper2;
 

@@ -10,7 +10,7 @@
     <artifactId>ej-sactuator</artifactId>
     <packaging>jar</packaging>
 
-    <name>ej-actuator</name>
+    <name>ej-sactuator</name>
     <url>http://maven.apache.org</url>
 
     <properties>

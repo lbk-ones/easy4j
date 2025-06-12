@@ -83,4 +83,28 @@ public class Config {
     public RedisEasy4jCache redisEasy4jCache(RedisTemplate<String, Object> redisTemplate) {
         return new RedisEasy4jCacheImpl("redis-easy4j-cache-impl", redisTemplate, Duration.ofMinutes(30L));
     }
+
+
+    /**
+     * redis 缓存配置 共用redisson连接池
+     *
+     * @author bokun.li
+     * @date 2025/6/12
+     */
+//    @Bean(name = "redissonCacheManager")
+//    @Primary
+//    public CacheManager redissonCacheManager(RedissonClient redissonClient) {
+//        Map<String, CacheConfig> cacheConfigMap = Maps.newHashMap();
+//        CacheConfig cacheConfig = new CacheConfig();
+//        cacheConfig.setTTL(Duration.ofMinutes(30).toMillis());
+//        // 缓存区域
+//        cacheConfigMap.put("easy4j", cacheConfig);
+//
+//        JsonJacksonCodec jsonJacksonCodec = new JsonJacksonCodec(JacksonUtil.getMapper(), true);
+//        RedissonSpringCacheManager redissonSpringCacheManager = new RedissonSpringCacheManager(redissonClient, cacheConfigMap, jsonJacksonCodec);
+//        // 事务提交完成之后放进去
+//        redissonSpringCacheManager.setTransactionAware(true);
+//        redissonSpringCacheManager.setAllowNullValues(false);
+//        return redissonSpringCacheManager;
+//    }
 }

@@ -16,6 +16,8 @@ package ej.spring.boot.starter.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
@@ -26,10 +28,8 @@ import easy4j.module.sentinel.annotation.FlowDegradeResource;
 import ej.spring.boot.starter.server.mapper.SysLogRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -82,5 +82,39 @@ public class TestController {
         List<SysLogRecord> sysLogRecords = sysLogRecordMapper.selectList(lambdaQueryWrapper);
         log.info("this a test hello~~");
         return EasyResult.ok(JacksonUtil.toJson(sysLogRecords));
+    }
+
+
+    @CachePut(cacheNames = SysConstant.PARAM_PREFIX, key = "#name")
+    @RequestMapping("/cache/{name}")
+    public EasyResult<List<SysLogRecord>> querySysLogRecord(@PathVariable(name = "name") String name) {
+        LambdaQueryWrapper<SysLogRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<SysLogRecord> list = getList(5);
+        int i = dbAccess.saveList(list, SysLogRecord.class);
+        return EasyResult.ok(list);
+    }
+
+    List<SysLogRecord> getList(int i) {
+        List<SysLogRecord> list = ListTs.newArrayList();
+        for (int j = 0; j < i; j++) {
+            String s = CommonKey.gennerString();
+            SysLogRecord sysLogRecord = new SysLogRecord();
+            sysLogRecord.setId(s);
+            sysLogRecord.setStatus("1");
+            sysLogRecord.setRemark("remark test" + j);
+            sysLogRecord.setTag("tag test" + j);
+            sysLogRecord.setParams("params test" + j);
+            sysLogRecord.setTagDesc("tagDesc test" + j);
+            sysLogRecord.setCreateDate(new Date());
+            sysLogRecord.setTraceId("traceId" + j);
+            sysLogRecord.setProcessTime(String.valueOf(j * 2));
+            sysLogRecord.setErrorInfo("error into test" + j);
+            sysLogRecord.setOperateCode("operate code " + j);
+            sysLogRecord.setOperateName("operate name" + j);
+            sysLogRecord.setTargetId("target id" + j);
+            sysLogRecord.setTargetId2("target id2" + j);
+            list.add(sysLogRecord);
+        }
+        return list;
     }
 }
