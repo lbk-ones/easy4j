@@ -28,6 +28,8 @@ import easy4j.module.sentinel.annotation.FlowDegradeResource;
 import ej.spring.boot.starter.server.mapper.SysLogRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +52,9 @@ public class TestController {
 
     @Autowired
     SysLogRecordMapper sysLogRecordMapper;
+
+    @Autowired
+    CacheManager cacheManager;
 
     @RequestMapping("hello")
     @RequestLog(tag = "test", tagDesc = "hello-test")
@@ -91,6 +96,9 @@ public class TestController {
         LambdaQueryWrapper<SysLogRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         List<SysLogRecord> list = getList(5);
         int i = dbAccess.saveList(list, SysLogRecord.class);
+
+        Cache ttt = cacheManager.getCache("ttt");
+        ttt.put("test", list.get(0));
         return EasyResult.ok(list);
     }
 
