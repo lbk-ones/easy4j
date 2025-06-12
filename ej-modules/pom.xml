@@ -38,6 +38,7 @@
         <module>ej-db-access</module>
         <module>ej-webmvc</module>
         <module>ej-knife4j</module>
+        <module>ej-sactuator</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>

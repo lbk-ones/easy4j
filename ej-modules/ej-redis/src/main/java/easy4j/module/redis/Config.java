@@ -15,14 +15,17 @@
 package easy4j.module.redis;
 
 import easy4j.infra.common.module.Module;
-import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.api.cache.RedisEasy4jCache;
+import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.time.Duration;
 
 /**
  * Config
@@ -67,5 +70,17 @@ public class Config {
     @Bean
     RedisStartRunner redisStartRunner() {
         return new RedisStartRunner();
+    }
+
+
+    /**
+     * redis缓存
+     *
+     * @author bokun.li
+     * @date 2025/6/12
+     */
+    @Bean("redisEasy4jCache")
+    public RedisEasy4jCache redisEasy4jCache(RedisTemplate<String, Object> redisTemplate) {
+        return new RedisEasy4jCacheImpl("redis-easy4j-cache-impl", redisTemplate, Duration.ofMinutes(30L));
     }
 }

@@ -14,6 +14,8 @@
  */
 package easy4j.module.sauth.session;
 
+import easy4j.infra.common.module.Module;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.module.sauth.domain.SecuritySession;
 
 /**
@@ -22,6 +24,7 @@ import easy4j.module.sauth.domain.SecuritySession;
  * @author bokun.li
  * @date 2025-05
  */
+@Module(SysConstant.EASY4J_REDIS_ENABLE)
 public class RedisSessionStrategy extends AbstractSessionStrategy {
 
     @Override

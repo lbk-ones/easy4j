@@ -17,20 +17,12 @@ package ej.spring.boot.starter.server;
 
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.module.sentinel.EnableFlowDegrade;
-import org.mybatis.spring.annotation.MapperScan;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.TimeUnit;
 
 @Easy4JStarter(
         serverPort = 9052,
-        serverName = "test-ej-service"
-//        enableH2 = true,
+        serverName = "test-ej-service",
+        enableH2 = true
 //        h2Url = "jdbc:h2:mem:test@easy4j:easy4j"
 )
 @EnableFlowDegrade
