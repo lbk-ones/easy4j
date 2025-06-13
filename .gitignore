@@ -1,6 +1,7 @@
 /**/**/target/
 /**/target/
-
+*.flattened-pom.xml
+.flattened-pom.xml
 ### STS ###
 .apt_generated
 .classpath

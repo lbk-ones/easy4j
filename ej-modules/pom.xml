@@ -83,6 +83,13 @@
         <spring-cloud-alibaba.version>2021.0.6.2</spring-cloud-alibaba.version>
     </properties>
 
+    <developers>
+        <developer>
+            <name>bokun.li</name>
+            <email>2100370548@qq.com</email>
+        </developer>
+    </developers>
+
     <dependencyManagement>
         <dependencies>
             <!-- Spring Boot -->
@@ -282,4 +289,35 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <!--版本替换-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
