@@ -36,7 +36,6 @@ import org.springframework.core.env.PropertySource;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -81,15 +80,17 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
             String nacosGroup = getGroup(dataId, ejSysProperties.getNacosGroup());
             String dataIds2 = getDataId(dataId);
             String nacosPropertiesResourceName = nacosGroup + "@" + dataIds2;
-            log.info(SysLog.compact("begin override nacos init remote config:" + nacosPropertiesResourceName));
+            System.out.println(SysLog.compact("begin override nacos init remote config：" + nacosPropertiesResourceName));
             MutablePropertySources propertySources = environment.getPropertySources();
             PropertySource<?> propertySource = propertySources.get(nacosPropertiesResourceName);
-            if (Objects.isNull(propertySource)) {
+            if (ObjectUtil.isEmpty(propertySource)) {
+                System.err.println(SysLog.compact("nacos configuration center failed to read the value. " + nacosPropertiesResourceName));
                 return;
             }
             Map<String, Object> mapPropertiesResource = Maps.newHashMap();
             allEjSysFieldInfoList.forEach(ejSysFieldInfo -> {
                 String sysConstantName = ejSysFieldInfo.getSysConstantName();
+                assert propertySource != null;
                 Object property = propertySource.getProperty(sysConstantName);
                 if (ObjectUtil.isNotEmpty(property)) {
                     mapPropertiesResource.put(sysConstantName, property);
@@ -101,7 +102,7 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
                 BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
                 bootStrapSpecialVsResolve.handler(mapPropertiesResource, null);
 
-                log.info(SysLog.compact("success override nacos config keys:" + mapPropertiesResource.keySet().size()));
+                System.out.println(SysLog.compact("success override nacos config keys:" + mapPropertiesResource.keySet().size()));
                 OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName(), mapPropertiesResource, true);
 
                 propertySources.addAfter(FIRST_ENV_NAME, originTrackedMapPropertySource);

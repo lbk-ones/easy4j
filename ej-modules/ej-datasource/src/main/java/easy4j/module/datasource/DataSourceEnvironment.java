@@ -67,7 +67,8 @@ public class DataSourceEnvironment extends AbstractEasy4jEnvironment {
 
         String dbType = getDbType();
         if ("other".equals(dbType)) {
-            System.err.println(SysLog.compact("未发现数据源！请配置(" + SysConstant.DB_URL_STR_NEW + ")，或者检查配置中心是否处于可访问状态，若不需要数据库，请在启动注解开启H2"));
+            // No data source was found! Please configure (easy4j.data-source-url), or check if the configuration center is accessible. If no database is required, please enable H2 in the startup annotation.
+            System.err.println(SysLog.compact("No data source was found! Please configure (" + SysConstant.DB_URL_STR_NEW + "), or check if the configuration center is accessible. If no database is required, please enable H2 in the startup annotation."));
             System.exit(1);
         }
         String driverClassName = SqlType.getDriverClassName(dbType);

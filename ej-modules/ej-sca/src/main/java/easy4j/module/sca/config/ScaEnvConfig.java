@@ -131,7 +131,10 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
             }
             properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT, dataids);
             List<String> list = ListTs.asList(dataids.split(StringPool.COLON));
-            properties.setProperty(SysConstant.EASY4J_NACOS_DATA_IDS, ListTs.get(list, list.size() - 1, ""));
+            String s = ListTs.get(list, list.size() - 1, "");
+            System.out.println(SysLog.compact("the data-ids identified are: " + s));
+
+            properties.setProperty(SysConstant.EASY4J_NACOS_DATA_IDS, s);
         }
 
         String nacosUrl = ejSys.getNacosUrl();
@@ -167,6 +170,7 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
         setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_GROUP), StrUtil.blankToDefault(discoveryGroup, nacosGroup));
         String discoveryNamespace = ejSys.getNacosDiscoveryNamespace();
         setPropertiesArr(properties, ejSys.getVs(SysConstant.EASY4J_SCA_NACOS_DISCOVERY_NAMESPACE), StrUtil.blankToDefault(discoveryNamespace, nacosNameSpace));
+        System.out.println(SysLog.compact("Nacos 2.2.0 uses gRPC to establish long connections by default. The initial connection may be slow. Please wait...."));
         return properties;
     }
 

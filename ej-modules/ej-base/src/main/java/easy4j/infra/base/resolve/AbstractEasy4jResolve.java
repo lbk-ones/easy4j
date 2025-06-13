@@ -19,6 +19,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
@@ -235,9 +236,12 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
 
     }
 
-    // 兼容获取dataIds
+    // 兼容获取dataIds 如果没有后缀加上后缀
     public String getNormalDataIds(EjSysProperties ejSysProperties) {
         String dataIds = ejSysProperties.getDataIds();
+        if (StrUtil.isBlank(dataIds)) {
+            throw new EasyException("not get data-ids from env!");
+        }
         String nacosConfigFileExtension = ejSysProperties.getNacosConfigFileExtension();
         if (!dataIds.endsWith(SP.DOT + nacosConfigFileExtension)) {
             dataIds += SP.DOT + nacosConfigFileExtension;
