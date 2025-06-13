@@ -234,4 +234,14 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         return url1;
 
     }
+
+    // 兼容获取dataIds
+    public String getNormalDataIds(EjSysProperties ejSysProperties) {
+        String dataIds = ejSysProperties.getDataIds();
+        String nacosConfigFileExtension = ejSysProperties.getNacosConfigFileExtension();
+        if (!dataIds.endsWith(SP.DOT + nacosConfigFileExtension)) {
+            dataIds += SP.DOT + nacosConfigFileExtension;
+        }
+        return dataIds;
+    }
 }

@@ -78,9 +78,6 @@ public class DDlHelper {
                 executeSqlScript(connection, encodedResource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
                         DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
         } finally {
             if (isCloseConnection) {
                 JdbcHelper.close(connection);

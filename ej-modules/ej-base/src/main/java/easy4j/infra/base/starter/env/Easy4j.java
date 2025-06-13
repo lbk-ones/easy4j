@@ -28,6 +28,8 @@ import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.Easy4JStarterTest;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
@@ -105,7 +107,19 @@ public class Easy4j implements ApplicationContextAware {
         return getProperty(name, String.class);
     }
 
+    public static <T> T getRequiredProperty(String name, Class<T> aclass) {
+        return getPropertyWith(name, aclass, true);
+    }
+
+    public static String getRequiredProperty(String name) {
+        return getPropertyWith(name, String.class, true);
+    }
+
     public static <T> T getProperty(String name, Class<T> aclass) {
+        return getPropertyWith(name, aclass, false);
+    }
+
+    private static <T> T getPropertyWith(String name, Class<T> aclass, boolean isRequired) {
         T property = Optional.ofNullable(environment)
                 .map(e -> e.getProperty(name, aclass))
                 .orElse(null);
@@ -113,13 +127,40 @@ public class Easy4j implements ApplicationContextAware {
             initExtProperties();
             property = aclass.cast(extProperties.getProperty(name));
         }
-        if (ObjectUtil.isEmpty(property) && name.startsWith(SysConstant.PARAM_PREFIX + StringPool.DOT)) {
-            Object orDefault = defaultMap.get(name);
-            if (null != orDefault) {
-                return Convert.convert(aclass, orDefault);
+        boolean isSys = name.startsWith(SysConstant.PARAM_PREFIX + StringPool.DOT);
+        String[] staticVs = null;
+        if (isSys) {
+            if (ObjectUtil.isEmpty(property)) {
+                staticVs = EjSysProperties.getStaticVs(name);
+                property = Optional.ofNullable(staticVs)
+                        .map(e -> getProperty(e[0], aclass))
+                        .orElse(null);
+            }
+            if (ObjectUtil.isEmpty(property)) {
+                Object orDefault = defaultMap.get(name);
+                if (null != orDefault) {
+                    return Convert.convert(aclass, orDefault);
+                }
             }
         }
+        if (isRequired && ObjectUtil.isEmpty(property)) {
+            errorInfo(name, staticVs);
+        }
         return property;
+    }
+
+    private static void errorInfo(String name, String[] staticVs) {
+        List<String> objects = ListTs.newArrayList();
+        objects.add(name);
+        if (staticVs != null) {
+            for (String staticV : staticVs) {
+                if (StrUtil.isNotBlank(staticV)) {
+                    objects.add(staticV);
+                }
+            }
+        }
+        String join = String.join("或", objects);
+        throw new EasyException("请设置参数：" + join);
     }
 
     /**

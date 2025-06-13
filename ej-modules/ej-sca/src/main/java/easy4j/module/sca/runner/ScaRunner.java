@@ -77,11 +77,12 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
     @Override
     public void run(String... args) throws Exception {
         EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-        String serverName = ejSysProperties.getServerName();
-        String dataIds = ejSysProperties.getDataIds();
+        // String serverName = ejSysProperties.getServerName();
+        String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getServerName);
+        String serverName = Easy4j.getRequiredProperty(ejSysPropertyName);
+        String dataIds = getNormalDataIds(ejSysProperties);
         if (StrUtil.hasBlank(serverName, dataIds)) {
             log.info(SysLog.compact("server name or data id is null so listener is not enable :" + serverName + dataIds));
-
             return;
         }
         String group = ejSysProperties.getNacosConfigGroup();
@@ -91,6 +92,8 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
         for (String dataId : dataIds.split(StringPool.COMMA)) {
             String dataId1 = getDataId(dataId);
             String group1 = getGroup(dataId, group);
+            String s = group1 + "@" + dataId1;
+            log.info(SysLog.compact("please check! config listen in " + s));
             configService.addListener(dataId1, group1, new Listener() {
                 @Override
                 public Executor getExecutor() {
@@ -99,7 +102,7 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
 
                 @Override
                 public void receiveConfigInfo(String configInfo) {
-                    log.info(SysLog.compact("receiveConfigInfo---->   " + configInfo));
+                    log.info(SysLog.compact(s + "----> receiveConfigInfo ---->   " + configInfo));
                     try {
                         ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
                         MutablePropertySources propertySources = environment.getPropertySources();

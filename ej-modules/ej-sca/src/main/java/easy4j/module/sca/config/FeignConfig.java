@@ -15,6 +15,7 @@
 package easy4j.module.sca.config;
 
 import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.module.sca.annotations.EnableSca;
 import easy4j.module.sca.handler.CustomSentinelExceptionHandler;
 import easy4j.module.sca.interceptor.DefaultRequestOriginParser;
 import easy4j.module.sca.interceptor.Easy4jRequestInterceptor;
@@ -25,7 +26,6 @@ import feign.RequestInterceptor;
 import feign.codec.Encoder;
 import feign.form.spring.SpringFormEncoder;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -49,6 +49,7 @@ import javax.annotation.Resource;
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @Slf4j
 @Configuration
+@EnableSca
 public class FeignConfig {
     @Resource
     EjSysProperties ejSysProperties;

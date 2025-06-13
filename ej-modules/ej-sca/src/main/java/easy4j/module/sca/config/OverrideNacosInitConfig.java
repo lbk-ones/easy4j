@@ -34,7 +34,10 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 /**
  * 晚于
@@ -73,7 +76,7 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
         List<EjSysFieldInfo> allEjSysFieldInfoList = EjSysFieldInfo.getAllEjSysInfoList();
         EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-        String dataIds = ejSysProperties.getDataIds();
+        String dataIds = getNormalDataIds(ejSysProperties);
         for (String dataId : ListTs.asList(dataIds.split(StringPool.COMMA))) {
             String nacosGroup = getGroup(dataId, ejSysProperties.getNacosGroup());
             String dataIds2 = getDataId(dataId);
@@ -101,7 +104,7 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
                 log.info(SysLog.compact("success override nacos config keys:" + mapPropertiesResource.keySet().size()));
                 OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName(), mapPropertiesResource, true);
 
-                propertySources.addBefore(nacosPropertiesResourceName, originTrackedMapPropertySource);
+                propertySources.addAfter(FIRST_ENV_NAME, originTrackedMapPropertySource);
             }
         }
 
