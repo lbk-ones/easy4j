@@ -92,11 +92,6 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         String name = getName();
-        // avoid repeat load This is necessary
-        AtomicBoolean atomicBoolean = Easy4j.isInitPreLoadApplication.getOrDefault(name, new AtomicBoolean(false));
-        if (atomicBoolean.get()) {
-            return;
-        }
         initEnv(environment, application);
         MutablePropertySources propertySources = environment.getPropertySources();
         Properties properties = getProperties();
@@ -123,10 +118,6 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         }
 
         handlerEnvironMent(environment, application);
-
-        if (atomicBoolean.compareAndSet(false, true)) {
-            Easy4j.isInitPreLoadApplication.put(name, atomicBoolean);
-        }
     }
 
     public Properties handlerDefaultAnnotationValues() {
