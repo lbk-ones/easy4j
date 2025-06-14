@@ -3,14 +3,19 @@ package easy4j.infra.webmvc;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.webmvc.filter.RequestWrapperFilter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.web.servlet.LocaleResolver;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
+@AutoConfigureBefore(value = {WebMvcAutoConfiguration.class})
 public class Config {
 
     @Bean
@@ -79,6 +84,19 @@ public class Config {
     @Bean
     public WebMvcFilterConfig webMvcFilterConfig() {
         return new WebMvcFilterConfig();
+    }
+
+    @Bean
+    public GlobalExceptionHandler globalExceptionHandler() {
+        return new GlobalExceptionHandler();
+    }
+
+    /**
+     * 默认解析器 其中locale表示默认语言
+     */
+    @Bean("localeResolver")
+    public LocaleResolver localeResolver() {
+        return new EasyLocaleResolver();
     }
 
 

@@ -59,10 +59,16 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
     @Override
     public Properties getProperties() {
         ClassLoader classLoader = this.getClass().getClassLoader();
+        lbk:
         try {
             classLoader.loadClass("easy4j.module.boot.sca.Enable");
         } catch (ClassNotFoundException e) {
-            System.out.println(SysLog.compact("未引用sca-starter模块sca配置不生效!"));
+            try {
+                classLoader.loadClass("easy4j.boot.gateway.Enable");
+                break lbk;
+            } catch (ClassNotFoundException ignored) {
+            }
+            System.out.println(SysLog.compact("未引用sca-starter或者sca-gateway模块sca配置不生效!"));
             return null;
         }
         Properties properties = new Properties();
@@ -92,9 +98,10 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
                     configImport = "optional:" + configImport;
                 }
                 String fDataId = "";
+                String suffix = StrUtil.endWith(dataId, StringPool.DOT + nacosConfigFileExtension) ? "" : StringPool.DOT + nacosConfigFileExtension;
                 if (StrUtil.isNotBlank(env)) {
                     // 无组要加后缀
-                    String s = dataId + StringPool.DASH + env + StringPool.DOT + nacosConfigFileExtension;
+                    String s = dataId + StringPool.DASH + env + suffix;
                     // 有组则原样返回
                     if (StrUtil.isNotBlank(group)) {
                         s = e;
@@ -104,7 +111,7 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
                     configImport += s;
                 } else {
                     if (StrUtil.isBlank(group)) {
-                        String s = dataId + StringPool.DOT + nacosConfigFileExtension;
+                        String s = dataId + suffix;
                         fDataId = s;
                         dataids.add(s);
                         configImport += s;
@@ -129,7 +136,7 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
             } else {
                 dataids += serverName + StringPool.DOT + nacosConfigFileExtension;
             }
-            properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT, dataids);
+            properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT + "[0]", dataids);
             List<String> list = ListTs.asList(dataids.split(StringPool.COLON));
             String s = ListTs.get(list, list.size() - 1, "");
             System.out.println(SysLog.compact("the data-ids identified are: " + s));

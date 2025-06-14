@@ -40,6 +40,7 @@
         <module>ej-knife4j</module>
         <module>ej-sactuator</module>
         <module>ej-scache</module>
+        <module>ej-sca-gateway</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
@@ -130,9 +131,11 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!--不真正引入 引入可能会和 reactive web 冲突-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

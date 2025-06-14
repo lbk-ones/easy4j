@@ -4,13 +4,13 @@
     <parent>
         <groupId>easy4j.infra</groupId>
         <artifactId>ej-modules</artifactId>
-        <version>${revision}</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ej-webmvc</artifactId>
+    <artifactId>ej-sca-gateway</artifactId>
     <packaging>jar</packaging>
 
-    <name>ej-webmvc</name>
+    <name>ej-sca-gateway</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -18,16 +18,29 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>easy4j.infra</groupId>
-            <artifactId>ej-base</artifactId>
+            <artifactId>ej-sca</artifactId>
             <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>easy4j.infra</groupId>
+                    <artifactId>ej-webmvc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
         
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-spring-cloud-gateway-adapter</artifactId>
         </dependency>
+
 
     </dependencies>
 

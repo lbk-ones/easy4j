@@ -15,7 +15,6 @@
 package easy4j.infra.base.starter;
 
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.exception.GlobalExceptionHandler;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
@@ -32,8 +31,7 @@ public class EasyStarterImport implements InitializingBean, ImportSelector {
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
         return new String[]{
                 ApplicationRuner.class.getName(),
-                Easy4j.class.getName(),
-                GlobalExceptionHandler.class.getName()
+                Easy4j.class.getName()
         };
     }
 

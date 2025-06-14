@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.common.i18n;
+package easy4j.infra.webmvc;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.SysLog;

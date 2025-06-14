@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -95,12 +96,14 @@ public class FeignConfig {
 
     // 全局Sentinel自定义信息处理
     @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public CustomSentinelExceptionHandler customSentinelExceptionHandler() {
         return new CustomSentinelExceptionHandler();
     }
 
 
     @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public DefaultRequestOriginParser defaultRequestOriginParser() {
         return new DefaultRequestOriginParser();
     }

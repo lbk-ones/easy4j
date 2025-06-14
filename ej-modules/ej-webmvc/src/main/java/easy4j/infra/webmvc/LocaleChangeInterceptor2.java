@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package easy4j.infra.common.i18n;
+package easy4j.infra.webmvc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
