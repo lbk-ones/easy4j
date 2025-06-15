@@ -20,6 +20,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -42,6 +43,7 @@ public class CheckUtils {
      * @param <T>
      * @see io.swagger.v3.oas.annotations.media.Schema
      */
+    @SafeVarargs
     public static <T> void checkByLambda(Object t, Func1<T, ?>... message) {
         Set<String> resultList = new HashSet<>();
         Class<?> aClass = t.getClass();
@@ -60,7 +62,7 @@ public class CheckUtils {
                 }
             }
         }
-        if (resultList.isEmpty()) {
+        if (!resultList.isEmpty()) {
             String join = String.join("，", resultList);
             throw new EasyException("A00004," + join);
         }
@@ -230,5 +232,41 @@ public class CheckUtils {
         }
     }
 
+    /**
+     * 检查是否为true 如果是true那么则抛出异常
+     *
+     * @author bokun.li
+     * @date 2025-06-15
+     */
+    public static void checkTrue(boolean flag, String msgCode, String... args) {
+        if (flag && StrUtil.isNotBlank(msgCode)) {
+            throw EasyException.wrap(msgCode, args);
+        }
+    }
+
+    /**
+     * 检查一个对象是否为空，为空则抛出异常
+     *
+     * @author bokun.li
+     * @date 2025-06-15
+     */
+    public static void checkObjIsNull(Object obj, String msgCode, String... args) {
+        if (ObjectUtil.isEmpty(obj) && StrUtil.isNotBlank(msgCode)) {
+            throw EasyException.wrap(msgCode, args);
+        }
+    }
+
+    /**
+     * 检查是否为空 如果是空那么则抛出异常
+     *
+     * @author bokun.li
+     * @date 2025-06-15
+     */
+    public static void checkNotNull(Object obj, String name) {
+        if (ObjectUtil.isEmpty(obj)) {
+            throw EasyException.wrap(BusCode.A00004, name);
+        }
+
+    }
 
 }

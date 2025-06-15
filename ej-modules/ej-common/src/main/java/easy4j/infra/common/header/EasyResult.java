@@ -15,6 +15,7 @@
 package easy4j.infra.common.header;
 
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.i18n.I18nUtils;
 import easy4j.infra.common.utils.BusCode;
@@ -211,6 +212,10 @@ public class EasyResult<T> implements Serializable {
                     if (StrUtil.isNotEmpty(argStr)) {
                         List<String> list = ListTs.asList(argStr.split(StringPool.COMMA));
                         msg = I18nUtils.getMessage(msgKey, local, list.toArray(new String[]{}));
+                    } else {
+                        // fix like this A00003,
+                        String msg2 = StrUtil.replaceLast(message1, ",", "");
+                        msg = I18nUtils.getMessage(msg2, local);
                     }
                 } else {
                     msg = I18nUtils.getMessage(msgKey);
@@ -275,5 +280,18 @@ public class EasyResult<T> implements Serializable {
     @Override
     public String toString() {
         return JacksonUtil.toJson(this);
+    }
+
+    /**
+     * 兼容获取消息和错误
+     *
+     * @author bokun.li
+     * @date 2025-06-15
+     */
+    @JsonIgnore
+    public String getMsgAndError() {
+        String message1 = StrUtil.blankToDefault(this.getMessage(), "");
+        String error1 = StrUtil.blankToDefault(this.getErrorInfo(), "");
+        return StrUtil.blankToDefault(message1, "") + (StrUtil.isNotBlank(error1) ? ":" + error1 : "");
     }
 }

@@ -258,21 +258,21 @@ public class JacksonUtil {
     }
 
 
-    public static void main(String[] args) {
-        Map<String, Object> paramMap = Maps.newHashMap();
-        paramMap.put("test1", "2323");
-        paramMap.put("test3", new Date());
-        paramMap.put("test4", LocalDate.now());
-        paramMap.put("test5", LocalDateTime.now());
-        paramMap.put("test6", new BigDecimal("2323.161662345236513453245"));
-        paramMap.put("test7", null);
-        paramMap.put("test8", true);
-        paramMap.put("test9", 123.9);
-        String json = toJson(paramMap);
-        System.out.println(json);
-
-
-    }
+//    public static void main(String[] args) {
+//        Map<String, Object> paramMap = Maps.newHashMap();
+//        paramMap.put("test1", "2323");
+//        paramMap.put("test3", new Date());
+//        paramMap.put("test4", LocalDate.now());
+//        paramMap.put("test5", LocalDateTime.now());
+//        paramMap.put("test6", new BigDecimal("2323.161662345236513453245"));
+//        paramMap.put("test7", null);
+//        paramMap.put("test8", true);
+//        paramMap.put("test9", 123.9);
+//        String json = toJson(paramMap);
+//        System.out.println(json);
+//
+//
+//    }
 
     public static String writeValueAsString(Object obj) throws JsonProcessingException {
         return mapper.writeValueAsString(obj);

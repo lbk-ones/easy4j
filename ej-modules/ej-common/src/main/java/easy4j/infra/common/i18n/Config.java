@@ -16,6 +16,7 @@ package easy4j.infra.common.i18n;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +36,7 @@ import java.util.Locale;
  * @date 2023/11/23
  */
 @Configuration
-@AutoConfigureBefore(value = {WebMvcAutoConfiguration.class})
+@AutoConfigureBefore(value = {MessageSourceAutoConfiguration.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class Config {
 
