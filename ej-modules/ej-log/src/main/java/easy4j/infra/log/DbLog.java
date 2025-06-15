@@ -26,6 +26,7 @@ import easy4j.infra.common.utils.EStopWatch;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.Easy4jContextFactory;
+import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.context.api.seed.DefaultEasy4jSeed;
 import easy4j.infra.context.api.seed.Easy4jSeed;
@@ -54,7 +55,7 @@ import java.util.function.Function;
  * @author bokun.li
  */
 @Slf4j
-public class DbLog {
+public class DbLog implements Easy4jDbLog {
 
     public final static Map<String, EStopWatch> stopWatch = new HashMap<>();
 
@@ -211,10 +212,29 @@ public class DbLog {
     }
 
     // -----------------------------------------------------------------------------
+    @Override
+    public void beginLogCtx(String tag, String tagDesc, String content) {
+        beginLog(tag, tagDesc, content);
+    }
 
+    @Override
+    public void endLogCtx(Throwable throwable) {
+        endLog(throwable);
+    }
+
+    @Override
+    public void endLogCtx() {
+        endLog();
+    }
+
+    @Override
+    public void setException(Throwable throwable) {
+        set(e -> {
+            e.setThrowable(throwable);
+        });
+    }
 
     public static void beginLog(String tag, String tagDesc, String content) {
-
         beginLogWith(tag, tagDesc, content);
 
     }
@@ -275,6 +295,10 @@ public class DbLog {
             }
             logRecord.setId(s);
             String _status = StrUtil.blankToDefault(status, "1");
+            // fix: compatibility global exception
+            if (null == throwable) {
+                throwable = logRecord.getThrowable();
+            }
             if (Objects.nonNull(throwable)) {
                 _status = "0";
                 logRecord.setStatus(_status);

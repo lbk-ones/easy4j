@@ -14,10 +14,15 @@
  */
 package easy4j.infra.webmvc;
 
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.i18n.I18nUtils;
+import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -39,6 +44,9 @@ import javax.servlet.http.HttpServletRequest;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class GlobalExceptionHandler {
 
+    @Autowired
+    Easy4jContext easy4jContext;
+
 
     @ExceptionHandler(value = EasyException.class)
     @ResponseBody
@@ -54,6 +62,14 @@ public class GlobalExceptionHandler {
         if (e instanceof EasyException) {
             return EasyResult.rpcErrorInfo(e);
         } else {
+            // fix: unexpected exception cannot be recorded to db
+            try {
+                Easy4jDbLog easy4jDbLog = easy4jContext.get(Easy4jDbLog.class);
+                easy4jDbLog.setException(e);
+            } catch (Exception e2) {
+                Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
+                e.printStackTrace();
+            }
             return EasyResult.errorInfo(e);
         }
     }

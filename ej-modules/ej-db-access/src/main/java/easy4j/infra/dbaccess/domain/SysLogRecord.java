@@ -14,7 +14,9 @@
  */
 package easy4j.infra.dbaccess.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -64,6 +66,10 @@ public class SysLogRecord implements Serializable {
     // 错误信息
     private String errorInfo;
 
+    @JdbcIgnore
+    @JsonIgnore
+    private Throwable throwable;
+
 
     // 操作对象ID(当前操作的对象标识id)
     private String targetId;
@@ -93,6 +99,7 @@ public class SysLogRecord implements Serializable {
         sysLogRecord.setTargetId2(this.getTargetId2());
         sysLogRecord.setOperateCode(this.getOperateCode());
         sysLogRecord.setOperateName(this.getOperateName());
+        sysLogRecord.setThrowable(this.getThrowable());
         return sysLogRecord;
     }
 }
