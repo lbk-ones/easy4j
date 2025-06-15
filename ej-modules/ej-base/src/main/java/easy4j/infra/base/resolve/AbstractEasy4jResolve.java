@@ -243,9 +243,25 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
             throw new EasyException("not get data-ids from env!");
         }
         String nacosConfigFileExtension = ejSysProperties.getNacosConfigFileExtension();
-        if (!dataIds.endsWith(SP.DOT + nacosConfigFileExtension)) {
-            dataIds += SP.DOT + nacosConfigFileExtension;
+        List<String> objects = ListTs.newArrayList();
+        for (String normalDataId : ListTs.asList(dataIds.split(SP.COMMA))) {
+            String dataId = getDataId(normalDataId);
+            String group = getGroup(normalDataId, null);
+            String _nacosConfigFileExtension = StrUtil.blankToDefault(StrUtil.subSuf(dataId, dataId.lastIndexOf(SP.DOT) + 1), nacosConfigFileExtension);
+            if (!dataId.endsWith(SP.DOT + _nacosConfigFileExtension)) {
+                String dataIds2 = dataId + SP.DOT + _nacosConfigFileExtension;
+                if (StrUtil.isNotBlank(group)) {
+                    dataIds2 += "?group=" + group;
+                }
+                objects.add(dataIds2);
+            } else {
+                if (StrUtil.isNotBlank(group)) {
+                    dataId += "?group=" + group;
+                }
+                objects.add(dataId);
+            }
         }
-        return dataIds;
+
+        return String.join(SP.COMMA, objects);
     }
 }

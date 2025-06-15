@@ -79,19 +79,19 @@ public class BusCode {
     @Desc("服务暂时不可用，已触发熔断")
     public static final String A00023 = "A00023";
 
-    @Desc("系统降级")
+    @Desc("服务暂时不可用，已被降级")
     public static final String A00024 = "A00024";
 
-    @Desc("热点参数限流")
+    @Desc("热点参数请求过于频繁")
     public static final String A00025 = "A00025";
 
-    @Desc("系统规则限流或降级")
+    @Desc("系统负载过高，暂时无法处理请求")
     public static final String A00026 = "A00026";
 
-    @Desc("授权规则不通过")
+    @Desc("没有访问权限")
     public static final String A00027 = "A00027";
 
-    @Desc("未知限流降级")
+    @Desc("请求被拒绝")
     public static final String A00028 = "A00028";
 
     @Desc("缺少请求头{0}")

@@ -22,6 +22,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.base.starter.env.Easy4jEnvironmentFirst;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
@@ -91,14 +92,16 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
             List<String> dataids = ListTs.newArrayList();
             for (int i = 0; i < list1.size(); i++) {
                 String e = list1.get(i);
+
                 String dataId = getDataId(e);
+                String _nacosConfigFileExtension = StrUtil.blankToDefault(StrUtil.subSuf(dataId, dataId.lastIndexOf(SP.DOT) + 1), nacosConfigFileExtension);
                 String group = getGroup(e, null);
                 String configImport = "nacos:";
                 if (!nacosConfigStrict) {
                     configImport = "optional:" + configImport;
                 }
                 String fDataId = "";
-                String suffix = StrUtil.endWith(dataId, StringPool.DOT + nacosConfigFileExtension) ? "" : StringPool.DOT + nacosConfigFileExtension;
+                String suffix = StrUtil.endWith(dataId, StringPool.DOT + _nacosConfigFileExtension) ? "" : StringPool.DOT + _nacosConfigFileExtension;
                 if (StrUtil.isNotBlank(env)) {
                     // 无组要加后缀
                     String s = dataId + StringPool.DASH + env + suffix;
@@ -180,7 +183,6 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
         System.out.println(SysLog.compact("Nacos 2.2.0 uses gRPC to establish long connections by default. The initial connection may be slow. Please wait...."));
         return properties;
     }
-
 
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {

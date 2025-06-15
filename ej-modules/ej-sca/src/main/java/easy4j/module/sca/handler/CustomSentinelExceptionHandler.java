@@ -61,7 +61,7 @@ public class CustomSentinelExceptionHandler implements BlockExceptionHandler {
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-Type", "application/json;charset=utf-8");
         response.setContentType("application/json;charset=utf-8");
-        EasyResult<Object> result = EasyResult.parseFromI18n(500, msg);
+        EasyResult<Object> result = EasyResult.parseFromI18n(1, msg);
         response.getWriter().write(result.toString());
     }
 

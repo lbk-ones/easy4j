@@ -433,6 +433,12 @@ public class EjSysProperties {
     @SpringVs(desc = "是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效")
     private boolean flywayEnable = false;
 
+    /**
+     * 是否启用flyway
+     */
+    @SpringVs(desc = "spring-cloud-gateway 流控规则")
+    private int scaGatewayFlowQps = 400;
+
 
     /**
      * 根据常量获取 对应的springboot变量
