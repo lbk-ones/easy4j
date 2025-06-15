@@ -1,0 +1,22 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order
+          uri: lb://template-order
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=2
+        - id: account
+          uri: lb://template-account
+          predicates:
+            - Path=/api/account/**
+          filters:
+            - StripPrefix=2
+        - id: storage
+          uri: lb://template-storage
+          predicates:
+            - Path=/api/storage/**
+          filters:
+            - StripPrefix=2

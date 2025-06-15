@@ -12,8 +12,7 @@
 - **easy4j.server-name**: 服务名称 等同于 spring.application.name
 - **easy4j.server-desc**: 服务描述
 - **easy4j.data-source-url**: 数据源简写，例如：“jdbc:postgresql://localhost:5432/postgres@root:123456”
-- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID
-  分布式系统则不会主键重复”
+- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID 分布式系统则不会主键重复”
 - **easy4j.cors-reject-enable**: 是否开启全局允许跨域 默认true 但是可以关闭
 - **easy4j.h2-enable**: 是否启用h2数据库
 - **easy4j.h2-url**: h2 数据库地址
@@ -57,3 +56,4 @@
 - **easy4j.redis-min-ide-size**: redis最小空闲连接数 默认30
 - **easy4j.redis-connection-pool-size**: redis连接池最大连接数量 默认500
 - **easy4j.flyway-enable**: 是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效
+- **easy4j.sca-gateway-flow-qps**: spring-cloud-gateway 流控规则

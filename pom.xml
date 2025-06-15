@@ -10,6 +10,7 @@
         <module>ej-modules</module>
         <module>ej-starter</module>
         <module>ej-test</module>
+        <module>ej-texample</module>
     </modules>
     <name>easy4j</name>
     <url>http://maven.apache.org</url>
