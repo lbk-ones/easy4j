@@ -92,7 +92,7 @@ public class DBAccessFactory {
                     continue;
                 }
                 String s1 = s;
-                Connection connection;
+                Connection connection = null;
                 try {
                     connection = jdbcDbAccess.getConnection();
                     String databaseType = JdbcHelper.getDatabaseType(connection);
@@ -104,7 +104,7 @@ public class DBAccessFactory {
                 } catch (Exception e) {
                     log.info(SysLog.compact("the " + s1 + ".sql db has been initialized"));
                 } finally {
-//                    JdbcHelper.close(connection);
+                    JdbcHelper.close(connection);
                     INIT_DB_FILE_TYPE.add(s);
                 }
             }

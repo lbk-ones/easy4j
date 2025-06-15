@@ -40,7 +40,10 @@ public class FlywayEnviroment extends AbstractEasy4jEnvironment {
     @Override
     public Properties getProperties() {
         Properties properties = new Properties();
-        properties.setProperty("spring.flyway.locations", "classpath:db/migration");
+
+        String dbType1 = getDbType();
+
+        properties.setProperty("spring.flyway.locations", "classpath:db/" + dbType1 + "/migration");
 
         properties.setProperty("spring.flyway.schemas", "public");
         properties.setProperty("spring.flyway.table", "sys_flyway_schema_history");
