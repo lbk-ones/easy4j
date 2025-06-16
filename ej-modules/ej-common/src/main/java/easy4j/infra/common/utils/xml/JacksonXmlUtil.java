@@ -14,10 +14,13 @@
  */
 package easy4j.infra.common.utils.xml;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -27,17 +30,24 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import easy4j.infra.common.annotations.Desc;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Jackson XML处理工具类，支持驼峰转下划线、全部大写、保留空值
  */
+@Slf4j
 public class JacksonXmlUtil {
 
     public static ObjectMapper xmlMapper;
@@ -107,5 +117,59 @@ public class JacksonXmlUtil {
         }
     }
 
+
+    public static void checkXml(Object object) {
+        if (null != object && !object.getClass().getName().equals("java.lang.Object")) {
+            try {
+                Field[] fields = ReflectUtil.getFields(object.getClass());
+                for (Field field : fields) {
+                    if (
+                            !Modifier.isStatic(field.getModifiers()) &&
+                                    !Modifier.isFinal(field.getModifiers()) &&
+                                    !Modifier.isTransient(field.getModifiers())
+                    ) {
+                        Object fieldValue = ReflectUtil.getFieldValue(object, field);
+                        if (Objects.nonNull(fieldValue)) {
+                            if (fieldValue instanceof String) {
+                                String var1 = (String) fieldValue;
+                                if (StrUtil.isNotBlank(var1)) {
+                                    String regex = "<!\\[CDATA\\[[\\s\\S]*?]]>";
+                                    boolean matches = Pattern.matches(regex, var1);
+                                    if (!matches) {
+                                        String regex2 = "['\"&<>]";
+                                        Pattern compile = Pattern.compile(regex2);
+                                        Matcher matcher = compile.matcher(var1);
+                                        if (matcher.find()) {
+                                            String s = "<![CDATA[" + var1 + "]]>";
+                                            ReflectUtil.setFieldValue(object, field, s);
+                                        }
+                                    }
+                                }
+                            } else if (fieldValue instanceof Iterable) {
+                                Iterable<?> fieldValue1 = (Iterable<?>) fieldValue;
+                                if (CollUtil.isNotEmpty(fieldValue1)) {
+                                    for (Object o : fieldValue1) {
+                                        checkXml(o);
+                                    }
+                                }
+                            } else if (fieldValue instanceof Map) {
+                                Map<?, ?> fieldValue1 = (Map<?, ?>) fieldValue;
+                                if (CollUtil.isNotEmpty(fieldValue1)) {
+                                    for (Object value : fieldValue1.values()) {
+                                        checkXml(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error("xml检查出现异常--->" + e.getMessage());
+            }
+
+        }
+
+    }
 
 }
