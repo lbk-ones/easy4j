@@ -100,5 +100,23 @@ public class SecurityUser {
      */
     private Date updateDate;
 
+    public SecurityUserInfo toSecurityUserInfo() {
+        SecurityUserInfo user = new SecurityUserInfo();
+        user.setUserId(this.getUserId());
+        user.setUsername(this.getUsername());
+        user.setPassword(this.getPassword());
+        user.setUsernameCn(this.getUsernameCn());
+        user.setUsernameEn(this.getUsernameEn());
+        user.setNickName(this.getNickName());
+        user.setPwdSalt(this.getPwdSalt());
+        user.setAccountNonExpired(true);
+        user.setAccountNonLocked(true);
+        user.setCredentialsNonExpired(true);
+        user.setEnabled(true);
+        user.setCreateDate(this.getCreateDate());
+        user.setUpdateDate(this.getUpdateDate());
+        return user;
+    }
+
 
 }

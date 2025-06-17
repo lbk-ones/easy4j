@@ -331,11 +331,6 @@ public class EjSysProperties {
     @SpringVs(desc = "需要加强校验的接口清单")
     private String signUrls = "";
 
-    /**
-     * 简单权限认证
-     */
-    @SpringVs(desc = "简单权限认证 默认没开启 true为开启")
-    private boolean simpleAuthEnable = false;
 
     /**
      * 会话过期时间
@@ -356,10 +351,35 @@ public class EjSysProperties {
     private boolean printRequestLog = false;
 
     /**
+     * 简单权限认证
+     */
+    @SpringVs(desc = "简单权限认证 默认没开启 true为开启")
+    private boolean simpleAuthEnable = false;
+
+    /**
      * 权限session存储类型：db代表数据库，redis代表redis
      */
     @SpringVs(desc = "权限session存储类型：db代表数据库，redis代表redis")
-    private String authSessionStorageType = "db";
+    private String simpleAuthSessionStorageType = "db";
+
+
+    /**
+     * 简单权限认证的用户名
+     */
+    @SpringVs(desc = "简单权限认证的用户名")
+    private String simpleAuthUsername;
+
+    /**
+     * 简单权限认证的用户名中文
+     */
+    @SpringVs(desc = "简单权限认证的用户名中文")
+    private String simpleAuthUsernameCn;
+
+    /**
+     * 简单权限认证的密码
+     */
+    @SpringVs(desc = "简单权限认证的密码")
+    private String simpleAuthPassword;
 
     /**
      * 是否启用RequestLog注解进行请求日志收集 true代表开启

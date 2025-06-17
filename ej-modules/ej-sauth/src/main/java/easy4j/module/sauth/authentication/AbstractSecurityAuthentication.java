@@ -63,7 +63,7 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         }
         HttpServletRequest servletRequest = getServletRequest();
         String method = servletRequest.getMethod();
-        if ("POST".equalsIgnoreCase(method)) {
+        if (!"post".equalsIgnoreCase(method)) {
             user.setErrorCode(BusCode.A00030);
             return user;
         }
@@ -83,9 +83,20 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
             user.setErrorCode(BusCode.A00037);
             return user;
         }
+        SessionStrategy sessionStrategy = getSessionStrategy();
+        SecuritySession sessionByUserName = sessionStrategy.getSessionByUserName(username);
+        if (null != sessionByUserName) {
+            if (sessionByUserName.isValid()) {
+                user.setErrorCode(BusCode.A00044);
+                return user;
+            } else {
+                String shaToken = sessionByUserName.getShaToken();
+                sessionStrategy.deleteSession(shaToken);
+            }
+        }
         // 跳过密码直接认证成功
         if (!isSkip) {
-            String encryptPwd = getEncryptionService().encrypt(password, user);
+            String encryptPwd = getEncryptionService().encrypt(password, userByUserName);
             if (StrUtil.equals(encryptPwd, userByUserName.getPassword())) {
                 return userByUserName;
             } else {

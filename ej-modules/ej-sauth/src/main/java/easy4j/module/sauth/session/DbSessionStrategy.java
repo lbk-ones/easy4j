@@ -45,9 +45,6 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public SecuritySession getSession(String token) {
-
-        SecuritySession securitySession = new SecuritySession();
-        securitySession.setShaToken(token);
         Dict dict = Dict.create()
                 .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
         return dbAccess.selectOneByMap(dict, SecuritySession.class);
@@ -71,6 +68,8 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public SecuritySession getSessionByUserName(String userName) {
-        return super.getSessionByUserName(userName);
+        Dict dict = Dict.create()
+                .set(LambdaUtil.getFieldName(SecuritySession::getUserName), userName);
+        return dbAccess.selectOneByMap(dict, SecuritySession.class);
     }
 }

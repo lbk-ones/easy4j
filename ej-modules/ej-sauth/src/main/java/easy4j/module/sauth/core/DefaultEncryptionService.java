@@ -14,6 +14,10 @@
  */
 package easy4j.module.sauth.core;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 
 /**
@@ -26,7 +30,13 @@ import easy4j.module.sauth.domain.SecurityUserInfo;
 public class DefaultEncryptionService implements EncryptionService {
     @Override
     public String encrypt(String str, SecurityUserInfo securityUser) {
-        return str;
+        String shalt = securityUser.getPwdSalt();
+
+        if (StrUtil.isBlank(shalt)) {
+            throw new EasyException(BusCode.A00043);
+        }
+
+        return DigestUtil.sha1Hex(str + shalt);
     }
 
     @Override

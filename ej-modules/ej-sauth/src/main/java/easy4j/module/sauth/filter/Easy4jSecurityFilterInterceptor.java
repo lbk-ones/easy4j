@@ -15,6 +15,8 @@
 package easy4j.module.sauth.filter;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
@@ -22,9 +24,7 @@ import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
-import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecurityUserInfo;
-import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,25 +36,38 @@ import java.lang.reflect.Method;
  */
 public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler {
 
-    SessionStrategy sessionStrategy;
-
-
-    SecurityContext securityContext;
-
     SecurityAuthorization authorizationStrategy;
 
 
     SecurityAuthentication securityAuthentication;
 
-    public Easy4jSecurityFilterInterceptor(SessionStrategy sessionStrategy, SecurityContext securityContext, SecurityAuthorization authorizationStrategy, SecurityAuthentication securityAuthentication) {
-        this.sessionStrategy = sessionStrategy;
-        this.securityContext = securityContext;
-        this.authorizationStrategy = authorizationStrategy;
-        this.securityAuthentication = securityAuthentication;
+    public SecurityAuthorization getAuthorizationStrategy() {
+        if (authorizationStrategy == null) {
+            authorizationStrategy = SpringUtil.getBean(SecurityAuthorization.class);
+        }
+        return authorizationStrategy;
     }
+
+    public SecurityAuthentication getSecurityAuthentication() {
+        if (securityAuthentication == null) {
+            securityAuthentication = SpringUtil.getBean(SecurityAuthentication.class);
+        }
+        return securityAuthentication;
+    }
+
+    public Easy4jSecurityFilterInterceptor() {
+    }
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
+        boolean property1 = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
+        if (!property1) {
+            return true;
+        }
+
+        SecurityAuthorization authorizationStrategy1 = getAuthorizationStrategy();
+        SecurityAuthentication securityAuthentication1 = getSecurityAuthentication();
         Method method = handler.getMethod();
         // 开放api授权
         if (method.isAnnotationPresent(OpenApi.class)) {
@@ -64,14 +77,16 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         } else {
             // take session
             String token = request.getHeader(SysConstant.X_ACCESS_TOKEN);
-
-            boolean b1 = authorizationStrategy.needTakeToken(handler, request, response);
+            if (!authorizationStrategy1.isNeedLogin(handler, request, response)) {
+                return true;
+            }
+            boolean b1 = authorizationStrategy1.needTakeToken(handler, request, response);
             SecurityUserInfo securityUserInfo = null;
             if (b1) {
                 if (StrUtil.isBlank(token)) {
                     throw EasyException.wrap(BusCode.A00029, SysConstant.X_ACCESS_TOKEN);
                 }
-                securityUserInfo = securityAuthentication.tokenAuthentication(token);
+                securityUserInfo = securityAuthentication1.tokenAuthentication(token);
                 if (
                         StrUtil.isNotBlank(securityUserInfo.getErrorCode())
                 ) {
@@ -81,7 +96,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 // 先不做这种功能
                 throw EasyException.wrap(BusCode.A00041);
             }
-            authorizationStrategy.customAuthenticationByMethod(securityUserInfo, handler);
+            authorizationStrategy1.customAuthenticationByMethod(securityUserInfo, handler);
         }
         return true;
     }

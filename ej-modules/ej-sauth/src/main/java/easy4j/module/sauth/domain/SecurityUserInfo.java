@@ -110,7 +110,7 @@ public class SecurityUserInfo {
     /**
      * 加密随机数
      */
-    private String shalt;
+    private String pwdSalt;
 
 
     /**

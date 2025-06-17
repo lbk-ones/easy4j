@@ -122,7 +122,11 @@ public class SysConstant {
     public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX + StringPool.DOT + "security-old-school-enable";
     public static final String EASY4J_SAUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
     public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
-    public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "auth-session-storage-type";
+    public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "simple-auth-session-storage-type";
+    public static final String EASY4J_AUTH_SESSION_EXPIRE_TIME = PARAM_PREFIX + StringPool.DOT + "session-expire-time-seconds";
+    public static final String EASY4J_SIMPLE_AUTH_USERNAME = PARAM_PREFIX + StringPool.DOT + "simple-auth-username";
+    public static final String EASY4J_SIMPLE_AUTH_USERNAME_CN = PARAM_PREFIX + StringPool.DOT + "simple-auth-username-cn";
+    public static final String EASY4J_SIMPLE_AUTH_PASSWORD = PARAM_PREFIX + StringPool.DOT + "simple-auth-password";
     public static final String EASY4J_ENABLE_DB_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "db-request-log-enable";
 
 

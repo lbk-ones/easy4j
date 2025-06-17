@@ -87,6 +87,7 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         SecuritySession init = new SecuritySession().init(securityUser);
         saveSession(init);
         securityUserInfo.setPassword(null);
+        securityUserInfo.setShaToken(init.getShaToken());
 
         if (null != loginAware) {
             loginAware.accept(securityUserInfo);

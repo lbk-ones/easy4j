@@ -45,6 +45,14 @@ public interface SecurityAuthorization {
      */
     boolean checkUri(HandlerMethod handlerMethod);
 
+    /**
+     * 是否需要登录
+     *
+     * @param handlerMethod
+     * @return
+     */
+    boolean isNeedLogin(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse);
+
 
     /**
      * 是否应该携带token

@@ -12,7 +12,8 @@
 - **easy4j.server-name**: 服务名称 等同于 spring.application.name
 - **easy4j.server-desc**: 服务描述
 - **easy4j.data-source-url**: 数据源简写，例如：“jdbc:postgresql://localhost:5432/postgres@root:123456”
-- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID 分布式系统则不会主键重复”
+- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID
+  分布式系统则不会主键重复”
 - **easy4j.cors-reject-enable**: 是否开启全局允许跨域 默认true 但是可以关闭
 - **easy4j.h2-enable**: 是否启用h2数据库
 - **easy4j.h2-url**: h2 数据库地址
@@ -41,11 +42,14 @@
 - **easy4j.signature-secret**: 签名密钥串(字典等敏感接口)
 - **easy4j.jwt-secret**: jwt签名密钥串
 - **easy4j.sign-urls**: 需要加强校验的接口清单
-- **easy4j.simple-auth-enable**: 简单权限认证 默认没开启 true为开启
 - **easy4j.session-expire-time-seconds**: 会话过期时间 默认3个小时
 - **easy4j.simple-link-tracking**: 单服务简单链路追踪，默认未开启，true为开启
 - **easy4j.print-request-log**: 是否打印简单的请求日志，默认不打印，true为打印
-- **easy4j.auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
+- **easy4j.simple-auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
+- **easy4j.simple-auth-enable**: 简单权限认证 默认没开启 true为开启
+- **easy4j.simple-auth-username**: 简单权限认证的用户名
+- **easy4j.simple-auth-username-cn**: 简单权限认证的用户名中文
+- **easy4j.simple-auth-password**: 简单权限认证的密码
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M

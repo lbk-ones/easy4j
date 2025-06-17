@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess;
 
 
+import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysLog;
@@ -77,6 +78,12 @@ public class DBAccessFactory {
         jdbcDbAccess.setPrintLog(true);
         init(jdbcDbAccess);
         return jdbcDbAccess;
+    }
+
+    public static void initDb(String path) {
+        INIT_DB_FILE_PATH.add(path);
+        DataSource dataSource = SpringUtil.getBean(DataSource.class);
+        getDBAccess(dataSource);
     }
 
     /**

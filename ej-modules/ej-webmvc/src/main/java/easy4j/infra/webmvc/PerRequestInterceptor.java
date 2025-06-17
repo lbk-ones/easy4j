@@ -23,7 +23,6 @@ import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.Easy4jContextFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -85,10 +84,16 @@ public class PerRequestInterceptor implements HandlerInterceptor {
             return handlerMethods(request, response, handler, null, null, PRE_HANDLER);
 
         } catch (Exception e) {
+            boolean hasException = false;
             try {
                 handlerMethods(request, response, handler, null, e, AFTER_COMPLETION);
             } catch (Exception e2) {
-                throw e;
+                hasException = true;
+                throw e2;
+            } finally {
+                if (!hasException) {
+                    throw e;
+                }
             }
             return false;
         }

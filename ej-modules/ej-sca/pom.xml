@@ -32,6 +32,13 @@
         </dependency>
 
         <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-sauth</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
             <exclusions>
@@ -62,11 +69,13 @@
             </exclusions>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>${openfeign.fastjson.version}</version>
-        </dependency>
+        </dependency>-->
+
+
         <!-- feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

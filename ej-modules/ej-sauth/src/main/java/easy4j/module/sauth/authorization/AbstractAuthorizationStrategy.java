@@ -67,12 +67,20 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     }
 
     @Override
+    public boolean isNeedLogin(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse) {
+        Method method = handlerMethod.getMethod();
+        Class<?> beanType = handlerMethod.getBeanType();
+        boolean annotationPresent1 = beanType.isAnnotationPresent(NoLogin.class);
+        if (annotationPresent1) {
+            return false;
+        }
+        return !method.isAnnotationPresent(NoLogin.class);
+    }
+
+    @Override
     public boolean needTakeToken(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse) {
         String header = httpServerRequest.getHeader(SysConstant.EASY4J_NO_NEED_TOKEN);
         Method method = handlerMethod.getMethod();
-        if (method.isAnnotationPresent(NoLogin.class)) {
-            return false;
-        }
         if (method.isAnnotationPresent(OpenApi.class)) {
             return false;
         }

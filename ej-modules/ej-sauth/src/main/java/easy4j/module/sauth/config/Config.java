@@ -15,22 +15,19 @@
 package easy4j.module.sauth.config;
 
 
-import easy4j.infra.common.module.Module;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.module.Module;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
-import easy4j.module.sauth.core.DefaultEncryptionService;
-import easy4j.module.sauth.core.Easy4jSecurityService;
-import easy4j.module.sauth.core.EncryptionService;
-import easy4j.module.sauth.core.SecurityService;
+import easy4j.module.sauth.core.*;
 import easy4j.module.sauth.enums.SecuritySessionType;
-import easy4j.module.sauth.filter.Easy4jSecurityFilterInterceptor;
 import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
@@ -55,8 +52,11 @@ public class Config implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        log.info(SysLog.compact("sauth module inited "));
-
+        boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
+        if (property) {
+            log.info(SysLog.compact("sauth module begin init..."));
+            DBAccessFactory.initDb("db/auth");
+        }
     }
 
     // 上下文
@@ -107,17 +107,17 @@ public class Config implements InitializingBean {
 //    }
 
     // 拦截器
-    @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnBean(value = {DataSource.class})
-    public Easy4jSecurityFilterInterceptor easy4jSecurityFilterInterceptor() {
-        return new Easy4jSecurityFilterInterceptor(
-                sessionStrategy(),
-                securityContext(),
-                authorizationStrategy(),
-                securityAuthentication()
-        );
-    }
+//    @Bean
+//    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+//    @ConditionalOnBean(value = {DataSource.class})
+//    public Easy4jSecurityFilterInterceptor easy4jSecurityFilterInterceptor() {
+//        return new Easy4jSecurityFilterInterceptor(
+//                sessionStrategy(),
+//                securityContext(),
+//                authorizationStrategy(),
+//                securityAuthentication()
+//        );
+//    }
 
     // 权限认证
     @Bean
@@ -132,11 +132,21 @@ public class Config implements InitializingBean {
         );
     }
 
+
     //密码加密方式
     @Bean
     @Module(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(EncryptionService.class)
     public EncryptionService encryptionService() {
         return new DefaultEncryptionService();
+    }
+
+
+    // 权限认证
+    @Bean
+    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ConditionalOnMissingBean(LoadUserByUserName.class)
+    public LoadUserByUserName loadUserByUserName() {
+        return new DefaultLoadUserByUserName();
     }
 }

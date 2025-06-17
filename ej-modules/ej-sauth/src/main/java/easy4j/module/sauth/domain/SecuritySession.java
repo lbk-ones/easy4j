@@ -18,8 +18,10 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.jwt.JWT;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.module.seed.CommonKey;
@@ -154,6 +156,11 @@ public class SecuritySession {
         return RandomUtil.randomString(5);
     }
 
+    @JsonIgnore
+    public boolean isValid() {
+        return this.isNotExpired() && this.isNotTampered();
+    }
+
     /**
      * 初始化token
      *
@@ -164,8 +171,11 @@ public class SecuritySession {
         String usernameCn = securityUser.getUsernameCn();
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
         String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
+        // unique
+        String s = CommonKey.gennerString();
         this.jwtToken = JWT.create()
                 .setPayload("un", username)
+                .setJWTId(s)
                 .setPayload("cn", usernameCn)
                 .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
 
@@ -178,9 +188,9 @@ public class SecuritySession {
         this.userName = securityUser.getUsername();
         this.userId = securityUser.getUserId();
         this.id = CommonKey.gennerLong();
+        this.expireTimeSeconds = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class);
 
         return this;
     }
-
 
 }

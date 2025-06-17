@@ -53,7 +53,7 @@ public abstract class StandardResolve {
         securityUser.setSkipAuthentication(false);
         securityUser.setPassword(null);
         securityUser.setNickName(null);
-        securityUser.setShalt(null);
+        securityUser.setPwdSalt(null);
         securityUser.setCreateDate(null);
         securityUser.setUpdateDate(null);
         securityUser.setAccountNonExpired(true);

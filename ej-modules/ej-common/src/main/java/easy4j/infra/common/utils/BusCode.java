@@ -134,4 +134,10 @@ public class BusCode {
 
     @Desc("资源{0}锁定失败，有其他人正在操作")
     public static final String A00042 = "A00042";
+
+    @Desc("缺少加密随机数")
+    public static final String A00043 = "A00043";
+
+    @Desc("已登录过不能再次登录")
+    public static final String A00044 = "A00044";
 }
