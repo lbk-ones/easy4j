@@ -22,7 +22,7 @@ import easy4j.module.sauth.domain.SecurityUserInfo;
 
 /**
  * DefaultEncryptionService
- * 默认不加密
+ * 通过随机数来进行sha128加密
  *
  * @author bokun.li
  * @date 2025-05

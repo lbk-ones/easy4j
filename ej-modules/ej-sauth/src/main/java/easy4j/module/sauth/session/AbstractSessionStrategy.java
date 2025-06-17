@@ -61,7 +61,7 @@ public abstract class AbstractSessionStrategy implements SessionStrategy {
                 cacheSessionList.remove(i);
                 continue;
             }
-            if (!securitySession.isNotExpired()) {
+            if (!securitySession.isValid()) {
                 deleteSession(securitySession.getShaToken());
                 cacheSessionList.remove(i);
             }

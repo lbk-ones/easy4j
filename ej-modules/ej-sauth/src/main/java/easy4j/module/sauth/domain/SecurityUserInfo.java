@@ -144,4 +144,14 @@ public class SecurityUserInfo {
      */
     private String jwtToken;
 
+    /**
+     * 设备信息 （浏览器、手机型号等）
+     */
+    private String deviceInfo;
+
+
+    /**
+     * ip
+     */
+    private String ip;
 }

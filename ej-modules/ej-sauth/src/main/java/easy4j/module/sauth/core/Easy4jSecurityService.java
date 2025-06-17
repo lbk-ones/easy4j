@@ -93,7 +93,14 @@ public class Easy4jSecurityService extends AbstractSecurityService {
             loginAware.accept(securityUserInfo);
         }
 
+        bindCtx(init);
+
         return securityUserInfo;
+    }
+
+    private void bindCtx(SecuritySession init) {
+        SecurityContext securityContext1 = getSecurityContext();
+        securityContext1.setSession(init);
     }
 
     /**

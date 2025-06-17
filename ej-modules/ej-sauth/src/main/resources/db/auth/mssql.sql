@@ -39,6 +39,8 @@ CREATE TABLE SYS_SECURITY_USER
     ENABLED                 BIT,
     PWD_SALT                NVARCHAR(255),
     CREATE_DATE             DATETIME2,
+    DEPT_CODE               NVARCHAR(255),
+    DEPT_NAME               NVARCHAR(255),
     UPDATE_DATE             DATETIME2
 );
 

@@ -14,6 +14,7 @@
  */
 package easy4j.module.sauth.core;
 
+import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 
 /**
@@ -24,6 +25,12 @@ import easy4j.module.sauth.domain.SecurityUserInfo;
  */
 public interface EncryptionService {
 
+    /**
+     * @param securityUser 数据库查出来的数据
+     * @author bokun.li
+     * @date 2025-06-17
+     */
+    @Desc("securityUser 为数据库查出来的数据")
     String encrypt(String str, SecurityUserInfo securityUser);
 
     String decrypt(String str, SecurityUserInfo securityUser);

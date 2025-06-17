@@ -50,6 +50,7 @@ public interface SP {
     String N = "n";
     String NO = "no";
     String NULL = "null";
+    String NULL_QUOTE = "\"null\"";
     String OFF = "off";
     String ON = "on";
     String PERCENT = "%";

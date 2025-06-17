@@ -103,7 +103,7 @@ public class SecuritySession {
     private Date logoutDateTime;
 
     /**
-     * 会话是否有效  0无效 1有效
+     * 会话是否有效  1无效 0有效
      */
     private int isInvalid;
 
@@ -158,7 +158,7 @@ public class SecuritySession {
 
     @JsonIgnore
     public boolean isValid() {
-        return this.isNotExpired() && this.isNotTampered();
+        return this.isNotExpired() && this.isNotTampered() && this.isInvalid == 0;
     }
 
     /**
@@ -178,18 +178,22 @@ public class SecuritySession {
                 .setJWTId(s)
                 .setPayload("cn", usernameCn)
                 .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
-
         this.salt = genSalt();
-
         this.shaToken = getShaToken();
-
         this.loginDateTime = new Date();
-        this.isInvalid = 1;
+        this.isInvalid = 0;
         this.userName = securityUser.getUsername();
         this.userId = securityUser.getUserId();
         this.id = CommonKey.gennerLong();
         this.expireTimeSeconds = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class);
-
+        this.extMap = securityUser.getExtMap();
+        this.deptCode = securityUser.getDeptCode();
+        this.deptName = securityUser.getDeptName();
+        this.nickName = securityUser.getNickName();
+        this.deviceInfo = securityUser.getDeviceInfo();
+        this.ip = securityUser.getIp();
+        this.userNameCn = securityUser.getUsernameCn();
+        this.userNameEn = securityUser.getUsernameEn();
         return this;
     }
 

@@ -98,7 +98,7 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
         if (!isSkip) {
             String encryptPwd = getEncryptionService().encrypt(password, userByUserName);
             if (StrUtil.equals(encryptPwd, userByUserName.getPassword())) {
-                return userByUserName;
+                return user;
             } else {
                 user.setErrorCode(BusCode.A00033);
             }
@@ -138,7 +138,7 @@ public abstract class AbstractSecurityAuthentication extends StandardResolve imp
             securityUserInfo.setErrorCode(BusCode.A00034);
             return securityUserInfo;
         }
-        if (session.isNotExpired()) {
+        if (!session.isValid()) {
             securityUserInfo.setErrorCode(BusCode.A00035);
             return securityUserInfo;
         }

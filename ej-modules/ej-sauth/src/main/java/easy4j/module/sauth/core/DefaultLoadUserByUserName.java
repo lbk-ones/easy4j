@@ -3,6 +3,7 @@ package easy4j.module.sauth.core;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.DBAccess;
@@ -42,6 +43,7 @@ public class DefaultLoadUserByUserName implements LoadUserByUserName, Initializi
             securityUserInfo.setAccountNonLocked(true);
             securityUserInfo.setCredentialsNonExpired(true);
             securityUserInfo.setEnabled(true);
+            securityUserInfo.setExtMap(Maps.newHashMap());
             String encrypt = encryptionService.encrypt(password, securityUserInfo);
             securityUserInfo.setPassword(encrypt);
             simpleUser = securityUserInfo;

@@ -111,7 +111,7 @@ public class BusCode {
     @Desc("鉴权失败，非法token")
     public static final String A00034 = "A00034";
 
-    @Desc("会话过期")
+    @Desc("用户未登录或会话过期")
     public static final String A00035 = "A00035";
 
     @Desc("用户检查未通过")

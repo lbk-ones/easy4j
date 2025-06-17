@@ -62,6 +62,16 @@ public class SecurityUser {
      */
     private String nickName;
 
+    /**
+     * 当前部门代码
+     */
+    private String deptCode;
+
+    /**
+     * 当前部门名称
+     */
+    private String deptName;
+
 
     /**
      * 用户是否过期 true代表没过期
@@ -100,6 +110,7 @@ public class SecurityUser {
      */
     private Date updateDate;
 
+
     public SecurityUserInfo toSecurityUserInfo() {
         SecurityUserInfo user = new SecurityUserInfo();
         user.setUserId(this.getUserId());
@@ -115,6 +126,8 @@ public class SecurityUser {
         user.setEnabled(true);
         user.setCreateDate(this.getCreateDate());
         user.setUpdateDate(this.getUpdateDate());
+        user.setDeptCode(this.getDeptCode());
+        user.setDeptName(this.getDeptName());
         return user;
     }
 

@@ -39,6 +39,8 @@ CREATE TABLE SYS_SECURITY_USER
     ENABLED                 NUMBER(1),
     PWD_SALT                VARCHAR2(255),
     CREATE_DATE             TIMESTAMP,
+    DEPT_CODE               VARCHAR2(255),
+    DEPT_NAME               VARCHAR2(255),
     UPDATE_DATE             TIMESTAMP
 );
 

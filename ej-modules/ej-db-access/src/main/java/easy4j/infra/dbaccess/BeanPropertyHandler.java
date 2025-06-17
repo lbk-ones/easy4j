@@ -17,6 +17,8 @@ package easy4j.infra.dbaccess;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.AbstractListHandler;
 
@@ -24,6 +26,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -84,14 +87,34 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
                     /**
                      * 根据字段index、属性类型返回字段值
                      */
-                    Object value = JdbcHelper.getResultSetValue(rs, index, pd.getPropertyType());
+                    Class<?> propertyType = pd.getPropertyType();
+                    Object value = JdbcHelper.getResultSetValue(rs, index, propertyType);
+
                     try {
                         /**
                          * 使用apache-beanutils设置对象的属性
                          */
                         BeanUtil.setProperty(mappedObject, pd.getName(), value);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        try {
+                            // fix json type
+                            if (isByteArray(value) && !propertyType.isAssignableFrom(byte[].class)) {
+                                byte[] value1 = (byte[]) value;
+                                String string = new String(value1, StandardCharsets.UTF_8);
+                                String unescapedJson = string
+                                        .replaceFirst("^\"", "")  // 移除开头的引号
+                                        .replaceFirst("\"$", "")  // 移除结尾的引号
+                                        .replace("\\\"", "\"");   // 替换 \" 为 "
+                                if (!SP.NULL.equalsIgnoreCase(unescapedJson) & !SP.NULL_QUOTE.equalsIgnoreCase(unescapedJson)) {
+                                    Object object = JacksonUtil.toObject(unescapedJson, propertyType);
+                                    ReflectUtil.setFieldValue(mappedObject, pd.getName(), object);
+                                }
+                            } else {
+                                e.printStackTrace();
+                            }
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                        }
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -99,6 +122,10 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
             }
         }
         return mappedObject;
+    }
+
+    public static boolean isByteArray(Object obj) {
+        return obj instanceof byte[];
     }
 
     /**

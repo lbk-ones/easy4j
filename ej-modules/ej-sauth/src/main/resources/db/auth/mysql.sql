@@ -39,6 +39,8 @@ CREATE TABLE SYS_SECURITY_USER
     ENABLED                 TINYINT(1),
     PWD_SALT                VARCHAR(255),
     CREATE_DATE             DATETIME,
+    DEPT_CODE               VARCHAR(255),
+    DEPT_NAME               VARCHAR(255),
     UPDATE_DATE             DATETIME
 );
 
