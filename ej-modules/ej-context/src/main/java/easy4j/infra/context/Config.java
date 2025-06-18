@@ -45,5 +45,10 @@ public class Config {
         return new BaseAutoRegisterContext();
     }
 
+    @Bean
+    public EventPublisher eventPublisher() {
+        return new EventPublisher();
+    }
+
 
 }

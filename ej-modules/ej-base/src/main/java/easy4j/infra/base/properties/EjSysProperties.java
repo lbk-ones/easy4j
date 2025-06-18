@@ -357,6 +357,18 @@ public class EjSysProperties {
     private boolean simpleAuthEnable = false;
 
     /**
+     * "简单权限认证服务端，默认不是，如果是服务端那么会自动建表，自动注册服务暴露"
+     */
+    @SpringVs(desc = "简单权限认证服务端，默认不是，如果是服务端那么会自动建表，自动注册服务暴露")
+    private boolean simpleAuthIsServer = false;
+
+    /**
+     * "简单权限认证服务端，默认不是，如果是服务端那么会自动建表，自动注册服务暴露"
+     */
+    @SpringVs(desc = "权限认证服务端名称")
+    private String simpleAuthServerName = "";
+
+    /**
      * 权限session存储类型：db代表数据库，redis代表redis
      */
     @SpringVs(desc = "权限session存储类型：db代表数据库，redis代表redis")

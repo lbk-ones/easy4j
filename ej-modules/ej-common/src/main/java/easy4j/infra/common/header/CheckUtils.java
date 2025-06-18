@@ -19,6 +19,7 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
@@ -238,10 +239,25 @@ public class CheckUtils {
      * @author bokun.li
      * @date 2025-06-15
      */
+    @Desc("检查是否为true 如果是true那么则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
     public static void checkTrue(boolean flag, String msgCode, String... args) {
         if (flag && StrUtil.isNotBlank(msgCode)) {
             throw EasyException.wrap(msgCode, args);
         }
+    }
+
+    /**
+     * 检查rpc结果
+     *
+     * @author bokun.li
+     * @date 2025/6/18
+     */
+    @Desc("检查rpc结果，如果远程调用结果有问题，那么就兼容返回错误信息")
+    public static <T> void checkRpcRes(EasyResult<T> easyResult) {
+        if (easyResult == null) {
+            throw EasyException.wrap(BusCode.A00045, "rpc result is null");
+        }
+        checkTrue(!easyResult.isSuccess(), BusCode.A00045, easyResult.getMsgAndError());
     }
 
     /**
@@ -250,6 +266,7 @@ public class CheckUtils {
      * @author bokun.li
      * @date 2025-06-15
      */
+    @Desc("检查一个对象是否为空，为空则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
     public static void checkObjIsNull(Object obj, String msgCode, String... args) {
         if (ObjectUtil.isEmpty(obj) && StrUtil.isNotBlank(msgCode)) {
             throw EasyException.wrap(msgCode, args);
@@ -262,11 +279,11 @@ public class CheckUtils {
      * @author bokun.li
      * @date 2025-06-15
      */
+    @Desc("检查一个对象是否为空，为空则抛出异常：参数{name}不能为空")
     public static void checkNotNull(Object obj, String name) {
         if (ObjectUtil.isEmpty(obj)) {
             throw EasyException.wrap(BusCode.A00004, name);
         }
-
     }
 
 }

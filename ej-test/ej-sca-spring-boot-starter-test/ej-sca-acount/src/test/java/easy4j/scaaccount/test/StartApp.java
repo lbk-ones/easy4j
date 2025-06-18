@@ -55,7 +55,7 @@ public class StartApp {
     void testDiscoveryClient() {
         ConfigService configService = nacosConfigManager.getConfigService();
 
-        List<ServiceInstance> instances = discoveryClient.getInstances("my-service");
+        List<ServiceInstance> instances = discoveryClient.getInstances("template-account");
         for (ServiceInstance instance : instances) {
             String host = instance.getHost() + ":" + instance.getPort();
             System.out.println(host);

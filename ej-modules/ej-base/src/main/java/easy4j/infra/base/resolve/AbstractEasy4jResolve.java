@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R> {
 
-    List<String> splitUrl(String p) {
+    public static List<String> splitUrl(String p) {
         String[] split = p.split(SP.AT);
 
         String url = null;
@@ -61,7 +61,7 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
 
     }
 
-    public String getUrl(String p) {
+    public static String getUrl(String p) {
         List<String> strings = splitUrl(p);
         return ListTs.get(strings, 0);
     }
@@ -97,12 +97,12 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         }).orElse(null);
     }
 
-    public String getUsername(String p) {
+    public static String getUsername(String p) {
         List<String> strings = splitUrl(p);
         return ListTs.get(strings, 1);
     }
 
-    public String getPassword(String p) {
+    public static String getPassword(String p) {
         List<String> strings = splitUrl(p);
         return StrUtil.blankToDefault(ListTs.get(strings, 2), ListTs.get(strings, 1));
     }

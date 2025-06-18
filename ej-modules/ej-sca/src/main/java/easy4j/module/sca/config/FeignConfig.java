@@ -113,4 +113,17 @@ public class FeignConfig {
         return new ScaRunner();
     }
 
+
+    @Bean
+    public NamingServerInvoker namingServerInvoker() {
+        return NamingServerInvoker.createByEnv(null);
+    }
+
+
+    @Bean
+    public NacosEventListener nacosEventListener() {
+        return new NacosEventListener();
+    }
+
+
 }

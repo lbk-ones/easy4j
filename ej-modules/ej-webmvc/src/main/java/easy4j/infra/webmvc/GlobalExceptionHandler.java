@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
                 Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
                 e.printStackTrace();
             }
-            return EasyResult.errorInfo(e);
+            return EasyResult.error(e);
         }
     }
 
@@ -107,27 +107,27 @@ public class GlobalExceptionHandler {
             Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
             e.printStackTrace();
         }
-        return EasyResult.errorInfo(list.toString());
+        return EasyResult.error(list.toString());
     }
 
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     @ResponseBody
     public EasyResult<Object> httpErrorHandler(HttpServletRequest req, HttpMessageNotReadableException e) throws Exception {
         log.info("HTTP请求参数异常-------" + e.getMessage());
-        return EasyResult.errorInfo(I18nUtils.getMessage(BusCode.A00005, e.getMessage()));
+        return EasyResult.error(I18nUtils.getMessage(BusCode.A00005, e.getMessage()));
     }
 
     @ExceptionHandler(value = HttpMediaTypeNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMediaTypeNotSupportedExceptionHandler(HttpServletRequest req, HttpMediaTypeNotSupportedException e) throws Exception {
         log.info("HTTP请求ContentType异常-------" + e.getMessage());
-        return EasyResult.errorInfo(I18nUtils.getMessage(BusCode.A00006));
+        return EasyResult.error(I18nUtils.getMessage(BusCode.A00006));
     }
 
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMethodErrorHandler(HttpServletRequest req, HttpRequestMethodNotSupportedException e) throws Exception {
-        return EasyResult.errorInfo(I18nUtils.getMessage(BusCode.A00007, e.getMessage()));
+        return EasyResult.error(I18nUtils.getMessage(BusCode.A00007, e.getMessage()));
     }
 }
 

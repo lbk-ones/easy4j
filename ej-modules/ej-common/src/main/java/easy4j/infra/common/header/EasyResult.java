@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * 一个好的信息返回实体 应该包括 开始时间 返回时间 是否错误（如果是业务异常 或者系统异常 或者未知异常 都应该是1，其他情况都是0） 业务状态码 主要用来
+ * 统一返回消息体
  *
  * @param <T>
  * @author bokun.li
@@ -49,12 +49,6 @@ public class EasyResult<T> implements Serializable {
     @Schema(description = "1 代表错误 0 代表正常返回")
     private int error;
 
-    // 开始时间
-    @Schema(description = "开始时间戳")
-    private Long startTime;
-    // 结束时间
-    @Schema(description = "结束时间戳")
-    private Long endTime;
     // 业务状态码
     @Schema(description = "业务状态码")
     private String code;
@@ -65,6 +59,7 @@ public class EasyResult<T> implements Serializable {
     // 提示消息
     @Schema(description = "提示消息")
     private String message;
+    
     // 错误堆栈信息
     @Schema(description = "错误堆栈信息")
     private String errorInfo;
@@ -78,16 +73,6 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
 
         easyResult.setData(data);
-        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
-        return easyResult;
-    }
-
-    public static <T> EasyResult<T> ok(Date startDate, T data) {
-
-        EasyResult<T> easyResult = new EasyResult<T>();
-
-        easyResult.setData(data);
-        easyResult.setStartTime(startDate != null ? startDate.getTime() : easyResult.getStartTime());
         easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
@@ -111,12 +96,12 @@ public class EasyResult<T> implements Serializable {
 
         easyResult.setData(data);
         easyResult.setCode(code);
-        easyResult.setStartTime(startDate != null ? startDate.getTime() : easyResult.getStartTime());
         easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
-    public static <T> EasyResult<T> errorInfo(String message) {
+    @JsonIgnore
+    public static <T> EasyResult<T> error(String message) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setError(SysConstant.ERRORCODE);
@@ -145,7 +130,8 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> errorInfo(Throwable e) {
+    @JsonIgnore
+    public static <T> EasyResult<T> error(Throwable e) {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setCode(BusCode.A00003);
         easyResult.setError(SysConstant.ERRORCODE);
@@ -243,9 +229,6 @@ public class EasyResult<T> implements Serializable {
 
     public EasyResult() {
         setError(SysConstant.SUCCESSCODE);
-        long time = new Date().getTime();
-        setStartTime(time);
-        setEndTime(time);
         setCode("A00001");
         //setMessage(I18nBean.getOperateSuccessStr());
     }

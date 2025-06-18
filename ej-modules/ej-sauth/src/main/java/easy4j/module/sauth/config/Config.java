@@ -19,6 +19,8 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.Module;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.EventPublisher;
+import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
@@ -38,6 +40,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 /**
@@ -49,13 +52,22 @@ import javax.sql.DataSource;
 @Slf4j
 @Configuration
 public class Config implements InitializingBean {
+
+    @Resource
+    EventPublisher eventPublisher;
+
     @Override
     public void afterPropertiesSet() throws Exception {
 
         boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
-        if (property) {
+        boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
+        if (property && isServer) {
+            
+            eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, SysConstant.EASY4J_SAUTH_SERVER_NAME));
+
             log.info(SysLog.compact("sauth module begin init..."));
             DBAccessFactory.initDb("db/auth");
+
         }
     }
 

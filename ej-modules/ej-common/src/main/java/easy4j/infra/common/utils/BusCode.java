@@ -140,4 +140,7 @@ public class BusCode {
 
     @Desc("已登录过不能再次登录")
     public static final String A00044 = "A00044";
+
+    @Desc("远程调用异常,{0}")
+    public static final String A00045 = "A00045";
 }
