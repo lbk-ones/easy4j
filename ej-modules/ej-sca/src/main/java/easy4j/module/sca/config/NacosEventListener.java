@@ -11,7 +11,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.event.EventListener;
 
 @Slf4j
-//@Component
 public class NacosEventListener implements DisposableBean {
 
     boolean enableServer = false;
@@ -23,6 +22,7 @@ public class NacosEventListener implements DisposableBean {
     String ipAddr;
     int serverPort;
 
+    // 同步注册
     @EventListener
     public void listen1(NacosSauthServerRegisterEvent nacosSauthServerRegisterEvent) {
         try {

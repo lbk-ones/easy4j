@@ -15,6 +15,7 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.condition.FWhereBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.domain.SecurityUserInfo;
 import org.springframework.beans.factory.InitializingBean;
@@ -72,7 +73,7 @@ public class DefaultLoadUserByUserName implements LoadUserByUserName, Initializi
         // boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (!isServer) {
-            serverName = Easy4j.getRequiredProperty(SysConstant.EASY4J_SAUTH_SERVER_NAME);
+            serverName = Config.AUTH_SERVER_NAME;
             isClient = true;
         }
 
@@ -93,9 +94,9 @@ public class DefaultLoadUserByUserName implements LoadUserByUserName, Initializi
                     .path(LOAD_USER_BY_USER_NAME + SP.SLASH + username)
                     .build();
 
-            EasyResult<SecurityUserInfo> securitySessionEasyResult = easy4jNacosInvokerApi.get(build, SecurityUserInfo.class);
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return securitySessionEasyResult.getData();
+            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUserInfo.class);
         } else {
             WhereBuild equal = FWhereBuild.get(SecurityUser.class).equal(SecurityUser::getUsername, username);
             List<SecurityUser> securityUsers = dbAccess.selectByCondition(equal, SecurityUser.class);

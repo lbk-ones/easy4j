@@ -15,9 +15,11 @@
 package easy4j.infra.webmvc;
 
 
+import easy4j.infra.common.utils.json.JacksonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -37,5 +39,9 @@ public class WebMvcConvertConfig implements WebMvcConfigurer {
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         // 移除默认转换器
         converters.removeIf(converter -> converter instanceof MappingJackson2XmlHttpMessageConverter);
+        converters.removeIf(converter -> converter instanceof MappingJackson2HttpMessageConverter);
+        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+        mappingJackson2HttpMessageConverter.setObjectMapper(JacksonUtil.getMapper2());
+        converters.add(0, mappingJackson2HttpMessageConverter);
     }
 }

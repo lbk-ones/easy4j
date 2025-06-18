@@ -1,8 +1,24 @@
+/**
+ * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package easy4j.module.sauth.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.func.LambdaUtil;
+import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.condition.FWhereBuild;
@@ -14,9 +30,16 @@ import easy4j.module.sauth.domain.SecurityUserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 供内部调用
+ *
+ * @author bokun.li
+ * @date 2025-06-18
+ */
 @RestController
 @RequestMapping("sauth")
 public class SAuthController {
@@ -101,6 +124,19 @@ public class SAuthController {
             SecurityUser securityUser = securityUsers.get(0);
             return EasyResult.ok(securityUser.toSecurityUserInfo());
         }
+        return EasyResult.ok(null);
+    }
+
+    @GetMapping("refreshSession/{token}")
+    public EasyResult<Object> refreshSession(@PathVariable(name = "token") String token) {
+        Dict dict = Dict.create()
+                .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
+        SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
+        long expireTimeSeconds = securitySession.getExpireTimeSeconds();
+        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+        int sessionExpireTimeSeconds = ejSysProperties.getSessionExpireTimeSeconds();
+        securitySession.setExpireTimeSeconds(new Date().getTime() + (sessionExpireTimeSeconds * 1000L));
+        dbAccess.updateByPrimaryKey(securitySession, SecuritySession.class, false);
         return EasyResult.ok(null);
     }
 

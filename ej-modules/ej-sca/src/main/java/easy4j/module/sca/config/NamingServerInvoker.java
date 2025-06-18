@@ -35,6 +35,8 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -79,6 +81,8 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
     public NamingServerInvoker(String serverAddr) {
         this.serverAddr = serverAddr;
         this.restTemplate = new RestTemplate();
+        initJackson(this.restTemplate);
+
     }
 
     public NamingServerInvoker(String nameSpace2, String serverAddr, String username, String password) {
@@ -87,12 +91,15 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         this.username = username;
         this.password = password;
         this.restTemplate = new RestTemplate();
+        initJackson(this.restTemplate);
     }
 
     public NamingServerInvoker(String serverAddr, RestTemplate restTemplate) {
         this.serverAddr = serverAddr;
         if (null == restTemplate) {
             restTemplate = new RestTemplate();
+            initJackson(restTemplate);
+
         }
         this.restTemplate = restTemplate;
     }
@@ -104,8 +111,18 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         this.password = password;
         if (null == restTemplate) {
             restTemplate = new RestTemplate();
+            initJackson(restTemplate);
         }
         this.restTemplate = restTemplate;
+    }
+
+    private static void initJackson(RestTemplate restTemplate) {
+        List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
+        messageConverters.removeIf(e -> e instanceof MappingJackson2HttpMessageConverter);
+        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+        mappingJackson2HttpMessageConverter.setObjectMapper(JacksonUtil.getMapper());
+        messageConverters.add(0, mappingJackson2HttpMessageConverter);
+        restTemplate.setMessageConverters(messageConverters);
     }
 
 
@@ -162,13 +179,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accesstoken));
             MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
-            ResponseEntity<String> exchange = restTemplate.exchange(
+            ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     objectHttpEntity,
-                    String.class
+                    Object.class
             );
-            return exchange.getBody();
+            return JacksonUtil.toJson(exchange.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -194,13 +211,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
             MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
-            ResponseEntity<String> exchange = restTemplate.exchange(
+            ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     objectHttpEntity,
-                    String.class
+                    Object.class
             );
-            return exchange.getBody();
+            return JacksonUtil.toJson(exchange.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -226,13 +243,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
             MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
-            ResponseEntity<String> exchange = restTemplate.exchange(
+            ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.PUT,
                     objectHttpEntity,
-                    String.class
+                    Object.class
             );
-            return exchange.getBody();
+            return JacksonUtil.toJson(exchange.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -267,13 +284,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
             MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
-            ResponseEntity<String> exchange = restTemplate.exchange(
+            ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.DELETE,
                     objectHttpEntity,
-                    String.class
+                    Object.class
             );
-            return exchange.getBody();
+            return JacksonUtil.toJson(exchange.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -312,9 +329,9 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             }
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formParams, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            ResponseEntity<Object> response = restTemplate.postForEntity(url, request, Object.class);
 
-            return response.getBody();
+            return JacksonUtil.toJson(response.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -347,9 +364,9 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
 
             HttpEntity<Object> request = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            ResponseEntity<Object> response = restTemplate.postForEntity(url, request, Object.class);
 
-            return response.getBody();
+            return JacksonUtil.toJson(response.getBody());
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -431,7 +448,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
     }
 
     @Override
-    public <T> EasyResult<T> get(NacosInvokeDto nacosInvokeDto, Class<T> tClass) {
+    public EasyResult<Object> get(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
@@ -441,17 +458,17 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
 
         if (StrUtil.isNotBlank(accessToken)) {
             String s = get(serverName, group1, path, paramMap, accessToken);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<T>>() {
+            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         } else {
             String s = get(serverName, group1, path);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<T>>() {
+            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         }
     }
 
     @Override
-    public <T> EasyResult<T> post(NacosInvokeDto nacosInvokeDto, Class<T> tClass) {
+    public EasyResult<Object> post(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
@@ -460,17 +477,18 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String serverName = nacosInvokeDto.getServerName();
         if (nacosInvokeDto.isJson()) {
             String s = postJson(serverName, group1, path, body, accessToken);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<T>>() {
+
+            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         } else {
             String s = postForm(serverName, group1, path, paramMap, accessToken);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<T>>() {
+            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         }
     }
 
     @Override
-    public <T> EasyResult<T> put(NacosInvokeDto nacosInvokeDto, Class<T> tClass) {
+    public EasyResult<Object> put(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
@@ -479,14 +497,14 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String serverName = nacosInvokeDto.getServerName();
         if (nacosInvokeDto.isJson()) {
             String s = putJson(serverName, group1, path);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<T>>() {
+            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         }
         return null;
     }
 
     @Override
-    public <T> EasyResult<T> delete(NacosInvokeDto nacosInvokeDto, Class<T> tClass) {
+    public EasyResult<Object> delete(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
@@ -494,7 +512,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
         String delete = delete(serverName, group1, path, accessToken);
-        return JacksonUtil.toObject(delete, new TypeReference<EasyResult<T>>() {
+        return JacksonUtil.toObject(delete, new TypeReference<EasyResult<Object>>() {
         });
     }
 

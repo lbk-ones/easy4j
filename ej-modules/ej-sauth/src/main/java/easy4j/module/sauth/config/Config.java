@@ -28,6 +28,7 @@ import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.controller.SAuthController;
 import easy4j.module.sauth.core.*;
 import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.session.DbSessionStrategy;
@@ -35,6 +36,7 @@ import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -51,19 +53,20 @@ import javax.sql.DataSource;
  */
 @Slf4j
 @Configuration
-public class Config implements InitializingBean {
+public class Config implements CommandLineRunner {
+
+    public static final String AUTH_SERVER_NAME = "easy4j-sauth-server";
 
     @Resource
     EventPublisher eventPublisher;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-
+    public void run(String... args) throws Exception {
         boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (property && isServer) {
-            
-            eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, SysConstant.EASY4J_SAUTH_SERVER_NAME));
+
+            eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, AUTH_SERVER_NAME));
 
             log.info(SysLog.compact("sauth module begin init..."));
             DBAccessFactory.initDb("db/auth");
@@ -160,5 +163,11 @@ public class Config implements InitializingBean {
     @ConditionalOnMissingBean(LoadUserByUserName.class)
     public LoadUserByUserName loadUserByUserName() {
         return new DefaultLoadUserByUserName();
+    }
+
+    @Bean
+    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    public SAuthController sAuthController() {
+        return new SAuthController();
     }
 }

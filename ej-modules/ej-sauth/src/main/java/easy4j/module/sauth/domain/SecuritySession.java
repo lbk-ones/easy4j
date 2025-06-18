@@ -147,8 +147,8 @@ public class SecuritySession {
 
     public boolean isNotExpired() {
         if (this.loginDateTime == null) return true;
-        long time = this.loginDateTime.getTime();
-        Date date = new Date(time + (expireTimeSeconds * 1000L));
+        //long time = this.loginDateTime.getTime();
+        Date date = new Date(expireTimeSeconds);
         return new Date().before(date);
     }
 
@@ -185,7 +185,8 @@ public class SecuritySession {
         this.userName = securityUser.getUsername();
         this.userId = securityUser.getUserId();
         this.id = CommonKey.gennerLong();
-        this.expireTimeSeconds = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class);
+        long l = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class) * 1000L;
+        this.expireTimeSeconds = new Date().getTime() + l;
         this.extMap = securityUser.getExtMap();
         this.deptCode = securityUser.getDeptCode();
         this.deptName = securityUser.getDeptName();

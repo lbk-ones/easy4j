@@ -49,6 +49,8 @@ public class JacksonUtil {
 
     @Getter
     private static final ObjectMapper mapper;
+
+    @Getter
     private static final ObjectMapper mapper2;
 
     static {

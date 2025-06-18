@@ -27,6 +27,7 @@ import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.domain.SecuritySession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,6 +35,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.util.concurrent.TimeUnit;
 
 /**
  * DbSessionStrategy
@@ -47,6 +49,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     public static final String GET_SESSION = "/sauth/getSession";
     public static final String SAVE_SESSION = "/sauth/saveSession";
     public static final String DELETE_SESSION = "/sauth/deleteSession";
+    public static final String REFRESH_SESSION = "/sauth/refreshSession";
     public static final String GET_SESSION_BY_USER_NAME = "/sauth/getSessionByUserName";
 
     private static DBAccess dbAccess;
@@ -69,7 +72,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (!isServer && property) {
-            serverName = Easy4j.getRequiredProperty(SysConstant.EASY4J_SAUTH_SERVER_NAME);
+            serverName = Config.AUTH_SERVER_NAME;
             isClient = true;
         }
     }
@@ -80,12 +83,13 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
                     .serverName(serverName)
+                    .accessToken(token)
                     .path(GET_SESSION + SP.SLASH + token)
                     .build();
 
-            EasyResult<SecuritySession> securitySessionEasyResult = easy4jNacosInvokerApi.get(build, SecuritySession.class);
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return securitySessionEasyResult.getData();
+            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
         } else {
             Dict dict = Dict.create()
                     .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
@@ -107,9 +111,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<SecuritySession> securitySessionEasyResult = easy4jNacosInvokerApi.post(build, SecuritySession.class);
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.post(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return securitySessionEasyResult.getData();
+            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
         } else {
             int i = dbAccess.saveOne(securitySession, SecuritySession.class);
             if (i > 0) {
@@ -130,7 +134,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<SecuritySession> securitySessionEasyResult = easy4jNacosInvokerApi.delete(build, SecuritySession.class);
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.delete(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
         } else {
             Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
@@ -150,13 +154,30 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .path(GET_SESSION_BY_USER_NAME + SP.SLASH + userName)
                     .build();
 
-            EasyResult<SecuritySession> securitySessionEasyResult = easy4jNacosInvokerApi.get(build, SecuritySession.class);
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return securitySessionEasyResult.getData();
+            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
         } else {
             Dict dict = Dict.create()
                     .set(LambdaUtil.getFieldName(SecuritySession::getUserName), userName);
             return dbAccess.selectOneByMap(dict, SecuritySession.class);
+        }
+    }
+
+    @Override
+    public SecuritySession refreshSession(String token, Integer expireTime, TimeUnit timeUnit) {
+        if (isClient) {
+            NacosInvokeDto build = NacosInvokeDto.builder()
+                    .group(SysConstant.NACOS_AUTH_GROUP)
+                    .serverName(serverName)
+                    .path(REFRESH_SESSION + SP.SLASH + token)
+                    .build();
+
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            CheckUtils.checkRpcRes(securitySessionEasyResult);
+            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+        } else {
+            return super.refreshSession(token, expireTime, timeUnit);
         }
     }
 }

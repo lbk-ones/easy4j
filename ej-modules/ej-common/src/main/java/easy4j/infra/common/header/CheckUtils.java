@@ -23,6 +23,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.constraints.NotNull;
@@ -286,4 +287,11 @@ public class CheckUtils {
         }
     }
 
+    public static <T> T convertRpcRes(EasyResult<Object> securitySessionEasyResult, Class<T> securitySessionClass) {
+        Object data = securitySessionEasyResult.getData();
+        if (ObjectUtil.isNotEmpty(data)) {
+            return JacksonUtil.toObject(JacksonUtil.toJson(data), securitySessionClass);
+        }
+        return null;
+    }
 }

@@ -138,7 +138,7 @@ public class Easy4j implements ApplicationContextAware {
             }
             if (ObjectUtil.isEmpty(property)) {
                 Object orDefault = defaultMap.get(name);
-                if (null != orDefault) {
+                if (!ObjectUtil.isEmpty(orDefault)) {
                     return Convert.convert(aclass, orDefault);
                 }
             }

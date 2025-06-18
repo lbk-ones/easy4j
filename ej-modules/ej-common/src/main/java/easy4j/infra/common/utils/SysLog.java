@@ -333,8 +333,13 @@ public class SysLog {
         if (StrUtil.isBlank(stx)) {
             return "";
         }
-        String s = stx.replaceAll("\\{\\}", "%s");
-        String format = String.format(s, args);
+        String format = stx;
+        try {
+            String s = stx.replaceAll("\\{\\}", "%s");
+            format = String.format(s, args);
+        } catch (Exception ignored) {
+        }
+
         return "【EASY4J】" + format;
     }
 

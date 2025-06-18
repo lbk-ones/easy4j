@@ -86,6 +86,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 if (StrUtil.isBlank(token)) {
                     throw EasyException.wrap(BusCode.A00029, SysConstant.X_ACCESS_TOKEN);
                 }
+                Easy4j.getContext().registerThreadHash(SysConstant.X_ACCESS_TOKEN, SysConstant.X_ACCESS_TOKEN, token);
                 securityUserInfo = securityAuthentication1.tokenAuthentication(token);
                 if (
                         StrUtil.isNotBlank(securityUserInfo.getErrorCode())
