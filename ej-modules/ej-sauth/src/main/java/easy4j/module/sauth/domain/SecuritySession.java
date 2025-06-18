@@ -18,6 +18,8 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.jwt.JWT;
+import cn.hutool.jwt.signers.JWTSigner;
+import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -29,6 +31,7 @@ import lombok.Data;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -173,11 +176,21 @@ public class SecuritySession {
         String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
         // unique
         String s = CommonKey.gennerString();
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("un", username);
+        claims.put("cn", usernameCn);
+        claims.put("jti", s);
+
         this.jwtToken = JWT.create()
-                .setPayload("un", username)
-                .setJWTId(s)
-                .setPayload("cn", usernameCn)
-                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
+                .addPayloads(claims)
+                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8))
+                .sign();
+//        this.jwtToken = JWT.create()
+//                .setPayload("un", username)
+//                .setJWTId(s)
+//                .setPayload("cn", usernameCn)
+//                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
         this.salt = genSalt();
         this.shaToken = getShaToken();
         this.loginDateTime = new Date();
