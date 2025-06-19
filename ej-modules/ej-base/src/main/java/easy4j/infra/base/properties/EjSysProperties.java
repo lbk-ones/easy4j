@@ -339,6 +339,12 @@ public class EjSysProperties {
     private int sessionExpireTimeSeconds = 60 * 60 * 3;
 
     /**
+     * 会话刷新剩余时间，秒为单位
+     */
+    @SpringVs(desc = "会话刷新剩余时间，秒为单位，默认十分钟")
+    private int sessionRefreshTimeRemaining = 60 * 10;
+
+    /**
      * 单服务简单链路追踪
      */
     @SpringVs(desc = "单服务简单链路追踪，默认未开启，true为开启")

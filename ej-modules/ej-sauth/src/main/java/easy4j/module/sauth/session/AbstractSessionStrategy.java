@@ -19,6 +19,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.sauth.domain.SecuritySession;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -40,15 +41,20 @@ public abstract class AbstractSessionStrategy implements SessionStrategy {
 
         SecuritySession securitySession1 = getSession(token);
         if (Objects.nonNull(securitySession1)) {
-            deleteSession(token);
-            int sessionExpireTimeSeconds = ejSysProperties.getSessionExpireTimeSeconds();
-            if (null != expireTime && timeUnit != null) {
-                long millis = timeUnit.toSeconds(expireTime);
-                securitySession1.setExpireTimeSeconds(millis);
-            } else {
-                securitySession1.setExpireTimeSeconds(sessionExpireTimeSeconds);
+            long expireTimeSeconds = securitySession1.getExpireTimeSeconds();
+            int sessionRefreshTimeRemaining = ejSysProperties.getSessionRefreshTimeRemaining();
+            // 还剩10分钟的时候刷新会话
+            if (expireTimeSeconds > 0 && (new Date().getTime() + sessionRefreshTimeRemaining * 1000L) >= expireTimeSeconds) {
+                deleteSession(token);
+                long sessionExpireTimeSeconds = new Date().getTime() + (ejSysProperties.getSessionExpireTimeSeconds() * 1000L);
+                if (null != expireTime && timeUnit != null) {
+                    long millis = new Date().getTime() + timeUnit.toMillis(expireTime);
+                    securitySession1.setExpireTimeSeconds(millis);
+                } else {
+                    securitySession1.setExpireTimeSeconds(sessionExpireTimeSeconds);
+                }
+                saveSession(securitySession1);
             }
-            saveSession(securitySession1);
         }
         return securitySession1;
     }

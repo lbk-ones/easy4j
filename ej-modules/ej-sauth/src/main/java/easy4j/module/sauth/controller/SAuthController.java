@@ -133,10 +133,14 @@ public class SAuthController {
                 .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
         SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
         long expireTimeSeconds = securitySession.getExpireTimeSeconds();
-        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-        int sessionExpireTimeSeconds = ejSysProperties.getSessionExpireTimeSeconds();
-        securitySession.setExpireTimeSeconds(new Date().getTime() + (sessionExpireTimeSeconds * 1000L));
-        dbAccess.updateByPrimaryKey(securitySession, SecuritySession.class, false);
+        EjSysProperties ejSysProperties1 = Easy4j.getEjSysProperties();
+        int sessionRefreshTimeRemaining = ejSysProperties1.getSessionRefreshTimeRemaining();
+        if (expireTimeSeconds > 0 && (new Date().getTime() + sessionRefreshTimeRemaining * 1000L) >= expireTimeSeconds) {
+            EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+            int sessionExpireTimeSeconds = ejSysProperties.getSessionExpireTimeSeconds();
+            securitySession.setExpireTimeSeconds(new Date().getTime() + (sessionExpireTimeSeconds * 1000L));
+            dbAccess.updateByPrimaryKey(securitySession, SecuritySession.class, false);
+        }
         return EasyResult.ok(null);
     }
 
