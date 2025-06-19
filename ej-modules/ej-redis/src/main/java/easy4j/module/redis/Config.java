@@ -16,6 +16,7 @@ package easy4j.module.redis;
 
 import easy4j.infra.common.module.Module;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.cache.RedisEasy4jCache;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import org.springframework.context.annotation.Bean;
@@ -50,12 +51,12 @@ public class Config {
         // 设置键的序列化方式
         template.setKeySerializer(new StringRedisSerializer());
         // 设置值的序列化方式（JSON格式）
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(JacksonUtil.getMapper()));
 
         // 设置Hash键的序列化方式
         template.setHashKeySerializer(new StringRedisSerializer());
         // 设置Hash值的序列化方式
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(JacksonUtil.getMapper()));
 
         template.afterPropertiesSet();
         return template;

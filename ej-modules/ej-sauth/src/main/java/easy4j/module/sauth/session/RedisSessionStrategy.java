@@ -14,9 +14,15 @@
  */
 package easy4j.module.sauth.session;
 
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.Module;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.module.sauth.domain.SecuritySession;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+
+import javax.annotation.Resource;
 
 /**
  * RedisSessionStrategy
@@ -27,20 +33,34 @@ import easy4j.module.sauth.domain.SecuritySession;
 @Module(SysConstant.EASY4J_REDIS_ENABLE)
 public class RedisSessionStrategy extends AbstractSessionStrategy {
 
+    @Resource
+    CacheManager cacheManager;
+
     @Override
     public SecuritySession getSession(String token) {
-        return null;
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+        assert cache != null;
+        return cache.get(token, SecuritySession.class);
     }
 
     @Override
     public SecuritySession saveSession(SecuritySession securitySession) {
-        return null;
+        if (null == securitySession) {
+            Easy4j.error(SysLog.compact("securitySession is null"));
+            return null;
+        }
+        String shaToken = securitySession.getShaToken();
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+        assert cache != null;
+        cache.put(shaToken, securitySession);
+        return securitySession;
     }
 
     @Override
     public void deleteSession(String token) {
-
-
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+        assert cache != null;
+        cache.evict(token);
     }
 
 

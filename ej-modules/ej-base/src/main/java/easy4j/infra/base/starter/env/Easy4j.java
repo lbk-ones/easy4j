@@ -133,7 +133,14 @@ public class Easy4j implements ApplicationContextAware {
             if (ObjectUtil.isEmpty(property)) {
                 staticVs = EjSysProperties.getStaticVs(name);
                 property = Optional.ofNullable(staticVs)
-                        .map(e -> getProperty(e[0], aclass))
+                        .map(e -> {
+                            String s = e[0];
+                            if (!StrUtil.equalsAnyIgnoreCase(s, name)) {
+                                return getProperty(s, aclass);
+                            } else {
+                                return null;
+                            }
+                        })
                         .orElse(null);
             }
             if (ObjectUtil.isEmpty(property)) {

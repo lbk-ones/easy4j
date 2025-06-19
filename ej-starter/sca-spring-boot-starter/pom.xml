@@ -118,5 +118,23 @@
             <version>${easy4j.infra.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-sactuator</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-redis</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-scache</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+
     </dependencies>
 </project>
