@@ -18,7 +18,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.context.Easy4jContext;
+import easy4j.module.sca.common.PublicHeaders;
 import easy4j.module.sca.util.HttpUtils;
 import easy4j.module.sca.util.PathMatcherUtil;
 import easy4j.module.sca.util.SignUtil;
@@ -28,7 +28,6 @@ import jodd.util.StringPool;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.SortedMap;
 
 /**
@@ -46,24 +45,7 @@ public class Easy4jRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         Easy4j.debug("feign client request url {}", template.url());
 
-        // trace id
-        Easy4jContext context = Easy4j.getContext();
-        Optional<Object> threadHashValue = context.getThreadHashValue(SysConstant.TRACE_ID_NAME, SysConstant.TRACE_ID_NAME);
-        threadHashValue.ifPresent(object -> template.header(SysConstant.SERVER_TRACE_NAME, object.toString()));
-
-        // sha token
-        Optional<Object> xAccessToken = context.getThreadHashValue(SysConstant.X_ACCESS_TOKEN, SysConstant.X_ACCESS_TOKEN);
-        xAccessToken.ifPresent(object -> template.header(SysConstant.X_ACCESS_TOKEN, object.toString()));
-
-        // tenantId
-        Optional<Object> xTenantId = context.getThreadHashValue(SysConstant.X_TENANT_ID, SysConstant.X_TENANT_ID);
-        xTenantId.ifPresent(object -> template.header(SysConstant.X_TENANT_ID, object.toString()));
-
-        // this value must be the same for the same rpc request
-        // easy4j trace id
-        Optional<Object> easy4jRpcTrace = context.getThreadHashValue(SysConstant.EASY4J_RPC_TRACE, SysConstant.EASY4J_RPC_TRACE);
-        easy4jRpcTrace.ifPresent(object -> template.header(SysConstant.EASY4J_RPC_TRACE, object.toString()));
-
+        PublicHeaders.initHeader(template);
 
         // sign url
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getSignUrls);

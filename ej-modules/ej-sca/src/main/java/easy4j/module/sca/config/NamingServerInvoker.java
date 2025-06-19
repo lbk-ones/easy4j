@@ -21,7 +21,6 @@ import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -32,6 +31,7 @@ import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
+import easy4j.module.sca.common.PublicHeaders;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.http.*;
@@ -175,10 +175,12 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         try {
             Instance instance = selectInstance(serviceName, group);
             String url = buildUrl(instance, path, params);
-            Map<String, Object> objectObjectHashMap = Maps.newHashMap();
-            objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accesstoken));
-            MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
-            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
+            //Map<String, Object> objectObjectHashMap = Maps.newHashMap();
+            //objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accesstoken));
+            //MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            initHeader(httpHeaders, accesstoken);
+            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(httpHeaders);
             ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -207,10 +209,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         try {
             Instance instance = selectInstance(serviceName, group);
             String url = buildUrl(instance, path, null);
-            Map<String, Object> objectObjectHashMap = Maps.newHashMap();
-            objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
-            MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
-            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
+            //Map<String, Object> objectObjectHashMap = Maps.newHashMap();
+            //objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
+            //MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            initHeader(httpHeaders, null);
+            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(httpHeaders);
             ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -232,6 +237,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
      * @return
      */
     public String putJson(
+            Object body,
             String serviceName,
             String group,
             String path
@@ -239,10 +245,12 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         try {
             Instance instance = selectInstance(serviceName, group);
             String url = buildUrl(instance, path, null);
-            Map<String, Object> objectObjectHashMap = Maps.newHashMap();
-            objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
-            MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
-            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
+            //Map<String, Object> objectObjectHashMap = Maps.newHashMap();
+            //objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
+            //MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            initHeader(httpHeaders, null);
+            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(body, httpHeaders);
             ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.PUT,
@@ -280,10 +288,12 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         try {
             Instance instance = selectInstance(serviceName, group);
             String url = buildUrl(instance, path, null);
-            Map<String, Object> objectObjectHashMap = Maps.newHashMap();
-            objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
-            MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
-            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(multiValueMap);
+            //Map<String, Object> objectObjectHashMap = Maps.newHashMap();
+            //objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
+            //MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            initHeader(httpHeaders, accessToken);
+            HttpEntity<Object> objectHttpEntity = new HttpEntity<>(httpHeaders);
             ResponseEntity<Object> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.DELETE,
@@ -319,8 +329,9 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
 
             // 设置表单头
             HttpHeaders headers = new HttpHeaders();
+            initHeader(headers, accessToken);
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
+            //headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
 
             // 转换参数
             MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
@@ -360,6 +371,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
 
             // 设置 JSON 头
             HttpHeaders headers = new HttpHeaders();
+            initHeader(headers, accessToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
 
@@ -370,6 +382,12 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
+    }
+
+    private void initHeader(HttpHeaders headers, String accessToken) {
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        PublicHeaders.initHeader(headers);
+        headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
     }
 
     /**
@@ -496,7 +514,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
         if (nacosInvokeDto.isJson()) {
-            String s = putJson(serverName, group1, path);
+            String s = putJson(body, serverName, group1, path);
             return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
             });
         }
