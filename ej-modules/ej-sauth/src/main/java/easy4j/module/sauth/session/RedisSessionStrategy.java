@@ -18,6 +18,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.Module;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.module.sauth.domain.SecuritySession;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -33,14 +34,19 @@ import javax.annotation.Resource;
 @Module(SysConstant.EASY4J_REDIS_ENABLE)
 public class RedisSessionStrategy extends AbstractSessionStrategy {
 
-    @Resource
+
+    @Resource(name = "redisCacheManager")
     CacheManager cacheManager;
 
     @Override
     public SecuritySession getSession(String token) {
         Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
         assert cache != null;
-        return cache.get(token, SecuritySession.class);
+        Cache.ValueWrapper valueWrapper = cache.get(token);
+        assert valueWrapper != null;
+        Object o = valueWrapper.get();
+        if (o == null) return null;
+        return JacksonUtil.toObject(JacksonUtil.toJson(o), SecuritySession.class);
     }
 
     @Override
