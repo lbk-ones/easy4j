@@ -15,8 +15,6 @@
 package easy4j.module.sauth.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Dict;
-import cn.hutool.core.lang.func.LambdaUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
@@ -27,10 +25,10 @@ import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +44,9 @@ public class SAuthController {
 
     @Autowired
     DBAccess dbAccess;
+
+    @Autowired
+    SessionStrategy sessionStrategy;
 
     @GetMapping("getOnlineUserByToken/{token}")
     public EasyResult<Object> getOnlineUserByToken(@PathVariable(name = "token") String token) {
@@ -86,34 +87,26 @@ public class SAuthController {
 
     @GetMapping("getSession/{token}")
     public EasyResult<SecuritySession> getSession(@PathVariable(name = "token") String token) {
-        Dict dict = Dict.create()
-                .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-        return EasyResult.ok(dbAccess.selectOneByMap(dict, SecuritySession.class));
+        SecuritySession session = sessionStrategy.getSession(token);
+        return EasyResult.ok(session);
     }
 
     @PostMapping("saveSession")
     public EasyResult<Object> saveSession(@RequestBody SecuritySession securitySession) {
-        int i = dbAccess.saveOne(securitySession, SecuritySession.class);
-        if (i > 0) {
-            return EasyResult.ok(securitySession);
-        } else {
-            return EasyResult.ok(null);
-        }
+        SecuritySession securitySession1 = sessionStrategy.saveSession(securitySession);
+        return EasyResult.ok(securitySession1);
     }
 
     @DeleteMapping("deleteSession/{token}")
     public EasyResult<Object> deleteSession(@PathVariable(name = "token") String token) {
-        Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-        int i = dbAccess.deleteByMap(dict, SecuritySession.class);
-        return EasyResult.ok(i);
+        sessionStrategy.deleteSession(token);
+        return EasyResult.ok(null);
     }
 
     @GetMapping("getSessionByUserName/{username}")
     public EasyResult<SecuritySession> getSessionByUserName(@PathVariable(name = "username") String username) {
-        Dict dict = Dict.create()
-                .set(LambdaUtil.getFieldName(SecuritySession::getUserName), username);
-        SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
-        return EasyResult.ok(securitySession);
+        SecuritySession sessionByUserName = sessionStrategy.getSessionByUserName(username);
+        return EasyResult.ok(sessionByUserName);
     }
 
     @GetMapping("loadUserByUserName/{username}")
@@ -129,19 +122,10 @@ public class SAuthController {
 
     @GetMapping("refreshSession/{token}")
     public EasyResult<Object> refreshSession(@PathVariable(name = "token") String token) {
-        Dict dict = Dict.create()
-                .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-        SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
-        long expireTimeSeconds = securitySession.getExpireTimeSeconds();
-        EjSysProperties ejSysProperties1 = Easy4j.getEjSysProperties();
-        int sessionRefreshTimeRemaining = ejSysProperties1.getSessionRefreshTimeRemaining();
-        if (expireTimeSeconds > 0 && (new Date().getTime() + sessionRefreshTimeRemaining * 1000L) >= expireTimeSeconds) {
-            EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-            int sessionExpireTimeSeconds = ejSysProperties.getSessionExpireTimeSeconds();
-            securitySession.setExpireTimeSeconds(new Date().getTime() + (sessionExpireTimeSeconds * 1000L));
-            dbAccess.updateByPrimaryKey(securitySession, SecuritySession.class, false);
-        }
-        return EasyResult.ok(null);
+        EjSysProperties ejSysProperties2 = Easy4j.getEjSysProperties();
+        int sessionExpireTimeSeconds1 = ejSysProperties2.getSessionExpireTimeSeconds();
+        SecuritySession securitySession1 = sessionStrategy.refreshSession(token, sessionExpireTimeSeconds1, TimeUnit.SECONDS);
+        return EasyResult.ok(securitySession1);
     }
 
 }
