@@ -67,6 +67,7 @@ public class RedisPropertiesResolve extends ObjectMapStrObjectAbstractResovle {
                 setSpringProperty(t, SysConstant.SPRING_REDIS_SENTINEL_MASTER, mymaster);
                 setSpringProperty(t, SysConstant.SPRING_REDIS_SENTINEL_NODES, url1);
                 setSpringProperty(t, SysConstant.SPRING_REDIS_SENTINEL_PASSWORD, password1);
+                setSpringProperty(t, SysConstant.SPRING_REDIS_PASSWORD, password1);
                 break;
             case CLUSTER:
                 String url2 = getUrl(easy4jRedisUrl);
