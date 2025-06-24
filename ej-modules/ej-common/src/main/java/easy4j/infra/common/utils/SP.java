@@ -90,4 +90,13 @@ public interface SP {
     String HTML_GT = "&gt;";
     String[] EMPTY_ARRAY = new String[0];
     byte[] BYTES_NEW_LINE = "\n".getBytes();
+
+    String PROPERTIES = "properties";
+    String PROPERTIES_SUFFIX = DOT + "properties";
+    String YML = "yml";
+    String YML_SUFFIX = DOT + "yml";
+    String YAML = "yaml";
+    String YAML_SUFFIX = DOT + "yaml";
+    String APPLICATION = "application";
+    String BOOTSTRAP = "bootstrap";
 }

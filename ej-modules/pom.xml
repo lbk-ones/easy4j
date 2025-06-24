@@ -41,6 +41,7 @@
         <module>ej-sactuator</module>
         <module>ej-scache</module>
         <module>ej-sca-gateway</module>
+        <module>ej-sca-seata</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>

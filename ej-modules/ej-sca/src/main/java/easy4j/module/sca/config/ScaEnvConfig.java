@@ -59,19 +59,7 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
      */
     @Override
     public Properties getProperties() {
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        lbk:
-        try {
-            classLoader.loadClass("easy4j.module.boot.sca.Enable");
-        } catch (ClassNotFoundException e) {
-            try {
-                classLoader.loadClass("easy4j.boot.gateway.Enable");
-                break lbk;
-            } catch (ClassNotFoundException ignored) {
-            }
-            System.out.println(SysLog.compact("未引用sca-starter或者sca-gateway模块sca配置不生效!"));
-            return null;
-        }
+        if (!isSca()) return null;
         Properties properties = new Properties();
         EjSysProperties ejSys = Easy4j.getEjSysProperties();
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getServerName);

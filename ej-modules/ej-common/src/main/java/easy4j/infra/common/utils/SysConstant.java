@@ -144,6 +144,13 @@ public class SysConstant {
     public static final String EASY4J_REDIS_ENABLE = PARAM_PREFIX + StringPool.DOT + "redis-enable";
     public static final String EASY4J_REDIS_CONNECTION_TYPE = PARAM_PREFIX + StringPool.DOT + "redis-connection-type";
     public static final String EASY4J_FLYWAY_ENABLE = PARAM_PREFIX + StringPool.DOT + "flyway-enable";
+    public static final String EASY4J_SEATA_ENABLE = PARAM_PREFIX + StringPool.DOT + "seata-enable";
+    public static final String EASY4J_SEATA_TX_GROUP = PARAM_PREFIX + StringPool.DOT + "seata-tx-group";
+
+    public static final String EASY4J_SEATA_REGISTRY_TYPE = PARAM_PREFIX + StringPool.DOT + "seata-registry-type";
+    public static final String EASY4J_SEATA_NACOS_URL = PARAM_PREFIX + StringPool.DOT + "seata-nacos-url";
+    public static final String EASY4J_SEATA_NACOS_CLUSTER = PARAM_PREFIX + StringPool.DOT + "seata-nacos-cluster";
+    public static final String EASY4J_SEATA_NACOS_GROUP = PARAM_PREFIX + StringPool.DOT + "seata-nacos-group";
 
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------

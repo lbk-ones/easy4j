@@ -24,25 +24,27 @@ import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.resolve.AbstractEasy4jResolve;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
-import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.common.utils.ObjectHolder;
-import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.common.utils.DefLog;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.*;
 import jodd.util.StringPool;
 import lombok.Getter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.boot.env.PropertiesPropertySourceLoader;
+import org.springframework.boot.env.PropertySourceLoader;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.*;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -89,31 +91,95 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         }
     }
 
+    /**
+     * 根据name兼容获取资源
+     *
+     * @author bokun.li
+     * @date 2025/6/24
+     */
+    public Resource getResourceFromName(String name) {
+        try {
+            File file = new File(name);
+            if (file.exists()) {
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    return new InputStreamResource(fileInputStream);
+                } catch (FileNotFoundException ignored) {
+                }
+            } else {
+                ClassPathResource classPathResource = new ClassPathResource(name);
+                if (classPathResource.exists()) {
+                    return classPathResource;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * 是否跳过环境设置
+     * 由子类重写
+     *
+     * @author bokun.li
+     * @date 2025/6/24
+     */
+    public boolean isSkip() {
+        return false;
+    }
+
+    /**
+     * custom properties and file together load
+     *
+     * @author bokun.li
+     * @date 2025/6/24
+     */
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        if (isSkip()) {
+            System.out.println(SysLog.compact("skip " + getName() + " config.."));
+            return;
+        }
         String name = getName();
         initEnv(environment, application);
         MutablePropertySources propertySources = environment.getPropertySources();
         Properties properties = getProperties();
         if (StrUtil.isNotBlank(name)) {
-            if (name.endsWith(".yml") || name.endsWith(".yaml")) {
-                YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-                Resource resource = new ClassPathResource(name);
-                if (resource.exists()) {
-                    try {
-                        PropertySource<?> propertySource = loader.load(name, resource).get(0);
-                        environment.getPropertySources().addLast(propertySource);
-                        getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to load custom YAML configuration", e);
-                    }
+            boolean isPost = false;
+            PropertySourceLoader loader = null;
+            if (name.endsWith(SP.YML_SUFFIX) || name.endsWith(SP.YAML_SUFFIX)) {
+                loader = new YamlPropertySourceLoader();
+            } else if (name.endsWith(SP.PROPERTIES_SUFFIX)) {
+                if (name.startsWith(SP.APPLICATION) || name.startsWith(SP.BOOTSTRAP)) {
+                    throw new EasyException("name can not start with " + SP.APPLICATION + " , " + SP.BOOTSTRAP);
                 }
-            } else {
-                if (Objects.nonNull(properties) && !properties.isEmpty()) {
-                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name, properties);
-                    propertySources.addLast(propertiesPropertySource);
+                loader = new PropertiesPropertySourceLoader();
+            }
+            Resource resource = getResourceFromName(name);
+            if (null != resource && resource.exists() && null != loader) {
+                try {
+                    PropertySource<?> propertySource = loader.load(name, resource).get(0);
+                    environment.getPropertySources().addLast(propertySource);
                     getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
+                    isPost = true;
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to load custom YAML configuration", e);
                 }
+            }
+            if (Objects.nonNull(properties) && !properties.isEmpty()) {
+                String name2 = name;
+                if (isPost) {
+                    // override file properties
+                    name2 += "--";
+                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
+                    propertySources.addBefore(name, propertiesPropertySource);
+                    getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
+                } else {
+                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
+                    propertySources.addLast(propertiesPropertySource);
+                    getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
+                }
+
             }
         }
 
@@ -278,5 +344,30 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         return loadPropertySource;
     }
 
+
+    /**
+     * 判断是否使用了 sca 体系
+     *
+     * @return
+     */
+    public boolean isSca() {
+        boolean isEnableSca = Easy4j.getProperty(SysConstant.EASY4J_SCA_ENABLE, boolean.class);
+        if (isEnableSca) {
+            return true;
+        } else {
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            try {
+                classLoader.loadClass("easy4j.module.boot.sca.Enable");
+                return true;
+            } catch (ClassNotFoundException e) {
+                try {
+                    classLoader.loadClass("easy4j.boot.gateway.Enable");
+                    return true;
+                } catch (ClassNotFoundException ignored) {
+                }
+            }
+            return false;
+        }
+    }
 
 }

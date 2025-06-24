@@ -471,6 +471,41 @@ public class EjSysProperties {
     @SpringVs(desc = "spring-cloud-gateway 流控规则")
     private int scaGatewayFlowQps = 400;
 
+    /**
+     * 是否启用seata
+     */
+    @SpringVs(desc = "是否启用seata", vs = "seata.enabled")
+    private boolean seataEnable = false;
+
+    /**
+     * seata注册中心地址,地址(多个地址用逗号隔开)@用户:密码
+     */
+    @SpringVs(desc = "seata注册中心地址,地址(多个地址用逗号隔开)@用户:密码")
+    private String seataNacosUrl;
+
+    @SpringVs(desc = "seata注册中心集群名称，通常和vgroup-mapping对应起来", vs = "seata.registry.nacos.cluster")
+    private String seataNacosCluster = "default";
+
+
+    /**
+     * seata事务组
+     */
+    @SpringVs(desc = "seata事务组", vs = "seata.tx-service-group")
+    private String seataTxGroup = "default_tx_group";
+
+
+    /**
+     * seata注册中心nacos组
+     */
+    @SpringVs(desc = "seata注册中心nacos组", vs = "seata.registry.nacos.group")
+    private String seataNacosGroup = "SEATA_GROUP";
+
+    /**
+     * seata注册中心类型
+     */
+    @SpringVs(desc = "seata注册中心类型", vs = "seata.registry.type")
+    private String seataRegistryType;
+
 
     /**
      * 根据常量获取 对应的springboot变量
