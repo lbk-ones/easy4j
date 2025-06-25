@@ -69,3 +69,4 @@
 - **easy4j.seata-tx-group**: seata事务组
 - **easy4j.seata-nacos-group**: seata注册中心nacos组
 - **easy4j.seata-registry-type**: seata注册中心类型
+- **easy4j.seata-tx-log**: seata事务日志是否整合到logback（true代表整合false代表不整合），默认整合

@@ -506,6 +506,12 @@ public class EjSysProperties {
     @SpringVs(desc = "seata注册中心类型", vs = "seata.registry.type")
     private String seataRegistryType;
 
+    /**
+     * seata事务日志是否整合到logback，默认整合
+     */
+    @SpringVs(desc = "seata事务日志是否整合到logback（true代表整合false代表不整合），默认整合")
+    private boolean seataTxLog = true;
+
 
     /**
      * 根据常量获取 对应的springboot变量

@@ -15,6 +15,8 @@
 package easy4j.infra.sca.seata;
 
 import io.seata.core.context.RootContext;
+import io.seata.core.exception.TransactionException;
+import io.seata.core.model.GlobalStatus;
 import io.seata.tm.api.GlobalTransactionContext;
 
 /**
@@ -28,28 +30,28 @@ public class SeataUtils {
     /**
      * 获取当前全局事务ID
      */
-    public String getCurrentXid() {
+    public static String getCurrentXid() {
         return RootContext.getXID();
     }
 
     /**
      * 判断是否存在全局事务
      */
-    public boolean isInGlobalTransaction() {
+    public static boolean isInGlobalTransaction() {
         return RootContext.getXID() != null;
     }
 
     /**
      * 手动开启全局事务
      */
-    public void beginGlobalTransaction(String name, int timeout) throws Exception {
+    public static void beginGlobalTransaction(String name, int timeout) throws Exception {
         GlobalTransactionContext.reload(RootContext.getXID()).begin(timeout, name);
     }
 
     /**
      * 手动提交全局事务
      */
-    public void commitGlobalTransaction() throws Exception {
+    public static void commitGlobalTransaction() throws Exception {
         if (isInGlobalTransaction()) {
             GlobalTransactionContext.reload(getCurrentXid()).commit();
         }
@@ -58,9 +60,17 @@ public class SeataUtils {
     /**
      * 手动回滚全局事务
      */
-    public void rollbackGlobalTransaction() throws Exception {
+    public static void rollbackGlobalTransaction() throws Exception {
         if (isInGlobalTransaction()) {
             GlobalTransactionContext.reload(getCurrentXid()).rollback();
+        }
+    }
+
+    public static GlobalStatus getStatus() {
+        try {
+            return GlobalTransactionContext.getCurrent().getStatus();
+        } catch (TransactionException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -42,6 +42,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-knife4j**：整合api文档相关
 - **ej-sca**：spring-cloud-alibaba 整合
 - **ej-sca-gateway**：spring-cloud 网关整合比较特殊新增一个
+- **ej-sca-seata**：spring-cloud 整合seata
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合
 - **ej-dubbo3**：dubbo3整合（默认配置，异常，jaeger链路整合）
@@ -70,8 +71,8 @@ Easy4J 框架包含以下核心模块：
 - **ej-starter/ej-spring-nd-boot-starter**：springboot体系无数据源整合starter
 - **ej-starter/sca-spring-boot-starter**：sca启动
 - **ej-starter/sca-gateway-spring-boot-starter**：spring-cloud-reactive网关
-- 
 - **ej-test**：starter的测试模块
+- **ej-texample**：例子
 
 ## 快速开始
 

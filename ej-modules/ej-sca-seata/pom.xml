@@ -25,6 +25,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-webmvc</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!--tx-->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

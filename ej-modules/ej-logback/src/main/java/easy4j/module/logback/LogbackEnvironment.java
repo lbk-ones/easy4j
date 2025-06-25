@@ -18,6 +18,7 @@ import ch.qos.logback.classic.PatternLayout;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import jodd.util.SystemUtil;
 import org.springframework.boot.SpringApplication;
@@ -60,11 +61,18 @@ public class LogbackEnvironment extends AbstractEasy4jEnvironment {
      */
     @Override
     public Properties getProperties() {
-        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-        boolean simpleLinkTracking = ejSysProperties.isSimpleLinkTracking();
+        //EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+        //boolean simpleLinkTracking = ejSysProperties.isSimpleLinkTracking();
+        boolean envProperty = getEnvProperty(Easy4j.getEjSysPropertyName(EjSysProperties::isSimpleLinkTracking), boolean.class);
         String traceIdTemplate = "%" + SysConstant.TRACE_ID_NAME;
-        if (simpleLinkTracking) {
+        if (envProperty) {
             traceIdTemplate = "%X{" + SysConstant.TRACE_ID_NAME + ":-[]}";
+        }
+        // 将seata的日志整合到 logback中去
+        boolean seataEnable = getEnvProperty(Easy4j.getEjSysPropertyName(EjSysProperties::isSeataEnable), boolean.class);
+        boolean isSeataTxLog = getEnvProperty(Easy4j.getEjSysPropertyName(EjSysProperties::isSeataTxLog), boolean.class);
+        if (seataEnable && isSeataTxLog) {
+            traceIdTemplate += SP.SPACE + "[TX:%X{X-TX-XID:-}-%X{X-TX-BRANCH-ID:-}]";
         }
         Properties properties = new Properties();
         properties.setProperty("logging.level.root", "INFO");
