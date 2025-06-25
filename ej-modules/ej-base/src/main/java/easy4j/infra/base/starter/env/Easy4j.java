@@ -108,19 +108,30 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static <T> T getRequiredProperty(String name, Class<T> aclass) {
-        return getPropertyWith(name, aclass, true);
+        return getPropertyWith(name, aclass, true, null);
     }
 
     public static String getRequiredProperty(String name) {
-        return getPropertyWith(name, String.class, true);
+        return getPropertyWith(name, String.class, true, null);
     }
 
     public static <T> T getProperty(String name, Class<T> aclass) {
-        return getPropertyWith(name, aclass, false);
+        return getPropertyWith(name, aclass, false, null);
     }
 
-    private static <T> T getPropertyWith(String name, Class<T> aclass, boolean isRequired) {
-        T property = Optional.ofNullable(environment)
+    public static <T> T getEnvProperty(String name, Class<T> aclass, Environment environment) {
+        return getPropertyWith(name, aclass, false, environment);
+    }
+
+    public static <T> T getRequiredEnvProperty(String name, Class<T> aclass, Environment environment) {
+        return getPropertyWith(name, aclass, true, environment);
+    }
+
+    private static <T> T getPropertyWith(String name, Class<T> aclass, boolean isRequired, Environment _environment) {
+        boolean isNullEnv = _environment == null;
+        Environment final_environment = _environment;
+        if (isNullEnv) _environment = environment;
+        T property = Optional.ofNullable(_environment)
                 .map(e -> e.getProperty(name, aclass))
                 .orElse(null);
         if (ObjectUtil.isEmpty(property)) {
@@ -132,11 +143,16 @@ public class Easy4j implements ApplicationContextAware {
         if (isSys) {
             if (ObjectUtil.isEmpty(property)) {
                 staticVs = EjSysProperties.getStaticVs(name);
+
                 property = Optional.ofNullable(staticVs)
                         .map(e -> {
                             String s = e[0];
                             if (!StrUtil.equalsAnyIgnoreCase(s, name)) {
-                                return getProperty(s, aclass);
+                                if (isNullEnv) {
+                                    return getProperty(s, aclass);
+                                } else {
+                                    return getEnvProperty(s, aclass, final_environment);
+                                }
                             } else {
                                 return null;
                             }

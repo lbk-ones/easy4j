@@ -136,12 +136,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      */
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        String name = getName();
+        initEnv(environment, application);
         if (isSkip()) {
             System.out.println(SysLog.compact("skip " + getName() + " config.."));
             return;
         }
-        String name = getName();
-        initEnv(environment, application);
         MutablePropertySources propertySources = environment.getPropertySources();
         Properties properties = getProperties();
         if (StrUtil.isNotBlank(name)) {
@@ -368,6 +368,30 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             }
             return false;
         }
+    }
+
+    /**
+     * 这下面三个方法是为了兼容 环境对象使用的
+     * 因为 Easy4j.getProperty()方法在EnvironmentPostProcessor调用链中可能有一定的滞后性（这个坑很大可能一时半会改不完所以最好的是遇到点改点），
+     * 具体原因在 如果使用远程配置那么 EnvironmentPostProcessor回调传来的对象 ConfigurableEnvironment可能是新构造的，Easy4j.getProperty()这个使用的是老对象，
+     * 如果这时候还使用 Easy4j.getProperty() 那么拿到的数据就会出现一定的滞后性
+     * 其实这个问题不是什么大问题 因为SpringCloud数据最终会兼容合并 大部分数据不会丢，但是某个EnvironmentPostProcessor回调里面如果出了问题那么这个回调里本身要注入的数据可能就会丢失部分，导致配置变更了但是又没变
+     *
+     * @author bokun.li
+     * @date 2025/6/25
+     */
+    public <T> T getEnvProperty(String name, Class<T> tClass) {
+        return Easy4j.getEnvProperty(name, tClass, this.configEnvironment);
+    }
+
+    // 这个默认使用String类型
+    public String getEnvProperty(String name) {
+        return Easy4j.getEnvProperty(name, String.class, this.configEnvironment);
+    }
+
+    // 这个没有会报错
+    public String getRequiredEnvProperty(String name) {
+        return Easy4j.getRequiredEnvProperty(name, String.class, this.configEnvironment);
     }
 
 }

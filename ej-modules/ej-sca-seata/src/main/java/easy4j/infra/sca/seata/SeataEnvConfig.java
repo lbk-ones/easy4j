@@ -17,7 +17,6 @@ package easy4j.infra.sca.seata;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
-import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -41,21 +40,21 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
     @Override
     public Properties getProperties() {
 
-        String txGroup = getProperty(SysConstant.EASY4J_SEATA_TX_GROUP);
-        String clusterName = getProperty(SysConstant.EASY4J_SEATA_NACOS_CLUSTER);
-        String nacosGroup = getProperty(SysConstant.EASY4J_SEATA_NACOS_GROUP);
-        String serverName = getProperty(SysConstant.EASY4J_SERVER_NAME);
+        String txGroup = getEnvProperty(SysConstant.EASY4J_SEATA_TX_GROUP);
+        String clusterName = getEnvProperty(SysConstant.EASY4J_SEATA_NACOS_CLUSTER);
+        String nacosGroup = getEnvProperty(SysConstant.EASY4J_SEATA_NACOS_GROUP);
+        String serverName = getEnvProperty(SysConstant.EASY4J_SERVER_NAME);
         // 优先从 nacos那里去拿
         String nacosUrl = StrUtil.blankToDefault(
-                getProperty(SysConstant.EASY4J_SCA_NACOS_URL),
-                getProperty(SysConstant.EASY4J_SEATA_NACOS_URL)
+                getEnvProperty(SysConstant.EASY4J_SCA_NACOS_URL),
+                getEnvProperty(SysConstant.EASY4J_SEATA_NACOS_URL)
         );
         String username = StrUtil.blankToDefault(
-                getProperty(SysConstant.EASY4J_SCA_NACOS_USERNAME),
-                getUsername(nacosUrl)
+                getEnvProperty(SysConstant.EASY4J_SCA_NACOS_USERNAME),
+                getEnvProperty(nacosUrl)
         );
         String password = StrUtil.blankToDefault(
-                getProperty(SysConstant.EASY4J_SCA_NACOS_PASSWORD),
+                getEnvProperty(SysConstant.EASY4J_SCA_NACOS_PASSWORD),
                 getPassword(nacosUrl)
         );
         Properties properties = new Properties();
@@ -67,16 +66,7 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
         if (SystemUtil.getOsInfo().isLinux()) {
             properties.setProperty("seata.transport.server", "Epoll");
         }
-        /**
-         seata.registry.type=nacos
-         seata.registry.nacos.cluster=default
-         seata.registry.nacos.group=SEATA_GROUP
-         seata.registry.nacos.server-addr=localhost:8848
-         seata.registry.nacos.username=nacos
-         seata.registry.nacos.password=nacos
-         seata.registry.nacos.namespace=public
-         seata.registry.nacos.application=seata-server
-         */
+
         if (isSca()) {
             properties.setProperty("seata.registry.type", "nacos");
             properties.setProperty("seata.registry.nacos.cluster", clusterName);
@@ -92,7 +82,7 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
 
     @Override
     public boolean isSkip() {
-        return Easy4j.getProperty(SysConstant.EASY4J_SEATA_ENABLE, boolean.class);
+        return !getEnvProperty(SysConstant.EASY4J_SEATA_ENABLE, boolean.class);
     }
 
     @Override

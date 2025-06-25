@@ -43,7 +43,7 @@ public class ImportFilter implements AutoConfigurationImportFilter {
         if (StrUtil.isNotBlank(autoConfigurationClass)) {
             boolean contains = autoConfigurationClass.contains("Seata");
             if (contains) {
-                return Easy4j.getProperty(SysConstant.EASY4J_SEATA_ENABLE, boolean.class);
+                return !Easy4j.getProperty(SysConstant.EASY4J_SEATA_ENABLE, boolean.class);
             }
         }
         return false;
