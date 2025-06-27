@@ -1,10 +1,14 @@
 package template.service.storage.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.BusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import template.service.api.dto.AdviceStorageDto;
 import template.service.storage.domains.AdviceStorage;
 import template.service.storage.service.AdviceStorageService;
 
@@ -55,7 +59,7 @@ public class AdviceStorageController {
     // 分页查询库存记录
     @GetMapping("/page")
     public EasyResult<Object> pageStorages(@RequestParam(defaultValue = "1") Integer pageNum,
-                              @RequestParam(defaultValue = "10") Integer pageSize) {
+                                           @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<AdviceStorage> page = new Page<>(pageNum, pageSize);
         Page<AdviceStorage> resultPage = storageService.page(page);
         return EasyResult.ok(resultPage);
@@ -75,5 +79,62 @@ public class AdviceStorageController {
     public EasyResult<Object> decreaseStorage(@PathVariable String ordCode, @PathVariable int quantity) {
         boolean success = storageService.decreaseCount(ordCode, quantity);
         return EasyResult.ok(success);
+    }
+
+
+    @PutMapping("/advice-tccFrozeStorage")
+    EasyResult<AdviceStorageDto> tccFrozeStorage(@RequestBody AdviceStorageDto storage) {
+        CheckUtils.checkByLambda(storage,
+                AdviceStorageDto::getOrdCode,
+                AdviceStorageDto::getCount
+        );
+        String ordCode = storage.getOrdCode();
+        AdviceStorage byId = storageService.getById(ordCode);
+        CheckUtils.checkObjIsNull(byId, BusCode.A00046, ordCode, "storage");
+        Integer dbFrozeAmount = ObjectUtil.defaultIfNull(byId.getFrozeAmount(), 0);
+        // 不能超过库存
+        int min = Math.min(byId.getCount(), storage.getFrozeAmount() + dbFrozeAmount);
+        byId.setFrozeAmount(min);
+        storageService.updateById(byId);
+        return EasyResult.ok(null);
+    }
+
+    @PutMapping("/advice-tccReduceStorage")
+    EasyResult<AdviceStorageDto> tccReduceStorage(@RequestBody AdviceStorageDto storage) {
+        CheckUtils.checkByLambda(storage,
+                AdviceStorageDto::getOrdCode,
+                AdviceStorageDto::getCount
+        );
+
+        String ordCode = storage.getOrdCode();
+        Integer frozeAmount1 = storage.getFrozeAmount();
+        AdviceStorage byId = storageService.getById(ordCode);
+        CheckUtils.checkObjIsNull(byId, BusCode.A00046, ordCode, "storage");
+        Integer count = byId.getCount();
+        Integer frozeAmount = ObjectUtil.defaultIfNull(byId.getFrozeAmount(), 0);
+        // 不能减到负数
+        int min = Math.max(0, frozeAmount - frozeAmount1);
+        byId.setFrozeAmount(min);
+        byId.setCount(Math.max(0, count - frozeAmount1));
+        storageService.updateById(byId);
+        return EasyResult.ok(null);
+    }
+
+    // 取消冻结 将之前冻结的数量减回去
+    @PutMapping("/advice-tccCancelStorage")
+    EasyResult<AdviceStorageDto> tccCancelStorage(@RequestBody AdviceStorageDto storage) {
+        CheckUtils.checkByLambda(storage,
+                AdviceStorageDto::getOrdCode,
+                AdviceStorageDto::getCount
+        );
+        String ordCode = storage.getOrdCode();
+        Integer frozeAmount1 = storage.getFrozeAmount();
+        AdviceStorage byId = storageService.getById(ordCode);
+        CheckUtils.checkObjIsNull(byId, BusCode.A00046, ordCode, "storage");
+        Integer dbFrozeAmount = ObjectUtil.defaultIfNull(byId.getFrozeAmount(), 0);
+        // 不能减到负数
+        byId.setFrozeAmount(Math.max(0, dbFrozeAmount - frozeAmount1));
+        storageService.updateById(byId);
+        return EasyResult.ok(null);
     }
 }

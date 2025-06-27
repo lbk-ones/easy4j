@@ -262,6 +262,26 @@ public class CheckUtils {
     }
 
     /**
+     * 检查rpc结果data是否为空,同时检查异常信息
+     *
+     * @author bokun.li
+     * @date 2025/6/27
+     */
+    @Desc("检查rpc结果data是否为空,同时检查异常信息")
+    public static <T> void checkRpcData(EasyResult<T> easyResult) {
+        if (easyResult == null) {
+            throw EasyException.wrap(BusCode.A00045, "rpc result is null");
+        }
+
+        checkTrue(!easyResult.isSuccess(), BusCode.A00045, easyResult.getMsgAndError());
+
+        T data = easyResult.getData();
+        if (ObjectUtil.isEmpty(data)) {
+            throw EasyException.wrap(BusCode.A00045, "data cannot be empty!");
+        }
+    }
+
+    /**
      * 检查一个对象是否为空，为空则抛出异常
      *
      * @author bokun.li
@@ -274,6 +294,7 @@ public class CheckUtils {
         }
     }
 
+
     /**
      * 检查是否为空 如果是空那么则抛出异常
      *
@@ -281,7 +302,7 @@ public class CheckUtils {
      * @date 2025-06-15
      */
     @Desc("检查一个对象是否为空，为空则抛出异常：参数{name}不能为空")
-    public static void checkNotNull(Object obj, String name) {
+    public static void checkParamNotNull(Object obj, String name) {
         if (ObjectUtil.isEmpty(obj)) {
             throw EasyException.wrap(BusCode.A00004, name);
         }

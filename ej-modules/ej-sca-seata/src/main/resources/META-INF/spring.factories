@@ -1,3 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+easy4j.infra.sca.seata.Config
 org.springframework.boot.env.EnvironmentPostProcessor=\
 easy4j.infra.sca.seata.SeataEnvConfig
 org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\

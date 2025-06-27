@@ -12,9 +12,19 @@ import template.service.api.dto.AdviceStorageDto;
 @FeignClient(name = "template-storage")
 public interface TemplateStorageApi {
 
-    @PutMapping   ("/advice-storage")
+    @PutMapping("/advice-storage")
     EasyResult<Object> updateStorage(@RequestBody AdviceStorageDto storage);
 
     @GetMapping("/advice-storage/{ordCode}")
     EasyResult<AdviceStorageDto> getStorage(@PathVariable String ordCode);
+
+
+    @PutMapping("/advice-storage/advice-tccFrozeStorage")
+    EasyResult<AdviceStorageDto> tccFrozeStorage(@RequestBody AdviceStorageDto storage);
+
+    @PutMapping("/advice-storage/advice-tccReduceStorage")
+    EasyResult<AdviceStorageDto> tccReduceStorage(@RequestBody AdviceStorageDto storage);
+
+    @PutMapping("/advice-storage/advice-tccCancelStorage")
+    EasyResult<AdviceStorageDto> tccCancelStorage(@RequestBody AdviceStorageDto storage);
 }

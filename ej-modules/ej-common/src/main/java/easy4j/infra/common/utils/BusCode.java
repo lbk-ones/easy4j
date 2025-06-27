@@ -143,4 +143,7 @@ public class BusCode {
 
     @Desc("远程调用异常,{0}")
     public static final String A00045 = "A00045";
+
+    @Desc("{0}查询{0}结果为空")
+    public static final String A00046 = "A00046";
 }

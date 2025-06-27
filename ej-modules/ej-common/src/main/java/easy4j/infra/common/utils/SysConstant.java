@@ -99,6 +99,7 @@ public class SysConstant {
     public static final String EASY4J_CONFIG_IMPORT = PARAM_PREFIX + StringPool.DOT + "config-import";
     public static final String EASY4J_SCA_ENABLE = PARAM_PREFIX + StringPool.DOT + "enable-sca";
     public static final String EASY4J_SCA_ENV = PARAM_PREFIX + StringPool.DOT + "env";
+    public static final String EASY4J_DEV = PARAM_PREFIX + StringPool.DOT + "dev";
 
 
     public static final String EASY4J_SCA_NACOS_URL = PARAM_PREFIX + StringPool.DOT + "nacos-url";

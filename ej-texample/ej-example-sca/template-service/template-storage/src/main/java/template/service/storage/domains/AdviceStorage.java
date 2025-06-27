@@ -11,4 +11,5 @@ public class AdviceStorage {
     private String ordCode;  // 项目代码
     private Integer count;   // 库存余额
     private Integer price;   // 单价
+    private Integer frozeAmount;   // 冻结库存
 }

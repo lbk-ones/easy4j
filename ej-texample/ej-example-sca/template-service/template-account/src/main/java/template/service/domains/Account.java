@@ -10,4 +10,6 @@ public class Account {
     @TableId
     private String patId;    // 患者ID
     private Integer balance; // 余额
+
+    private Integer frozeAmount;// 冻结金额
 }

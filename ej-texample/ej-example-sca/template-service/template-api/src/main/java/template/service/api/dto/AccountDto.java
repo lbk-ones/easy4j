@@ -17,15 +17,21 @@ package template.service.api.dto;
 import lombok.Data;
 
 /**
- *
  * AccountDto
  *
- * @date 2025-06-15
  * @author bokun.li
+ * @date 2025-06-15
  */
 @Data
 public class AccountDto {
 
     private String patId;    // 患者ID
     private Integer balance; // 余额
+
+    private Integer frozeAmount;// 冻结金额
+
+    private Integer unFrozeAmount;// 解冻金额
+
+
+    private Integer reduceAmount;// 划扣金额
 }

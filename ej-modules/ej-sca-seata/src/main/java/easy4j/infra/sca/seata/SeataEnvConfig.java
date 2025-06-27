@@ -60,11 +60,20 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
         Properties properties = new Properties();
         properties.setProperty("seata.application-id", serverName);
         properties.setProperty("seata.tx-service-group", txGroup);
+        // seata.tcc.fence.log-table-name=SYS_TCC_FENCE_LOG
+        properties.setProperty("seata.tcc.fence.log-table-name", "SYS_TCC_FENCE_LOG");
         properties.setProperty("seata.transport.thread-factory.boss-thread-size", String.valueOf(Runtime.getRuntime().availableProcessors()));
         properties.setProperty("seata.service.vgroup-mapping." + properties.getProperty("seata.tx-service-group"), clusterName);
         // linux use epoll modal
         if (SystemUtil.getOsInfo().isLinux()) {
             properties.setProperty("seata.transport.server", "Epoll");
+        }
+
+        boolean easyDev = getEnvProperty(SysConstant.EASY4J_DEV, boolean.class);
+        if (easyDev) {
+            properties.setProperty("seata.log.exception-rate", "100");
+        } else {
+            properties.setProperty("seata.log.exception-rate", "10");
         }
 
         if (isSca()) {

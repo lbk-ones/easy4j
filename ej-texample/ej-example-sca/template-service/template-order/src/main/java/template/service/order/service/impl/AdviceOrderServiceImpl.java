@@ -8,5 +8,5 @@ import template.service.order.service.AdviceOrderService;
 
 @Service
 public class AdviceOrderServiceImpl extends ServiceImpl<AdviceOrderMapper, AdviceOrder> implements AdviceOrderService {
-    
+
 }

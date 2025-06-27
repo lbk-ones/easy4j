@@ -2,7 +2,6 @@ package template.service.order.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.context.Easy4jContext;
@@ -52,8 +51,8 @@ public class AdviceOrderController {
         DbLock dbLock = easy4jContext.get(DbLock.class);
         boolean success = false;
         String patId = adviceOrder.getPatId();
-        dbLock.lock(patId,30,"订单锁");
-        try{
+        dbLock.lock(patId, 30, "订单锁");
+        try {
             CheckUtils.checkByLambda(
                     adviceOrder,
                     AdviceOrder::getPatId,
@@ -65,42 +64,42 @@ public class AdviceOrderController {
             String ordCode = adviceOrder.getOrdCode();
             EasyResult<AccountDto> account = templateAccountApi.getAccount(patId);
             AccountDto data = account.getData();
-            checkTrue(num <= 0,"B00003");
-            checkTrue(Objects.isNull(data),"B00001");
+            checkTrue(num <= 0, "B00003");
+            checkTrue(Objects.isNull(data), "B00001");
             Integer balance = data.getBalance();
-            checkTrue(balance == null || balance <=0,"B00002",patId);
+            checkTrue(balance == null || balance <= 0, "B00002", patId);
 
             EasyResult<AdviceStorageDto> storage = templateStorageApi.getStorage(ordCode);
-            checkTrue(!storage.isSuccess(),"B00004",storage.getMessage());
+            checkTrue(!storage.isSuccess(), "B00004", storage.getMessage());
 
             AdviceStorageDto data1 = storage.getData();
-            checkTrue(data1==null,"B00005");
+            checkTrue(data1 == null, "B00005");
             assert data1 != null;
             Integer price = data1.getPrice();
-            checkTrue(price == null || price <=0,"B00006");
+            checkTrue(price == null || price <= 0, "B00006");
             int i = num * price;
-            checkTrue(balance<i,"B00007");
+            checkTrue(balance < i, "B00007");
 
             // 减余额
             AccountDto accountDto = new AccountDto();
             accountDto.setPatId(patId);
-            accountDto.setBalance(balance-i);
+            accountDto.setBalance(balance - i);
             EasyResult<Object> objectEasyResult = templateAccountApi.updateAccount(accountDto);
-            checkTrue(!objectEasyResult.isSuccess(),"B00004",objectEasyResult.getMsgAndError());
+            checkTrue(!objectEasyResult.isSuccess(), "B00004", objectEasyResult.getMsgAndError());
 
             // 减库存
             AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
             adviceStorageDto.setOrdCode(ordCode);
-            adviceStorageDto.setCount(data1.getCount()-num);
+            adviceStorageDto.setCount(data1.getCount() - num);
             EasyResult<Object> objectEasyResult1 = templateStorageApi.updateStorage(adviceStorageDto);
-            checkTrue(!objectEasyResult1.isSuccess(),"B00004",objectEasyResult1.getMsgAndError());
+            checkTrue(!objectEasyResult1.isSuccess(), "B00004", objectEasyResult1.getMsgAndError());
 
             adviceOrder.setOrderNo(CommonKey.gennerString());
             adviceOrderService.save(adviceOrder);
-        }   finally {
+        } finally {
             dbLock.unLock(patId);
         }
-        
+
         return EasyResult.ok(success);
     }
 
@@ -115,7 +114,7 @@ public class AdviceOrderController {
     @PutMapping
     public EasyResult<Object> updateAdviceOrder(@RequestBody AdviceOrder adviceOrder) {
         boolean success = adviceOrderService.updateById(adviceOrder);
-        return  EasyResult.ok(success);
+        return EasyResult.ok(success);
     }
 
     // 根据ID查询申请单
@@ -135,7 +134,7 @@ public class AdviceOrderController {
     // 分页查询申请单
     @GetMapping("/page")
     public EasyResult<Object> pageAdviceOrders(@RequestParam(defaultValue = "1") Integer pageNum,
-                                  @RequestParam(defaultValue = "10") Integer pageSize) {
+                                               @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<AdviceOrder> page = new Page<>(pageNum, pageSize);
         Page<AdviceOrder> resultPage = adviceOrderService.page(page);
         return EasyResult.ok(resultPage);

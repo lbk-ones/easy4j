@@ -20,7 +20,19 @@ public interface TemplateAccountApi {
     EasyResult<Object> updateAccount(@RequestBody AccountDto account);
 
 
+    // 金额冻结
+    @PutMapping("/account-apply/tcc-freeze")
+    EasyResult<Object> tccFreeze(@RequestBody AccountDto account);
 
+
+    // 解冻
+    @PutMapping("/account-apply/tcc-unfreeze")
+    EasyResult<Object> tccUnFreeze(@RequestBody AccountDto account);
+
+
+    // 划扣
+    @PutMapping("/account-apply/tcc-reduce")
+    EasyResult<Object> tccReduce(@RequestBody AccountDto account);
 
 
 }

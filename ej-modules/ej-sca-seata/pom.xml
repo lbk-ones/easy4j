@@ -37,6 +37,12 @@
             <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-db-access</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
 
     </dependencies>
 </project>
