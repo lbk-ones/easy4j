@@ -10,9 +10,9 @@ public interface AccountTccAction {
     EasyResult<Object> prepare(BusinessActionContext context, AdviceOrder adviceOrder);
 
 
-    EasyResult<Object> commit(BusinessActionContext context);
+    void commit(BusinessActionContext context);
 
 
-    EasyResult<Object> cancel(BusinessActionContext context);
+    void cancel(BusinessActionContext context);
 
 }

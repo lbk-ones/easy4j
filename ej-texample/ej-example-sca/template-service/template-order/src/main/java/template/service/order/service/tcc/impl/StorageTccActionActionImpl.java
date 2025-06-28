@@ -4,6 +4,7 @@ import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.sca.seata.BaseTccAction;
 import io.seata.rm.tcc.api.BusinessActionContext;
+import io.seata.rm.tcc.api.BusinessActionContextParameter;
 import io.seata.rm.tcc.api.LocalTCC;
 import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,24 +23,27 @@ public class StorageTccActionActionImpl extends BaseTccAction implements Storage
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @TwoPhaseBusinessAction(name = "tcc-storage-action", commitMethod = "commit", rollbackMethod = "cancel")
-    public EasyResult<Object> prepare(BusinessActionContext context, AdviceOrder adviceOrder) {
-        try {
-            String s = "storage-prepare";
-            if (lock(context)) {
-                logTx(context, s);
-                String ordCode = adviceOrder.getOrdCode();
-                AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
-                adviceStorageDto.setOrdCode(ordCode);
-                adviceStorageDto.setFrozeAmount(adviceOrder.getNum());
-                EasyResult<AdviceStorageDto> adviceStorageDtoEasyResult = templateStorageApi.tccFrozeStorage(adviceStorageDto);
-                CheckUtils.checkRpcRes(adviceStorageDtoEasyResult);
-                putContext(context, "advice", adviceOrder);
+    @TwoPhaseBusinessAction(name = "tcc-storage-action", commitMethod = "commit", rollbackMethod = "cancel", useTCCFence = true)
+    public EasyResult<Object> prepare(BusinessActionContext context, @BusinessActionContextParameter("advice") AdviceOrder adviceOrder) {
+        return prepareCallback(() -> {
+            try {
+                String s = "storage-prepare";
+                if (lock(context)) {
+                    logTx(context, s);
+                    String ordCode = adviceOrder.getOrdCode();
+                    AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
+                    adviceStorageDto.setOrdCode(ordCode);
+                    adviceStorageDto.setFrozeAmount(adviceOrder.getNum());
+                    EasyResult<AdviceStorageDto> adviceStorageDtoEasyResult = templateStorageApi.tccFrozeStorage(adviceStorageDto);
+                    CheckUtils.checkRpcRes(adviceStorageDtoEasyResult);
+//                putContext(context, "advice", adviceOrder);
+                }
+
+            } finally {
+                unLock(context);
             }
-        } finally {
-            unLock(context);
-        }
-        return null;
+            return null;
+        }, () -> this.commit(context));
     }
 
     @Override
@@ -50,6 +54,7 @@ public class StorageTccActionActionImpl extends BaseTccAction implements Storage
             AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
             adviceStorageDto.setOrdCode(advice2.getOrdCode());
             adviceStorageDto.setFrozeAmount(advice2.getNum());
+            adviceStorageDto.setCount(advice2.getNum());
             EasyResult<AdviceStorageDto> adviceStorageDtoEasyResult = templateStorageApi.tccReduceStorage(adviceStorageDto);
             CheckUtils.checkRpcRes(adviceStorageDtoEasyResult);
         }
@@ -64,6 +69,7 @@ public class StorageTccActionActionImpl extends BaseTccAction implements Storage
             AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
             adviceStorageDto.setOrdCode(advice2.getOrdCode());
             adviceStorageDto.setFrozeAmount(advice2.getNum());
+            adviceStorageDto.setCount(advice2.getNum());
             EasyResult<AdviceStorageDto> adviceStorageDtoEasyResult = templateStorageApi.tccCancelStorage(adviceStorageDto);
             CheckUtils.checkRpcRes(adviceStorageDtoEasyResult);
         }

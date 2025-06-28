@@ -15,16 +15,25 @@
 package easy4j.infra.sca.seata;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
 import io.seata.rm.tcc.api.BusinessActionContext;
+import io.seata.rm.tcc.api.LocalTCC;
+import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * BaseTccAction
@@ -43,7 +52,7 @@ public class BaseTccAction {
         String xid = context.getXid();
         long branchId = context.getBranchId();
         String actionName = context.getActionName();
-        logger.info(actionType + "--> xid{} ,branchId{} ,actionName{} ", xid, branchId, actionName);
+        logger.info(actionType + "--> xid:{} ,branchId:{} ,actionName:{} ", xid, branchId, actionName);
     }
 
     @Desc("简单的幂等锁")
@@ -87,6 +96,72 @@ public class BaseTccAction {
             Map<String, Object> actionContext1 = context.getActionContext();
             actionContext1.put(name, object);
         }
+    }
+
+    /**
+     * seata服务降级，如果seata服务不可用或者被降级 那么 可以直接在回调里面调用commit方法
+     *
+     * @author bokun.li
+     * @date 2025-06-28
+     */
+    @Desc("seata服务降级，如果seata服务不可用或者被降级 那么 可以直接在回调里面调用commit方法")
+    public void tccDegrade(NullConsumerCallback consumer) {
+
+        // 如果不在全局事务里面 则可能是服务故障 或者全局降级
+        if (!SeataUtils.isInGlobalTransaction() && consumer != null) {
+            Class<? extends BaseTccAction> aClass = this.getClass();
+            if (!aClass.isAnnotationPresent(LocalTCC.class)) {
+                return;
+            }
+            Method[] methods = ReflectUtil.getMethods(aClass);
+            String commitMethod = null;
+            Map<String, Method> methodMap = Maps.newHashMap();
+            for (Method method : methods) {
+                String name = method.getName();
+                methodMap.put(name, method);
+                if (method.isAnnotationPresent(TwoPhaseBusinessAction.class)) {
+                    TwoPhaseBusinessAction annotation = method.getAnnotation(TwoPhaseBusinessAction.class);
+                    if (null != annotation) {
+                        commitMethod = annotation.commitMethod();
+                        break;
+                    }
+                }
+
+            }
+            Method method = methodMap.get(commitMethod);
+            if (null != method) {
+                if (method.isAnnotationPresent(Transactional.class)) {
+                    if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                        TransactionTemplate bean = SpringUtil.getBean(TransactionTemplate.class);
+                        bean.execute(status -> {
+                            try {
+                                consumer.accept();
+                            } catch (Throwable e) {
+                                status.setRollbackOnly();
+                            }
+                            return null;
+                        });
+                    } else {
+                        consumer.accept();
+                    }
+                } else {
+                    consumer.accept();
+                }
+            }
+        }
+    }
+
+    public interface NullConsumerCallback {
+
+        void accept();
+
+    }
+
+    @Desc("降级，和正常执行的组合方法")
+    public <T> T prepareCallback(Supplier<T> prepareCallback, NullConsumerCallback commitCallBack) {
+        T t = prepareCallback.get();
+        tccDegrade(commitCallBack);
+        return t;
     }
 
 

@@ -16,8 +16,12 @@ package easy4j.infra.sca.seata;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
+import com.zaxxer.hikari.HikariDataSource;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
+import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.dbaccess.DBAccessFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -96,6 +100,18 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
 
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
-
+//        String normalDbUrl = getNormalDbUrl();
+//        String url = getUrl(normalDbUrl);
+//        String username = getUsername(normalDbUrl);
+//        String password = getPassword(normalDbUrl);
+//        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(url);
+//        try (HikariDataSource hikariDataSource = new HikariDataSource()) {
+//            hikariDataSource.setJdbcUrl(url);
+//            hikariDataSource.setUsername(username);
+//            hikariDataSource.setPassword(password);
+//            hikariDataSource.setDriverClassName(driverClassNameByUrl);
+//            DBAccessFactory.INIT_DB_FILE_PATH.add("db/fence");
+//            DBAccessFactory.getDBAccess(hikariDataSource);
+//        }
     }
 }

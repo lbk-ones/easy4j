@@ -72,7 +72,7 @@ public class LogbackEnvironment extends AbstractEasy4jEnvironment {
         boolean seataEnable = getEnvProperty(Easy4j.getEjSysPropertyName(EjSysProperties::isSeataEnable), boolean.class);
         boolean isSeataTxLog = getEnvProperty(Easy4j.getEjSysPropertyName(EjSysProperties::isSeataTxLog), boolean.class);
         if (seataEnable && isSeataTxLog) {
-            traceIdTemplate += SP.SPACE + "[TX:%X{X-TX-XID:-}-%X{X-TX-BRANCH-ID:-}]";
+            traceIdTemplate += SP.SPACE + "[%X{X-TX-XID:-}-%X{X-TX-BRANCH-ID:-}]";
         }
         Properties properties = new Properties();
         properties.setProperty("logging.level.root", "INFO");

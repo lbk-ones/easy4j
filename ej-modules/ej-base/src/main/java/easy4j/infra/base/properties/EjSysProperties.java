@@ -509,8 +509,8 @@ public class EjSysProperties {
     /**
      * seata事务日志是否整合到logback，默认整合
      */
-    @SpringVs(desc = "seata事务日志是否整合到logback（true代表整合false代表不整合），默认整合")
-    private boolean seataTxLog = true;
+    @SpringVs(desc = "seata事务日志是否整合到logback（true代表整合false代表不整合），默认不整合")
+    private boolean seataTxLog = false;
 
 
     /**

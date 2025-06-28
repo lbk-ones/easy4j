@@ -7,10 +7,11 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
 @TableName("ADVICE_ORDER")
-public class AdviceOrder {
+public class AdviceOrder implements Serializable {
     @TableId
     private String orderNo;   // 申请单号
     @Schema(description = "患者ID")

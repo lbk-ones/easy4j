@@ -55,10 +55,14 @@ public class CheckUtils {
             Object value = ReflectUtil.getFieldValue(t, field);
             if (ObjectUtil.isEmpty(value)) {
                 Schema annotation = field.getAnnotation(Schema.class);
-                String description = annotation.description();
-                if (StrUtil.isNotBlank(description)) {
-                    description += "【" + fieldName + "】";
-                    resultList.add(description);
+                if (Objects.nonNull(annotation)) {
+                    String description = annotation.description();
+                    if (StrUtil.isNotBlank(description)) {
+                        description += "【" + fieldName + "】";
+                        resultList.add(description);
+                    } else {
+                        resultList.add(field.getName());
+                    }
                 } else {
                     resultList.add(field.getName());
                 }
