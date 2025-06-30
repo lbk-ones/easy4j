@@ -16,12 +16,8 @@ package easy4j.infra.sca.seata;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
-import com.zaxxer.hikari.HikariDataSource;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
-import easy4j.infra.common.enums.DbType;
-import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.dbaccess.DBAccessFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -70,7 +66,7 @@ public class SeataEnvConfig extends AbstractEasy4jEnvironment {
         properties.setProperty("seata.service.vgroup-mapping." + properties.getProperty("seata.tx-service-group"), clusterName);
         // linux use epoll modal
         if (SystemUtil.getOsInfo().isLinux()) {
-            properties.setProperty("seata.transport.server", "Epoll");
+            properties.setProperty("seata.transport.server", "native");
         }
 
         boolean easyDev = getEnvProperty(SysConstant.EASY4J_DEV, boolean.class);
