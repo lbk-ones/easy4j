@@ -4,9 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
-import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.sca.seata.BaseTccAction;
-import io.seata.rm.tcc.api.*;
+import io.seata.rm.tcc.api.BusinessActionContext;
+import io.seata.rm.tcc.api.BusinessActionContextParameter;
+import io.seata.rm.tcc.api.LocalTCC;
+import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,11 +32,23 @@ public class AccountTccActionActionImpl extends BaseTccAction implements Account
     @Autowired
     private TemplateStorageApi templateStorageApi;
 
-
+    /**
+     * 就算seata没有 那也要正常的运行才对
+     *
+     * @author bokun.li
+     * @date 2025/6/30
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     @TwoPhaseBusinessAction(name = "tcc-account-action", commitMethod = "commit", rollbackMethod = "cancel", useTCCFence = true)
-    public EasyResult<Object> prepare(BusinessActionContext context, @BusinessActionContextParameter("advice") AdviceOrder adviceOrder) {
+    public EasyResult<Object> prepare(BusinessActionContext _context, @BusinessActionContextParameter("advice") AdviceOrder adviceOrder) {
+
+        // 这个是为了兼容没有seata的情况
+        BusinessActionContext context = getOrCreateContext(_context, e -> {
+            putContext(e, "advice", adviceOrder);
+            return e;
+        });
+        // 这个也是为了兼容没有seata的情况
         return prepareCallback(() -> {
             Easy4j.info("tcc-account-action--->,{}" + Thread.currentThread().getName());
             String actionType = "prepare";
@@ -51,9 +65,7 @@ public class AccountTccActionActionImpl extends BaseTccAction implements Account
 
             putContext(context, "cs", "2312561");
             return objectEasyResult;
-        }, () -> {
-            this.commit(context);
-        });
+        }, () -> this.commit(context));
     }
 
 

@@ -24,7 +24,11 @@ public class StorageTccActionActionImpl extends BaseTccAction implements Storage
     @Override
     @Transactional(rollbackFor = Exception.class)
     @TwoPhaseBusinessAction(name = "tcc-storage-action", commitMethod = "commit", rollbackMethod = "cancel", useTCCFence = true)
-    public EasyResult<Object> prepare(BusinessActionContext context, @BusinessActionContextParameter("advice") AdviceOrder adviceOrder) {
+    public EasyResult<Object> prepare(BusinessActionContext _context, @BusinessActionContextParameter("advice") AdviceOrder adviceOrder) {
+        BusinessActionContext context = getOrCreateContext(_context, e -> {
+            putContext(e, "advice", adviceOrder);
+            return e;
+        });
         return prepareCallback(() -> {
             try {
                 String s = "storage-prepare";
@@ -34,6 +38,7 @@ public class StorageTccActionActionImpl extends BaseTccAction implements Storage
                     AdviceStorageDto adviceStorageDto = new AdviceStorageDto();
                     adviceStorageDto.setOrdCode(ordCode);
                     adviceStorageDto.setFrozeAmount(adviceOrder.getNum());
+                    adviceStorageDto.setCount(adviceOrder.getNum());
                     EasyResult<AdviceStorageDto> adviceStorageDtoEasyResult = templateStorageApi.tccFrozeStorage(adviceStorageDto);
                     CheckUtils.checkRpcRes(adviceStorageDtoEasyResult);
 //                putContext(context, "advice", adviceOrder);

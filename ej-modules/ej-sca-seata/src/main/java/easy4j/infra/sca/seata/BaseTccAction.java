@@ -22,7 +22,9 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
+import io.seata.core.context.RootContext;
 import io.seata.rm.tcc.api.BusinessActionContext;
+import io.seata.rm.tcc.api.BusinessActionContextUtil;
 import io.seata.rm.tcc.api.LocalTCC;
 import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -44,11 +47,18 @@ import java.util.function.Supplier;
  */
 public class BaseTccAction {
 
+    public static final String NONE_XID = "none-xid";
+
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Desc("日志记录")
     protected void logTx(BusinessActionContext context, String actionType) {
+        if (null == context) return;
+        Object actionContext = context.getActionContext(RootContext.KEY_XID);
+        if (ObjectUtil.equals(actionContext, NONE_XID)) {
+            return;
+        }
         String xid = context.getXid();
         long branchId = context.getBranchId();
         String actionName = context.getActionName();
@@ -57,6 +67,11 @@ public class BaseTccAction {
 
     @Desc("简单的幂等锁")
     protected boolean lock(BusinessActionContext context) {
+        if (null == context) return true;
+        Object actionContext = context.getActionContext(RootContext.KEY_XID);
+        if (ObjectUtil.equals(actionContext, NONE_XID)) {
+            return true;
+        }
         Easy4jContext context1 = Easy4j.getContext();
         DbLock dbLock = context1.get(DbLock.class);
 
@@ -75,9 +90,13 @@ public class BaseTccAction {
 
     @Desc("释放幂等锁")
     protected void unLock(BusinessActionContext context) {
+        if (null == context) return;
+        Object actionContext = context.getActionContext(RootContext.KEY_XID);
+        if (ObjectUtil.equals(actionContext, NONE_XID)) {
+            return;
+        }
         Easy4jContext context1 = Easy4j.getContext();
         DbLock dbLock = context1.get(DbLock.class);
-
         String xid = context.getXid();
         long branchId = context.getBranchId();
         String actionName = context.getActionName();
@@ -87,6 +106,7 @@ public class BaseTccAction {
     }
 
     protected void putContext(BusinessActionContext context, String name, Object object) {
+        if (null == context) return;
         Map<String, Object> actionContext = context.getActionContext();
         if (null == actionContext) {
             Map<String, Object> contextMap = Maps.newHashMap();
@@ -107,12 +127,14 @@ public class BaseTccAction {
     @Desc("seata服务降级，如果seata服务不可用或者被降级 那么 可以直接在回调里面调用commit方法")
     public void tccDegrade(NullConsumerCallback consumer) {
 
+        BusinessActionContext context = BusinessActionContextUtil.getContext();
         // 如果不在全局事务里面 则可能是服务故障 或者全局降级
-        if (!SeataUtils.isInGlobalTransaction() && consumer != null) {
+        if ((!SeataUtils.isInGlobalTransaction() || null == context) && consumer != null) {
             Class<? extends BaseTccAction> aClass = this.getClass();
             if (!aClass.isAnnotationPresent(LocalTCC.class)) {
                 return;
             }
+            logger.info("none enable seata server or degrade invoke!");
             Method[] methods = ReflectUtil.getMethods(aClass);
             String commitMethod = null;
             Map<String, Method> methodMap = Maps.newHashMap();
@@ -162,6 +184,22 @@ public class BaseTccAction {
         T t = prepareCallback.get();
         tccDegrade(commitCallBack);
         return t;
+    }
+
+    /**
+     * 兼容获取 context
+     * 不绑定到当前线程去
+     *
+     * @author bokun.li
+     * @date 2025/6/30
+     */
+    public BusinessActionContext getOrCreateContext(BusinessActionContext context, Function<BusinessActionContext, BusinessActionContext> commitCallBack) {
+        if (context == null) {
+            BusinessActionContext businessActionContext = new BusinessActionContext();
+            putContext(businessActionContext, RootContext.KEY_XID, NONE_XID);
+            return commitCallBack.apply(businessActionContext);
+        }
+        return context;
     }
 
 
