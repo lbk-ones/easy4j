@@ -264,4 +264,23 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
 
         return String.join(SP.COMMA, objects);
     }
+
+
+    /**
+     * 获取日志地址
+     *
+     * @author bokun.li
+     * @date 2025/7/1
+     */
+    public String getLogPath() {
+        String path = "";
+        if (cn.hutool.system.SystemUtil.getOsInfo().isWindows()) {
+            path = "logs";
+        } else {
+            path = "/app/logs";
+        }
+        return path;
+    }
+
+
 }

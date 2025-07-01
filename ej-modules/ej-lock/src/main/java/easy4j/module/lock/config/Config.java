@@ -14,7 +14,7 @@
  */
 package easy4j.module.lock.config;
 
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.api.lock.RedissonLock;
 import easy4j.infra.context.api.lock.ZkLock;
@@ -39,7 +39,7 @@ public class Config {
 //    }
 
     @Bean
-    @Module(SysConstant.EASY4J_REDIS_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
     public RedissonLock redissonLock() {
         return new RedissonLockImpl();
     }

@@ -512,6 +512,24 @@ public class EjSysProperties {
     @SpringVs(desc = "seata事务日志是否整合到logback（true代表整合false代表不整合），默认不整合")
     private boolean seataTxLog = false;
 
+    /**
+     * 是否使用xxlJob
+     */
+    @SpringVs(desc = "是否使用xxlJob")
+    private boolean xxlJobEnable = false;
+
+    /**
+     * xxlJobAdmin的地址
+     */
+    @SpringVs(desc = "xxlJobAdmin的地址")
+    private String xxlJobAdminUrl;
+
+    /**
+     * xxlJob的accessToken默认值为default_token
+     */
+    @SpringVs(desc = "xxlJob的accessToken默认值为default_token")
+    private String xxlJobAccessToken = "default_token";
+
 
     /**
      * 根据常量获取 对应的springboot变量

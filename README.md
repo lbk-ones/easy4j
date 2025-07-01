@@ -43,6 +43,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-sca**：spring-cloud-alibaba 整合
 - **ej-sca-gateway**：spring-cloud 网关整合比较特殊新增一个
 - **ej-sca-seata**：spring-cloud 整合seata
+- **ej-xxl-job**：xxljob整合
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合
 - **ej-dubbo3**：dubbo3整合（默认配置，异常，jaeger链路整合）

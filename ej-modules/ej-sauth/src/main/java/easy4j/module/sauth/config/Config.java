@@ -16,7 +16,7 @@ package easy4j.module.sauth.config;
 
 
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.EventPublisher;
@@ -35,7 +35,6 @@ import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -95,7 +94,7 @@ public class Config implements CommandLineRunner {
 
     // 授权机制
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(SecurityAuthorization.class)
     public SecurityAuthorization authorizationStrategy() {
         return new DefaultAuthorizationStrategy();
@@ -103,7 +102,7 @@ public class Config implements CommandLineRunner {
 
     // 核心业务类
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnBean(DataSource.class)
     public SecurityService securityService() {
         return new Easy4jSecurityService(
@@ -136,7 +135,7 @@ public class Config implements CommandLineRunner {
 
     // 权限认证
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(SecurityAuthentication.class)
     public SecurityAuthentication securityAuthentication() {
         return new DefaultSecurityAuthentication(
@@ -150,7 +149,7 @@ public class Config implements CommandLineRunner {
 
     //密码加密方式
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(EncryptionService.class)
     public EncryptionService encryptionService() {
         return new DefaultEncryptionService();
@@ -159,14 +158,14 @@ public class Config implements CommandLineRunner {
 
     // 权限认证
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     @ConditionalOnMissingBean(LoadUserByUserName.class)
     public LoadUserByUserName loadUserByUserName() {
         return new DefaultLoadUserByUserName();
     }
 
     @Bean
-    @Module(SysConstant.EASY4J_SAUTH_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     public SAuthController sAuthController() {
         return new SAuthController();
     }

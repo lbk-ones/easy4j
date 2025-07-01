@@ -153,6 +153,10 @@ public class SysConstant {
     public static final String EASY4J_SEATA_NACOS_CLUSTER = PARAM_PREFIX + StringPool.DOT + "seata-nacos-cluster";
     public static final String EASY4J_SEATA_NACOS_GROUP = PARAM_PREFIX + StringPool.DOT + "seata-nacos-group";
 
+    public static final String EASY4J_XXLJOB_ENABLE = PARAM_PREFIX + SP.DOT + "xxl-job-enable";
+    public static final String EASY4J_XXLJOB_ADMIN_URL = PARAM_PREFIX + SP.DOT + "xxl-job-admin-url";
+    public static final String EASY4J_XXLJOB_ACCESS_TOKEN = PARAM_PREFIX + SP.DOT + "xxl-job-access-token";
+
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
 
@@ -263,9 +267,6 @@ public class SysConstant {
 
     // h2
 
-    /**
-     * 对应 Spring 数据源的 URL 配置项的键
-     */
     /**
      * 对应是否开启 H2 控制台配置项的键
      */

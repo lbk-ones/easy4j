@@ -15,7 +15,7 @@
 package easy4j.infra.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
@@ -54,7 +54,7 @@ public class Config {
     @Bean("redisCacheManager")
     @DependsOn("redissonConnectionFactory")
     @Primary
-    @Module(SysConstant.EASY4J_REDIS_ENABLE)
+    @ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
         // 默认缓存配置
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()

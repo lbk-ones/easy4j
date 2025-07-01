@@ -14,7 +14,7 @@
  */
 package easy4j.module.redis;
 
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.cache.RedisEasy4jCache;
@@ -35,7 +35,7 @@ import java.time.Duration;
  * @date 2025-05
  */
 @Configuration(proxyBeanMethods = false)
-@Module(SysConstant.EASY4J_REDIS_ENABLE)
+@ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
 public class Config {
 
     @Bean

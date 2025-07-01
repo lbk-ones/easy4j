@@ -42,6 +42,7 @@
         <module>ej-scache</module>
         <module>ej-sca-gateway</module>
         <module>ej-sca-seata</module>
+        <module>ej-xxl-job</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
@@ -79,6 +80,7 @@
         <jaeger.client.version>1.5.0</jaeger.client.version>
         <openfeign.fastjson.version>2.0.56</openfeign.fastjson.version>
         <redissioin.version>3.49.0</redissioin.version>
+        <xxljob.version>2.5.0</xxljob.version>
 
         <!-- SpringCloud -->
         <spring-cloud.version>2021.0.8</spring-cloud.version>
@@ -155,7 +157,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-        
+
         <!-- Spring Boot Starter validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -15,7 +15,7 @@
 package easy4j.module.sauth.session;
 
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
@@ -31,7 +31,7 @@ import javax.annotation.Resource;
  * @author bokun.li
  * @date 2025-05
  */
-@Module(SysConstant.EASY4J_REDIS_ENABLE)
+@ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
 public class RedisSessionStrategy extends AbstractSessionStrategy {
 
 

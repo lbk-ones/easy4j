@@ -14,7 +14,6 @@
  */
 package easy4j.infra.common.module;
 
-import easy4j.infra.common.utils.SysConstant;
 import org.springframework.context.annotation.Conditional;
 
 import java.lang.annotation.ElementType;
@@ -23,23 +22,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 根据配置来决定是否启用这个模块 默认是不启用的 默认是false
+ * 根据配置来决定是否启用这个模块 这个值不能为空才生效
  *
  * @Bean
- * @Moodule("xxx.enable") public XXX xxx() {
+ * @ModuleNotBlank("xxx.url") public XXX xxx() {
  * return new XXX();
  * }
- * <p>
- * <p>
- * <br/>
- * 说人话就是 当 easy4j.xxx.enable=true 的时候，才会启用这个模块(才会加载 XXX 这个 bean)
- * <br/>
- * 如果配置成 xxx.enable:true 默认就是开启
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Conditional(ModuleCondition.class)
-public @interface Module {
+@Conditional(ModuleNotBlankCondition.class)
+public @interface ModuleNotBlank {
 
     /**
      * 组件名称 不能带前缀

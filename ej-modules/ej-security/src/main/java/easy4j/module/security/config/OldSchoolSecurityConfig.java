@@ -14,7 +14,7 @@
  */
 package easy4j.module.security.config;
 
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,7 @@ import javax.servlet.http.HttpSession;
  * 登录界面
  */
 @Configuration
-@Module(SysConstant.EASY4J_SECURITY_OLD_SCHOOL)
+@ModuleBoolean(SysConstant.EASY4J_SECURITY_OLD_SCHOOL)
 public class OldSchoolSecurityConfig {
     public static final String LOGIN_ROUTER = "/login.html";
     public static final String HOME_ROUTER = "/index";

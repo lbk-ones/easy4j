@@ -15,12 +15,11 @@
 package easy4j.infra.webmvc;
 
 
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -33,7 +32,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Slf4j
 //@Configuration
-@Module(SysConstant.GLOBAL_CORS_ENABLE + ":true")
+@ModuleBoolean(SysConstant.GLOBAL_CORS_ENABLE + ":true")
 public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
 
     @Override

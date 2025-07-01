@@ -69,4 +69,7 @@
 - **easy4j.seata-tx-group**: seata事务组
 - **easy4j.seata-nacos-group**: seata注册中心nacos组
 - **easy4j.seata-registry-type**: seata注册中心类型
-- **easy4j.seata-tx-log**: seata事务日志是否整合到logback（true代表整合false代表不整合），默认整合
+- **easy4j.seata-tx-log**: seata事务日志是否整合到logback（true代表整合false代表不整合），默认不整合
+- **easy4j.xxl-job-enable**: 是否使用xxlJob
+- **easy4j.xxl-job-admin-url**: xxlJobAdmin的地址
+- **easy4j.xxl-job-access-token**: xxlJob的accessToken默认值为default_token

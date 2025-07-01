@@ -81,15 +81,10 @@ public class LogbackEnvironment extends AbstractEasy4jEnvironment {
         properties.setProperty("logging.pattern.console", "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%-5level) %clr(${PID:- }){magenta} [" + property + "] [%thread] %clr(%-37.37logger{36}){cyan} " + traceIdTemplate + "- %msg%n");
         properties.setProperty("logging.pattern.file", "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } [" + property + "] [%thread] %-37.37logger{36} " + traceIdTemplate + "- %msg%n");
         String hostName = SystemUtil.info().getHostName();
-        String path = "";
-        if (cn.hutool.system.SystemUtil.getOsInfo().isWindows()) {
-            path = "logs/";
-        } else {
-            path = "/app/logs/";
-        }
-        properties.setProperty("logging.file.name", path + hostName + ".log");
+        String filelogPath = getLogPath() + SP.SLASH + hostName;
+        properties.setProperty("logging.file.name", filelogPath + ".log");
         properties.setProperty("logging.logback.rollingpolicy.max-file-size", "200MB");
-        properties.setProperty("logging.logback.rollingpolicy.file-name-pattern", path + hostName + ".%d{yyyy-MM-dd}.%i.log");
+        properties.setProperty("logging.logback.rollingpolicy.file-name-pattern", filelogPath + ".%d{yyyy-MM-dd}.%i.log");
 
         return properties;
     }

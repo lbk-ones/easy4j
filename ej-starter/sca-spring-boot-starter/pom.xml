@@ -142,5 +142,12 @@
             <version>${easy4j.infra.version}</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-xxl-job</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+
     </dependencies>
 </project>

@@ -351,7 +351,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      * @return
      */
     public boolean isSca() {
-        boolean isEnableSca = Easy4j.getProperty(SysConstant.EASY4J_SCA_ENABLE, boolean.class);
+        boolean isEnableSca = getEnvProperty(SysConstant.EASY4J_SCA_ENABLE, boolean.class);
         if (isEnableSca) {
             return true;
         } else {

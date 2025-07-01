@@ -14,7 +14,7 @@
  */
 package easy4j.infra.sca.seata;
 
-import easy4j.infra.common.module.Module;
+import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccessFactory;
@@ -23,11 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator;
 import org.springframework.beans.BeansException;
-
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-
 import org.springframework.context.annotation.Bean;
-
 import org.springframework.core.PriorityOrdered;
 
 
@@ -39,7 +36,7 @@ import org.springframework.core.PriorityOrdered;
  */
 @Slf4j
 @AutoConfigureBefore(value = {SeataCoreAutoConfiguration.class})
-@Module(SysConstant.EASY4J_SEATA_ENABLE)
+@ModuleBoolean(SysConstant.EASY4J_SEATA_ENABLE)
 public class Config {
 
     public Config() {
