@@ -33,9 +33,10 @@ public class DefaultApplicationListenerForEj implements ApplicationListenerForEj
 
     @Override
     public void ready(ConfigurableApplicationContext context, Duration timeTaken) {
+        Easy4j.ready();
         Logger logger = LoggerFactory.getLogger(this.getClass());
         long seconds = timeTaken.getSeconds();
-        logger.info(SysLog.compact("系统启动耗时---{}", String.valueOf(seconds) + "s"));
+        logger.info(SysLog.compact("系统启动耗时---{}", seconds + "s"));
     }
 
     @Override

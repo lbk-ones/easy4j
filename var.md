@@ -73,3 +73,6 @@
 - **easy4j.xxl-job-enable**: 是否使用xxlJob
 - **easy4j.xxl-job-admin-url**: xxlJobAdmin的地址
 - **easy4j.xxl-job-access-token**: xxlJob的accessToken默认值为default_token
+- **easy4j.sentinel-dashboard-enable**: 是否开启sentinel的控制台，默认不开启
+- **easy4j.sentinel-dashboard-eager**:  （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化
+- **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）

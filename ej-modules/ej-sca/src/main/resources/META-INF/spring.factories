@@ -2,4 +2,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 easy4j.module.sca.config.FeignConfig
 org.springframework.boot.env.EnvironmentPostProcessor=\
 easy4j.module.sca.config.ScaEnvConfig,\
-easy4j.module.sca.config.OverrideNacosInitConfig
+easy4j.module.sca.config.OverrideNacosInitConfig,\
+easy4j.module.sca.config.SentinelEnvConfig

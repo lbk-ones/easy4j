@@ -530,6 +530,24 @@ public class EjSysProperties {
     @SpringVs(desc = "xxlJob的accessToken默认值为default_token")
     private String xxlJobAccessToken = "default_token";
 
+    /**
+     * 是否开启sentinel的控制台，默认不开启
+     */
+    @SpringVs(desc = "是否开启sentinel的控制台，默认不开启")
+    private boolean sentinelDashboardEnable = false;
+
+    /**
+     * sentinel控制台是否提前初始化，默认如果启用则提前初始化
+     */
+    @SpringVs(desc = " （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化")
+    private boolean sentinelDashboardEager = true;
+
+    /**
+     * sentinel控制台地址，示例（localhost:8080）
+     */
+    @SpringVs(desc = "sentinel控制台地址，示例（localhost:8080）", vs = "spring.cloud.sentinel.transport.dashboard")
+    private String sentinelDashboardUrl;
+
 
     /**
      * 根据常量获取 对应的springboot变量

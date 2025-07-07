@@ -23,11 +23,14 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
 import org.springframework.boot.context.properties.bind.Binder;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.ServerSocket;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -282,5 +285,41 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         return path;
     }
 
+
+    /**
+     * 寻找合适的端口
+     *
+     * @author bokun.li
+     * @date 2025/7/7
+     */
+    public static int findAvailablePort(int defaultPort) {
+        int portTmp = defaultPort;
+        while (portTmp < 65535) {
+            if (isPortUsed(portTmp)) {
+                return portTmp;
+            } else {
+                portTmp++;
+            }
+        }
+        portTmp = defaultPort--;
+        while (portTmp > 0) {
+            if (isPortUsed(portTmp)) {
+                return portTmp;
+            } else {
+                portTmp--;
+            }
+        }
+        throw new RuntimeException("no available port.");
+    }
+
+    public static boolean isPortUsed(int port) {
+        boolean used = false;
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        } catch (IOException e) {
+            System.out.println(SysLog.compact("the, port[" + port + "] is in use."));
+            used = true;
+        }
+        return !used;
+    }
 
 }

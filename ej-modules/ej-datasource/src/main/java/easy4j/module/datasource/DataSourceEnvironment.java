@@ -68,8 +68,7 @@ public class DataSourceEnvironment extends AbstractEasy4jEnvironment {
         String dbType = getDbType();
         if ("other".equals(dbType)) {
             // No data source was found! Please configure (easy4j.data-source-url), or check if the configuration center is accessible. If no database is required, please enable H2 in the startup annotation.
-            System.err.println(SysLog.compact("No data source was found! Please configure (" + SysConstant.DB_URL_STR_NEW + "), or check if the configuration center is accessible. If no database is required, please enable H2 in the startup annotation."));
-            System.exit(1);
+            throw new IllegalArgumentException(SysLog.compact("No data source was found! Please configure (" + SysConstant.DB_URL_STR_NEW + "), or check if the configuration center is accessible. If no database is required, please enable H2 in the startup annotation."));
         }
         String driverClassName = SqlType.getDriverClassName(dbType);
         String validateSql = SqlType.getValidateSql(dbType);
@@ -113,9 +112,9 @@ public class DataSourceEnvironment extends AbstractEasy4jEnvironment {
         String dbType = JdbcUtils.getDbType(dbUtlStr, null);
         DbType dbType1 = DbType.of(dbType);
         if (Objects.isNull(dbType1)) {
-            System.err.println("无法解析数据库类型，请检查" + SysConstant.DB_URL_STR + "参数是否填写正确");
-            System.exit(1);
-            return;
+            throw new IllegalArgumentException("无法解析数据库类型，请检查" + SysConstant.DB_URL_STR + "参数是否填写正确");
+//            System.err.println();
+//            System.exit(1);
         }
         if (StrUtil.contains(property, "log4j3")) {
             /// 日志相关

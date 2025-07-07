@@ -136,54 +136,62 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      */
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        String name = getName();
-        initEnv(environment, application);
-        if (isSkip()) {
-            System.out.println(SysLog.compact("skip " + getName() + " config.."));
-            return;
-        }
-        MutablePropertySources propertySources = environment.getPropertySources();
-        Properties properties = getProperties();
-        if (StrUtil.isNotBlank(name)) {
-            boolean isPost = false;
-            PropertySourceLoader loader = null;
-            if (name.endsWith(SP.YML_SUFFIX) || name.endsWith(SP.YAML_SUFFIX)) {
-                loader = new YamlPropertySourceLoader();
-            } else if (name.endsWith(SP.PROPERTIES_SUFFIX)) {
-                if (name.startsWith(SP.APPLICATION) || name.startsWith(SP.BOOTSTRAP)) {
-                    throw new EasyException("name can not start with " + SP.APPLICATION + " , " + SP.BOOTSTRAP);
-                }
-                loader = new PropertiesPropertySourceLoader();
+        try {
+            String name = getName();
+            initEnv(environment, application);
+            if (isSkip()) {
+                System.out.println(SysLog.compact("skip " + getName() + " config.."));
+                return;
             }
-            Resource resource = getResourceFromName(name);
-            if (null != resource && resource.exists() && null != loader) {
-                try {
-                    PropertySource<?> propertySource = loader.load(name, resource).get(0);
-                    environment.getPropertySources().addLast(propertySource);
-                    getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
-                    isPost = true;
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to load custom YAML configuration", e);
+            MutablePropertySources propertySources = environment.getPropertySources();
+            Properties properties = getProperties();
+            if (StrUtil.isNotBlank(name)) {
+                boolean isPost = false;
+                PropertySourceLoader loader = null;
+                if (name.endsWith(SP.YML_SUFFIX) || name.endsWith(SP.YAML_SUFFIX)) {
+                    loader = new YamlPropertySourceLoader();
+                } else if (name.endsWith(SP.PROPERTIES_SUFFIX)) {
+                    if (name.startsWith(SP.APPLICATION) || name.startsWith(SP.BOOTSTRAP)) {
+                        throw new EasyException("name can not start with " + SP.APPLICATION + " , " + SP.BOOTSTRAP);
+                    }
+                    loader = new PropertiesPropertySourceLoader();
                 }
-            }
-            if (Objects.nonNull(properties) && !properties.isEmpty()) {
-                String name2 = name;
-                if (isPost) {
-                    // override file properties
-                    name2 += "--";
-                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
-                    propertySources.addBefore(name, propertiesPropertySource);
-                    getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
-                } else {
-                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
-                    propertySources.addLast(propertiesPropertySource);
-                    getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
+                Resource resource = getResourceFromName(name);
+                if (null != resource && resource.exists() && null != loader) {
+                    try {
+                        PropertySource<?> propertySource = loader.load(name, resource).get(0);
+                        environment.getPropertySources().addLast(propertySource);
+                        getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
+                        isPost = true;
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to load custom YAML configuration", e);
+                    }
                 }
+                if (Objects.nonNull(properties) && !properties.isEmpty()) {
+                    String name2 = name;
+                    if (isPost) {
+                        // override file properties
+                        name2 += "--";
+                        PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
+                        propertySources.addBefore(name, propertiesPropertySource);
+                        getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
+                    } else {
+                        PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(name2, properties);
+                        propertySources.addLast(propertiesPropertySource);
+                        getLogger().info(SysLog.compact("the " + name2.toLowerCase() + " parameter is SuccessFull replaced。"));
+                    }
 
+                }
+            }
+            handlerEnvironMent(environment, application);
+        } catch (Throwable e) {
+            if (!Easy4j.isReady()) {
+                throw e;
+            } else {
+                Easy4j.error("An Runtime error occurred in Environment ：", e);
             }
         }
 
-        handlerEnvironMent(environment, application);
     }
 
     public Properties handlerDefaultAnnotationValues() {

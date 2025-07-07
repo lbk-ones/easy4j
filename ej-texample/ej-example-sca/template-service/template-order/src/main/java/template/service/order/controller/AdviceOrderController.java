@@ -1,5 +1,6 @@
 package template.service.order.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import easy4j.infra.common.header.CheckUtils;
@@ -46,6 +47,7 @@ public class AdviceOrderController {
     @Transactional
     @RequestLog
     @WebIdempotent
+    @SentinelResource("create-advice-order")
     public EasyResult<Object> addAdviceOrder(@RequestBody AdviceOrder adviceOrder) {
 
         DbLock dbLock = easy4jContext.get(DbLock.class);

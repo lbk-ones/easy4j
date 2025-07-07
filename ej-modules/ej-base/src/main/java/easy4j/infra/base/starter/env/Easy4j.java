@@ -76,6 +76,19 @@ public class Easy4j implements ApplicationContextAware {
 
     public static String mainClassPath = "";
     public static Class<?> mainClass;
+    private static final AtomicBoolean isReady = new AtomicBoolean(false);
+
+    public static boolean isReady() {
+        return isReady.get();
+    }
+
+    public static void ready() {
+        if (isReady.get()) {
+            return;
+        }
+        isReady.compareAndSet(false, true);
+    }
+
     public final static Map<String, AtomicBoolean> isInitPreLoadApplication = Maps.newHashMap();
 
 
@@ -376,6 +389,10 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static void error(String msg, Object... objects) {
+        log.error(msg, objects);
+    }
+
+    public static void error(String msg, Throwable objects) {
         log.error(msg, objects);
     }
 
