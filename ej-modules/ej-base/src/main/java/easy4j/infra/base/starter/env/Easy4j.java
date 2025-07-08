@@ -379,8 +379,12 @@ public class Easy4j implements ApplicationContextAware {
         return getEjSysPropertyName(field);
     }
 
+    private static final class Easy4jContextHolder {
+        static final Easy4jContext easy4jContext = SpringUtil.getBean(Easy4jContext.class);
+    }
+
     public static Easy4jContext getContext() {
-        return SpringUtil.getBean(Easy4jContext.class);
+        return Easy4jContextHolder.easy4jContext;
     }
 
 

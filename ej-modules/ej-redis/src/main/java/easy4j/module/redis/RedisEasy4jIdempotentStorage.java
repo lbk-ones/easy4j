@@ -14,6 +14,7 @@
  */
 package easy4j.module.redis;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -33,6 +34,9 @@ public class RedisEasy4jIdempotentStorage implements Easy4jIdempotentStorage {
 
     @Override
     public boolean acquireLock(String key, int expireSeconds, HttpServletRequest request) {
+        if (StrUtil.isBlank(key)) {
+            return true;
+        }
         boolean locked = Boolean.TRUE.equals(redisTemplate.opsForValue()
                 .setIfAbsent(key, "locked", Duration.ofSeconds(expireSeconds)));
         if (locked) {

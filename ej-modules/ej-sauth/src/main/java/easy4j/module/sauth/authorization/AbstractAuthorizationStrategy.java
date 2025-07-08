@@ -41,8 +41,6 @@ import java.util.Set;
  */
 public abstract class AbstractAuthorizationStrategy implements SecurityAuthorization {
 
-    private Easy4jContext easy4jContext;
-
 
     @Override
     public Set<SecurityAuthority> getAuthorizationByUsername(String userName) {
@@ -78,6 +76,10 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
         boolean methodNoLogin = method.isAnnotationPresent(NoLogin.class) && method.getAnnotation(NoLogin.class).rpcNoLogin();
         // rpc 传递
         boolean noLoginRpc = StrUtil.equals(httpServerRequest.getHeader(SysConstant.EASY4J_RPC_NO_LOGIN), "1");
+
+        // 是否是免登录的 供后续模块使用
+        boolean isNoLogin = beanType.isAnnotationPresent(NoLogin.class) || method.isAnnotationPresent(NoLogin.class) || noLoginRpc;
+        getContext().registerThreadHash(SysConstant.EASY4J_IS_NO_LOGIN, SysConstant.EASY4J_IS_NO_LOGIN, isNoLogin);
         if (classNoLogin || methodNoLogin || noLoginRpc) {
             getContext().registerThreadHash(SysConstant.EASY4J_RPC_NO_LOGIN, SysConstant.EASY4J_RPC_NO_LOGIN, "1");
             return false;
@@ -86,15 +88,7 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     }
 
     private Easy4jContext getContext() {
-        if (easy4jContext == null) {
-            Class<? extends AbstractAuthorizationStrategy> aClass = this.getClass();
-            synchronized (aClass) {
-                if (easy4jContext == null) {
-                    easy4jContext = Easy4j.getContext();
-                }
-            }
-        }
-        return easy4jContext;
+        return Easy4j.getContext();
     }
 
     @Override

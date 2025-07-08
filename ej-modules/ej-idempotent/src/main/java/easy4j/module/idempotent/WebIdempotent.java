@@ -39,4 +39,22 @@ public @interface WebIdempotent {
     @Desc("key的过期时间")
     int expireSeconds() default 60 * 5;
 
+    /**
+     * 全局幂等，该接口只能一个一个来，以请求方法加请求路径来确定
+     *
+     * @author bokun.li
+     * @date 2025/7/8
+     */
+    @Desc("全局幂等，该接口只能一个一个来，以请求方法加请求路径来确定")
+    boolean globalIdempotent() default false;
+
+    /**
+     * 没有唯一key(或者免登录)则降级为全局幂等,默认不开启
+     *
+     * @author bokun.li
+     * @date 2025/7/8
+     */
+    @Desc("没有唯一key则降级为全局幂等,默认不开启")
+    boolean degradeGlobalIdempotent() default false;
+
 }

@@ -35,7 +35,7 @@ public interface Easy4JWebMvcHandler {
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handlerMethod);
 
     default Integer getOrder() {
-        return 1;
+        return 999;
     }
 
 }

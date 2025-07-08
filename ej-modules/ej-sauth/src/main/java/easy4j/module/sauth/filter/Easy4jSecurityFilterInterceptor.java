@@ -105,4 +105,9 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handler) {
     }
+
+    @Override
+    public Integer getOrder() {
+        return Integer.MIN_VALUE;
+    }
 }
