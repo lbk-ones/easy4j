@@ -32,6 +32,7 @@ import easy4j.module.sauth.domain.SecuritySession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -165,6 +166,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SecuritySession refreshSession(String token, Integer expireTime, TimeUnit timeUnit) {
         if (isClient) {
             NacosInvokeDto build = NacosInvokeDto.builder()

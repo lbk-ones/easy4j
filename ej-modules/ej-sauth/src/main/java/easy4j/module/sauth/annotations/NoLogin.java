@@ -23,4 +23,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface NoLogin {
+
+    boolean rpcNoLogin() default true;
 }

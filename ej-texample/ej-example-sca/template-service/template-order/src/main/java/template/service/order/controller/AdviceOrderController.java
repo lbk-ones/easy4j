@@ -9,6 +9,7 @@ import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.log.RequestLog;
 import easy4j.module.idempotent.WebIdempotent;
+import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.seed.CommonKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,7 @@ public class AdviceOrderController {
     @RequestLog
     @WebIdempotent
     @SentinelResource("create-advice-order")
+    @NoLogin
     public EasyResult<Object> addAdviceOrder(@RequestBody AdviceOrder adviceOrder) {
 
         DbLock dbLock = easy4jContext.get(DbLock.class);

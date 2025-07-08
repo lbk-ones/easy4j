@@ -17,8 +17,10 @@ package easy4j.module.sauth.authorization;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.Easy4jContext;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.domain.SecurityAuthority;
@@ -38,6 +40,8 @@ import java.util.Set;
  * @date 2025-05
  */
 public abstract class AbstractAuthorizationStrategy implements SecurityAuthorization {
+
+    private Easy4jContext easy4jContext;
 
 
     @Override
@@ -70,11 +74,27 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     public boolean isNeedLogin(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse) {
         Method method = handlerMethod.getMethod();
         Class<?> beanType = handlerMethod.getBeanType();
-        boolean annotationPresent1 = beanType.isAnnotationPresent(NoLogin.class);
-        if (annotationPresent1) {
+        boolean classNoLogin = beanType.isAnnotationPresent(NoLogin.class) && beanType.getAnnotation(NoLogin.class).rpcNoLogin();
+        boolean methodNoLogin = method.isAnnotationPresent(NoLogin.class) && method.getAnnotation(NoLogin.class).rpcNoLogin();
+        // rpc 传递
+        boolean noLoginRpc = StrUtil.equals(httpServerRequest.getHeader(SysConstant.EASY4J_RPC_NO_LOGIN), "1");
+        if (classNoLogin || methodNoLogin || noLoginRpc) {
+            getContext().registerThreadHash(SysConstant.EASY4J_RPC_NO_LOGIN, SysConstant.EASY4J_RPC_NO_LOGIN, "1");
             return false;
         }
         return !method.isAnnotationPresent(NoLogin.class);
+    }
+
+    private Easy4jContext getContext() {
+        if (easy4jContext == null) {
+            Class<? extends AbstractAuthorizationStrategy> aClass = this.getClass();
+            synchronized (aClass) {
+                if (easy4jContext == null) {
+                    easy4jContext = Easy4j.getContext();
+                }
+            }
+        }
+        return easy4jContext;
     }
 
     @Override

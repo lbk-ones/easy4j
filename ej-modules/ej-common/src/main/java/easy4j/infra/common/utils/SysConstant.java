@@ -40,6 +40,7 @@ public class SysConstant {
 
     public static final String X_API_KEY = "X-API-Key";
     public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";
+    public static final String EASY4J_RPC_NO_LOGIN = "X-Rpc-No-Login";
 
 
     public static final String DOT = ".";

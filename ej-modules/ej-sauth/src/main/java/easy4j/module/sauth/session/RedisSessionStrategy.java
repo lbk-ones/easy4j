@@ -43,7 +43,9 @@ public class RedisSessionStrategy extends AbstractSessionStrategy {
         Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
         assert cache != null;
         Cache.ValueWrapper valueWrapper = cache.get(token);
-        assert valueWrapper != null;
+        if (valueWrapper == null) {
+            return null;
+        }
         Object o = valueWrapper.get();
         if (o == null) return null;
         return JacksonUtil.toObject(JacksonUtil.toJson(o), SecuritySession.class);

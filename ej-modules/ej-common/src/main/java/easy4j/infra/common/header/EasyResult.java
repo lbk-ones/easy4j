@@ -59,7 +59,7 @@ public class EasyResult<T> implements Serializable {
     // 提示消息
     @Schema(description = "提示消息")
     private String message;
-    
+
     // 错误堆栈信息
     @Schema(description = "错误堆栈信息")
     private String errorInfo;
@@ -262,7 +262,7 @@ public class EasyResult<T> implements Serializable {
 
     @Override
     public String toString() {
-        return JacksonUtil.toJson(this);
+        return JacksonUtil.toJsonContainNull(this);
     }
 
     /**
