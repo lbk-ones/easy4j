@@ -548,6 +548,12 @@ public class EjSysProperties {
     @SpringVs(desc = "sentinel控制台地址，示例（localhost:8080）", vs = "spring.cloud.sentinel.transport.dashboard")
     private String sentinelDashboardUrl;
 
+    /**
+     * 是否开启指标采集 默认开启
+     */
+    @SpringVs(desc = "是否开启指标采集 默认开启")
+    private boolean metricsEnable;
+
 
     /**
      * 根据常量获取 对应的springboot变量

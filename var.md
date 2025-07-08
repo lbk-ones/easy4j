@@ -76,3 +76,4 @@
 - **easy4j.sentinel-dashboard-enable**: 是否开启sentinel的控制台，默认不开启
 - **easy4j.sentinel-dashboard-eager**:  （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化
 - **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）
+- **easy4j.metrics-enable**: 是否开启指标采集 默认开启

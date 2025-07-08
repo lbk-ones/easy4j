@@ -158,6 +158,7 @@ public class SysConstant {
     public static final String EASY4J_XXLJOB_ENABLE = PARAM_PREFIX + SP.DOT + "xxl-job-enable";
     public static final String EASY4J_XXLJOB_ADMIN_URL = PARAM_PREFIX + SP.DOT + "xxl-job-admin-url";
     public static final String EASY4J_XXLJOB_ACCESS_TOKEN = PARAM_PREFIX + SP.DOT + "xxl-job-access-token";
+    public static final String EASY4J_METRICS_ENABLE = PARAM_PREFIX + SP.DOT + "metrics-enable";
 
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------
