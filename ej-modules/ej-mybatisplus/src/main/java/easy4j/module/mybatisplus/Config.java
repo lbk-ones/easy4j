@@ -142,7 +142,7 @@ public class Config implements EnvironmentAware {
     @Bean
     public GlobalConfig globalConfig() {
         GlobalConfig conf = new GlobalConfig();
-        conf.setDbConfig(new GlobalConfig.DbConfig().setColumnFormat("`%s`"));
+        //conf.setDbConfig(new GlobalConfig.DbConfig().setColumnFormat("`%s`"));
         DefaultSqlInjector logicSqlInjector = new DefaultSqlInjector() {
             /**
              * 注入自定义全局方法
@@ -160,6 +160,20 @@ public class Config implements EnvironmentAware {
         conf.setSqlInjector(logicSqlInjector);
         return conf;
     }
+
+//    private String getQuoteStringByDbType(DbType dbType) {
+//        switch (dbType) {
+//            case MYSQL:
+//            case SQL_SERVER:
+//                return "`";  // MySQL和SQL Server使用反引号
+//            case POSTGRE_SQL:
+//            case ORACLE:
+//            case DB2:
+//                return "\"";  // PostgreSQL、Oracle、DB2使用双引号
+//            default:
+//                return "`";   // 默认使用反引号
+//        }
+//    }
 
 
     /**
