@@ -20,7 +20,7 @@ public class PageDto implements Serializable {
     private String searchKey;
 
     @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持 eq in like likeLeft likeRight,in的话第三个参数为json类型的字符串数组")
-    private List<List<String>> keys;
+    private List<List<Object>> keys;
 
     public void setPageNo(int pageNo) {
         this.pageNo = pageNo;
@@ -34,7 +34,7 @@ public class PageDto implements Serializable {
         this.searchKey = searchKey;
     }
 
-    public void setKeys(List<List<String>> keys) {
+    public void setKeys(List<List<Object>> keys) {
         this.keys = keys;
     }
 }

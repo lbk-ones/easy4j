@@ -74,24 +74,34 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
      * @param queryWrapper
      */
     public void parsePageKeysToQuery(PageDto pageDto, QueryWrapper<T> queryWrapper) {
-        List<List<String>> keys = pageDto.getKeys();
-        parseKeysWith(queryWrapper, keys);
+        List<List<Object>> keys = pageDto.getKeys();
+        parseKeysWith(queryWrapper, keys, true);
     }
-    public void parseKeysToQuery(List<List<String>> keys, QueryWrapper<T> queryWrapper) {
-        parseKeysWith(queryWrapper, keys);
+    public void parsePageKeysToQuery(PageDto pageDto, QueryWrapper<T> queryWrapper, boolean toUnderLine) {
+        List<List<Object>> keys = pageDto.getKeys();
+        parseKeysWith(queryWrapper, keys, toUnderLine);
+    }
+    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper) {
+        parseKeysWith(queryWrapper, keys, true);
+    }
+    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper,boolean toUnderLine) {
+        parseKeysWith(queryWrapper, keys, toUnderLine);
     }
 
-    private void parseKeysWith(QueryWrapper<T> queryWrapper, List<List<String>> keys) {
+    private void parseKeysWith(QueryWrapper<T> queryWrapper, List<List<Object>> keys, boolean toUnderLine) {
         if (CollUtil.isEmpty(keys)) {
             return;
         }
-        for (List<String> key : keys) {
+        for (List<Object> key : keys) {
             try{
-                String s = StrUtil.trim(key.get(0));
-                String s2 = StrUtil.trim(key.get(1));
-                String s3 = StrUtil.trim(key.get(2));
-                if (StrUtil.hasBlank(s, s2, s3)) {
+                String s = StrUtil.trim(key.get(0).toString());
+                String s2 = StrUtil.trim(key.get(1).toString());
+                Object s3 = key.get(2);
+                if (StrUtil.hasBlank(s, s2) || null == s3) {
                     continue;
+                }
+                if(toUnderLine){
+                    s = StrUtil.toUnderlineCase(s);
                 }
                 switch (s2) {
                     case "eq":
@@ -99,7 +109,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         break;
                     case "in":
                         try {
-                            ArrayList<String> object = JacksonUtil.toObject(s3, new TypeReference<ArrayList<String>>() {
+                            ArrayList<String> object = JacksonUtil.toObject(s3.toString(), new TypeReference<ArrayList<String>>() {
                             });
                             if (CollUtil.isNotEmpty(object)) {
                                 queryWrapper.in(s, object);
@@ -130,21 +140,21 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         queryWrapper.gt(true, s, s3);
                         break;
                     case "tgt":
-                        queryWrapper.gt(false, s, DateUtil.parse(s3));
+                        queryWrapper.gt(false, s, DateUtil.parse(s3.toString()));
                         break;
                     case "tgte":
-                        queryWrapper.gt(true, s, DateUtil.parse(s3));
+                        queryWrapper.gt(true, s, DateUtil.parse(s3.toString()));
                         break;
                     case "tlt":
-                        queryWrapper.lt(false, s, DateUtil.parse(s3));
+                        queryWrapper.lt(false, s, DateUtil.parse(s3.toString()));
                         break;
                     case "tlte":
-                        queryWrapper.lt(true, s, DateUtil.parse(s3));
+                        queryWrapper.lt(true, s, DateUtil.parse(s3.toString()));
                         break;
                     case "between":
                         try {
-                            String v1 = StrUtil.trim(key.get(3));
-                            String v2 = StrUtil.trim(key.get(4));
+                            String v1 = StrUtil.trim(key.get(3).toString());
+                            String v2 = StrUtil.trim(key.get(4).toString());
                             if (!StrUtil.hasBlank(v1, v2)) {
                                 queryWrapper.between(false, s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
@@ -154,8 +164,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         break;
                     case "betweene":
                         try {
-                            String v1 = StrUtil.trim(key.get(3));
-                            String v2 = StrUtil.trim(key.get(4));
+                            String v1 = StrUtil.trim(key.get(3).toString());
+                            String v2 = StrUtil.trim(key.get(4).toString());
                             if (!StrUtil.hasBlank(v1, v2)) {
                                 queryWrapper.between(true, s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
