@@ -62,7 +62,8 @@ public class DocEnvironment extends AbstractEasy4jEnvironment {
         properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_FILTER_MULTIPART_APIS, "true");
         properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_REQUEST_CACHE, "true");
         properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_HOST, "false");
-        properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_HOST_TEXT, "localhost:10001");
+        String envProperty = getEnvProperty(SysConstant.EASY4J_SERVER_PORT);
+        properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_HOST_TEXT, "localhost:"+envProperty);
         properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_HOME_CUSTOM, "false");
         properties.setProperty(SysConstant.KNIFE4J_SETTING_HOME_CUSTOM_LOCATION, "classpath:markdown/home.md");
         properties.setProperty(SysConstant.KNIFE4J_SETTING_ENABLE_SEARCH, "true");

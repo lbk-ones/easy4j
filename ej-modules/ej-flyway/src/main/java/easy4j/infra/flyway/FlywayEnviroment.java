@@ -49,10 +49,10 @@ public class FlywayEnviroment extends AbstractEasy4jEnvironment {
         properties.setProperty("spring.flyway.table", "sys_flyway_schema_history");
 
         // 不允许无序执行
-        properties.setProperty("spring.flyway.out-of-order", "false");
+        properties.setProperty("spring.flyway.out-of-order", "true");
 
         // 禁用 flyway clean 命令
-        properties.setProperty("spring.flyway.clean-disabled", "false");
+        properties.setProperty("spring.flyway.clean-disabled", "true");
         // 自动创建基线
         properties.setProperty("spring.flyway.baseline-on-migrate", "true");
         // 从0开始
