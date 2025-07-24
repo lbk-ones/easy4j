@@ -14,44 +14,53 @@
  */
 package easy4j.module.mybatisplus.audit;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-
 /**
- * AuditDemo
- * 继承这个类实现自动审计
+ * 几个基本的审计字段
+ * 给dto使用
  *
  * @author bokun.li
- * @date 2025-05
+ * @date 2025/7/23
  */
 @Data
-public class AutoAudit implements Serializable {
-
-    // 创建人
-    @TableField(value="create_by",fill = FieldFill.INSERT)
+public class BaseAudit implements Serializable {
+    /**
+     * 创建人编码
+     */
+    @Schema(description = "创建人编码")
     private String createBy;
 
-    @TableField(value="create_name",fill = FieldFill.INSERT)
+    /**
+     * 创建人名称
+     */
+    @Schema(description = "创建人名称")
     private String createName;
 
-    // 创建时间
-    @TableField(value="create_date",fill = FieldFill.INSERT)
+    /**
+     * 创建时间
+     */
+    @Schema(description = "创建时间")
     private Date createdTime;
 
-    // 更新人
-    @TableField(value="update_by",fill = FieldFill.INSERT_UPDATE)
+    /**
+     * 更新人编码
+     */
+    @Schema(description = "更新人编码")
     private String updateBy;
 
-    @TableField(value="update_name",fill = FieldFill.INSERT_UPDATE)
+    /**
+     * 更新人姓名
+     */
+    @Schema(description = "更新人姓名")
     private String updateName;
 
-    // 更新时间
-    @TableField(value="last_update_date",fill = FieldFill.INSERT_UPDATE)
+    /**
+     * 最新更新时间
+     */
+    @Schema(description = "最新更新时间")
     private Date lastUpdateTime;
-
-
 }

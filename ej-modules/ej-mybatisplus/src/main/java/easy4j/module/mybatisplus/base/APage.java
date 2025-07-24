@@ -14,27 +14,27 @@
  */
 package easy4j.module.mybatisplus.base;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serializable;
 import java.util.List;
 
-@Getter
-@Setter
-public class PageDto implements Serializable,APage {
+public interface APage {
+    int getPageNo();
 
+    void setPageNo(int pageNo);
 
-    // 从1开始
-    @Schema(description = "页码 从1开始")
-    private int pageNo = 1;
-    // 默认20条
-    @Schema(description = "每页多少条，默认20")
-    private int pageSize = 20;
+    int getPageSize();
 
-    private String searchKey;
+    void setPageSize(int pageSize);
 
-    @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持 eq in like likeLeft likeRight,in的话第三个参数为json类型的字符串数组")
-    private List<List<Object>> keys;
+    /**
+     * if a page only have a input for search,then the field maybe used!
+     *
+     * @return
+     */
+    String getSearchKey();
+
+    void setSearchKey(String searchKey);
+
+    List<List<Object>> getKeys();
+
+    void setKeys(List<List<Object>> keys);
 }

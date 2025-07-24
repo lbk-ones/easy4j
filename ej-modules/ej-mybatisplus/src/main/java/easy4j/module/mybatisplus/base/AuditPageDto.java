@@ -14,18 +14,22 @@
  */
 package easy4j.module.mybatisplus.base;
 
+import easy4j.module.mybatisplus.audit.BaseAudit;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.List;
-
+/**
+ * AuditPageDto
+ * with audit fields page dto
+ *
+ * @author bokun.li
+ * @date 2025/7/24
+ */
 @Getter
 @Setter
-public class PageDto implements Serializable,APage {
-
-
+public class AuditPageDto extends BaseAudit implements APage {
     // 从1开始
     @Schema(description = "页码 从1开始")
     private int pageNo = 1;
@@ -35,6 +39,8 @@ public class PageDto implements Serializable,APage {
 
     private String searchKey;
 
-    @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持 eq in like likeLeft likeRight,in的话第三个参数为json类型的字符串数组")
+    @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持eq in like gt gte lt lte tgt(t开头的是时间) tgte tlt tlte between betweene(包含) 为in的话第三个参数为json类型的字符串数组其他不用转成json")
     private List<List<Object>> keys;
+
+
 }

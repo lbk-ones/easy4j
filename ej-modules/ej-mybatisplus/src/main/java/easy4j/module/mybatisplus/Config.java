@@ -100,7 +100,7 @@ public class Config implements EnvironmentAware {
         String enumPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.ENUMS;
         // 枚举扫描
         sqlSessionFactory.setTypeEnumsPackage(enumPath);
-        String xmlLocation = "classpath*:/" + db + "/**/*.xml";
+        String xmlLocation = "classpath*:/mappers/" + db + "/**/*.xml";
         log.info(SysLog.compact("xml文件扫描路径,{}", xmlLocation));
         // xml扫描
         sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver()
