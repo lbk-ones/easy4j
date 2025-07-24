@@ -276,3 +276,24 @@ public class AppTest {
 
 > 启动服务可以不用application.properties
 
+
+# git提交规则
+使用 Conventional Commits 规则
+```text
+<类型>[可选作用域]: <描述>
+
+[可选正文]
+
+[可选脚注]
+类型：
+feat：新功能（会触发语义化版本的 MINOR 升级）
+fix：修复 bug（会触发语义化版本的 PATCH 升级）
+docs：仅修改文档（如 README、注释）
+style：不影响代码逻辑的格式调整（如空格、缩进、标点）
+refactor：既非新功能也非修复 bug 的代码重构
+perf：性能优化（如算法改进、减少资源消耗）
+test：添加或修改测试代码（如单元测试、集成测试）
+build：构建流程或依赖管理的修改（如 pom.xml、package.json）
+ci：CI 配置文件或脚本的修改（如 GitHub Actions、Jenkinsfile）
+chore：其他不修改 src 或 test 目录的变更（如配置文件）
+```
