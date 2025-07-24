@@ -313,4 +313,20 @@ public class SysConstant {
     public static final String KNIFE4J_BASIC_PASSWORD = "knife4j.basic.password";
 
     public static final String NACOS_AUTH_GROUP = "easy4j-sauths";
+
+    /**
+     * http header
+     */
+    public static final String HTTP_HEADER_UNKNOWN = "unKnown";
+
+    /**
+     * http X-Forwarded-For
+     */
+    public static final String HTTP_X_FORWARDED_FOR = "X-Forwarded-For";
+
+    /**
+     * http X-Real-IP
+     */
+    public static final String HTTP_X_REAL_IP = "X-Real-IP";
+
 }

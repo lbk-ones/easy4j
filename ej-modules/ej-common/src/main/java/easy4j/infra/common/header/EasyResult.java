@@ -90,7 +90,7 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> ok(Date startDate, T data, String code) {
+    public static <T> EasyResult<T> ok(T data, String code) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
 

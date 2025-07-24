@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * 检查工具类
@@ -46,7 +47,7 @@ public class CheckUtils {
      * @see io.swagger.v3.oas.annotations.media.Schema
      */
     @SafeVarargs
-    public static <T> void checkByLambda(Object t, Func1<T, ?>... message) {
+    public static <T> void checkByLambda(T t, Func1<T, ?>... message) {
         Set<String> resultList = new HashSet<>();
         Class<?> aClass = t.getClass();
         for (Func1<T, ?> trFunction : message) {
@@ -318,5 +319,101 @@ public class CheckUtils {
             return JacksonUtil.toObject(JacksonUtil.toJson(data), securitySessionClass);
         }
         return null;
+    }
+
+
+    public static void checkInsert(boolean flag) {
+        if (flag) {
+            throw new EasyException(BusCode.A00048);
+        }
+    }
+    public static void checkInsert(boolean flag,String message) {
+        if (!flag) {
+            throw EasyException.wrap(BusCode.A00048,message);
+        }
+    }
+    public static void checkInsert(Supplier<Boolean> consumer) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00048);
+
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00048,e.getMessage());
+
+        }
+    }
+    public static void checkInsert(Supplier<Boolean> consumer, String message) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00048);
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00048,message+e.getMessage());
+
+        }
+    }
+    public static void checkUpdate(boolean flag) {
+        if (!flag) {
+            throw EasyException.wrap(BusCode.A00049);
+        }
+    }
+    public static void checkUpdate(boolean flag,String message) {
+        if (!flag) {
+            throw EasyException.wrap(BusCode.A00049,message);
+        }
+    }
+    public static void checkUpdate(Supplier<Boolean> consumer, String message) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00049,message);
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00049,message+e.getMessage());
+
+        }
+    }
+    public static void checkUpdate(Supplier<Boolean> consumer) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00049);
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00049,e.getMessage());
+        }
+    }
+    public static void checkDelete(boolean flag) {
+        if (!flag) {
+            throw EasyException.wrap(BusCode.A00050);
+        }
+    }
+    public static void checkDelete(boolean flag,String message) {
+        if (!flag) {
+            throw EasyException.wrap(BusCode.A00050,message);
+        }
+    }
+    public static void checkDelete(Supplier<Boolean> consumer) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00050);
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00050,e.getMessage());
+        }
+    }
+    public static void checkDelete(Supplier<Boolean> consumer, String message) {
+        try{
+            Boolean aBoolean = consumer.get();
+            if(null!= aBoolean && !aBoolean){
+                throw EasyException.wrap(BusCode.A00050,message);
+            }
+        }catch (Throwable e){
+            throw EasyException.wrap(BusCode.A00050,message+e.getMessage());
+        }
     }
 }

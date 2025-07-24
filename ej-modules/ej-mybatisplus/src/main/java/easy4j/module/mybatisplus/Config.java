@@ -34,6 +34,7 @@ import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.module.mybatisplus.audit.AutoAuditHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
@@ -130,7 +131,7 @@ public class Config implements EnvironmentAware {
         log.info(SysLog.compact("mybatis-plus 开启下划线转驼峰"));
         sqlSessionFactory.setConfiguration(configuration);
         // 自动填充插件
-        globalConfig.setMetaObjectHandler(new AutoAudit());
+        globalConfig.setMetaObjectHandler(new AutoAuditHandler());
         log.info(SysLog.compact("自定义自动审计"));
         globalConfig.setBanner(false);
         sqlSessionFactory.setGlobalConfig(globalConfig);
@@ -190,5 +191,10 @@ public class Config implements EnvironmentAware {
         return new AutoAudit();
     }*/
 
+
+    @Bean
+    public IdGenner idGenner(){
+        return new IdGenner();
+    }
 
 }

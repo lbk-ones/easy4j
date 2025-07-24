@@ -12,68 +12,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.mybatisplus;
+package easy4j.module.mybatisplus.audit;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * AuditDemo
+ * 继承这个类实现自动审计
  *
  * @author bokun.li
  * @date 2025-05
  */
-public class AuditDemo implements Serializable {
+@Data
+public class AutoAudit implements Serializable {
 
     // 创建人
-    @TableField(value="CREATE_BY",fill = FieldFill.INSERT)
+    @TableField(value="create_by",fill = FieldFill.INSERT)
     private String createBy;
 
+    @TableField(value="create_name",fill = FieldFill.INSERT)
+    private String createName;
+
     // 创建时间
-    @TableField(value="CREATE_DATE",fill = FieldFill.INSERT)
+    @TableField(value="create_date",fill = FieldFill.INSERT)
     private Date createDate;
 
     // 更新人
-    @TableField(value="UPDATE_BY",fill = FieldFill.INSERT_UPDATE)
+    @TableField(value="update_by",fill = FieldFill.INSERT_UPDATE)
     private String updateBy;
 
+    @TableField(value="update_name",fill = FieldFill.INSERT_UPDATE)
+    private String updateName;
+
     // 更新时间
-    @TableField(value="UPDATE_DATE",fill = FieldFill.INSERT_UPDATE)
+    @TableField(value="update_date",fill = FieldFill.INSERT_UPDATE)
     private Date updateDate;
 
 
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public Date getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
 }

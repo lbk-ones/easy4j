@@ -146,4 +146,17 @@ public class BusCode {
 
     @Desc("{0}查询{0}结果为空")
     public static final String A00046 = "A00046";
+
+    @Desc("不支持的类型:{0}")
+    public static final String A00047 = "A00047";
+
+    @Desc("写入失败:{0}")
+    public static final String A00048 = "A00048";
+
+    @Desc("更新失败:{0}")
+    public static final String A00049 = "A00049";
+
+    @Desc("删除失败:{0}")
+    public static final String A00050 = "A00050";
+
 }
