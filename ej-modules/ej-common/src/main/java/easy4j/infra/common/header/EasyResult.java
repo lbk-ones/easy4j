@@ -53,6 +53,7 @@ public class EasyResult<T> implements Serializable {
     @Schema(description = "业务状态码")
     private String code;
 
+    @JsonIgnore
     @Schema(description = "远程调用方法")
     private String rpcMethod;
 
@@ -234,6 +235,7 @@ public class EasyResult<T> implements Serializable {
     }
 
 
+    @JsonIgnore
     public boolean isSuccess() {
         return error == 0;
     }
