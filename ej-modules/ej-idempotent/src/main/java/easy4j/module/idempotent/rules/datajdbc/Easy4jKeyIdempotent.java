@@ -40,7 +40,7 @@ public class Easy4jKeyIdempotent implements Serializable {
     public static final Integer FAILED = 2;
 
 
-    @JdbcColumn(name = "IDE_KEY", isPrimaryKey = true)
+    @JdbcColumn(isPrimaryKey = true)
     private String ideKey;
 
     private Date expireDate;
