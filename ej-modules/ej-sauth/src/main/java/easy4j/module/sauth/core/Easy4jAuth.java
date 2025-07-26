@@ -15,7 +15,9 @@
 package easy4j.module.sauth.core;
 
 import cn.hutool.extra.spring.SpringUtil;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -39,13 +41,13 @@ public class Easy4jAuth {
         return Optional.ofNullable(bean);
     }
 
-    public static SecurityUserInfo getOnlineUser() {
+    public static OnlineUserInfo getOnlineUser() {
         return get()
                 .map(SecurityService::getOnlineUser)
                 .orElse(null);
     }
 
-    public static SecurityUserInfo getOnlineUser(String token) {
+    public static OnlineUserInfo getOnlineUser(String token) {
         return get()
                 .map(e -> e.getOnlineUser(token))
                 .orElse(null);
@@ -57,19 +59,19 @@ public class Easy4jAuth {
                 .orElse(false);
     }
 
-    public static SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
+    public static OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware) {
         return get()
                 .map(e -> e.login(securityUser, loginAware))
                 .orElse(null);
     }
 
-    public static SecurityUserInfo logout() {
+    public static OnlineUserInfo logout() {
         return get()
                 .map(SecurityService::logout)
                 .orElse(null);
     }
 
-    public static SecurityUserInfo logoutByUserName(String userName) {
+    public static OnlineUserInfo logoutByUserName(String userName) {
         return get()
                 .map(e -> e.logoutByUserName(userName))
                 .orElse(null);

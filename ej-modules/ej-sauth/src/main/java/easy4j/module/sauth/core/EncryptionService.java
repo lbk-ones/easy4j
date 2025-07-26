@@ -15,7 +15,8 @@
 package easy4j.module.sauth.core;
 
 import easy4j.infra.common.annotations.Desc;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+
 
 /**
  * EncryptionService
@@ -31,8 +32,8 @@ public interface EncryptionService {
      * @date 2025-06-17
      */
     @Desc("securityUser 为数据库查出来的数据")
-    String encrypt(String str, SecurityUserInfo securityUser);
+    String encrypt(String pwd, ISecurityEasy4jUser securityUser);
 
-    String decrypt(String str, SecurityUserInfo securityUser);
+    String decrypt(String str, ISecurityEasy4jUser securityUser);
 
 }

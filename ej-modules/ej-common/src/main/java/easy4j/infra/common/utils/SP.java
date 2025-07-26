@@ -99,4 +99,6 @@ public interface SP {
     String YAML_SUFFIX = DOT + "yaml";
     String APPLICATION = "application";
     String BOOTSTRAP = "bootstrap";
+
+    String DEFAULT = "default";
 }

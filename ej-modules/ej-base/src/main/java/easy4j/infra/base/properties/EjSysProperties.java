@@ -19,6 +19,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import jodd.util.StringPool;
 import lombok.Data;
@@ -392,6 +393,32 @@ public class EjSysProperties {
      */
     @SpringVs(desc = "简单权限认证的密码")
     private String simpleAuthPassword;
+    /**
+     * 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置
+     */
+    @SpringVs(
+            valueEnums = {"default", "extra"},
+            desc = "用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置"
+    )
+    private String simpleAuthUserImplType;
+
+    /**
+     * 简单权限是否缓存权限列表
+     */
+    @SpringVs(
+            valueEnums = {"true", "false"},
+            desc = "简单权限是否缓存权限列表"
+    )
+    private boolean simpleAuthIsCacheAuthority = false;
+
+    /**
+     * 是否将权限注册到nacos去远程调用
+     */
+    @SpringVs(
+            valueEnums = {"true", "false"},
+            desc = "服务端是否将权限注册到nacos去远程调用"
+    )
+    private boolean simpleAuthRegisterToNacos = true;
 
     /**
      * 是否启用RequestLog注解进行请求日志收集 true代表开启
@@ -584,6 +611,23 @@ public class EjSysProperties {
         }
         return null;
     }
+
+    public static SpringVs getSpringVs(String sysName) {
+        Field[] fields = ReflectUtil.getFields(EjSysProperties.class);
+        for (Field field : fields) {
+            String name = field.getName();
+            String lowerCase = SysConstant.PARAM_PREFIX + StringPool.DOT + StrUtil.replace(
+                    StrUtil.toUnderlineCase(name), StringPool.UNDERSCORE, StringPool.DASH
+            ).toLowerCase();
+            if (StrUtil.equals(sysName, lowerCase) || StrUtil.equals(StrUtil.replaceFirst(sysName, SysConstant.PARAM_PREFIX + SP.DOT, ""), name)) {
+                if (field.isAnnotationPresent(SpringVs.class)) {
+                    return field.getAnnotation(SpringVs.class);
+                }
+            }
+        }
+        return null;
+    }
+
 
     public Map<String, Object> getBeanMap() {
         Map<String, Object> objectMap = Maps.newHashMap();

@@ -20,10 +20,14 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
-import easy4j.module.sauth.domain.SecuritySession;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.core.loaduser.LoadUserApi;
+import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.function.Consumer;
 
 
@@ -73,14 +77,58 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         return authorizationStrategy;
     }
 
+    public HttpServletRequest getServletRequest() {
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+        assert sra != null;
+        return (HttpServletRequest) sra.getRequest();
+    }
+
+
+    public ISecurityEasy4jUser verifyPre(ISecurityEasy4jUser user) {
+        if (null == user) {
+            user = new SecurityUser();
+            user.setErrorCode(BusCode.A00004 + ",user");
+            return user;
+        }
+        HttpServletRequest servletRequest = getServletRequest();
+        String method = servletRequest.getMethod();
+        if (!"post".equalsIgnoreCase(method)) {
+            user.setErrorCode(BusCode.A00030);
+            return user;
+        }
+        String username = user.getUsername();
+        String password = user.getPassword();
+        if (StrUtil.isBlank(username)) {
+            user.setErrorCode(BusCode.A00031);
+            return user;
+        }
+        boolean isSkip = user.isSkipPassword();
+        if (StrUtil.isBlank(password) && !isSkip) {
+            user.setErrorCode(BusCode.A00032);
+            return user;
+        }
+        return user;
+    }
+
 
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
-        SecurityUserInfo securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser);
-        String errorCode = securityUserInfo.getErrorCode();
-        if (StrUtil.isNotBlank(errorCode)) {
-            throw new EasyException(errorCode);
-        }
+    public OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware) {
+
+        ISecurityEasy4jUser iSecurityEasy4jUser = verifyPre(securityUser);
+        String username = securityUser.getUsername();
+        if (StrUtil.isNotBlank(iSecurityEasy4jUser.getErrorCode()))
+            throw new EasyException(iSecurityEasy4jUser.getErrorCode());
+
+
+        // 1、first query user info
+        ISecurityEasy4jUser dbUser = LoadUserApi.getByUserName(username);
+
+        ISecurityEasy4jUser securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser, dbUser);
+
+        if (StrUtil.isNotBlank(securityUserInfo.getErrorCode()))
+            throw new EasyException(securityUserInfo.getErrorCode());
+
         if (!securityAuthentication.checkUser(securityUser)) {
             throw new EasyException(BusCode.A00036);
         }
@@ -95,7 +143,9 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
         bindCtx(init);
 
-        return securityUserInfo;
+        OnlineUserInfo onlineUserInfo = new OnlineUserInfo(init, dbUser);
+        onlineUserInfo.handlerAuthorityList(username);
+        return onlineUserInfo;
     }
 
     private void bindCtx(SecuritySession init) {

@@ -15,7 +15,8 @@
 package easy4j.module.sauth.authentication;
 
 import easy4j.infra.common.exception.EasyException;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
 
 /**
  * 登录权限认证
@@ -30,7 +31,7 @@ public interface SecurityAuthentication {
      * @param user
      * @return
      */
-    SecurityUserInfo verifyLoginAuthentication(SecurityUserInfo user) throws EasyException;
+    ISecurityEasy4jUser verifyLoginAuthentication(ISecurityEasy4jUser user, ISecurityEasy4jUser userByUserName) throws EasyException;
 
     /**
      * token授权 给登录之后拦截器使用
@@ -39,22 +40,13 @@ public interface SecurityAuthentication {
      * @return
      * @throws EasyException
      */
-    SecurityUserInfo tokenAuthentication(String token) throws EasyException;
+    OnlineUserInfo tokenAuthentication(String token) throws EasyException;
 
     /**
      * 权限检查 (黑白名单，是否过期，是否锁定，用户是否存在)
      *
      * @return
      */
-    boolean checkUser(SecurityUserInfo user) throws EasyException;
-
-
-    /**
-     * 查询用户信息
-     *
-     * @param username
-     * @return
-     */
-    SecurityUserInfo getUserByUserName(String username);
+    boolean checkUser(ISecurityEasy4jUser user) throws EasyException;
 
 }

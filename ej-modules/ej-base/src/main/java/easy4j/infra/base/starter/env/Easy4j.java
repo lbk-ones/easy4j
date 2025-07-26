@@ -24,6 +24,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.properties.SpringVs;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.Easy4JStarterTest;
@@ -186,7 +187,7 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     private static void errorInfo(String name, String[] staticVs) {
-        List<String> objects = ListTs.newArrayList();
+        Set<String> objects = new HashSet<>();
         objects.add(name);
         if (staticVs != null) {
             for (String staticV : staticVs) {
@@ -195,7 +196,15 @@ public class Easy4j implements ApplicationContextAware {
                 }
             }
         }
+
         String join = String.join("或", objects);
+
+        String enums = Optional.ofNullable(EjSysProperties.getSpringVs(name))
+                .map(SpringVs::valueEnums)
+                .map(e -> String.join("、", e))
+                .orElse("");
+        if (StrUtil.isNotBlank(enums)) join += SP.SPACE + StrUtil.wrap(enums, "【", "】");
+
         throw new EasyException("请设置参数：" + join);
     }
 

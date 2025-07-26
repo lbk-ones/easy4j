@@ -128,8 +128,16 @@ public class SysConstant {
     public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
     public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "simple-auth-session-storage-type";
     public static final String EASY4J_AUTH_SESSION_EXPIRE_TIME = PARAM_PREFIX + StringPool.DOT + "session-expire-time-seconds";
+    public static final String EASY4J_SIMPLE_AUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
+    public static final String EASY4J_SIMPLE_AUTH_IS_SERVER = PARAM_PREFIX + StringPool.DOT + "simple-auth-is-server";
     public static final String EASY4J_SIMPLE_AUTH_USERNAME = PARAM_PREFIX + StringPool.DOT + "simple-auth-username";
     public static final String EASY4J_SIMPLE_AUTH_USERNAME_CN = PARAM_PREFIX + StringPool.DOT + "simple-auth-username-cn";
+
+    // 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置
+    public static final String EASY4J_SIMPLE_AUTH_USER_IMPL_TYPE = PARAM_PREFIX + StringPool.DOT + "simple-auth-user-impl-type";
+    public static final String EASY4J_SIMPLE_AUTH_REGIST_TO_NACOS = PARAM_PREFIX + StringPool.DOT + "simple-auth-register-to-nacos";
+    public static final String EASY4J_SIMPLE_AUTH_IS_CACHE_AUTHORITY = PARAM_PREFIX + StringPool.DOT + "simple-auth-is-cache-authority";
+
     public static final String EASY4J_SIMPLE_AUTH_PASSWORD = PARAM_PREFIX + StringPool.DOT + "simple-auth-password";
     public static final String EASY4J_ENABLE_DB_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "db-request-log-enable";
 
@@ -328,5 +336,10 @@ public class SysConstant {
      * http X-Real-IP
      */
     public static final String HTTP_X_REAL_IP = "X-Real-IP";
+
+    public static final String REDIS_CACHE_MANAGER = "redisCacheManager";
+    public static final String CAFFEINE_CACHE_MANAGER = "caffeineCacheManager";
+    public static final String REDIS_CONNECTION_FACTORY = "redissonConnectionFactory";
+
 
 }

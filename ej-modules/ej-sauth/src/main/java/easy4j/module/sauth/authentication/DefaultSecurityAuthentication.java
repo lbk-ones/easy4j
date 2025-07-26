@@ -18,8 +18,10 @@ import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.EncryptionService;
-import easy4j.module.sauth.core.LoadUserByUserName;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.core.loaduser.LoadUserApi;
+import easy4j.module.sauth.core.loaduser.LoadUserBy;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+
 import easy4j.module.sauth.session.SessionStrategy;
 
 /**
@@ -64,11 +66,5 @@ public class DefaultSecurityAuthentication extends AbstractSecurityAuthenticatio
     @Override
     public EncryptionService getEncryptionService() {
         return encryptionService;
-    }
-
-    @Override
-    public SecurityUserInfo getUserByUserName(String username) {
-        LoadUserByUserName bean = SpringUtil.getBean(LoadUserByUserName.class);
-        return bean.loadUserByUserName(username);
     }
 }

@@ -15,7 +15,9 @@
 package easy4j.module.sauth.core;
 
 import easy4j.infra.common.annotations.Desc;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -40,7 +42,7 @@ public interface SecurityService {
      * @return
      */
     @Desc("从上下文中获取当前在线用户")
-    SecurityUserInfo getOnlineUser();
+    OnlineUserInfo getOnlineUser();
 
     /**
      * 根据token获取在线用户
@@ -49,7 +51,7 @@ public interface SecurityService {
      * @return
      */
     @Desc("根据token获取在线用户")
-    SecurityUserInfo getOnlineUser(String token);
+    OnlineUserInfo getOnlineUser(String token);
 
     /**
      * 是否在线
@@ -68,7 +70,7 @@ public interface SecurityService {
      * @return
      */
     @Desc("登录")
-    SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware);
+    OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware);
 
     /**
      * 退出登录
@@ -76,7 +78,7 @@ public interface SecurityService {
      * @return
      */
     @Desc("退出登录")
-    SecurityUserInfo logout();
+    OnlineUserInfo logout();
 
     /**
      * 根据用户名退出
@@ -85,7 +87,7 @@ public interface SecurityService {
      * @return
      */
     @Desc("根据用户名退出")
-    SecurityUserInfo logoutByUserName(String userName);
+    OnlineUserInfo logoutByUserName(String userName);
 
     /**
      * 获取当前用户登录token

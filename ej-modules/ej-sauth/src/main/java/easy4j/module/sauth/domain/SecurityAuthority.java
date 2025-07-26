@@ -26,6 +26,7 @@ import java.util.Map;
  */
 @Data
 public class SecurityAuthority implements Serializable {
+
     private static final long serialVersionUID = 1L;
     /**
      * 角色代码
@@ -50,9 +51,31 @@ public class SecurityAuthority implements Serializable {
 
 
     /**
+     * 菜单code
+     */
+    private String menuCode;
+
+
+    /**
+     * 菜单名称
+     */
+    private String menuName;
+
+
+    /**
      * 请求地址 ant风格 /api/**
      */
     private String requestUri;
+
+    /**
+     * 是否有效
+     */
+    private boolean isEnabled;
+
+    /**
+     * 权限类别 菜单、应用、列表、按钮等
+     */
+    private String authorityType;
 
     /**
      * 额外信息

@@ -5,15 +5,13 @@
 > - 拿取以easy4j.开头的系统参数统一使用Easy4j.getProperty("xxx") 或者 Easy4j.getEjSysProperties()
     来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
 >
-
 - **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port
 - **easy4j.server-name**: 服务名称 等同于 spring.application.name
 - **easy4j.server-desc**: 服务描述
 - **easy4j.data-source-url**: 数据源简写，例如：“jdbc:postgresql://localhost:5432/postgres@root:123456”
-- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID
-  分布式系统则不会主键重复”
+- **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID 分布式系统则不会主键重复”
 - **easy4j.cors-reject-enable**: 是否开启全局允许跨域 默认true 但是可以关闭
 - **easy4j.h2-enable**: 是否启用h2数据库
 - **easy4j.h2-url**: h2 数据库地址
@@ -52,6 +50,9 @@
 - **easy4j.simple-auth-username**: 简单权限认证的用户名
 - **easy4j.simple-auth-username-cn**: 简单权限认证的用户名中文
 - **easy4j.simple-auth-password**: 简单权限认证的密码
+- **easy4j.simple-auth-user-impl-type**: 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置
+- **easy4j.simple-auth-is-cache-authority**: 简单权限是否缓存权限列表
+- **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M

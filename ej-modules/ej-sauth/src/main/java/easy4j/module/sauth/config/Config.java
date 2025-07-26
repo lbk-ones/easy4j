@@ -15,8 +15,10 @@
 package easy4j.module.sauth.config;
 
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.ModuleBoolean;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.EventPublisher;
@@ -30,6 +32,7 @@ import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.controller.SAuthController;
 import easy4j.module.sauth.core.*;
+import easy4j.module.sauth.core.loaduser.*;
 import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
@@ -59,15 +62,26 @@ public class Config implements CommandLineRunner {
     @Resource
     EventPublisher eventPublisher;
 
+
     @Override
     public void run(String... args) throws Exception {
         boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (property && isServer) {
+            // must set user impl type
+            String type = Easy4j.getRequiredProperty(SysConstant.EASY4J_SIMPLE_AUTH_USER_IMPL_TYPE);
+            boolean isRegister = Easy4j.getRequiredProperty(SysConstant.EASY4J_SIMPLE_AUTH_REGIST_TO_NACOS, boolean.class);
 
-            eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, AUTH_SERVER_NAME));
+            if (isRegister) {
+                eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, AUTH_SERVER_NAME));
+            }
 
-            log.info(SysLog.compact("sauth module begin init..."));
+            log.info(SysLog.compact("sauth module begin init...  user impl type ---> " + type));
+
+            if (StrUtil.equals(type, SP.DEFAULT)) {
+                DBAccessFactory.initDb("db/auth-user");
+            }
+
             DBAccessFactory.initDb("db/auth");
 
         }
@@ -88,7 +102,11 @@ public class Config implements CommandLineRunner {
         if (SecuritySessionType.DB.name().equalsIgnoreCase(property)) {
             return new DbSessionStrategy();
         } else {
-            return new RedisSessionStrategy();
+            boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
+            if (redisEnable) {
+                return new RedisSessionStrategy();
+            }
+            throw new IllegalArgumentException(SysLog.compact("not enable redis so check config: " + SysConstant.EASY4J_AUTH_SESSION_STORAGE_TYPE));
         }
     }
 
@@ -157,16 +175,30 @@ public class Config implements CommandLineRunner {
 
 
     // 权限认证
-    @Bean
-    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnMissingBean(LoadUserByUserName.class)
-    public LoadUserByUserName loadUserByUserName() {
-        return new DefaultLoadUserByUserName();
-    }
+//    @Bean
+//    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
+//    @ConditionalOnMissingBean(LoadUserBy.class)
+//    public LoadUserBy loadUserByUserName() {
+//        return new DefaultLoadUserByUserName();
+//    }
 
     @Bean
     @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     public SAuthController sAuthController() {
         return new SAuthController();
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(LoadUserByDb.class)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
+    public LoadUserByDb loadUserByDbDefault() {
+        return new LoadUserByDbDefault();
+    }
+
+    @Bean
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
+    public LoadUserByRpc loadUserByRpcDefault() {
+        return new LoadUserByRpcDefault();
     }
 }

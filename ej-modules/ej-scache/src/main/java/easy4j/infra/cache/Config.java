@@ -51,8 +51,8 @@ import java.util.concurrent.TimeUnit;
 public class Config {
 
 
-    @Bean("redisCacheManager")
-    @DependsOn("redissonConnectionFactory")
+    @Bean(SysConstant.REDIS_CACHE_MANAGER)
+    @DependsOn(SysConstant.REDIS_CONNECTION_FACTORY)
     @Primary
     @ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
@@ -68,7 +68,7 @@ public class Config {
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
         // 为特定缓存区域设置不同的过期时间
-        cacheConfigurations.put(SysConstant.PARAM_PREFIX, defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        cacheConfigurations.put(SysConstant.PARAM_PREFIX, defaultConfig.entryTtl(Duration.ofMinutes(20)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .withInitialCacheConfigurations(cacheConfigurations)
@@ -77,7 +77,7 @@ public class Config {
     }
 
     // Caffeine 缓存管理器
-    @Bean("caffeineCacheManager")
+    @Bean(SysConstant.CAFFEINE_CACHE_MANAGER)
     public CacheManager caffeineCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 

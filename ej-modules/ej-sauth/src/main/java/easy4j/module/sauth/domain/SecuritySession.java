@@ -42,13 +42,13 @@ import java.util.Map;
  */
 @Data
 @JdbcTable(name = "sys_security_session")
-public class SecuritySession {
+public class SecuritySession implements ISecurityEasy4jSession {
 
     /**
      * 主键ID
      */
     @JdbcColumn(isPrimaryKey = true)
-    private long id;
+    private long sessionId;
 
     /**
      * 用户名 索引 IDX_SYS_SECURITY_SESSION_USER_NAME
@@ -59,14 +59,6 @@ public class SecuritySession {
      * 用户ID(长) 索引 IDX_SYS_SECURITY_SESSION_USER_ID
      */
     private long userId;
-
-    private String userNameCn;
-    private String userNameEn;
-
-    /**
-     * 昵称
-     */
-    private String nickName;
 
     /**
      * jwt加密之后的短token 索引 IDX_SYS_SECURITY_SESSION_SHA_TOKEN
@@ -82,7 +74,7 @@ public class SecuritySession {
     /**
      * 将jwtToken加密成token的盐值
      */
-    private String salt;
+    private String jwtSalt;
 
     /**
      * ip
@@ -140,12 +132,12 @@ public class SecuritySession {
      * @return
      */
     public boolean isNotTampered() {
-        return StrUtil.equals(shaToken, DigestUtil.sha1Hex(jwtToken + this.salt));
+        return StrUtil.equals(shaToken, DigestUtil.sha1Hex(jwtToken + this.jwtSalt));
     }
 
-    public String getShaToken() {
-        if (StrUtil.hasBlank(this.jwtToken, this.salt)) return "";
-        return DigestUtil.sha1Hex(jwtToken + this.salt);
+    public String genShaToken() {
+        if (StrUtil.hasBlank(this.jwtToken, this.jwtSalt)) return "";
+        return DigestUtil.sha1Hex(jwtToken + this.jwtSalt);
     }
 
     public boolean isNotExpired() {
@@ -169,7 +161,7 @@ public class SecuritySession {
      *
      * @param securityUser
      */
-    public SecuritySession init(SecurityUserInfo securityUser) {
+    public SecuritySession init(ISecurityEasy4jUser securityUser) {
         String username = securityUser.getUsername();
         String usernameCn = securityUser.getUsernameCn();
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
@@ -191,23 +183,20 @@ public class SecuritySession {
 //                .setJWTId(s)
 //                .setPayload("cn", usernameCn)
 //                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
-        this.salt = genSalt();
-        this.shaToken = getShaToken();
+        this.jwtSalt = genSalt();
+        this.shaToken = genShaToken();
         this.loginDateTime = new Date();
         this.isInvalid = 0;
         this.userName = securityUser.getUsername();
         this.userId = securityUser.getUserId();
-        this.id = CommonKey.gennerLong();
+        this.sessionId = CommonKey.gennerLong();
         long l = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class) * 1000L;
         this.expireTimeSeconds = new Date().getTime() + l;
         this.extMap = securityUser.getExtMap();
         this.deptCode = securityUser.getDeptCode();
         this.deptName = securityUser.getDeptName();
-        this.nickName = securityUser.getNickName();
         this.deviceInfo = securityUser.getDeviceInfo();
         this.ip = securityUser.getIp();
-        this.userNameCn = securityUser.getUsernameCn();
-        this.userNameEn = securityUser.getUsernameEn();
         return this;
     }
 

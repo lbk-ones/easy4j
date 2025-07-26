@@ -24,7 +24,9 @@ import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -81,23 +83,24 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 return true;
             }
             boolean b1 = authorizationStrategy1.needTakeToken(handler, request, response);
-            SecurityUserInfo securityUserInfo = null;
+            OnlineUserInfo onlineUserInfo = null;
             if (b1) {
                 if (StrUtil.isBlank(token)) {
                     throw EasyException.wrap(BusCode.A00029, SysConstant.X_ACCESS_TOKEN);
                 }
                 Easy4j.getContext().registerThreadHash(SysConstant.X_ACCESS_TOKEN, SysConstant.X_ACCESS_TOKEN, token);
-                securityUserInfo = securityAuthentication1.tokenAuthentication(token);
+                onlineUserInfo = securityAuthentication1.tokenAuthentication(token);
+                ISecurityEasy4jUser user = onlineUserInfo.getUser();
                 if (
-                        StrUtil.isNotBlank(securityUserInfo.getErrorCode())
+                        StrUtil.isNotBlank(user.getErrorCode())
                 ) {
-                    throw new EasyException(securityUserInfo.getErrorCode());
+                    throw new EasyException(user.getErrorCode());
                 }
             } else {
                 // 先不做这种功能
                 throw EasyException.wrap(BusCode.A00041);
             }
-            authorizationStrategy1.customAuthenticationByMethod(securityUserInfo, handler);
+            authorizationStrategy1.customAuthenticationByMethod(onlineUserInfo, handler);
         }
         return true;
     }
