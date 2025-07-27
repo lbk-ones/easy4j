@@ -19,21 +19,26 @@ public class LoadAuthorityApi {
     private static LoadAuthorityBy loadAuthorityBy;
 
 
-    public LoadAuthorityBy getLoadAuthorityBy() {
-        if (loadAuthorityBy == null) {
-            loadAuthorityBy = SpringUtil.getBean(LoadAuthorityBy.class);
+    public static LoadAuthorityBy getLoadAuthorityBy() {
+        try {
+            if (loadAuthorityBy == null) {
+                loadAuthorityBy = SpringUtil.getBean(LoadAuthorityBy.class);
+            }
+            return loadAuthorityBy;
+        } catch (Exception ignored) {
+
         }
-        return loadAuthorityBy;
+        return null;
     }
 
     public static Set<SecurityAuthority> getAuthorityList(String userName) {
-        if (loadAuthorityBy != null && StrUtil.isNotBlank(userName)) {
-            Set<SecurityAuthority> securityAuthorities = loadAuthorityBy.loadSecurityAuthoritiesByUsername(userName);
+        LoadAuthorityBy authorityBy = getLoadAuthorityBy();
+        if (StrUtil.isNotBlank(userName) && null != authorityBy) {
+            Set<SecurityAuthority> securityAuthorities = authorityBy.loadSecurityAuthoritiesByUsername(userName);
             if (CollUtil.isNotEmpty(securityAuthorities)) {
                 return securityAuthorities;
             }
         }
-
         return new HashSet<>();
     }
 }
