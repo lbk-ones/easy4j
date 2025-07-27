@@ -46,11 +46,13 @@ public class EasyResult<T> implements Serializable {
 
     private static final long serialVersionUID = 6095433538316185020L;
     // 1 代表错误 0 代表正常返回
+    @JsonIgnore
     @Schema(description = "1 代表错误 0 代表正常返回")
     private int error;
 
     // 业务状态码
-    @Schema(description = "业务状态码")
+
+    @Schema(description = "业务状态码（0=成功，非0=错误）")
     private String code;
 
     @JsonIgnore
@@ -74,7 +76,7 @@ public class EasyResult<T> implements Serializable {
         EasyResult<T> easyResult = new EasyResult<T>();
 
         easyResult.setData(data);
-        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
+        //easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
@@ -91,21 +93,24 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> ok(T data, String code) {
-
+   /* public static <T> EasyResult<T> ok(T data, String code) {
         EasyResult<T> easyResult = new EasyResult<T>();
-
         easyResult.setData(data);
         easyResult.setCode(code);
         easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
-    }
+    }*/
+   public static <T> EasyResult<T> ok(T data, String message) {
+       EasyResult<T> easyResult = new EasyResult<T>();
+       easyResult.setData(data);
+       easyResult.setMessage(message);
+       return easyResult;
+   }
 
     @JsonIgnore
     public static <T> EasyResult<T> error(String message) {
-
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setError(SysConstant.ERRORCODE);
+        easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
         easyResult.setMessage(message);
         easyResult.setData(null);
         return easyResult;
@@ -114,7 +119,7 @@ public class EasyResult<T> implements Serializable {
     public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode, T data) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setError(error);
+        //easyResult.setError(error);
         easyResult.setCode(i18nCode);
         easyResult.setMessage(I18nUtils.getMessage(i18nCode));
         easyResult.setData(data);
@@ -124,18 +129,35 @@ public class EasyResult<T> implements Serializable {
     public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode, String... args) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setError(error);
+        //easyResult.setError(error);
         easyResult.setCode(i18nCode);
         easyResult.setMessage(I18nUtils.getMessage(i18nCode, args));
         easyResult.setData(null);
         return easyResult;
     }
 
+
+    // 失败返回（code ≠ 0）
+    public static <T> EasyResult<T> error(String code, String message) {
+        EasyResult<T> result = new EasyResult<>();
+        result.setCode(code);
+        result.setMessage(message);
+        return result;
+    }
+
+    // 失败返回（带异常信息）
+    public static <T> EasyResult<T> error(String code, String message, String errorInfo) {
+        EasyResult<T> result = new EasyResult<>();
+        result.setCode(code);
+        result.setMessage(message);
+        result.setErrorInfo(errorInfo);
+        return result;
+    }
     @JsonIgnore
     public static <T> EasyResult<T> error(Throwable e) {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setCode(BusCode.A00003);
-        easyResult.setError(SysConstant.ERRORCODE);
+        //easyResult.setError(SysConstant.ERRORCODE);
         easyResult.setMessage(I18nUtils.getOperateErrorStr());
         if (!(e instanceof EasyException)) {
             easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
@@ -217,7 +239,7 @@ public class EasyResult<T> implements Serializable {
             code = msgKey;
         }
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setError(SysConstant.ERRORCODE);
+        easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
         easyResult.setMessage(msg);
         easyResult.setCode(code);
         if (!(e instanceof EasyException)) {
@@ -229,15 +251,18 @@ public class EasyResult<T> implements Serializable {
     }
 
     public EasyResult() {
-        setError(SysConstant.SUCCESSCODE);
-        setCode("A00001");
+        this.code = "0"; // 默认成功
+        this.message = I18nUtils.getOperateSuccessStr();
+        //setError(SysConstant.SUCCESSCODE);
+        //setCode("A00001");
         //setMessage(I18nBean.getOperateSuccessStr());
     }
 
 
     @JsonIgnore
     public boolean isSuccess() {
-        return error == 0;
+        return "0".equals(code);
+        //return error == 0;
     }
 
     public EasyResult(int error, String code, String message, T data) {
@@ -247,9 +272,18 @@ public class EasyResult<T> implements Serializable {
         this.data = data;
     }
 
-    public EasyResult(int error) {
+    /*public EasyResult(int error) {
         this.error = error;
+    }*/
+  public EasyResult(int error) {
+      this.code = String.valueOf(error);
+  }
+
+    public EasyResult(String code) {
+        this.code = code;
     }
+
+
 
     public EasyResult(int error, String code) {
         this.error = error;
