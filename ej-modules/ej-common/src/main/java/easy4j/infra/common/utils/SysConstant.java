@@ -31,6 +31,8 @@ public class SysConstant {
     public static final String X_TIMESTAMP = "X-TIMESTAMP";
     public static final String X_TENANT_ID = "X-Tenant-Id";
     public static final String TRACE_ID_NAME = "traceId";
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION_TYPE = "AuthorizationType";
 
     // OpenTracing协议: uber-trace-id
     // W3C Trace Context协议: traceparent

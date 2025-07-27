@@ -120,9 +120,16 @@ public class OnlineUserInfo {
 
     // session获取
     public void handlerSession(String username) {
-        if (session == null || session.isValid()) {
+        if (session == null || !session.isValid()) {
             username = getUsername(username);
             this.session = handler.getSessionStrategy().getSessionByUserName(username);
+        }
+    }
+
+    public void handlerUserInfo(String username) {
+        if (user == null) {
+            username = getUsername(username);
+            this.user = handler.getOnlineUserInfoByUserName(username);
         }
     }
 

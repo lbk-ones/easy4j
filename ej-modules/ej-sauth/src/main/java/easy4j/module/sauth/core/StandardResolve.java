@@ -32,7 +32,7 @@ public abstract class StandardResolve {
 
     public abstract SecurityAuthorization getAuthorizationStrategy();
 
-    public OnlineUserInfo sessionToSecurityUserInfo(SecuritySession session) {
+    public OnlineUserInfo sessionToSecurityUserInfo(ISecurityEasy4jSession session) {
         String userName = session.getUserName();
         ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
         byUserName.setShaToken(session.getShaToken());

@@ -3,11 +3,10 @@ package easy4j.module.sauth.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
+import easy4j.module.sauth.authentication.AuthenticationScopeType;
+import easy4j.module.sauth.authentication.AuthenticationType;
 import lombok.Data;
-import lombok.Getter;
 
-import java.io.Serializable;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -41,13 +40,19 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @JdbcIgnore
     private String deviceInfo;
 
-    @Desc("是否跳过密码登录")
-    @JdbcIgnore
-    private boolean skipPassword = false;
-
     @Desc("是否是超级管理员")
     @JdbcIgnore
     private boolean superAdmin = false;
+
+    @Desc("认证类型")
+    @JdbcIgnore
+    private AuthenticationType authenticationType = AuthenticationType.UserNamePassword;
+
+
+    @Desc("作用域")
+    @JdbcIgnore
+    @JsonIgnore
+    private AuthenticationScopeType scope = AuthenticationScopeType.Authentication;
 
 
 }

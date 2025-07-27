@@ -56,7 +56,6 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
      * 性别
      */
     private int sex;
-
     /**
      * 联系电话号码
      */

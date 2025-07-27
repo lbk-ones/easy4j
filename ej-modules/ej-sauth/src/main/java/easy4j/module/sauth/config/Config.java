@@ -24,8 +24,6 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.EventPublisher;
 import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
 import easy4j.infra.dbaccess.DBAccessFactory;
-import easy4j.module.sauth.authentication.DefaultSecurityAuthentication;
-import easy4j.module.sauth.authentication.SecurityAuthentication;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
@@ -33,6 +31,8 @@ import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.controller.SAuthController;
 import easy4j.module.sauth.core.*;
 import easy4j.module.sauth.core.loaduser.*;
+import easy4j.module.sauth.encryption.PwdEncryptionService;
+import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
@@ -124,7 +124,6 @@ public class Config implements CommandLineRunner {
     @ConditionalOnBean(DataSource.class)
     public SecurityService securityService() {
         return new Easy4jSecurityService(
-                securityAuthentication(),
                 sessionStrategy(),
                 authorizationStrategy(),
                 securityContext()
@@ -152,25 +151,25 @@ public class Config implements CommandLineRunner {
 //    }
 
     // 权限认证
-    @Bean
-    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnMissingBean(SecurityAuthentication.class)
-    public SecurityAuthentication securityAuthentication() {
-        return new DefaultSecurityAuthentication(
-                authorizationStrategy(),
-                encryptionService(),
-                sessionStrategy(),
-                securityContext()
-        );
-    }
+//    @Bean
+//    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
+//    @ConditionalOnMissingBean(SecurityAuthentication.class)
+//    public SecurityAuthentication securityAuthentication() {
+//        return new DefaultSecurityAuthentication(
+//                authorizationStrategy(),
+//                encryptionService(),
+//                sessionStrategy(),
+//                securityContext()
+//        );
+//    }
 
 
     //密码加密方式
     @Bean
     @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
-    @ConditionalOnMissingBean(EncryptionService.class)
-    public EncryptionService encryptionService() {
-        return new DefaultEncryptionService();
+    @ConditionalOnMissingBean(IPwdEncryptionService.class)
+    public IPwdEncryptionService encryptionService() {
+        return new PwdEncryptionService();
     }
 
 

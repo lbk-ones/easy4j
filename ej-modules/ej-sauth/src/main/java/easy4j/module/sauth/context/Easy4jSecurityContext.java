@@ -17,6 +17,7 @@ package easy4j.module.sauth.context;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContextFactory;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.SecuritySession;
 
 /**
@@ -28,13 +29,13 @@ import easy4j.module.sauth.domain.SecuritySession;
 public class Easy4jSecurityContext implements SecurityContext {
 
     @Override
-    public SecuritySession getSession() {
+    public ISecurityEasy4jSession getSession() {
         Easy4jContext context = Easy4jContextFactory.getContext();
         return (SecuritySession) context.getThreadHashValue(SysConstant.EASY4J_SECURITY_CONTEXT_KEY, SysConstant.EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY).orElse(null);
     }
 
     @Override
-    public void setSession(SecuritySession securitySession) {
+    public void setSession(ISecurityEasy4jSession securitySession) {
         Easy4jContext context = Easy4jContextFactory.getContext();
         context.registerThreadHash(SysConstant.EASY4J_SECURITY_CONTEXT_KEY, SysConstant.EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY, securitySession);
     }

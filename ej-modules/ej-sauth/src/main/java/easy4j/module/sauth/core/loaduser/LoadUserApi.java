@@ -1,9 +1,17 @@
 package easy4j.module.sauth.core.loaduser;
 
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.SecurityUser;
+import easy4j.module.sauth.encryption.IPwdEncryptionService;
+
+import java.util.Date;
 
 /**
  * 查询用户信息的入口
@@ -64,4 +72,28 @@ public final class LoadUserApi {
         return null;
     }
 
+
+    public static ISecurityEasy4jUser getSimpleUser() {
+        String username = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME);
+        String password = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_PASSWORD);
+        if (StrUtil.isAllNotBlank(username, password)) {
+            String username_CN = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME_CN);
+            SecurityUser securityUserInfo = new SecurityUser();
+            securityUserInfo.setUsername(username);
+            String salt = RandomUtil.randomString(4);
+            securityUserInfo.setPwdSalt(salt);
+            securityUserInfo.setCreateDate(new Date());
+            securityUserInfo.setUsernameCn(username_CN);
+            securityUserInfo.setAccountNonExpired(true);
+            securityUserInfo.setAccountNonLocked(true);
+            securityUserInfo.setCredentialsNonExpired(true);
+            securityUserInfo.setEnabled(true);
+            securityUserInfo.setExtMap(Maps.newHashMap());
+            IPwdEncryptionService iPwdEncryptionService = SpringUtil.getBean(IPwdEncryptionService.class);
+            String encrypt = iPwdEncryptionService.encrypt(password, securityUserInfo);
+            securityUserInfo.setPassword(encrypt);
+            return securityUserInfo;
+        }
+        return null;
+    }
 }

@@ -1,6 +1,8 @@
 package easy4j.module.sauth.domain;
 
 import easy4j.infra.common.annotations.Desc;
+import easy4j.module.sauth.authentication.AuthenticationScopeType;
+import easy4j.module.sauth.authentication.AuthenticationType;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -29,6 +31,15 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     @Desc("用户名（用户CODE）")
     String getUsername();
+
+    /**
+     * 设置用户名
+     *
+     * @param username
+     */
+    @Desc("设置用户名")
+    void setUsername(String username);
+
 
     /**
      * 获取出生年月日
@@ -125,6 +136,15 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     @Desc("中文姓名")
     String getUsernameCn();
+
+
+    /**
+     * 设置用户名
+     *
+     * @param username
+     */
+    @Desc("设置用户名")
+    void setUsernameCn(String usernameCn);
 
     /**
      * 英文姓名
@@ -232,6 +252,15 @@ public interface ISecurityEasy4jUser extends Serializable {
     String getPwdSalt();
 
     /**
+     * 设置密码加密随机数
+     *
+     * @return
+     */
+    @Desc("设置密码加密随机数")
+    void setPwdSalt(String pwdSalt);
+
+
+    /**
      * 创建时间
      *
      * @return
@@ -322,14 +351,6 @@ public interface ISecurityEasy4jUser extends Serializable {
 
 
     /**
-     * 是否跳过密码登录
-     *
-     * @return
-     */
-    @Desc("是否跳过密码登录")
-    boolean isSkipPassword();
-
-    /**
      * 获取用户扩展信息
      *
      * @return
@@ -384,6 +405,39 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     @Desc("是否是超级管理员")
     boolean isSuperAdmin();
+
+
+    /**
+     * 获取认证器类型，默认为用户名密码认证
+     *
+     * @return
+     */
+    @Desc("获取认证器类型，默认为用户名密码认证")
+    AuthenticationType getAuthenticationType();
+
+    /**
+     * 设置认证器类型，默认为用户名密码认证
+     *
+     * @return
+     */
+    @Desc("设置认证器类型，默认为用户名密码认证")
+    void setAuthenticationType(AuthenticationType authenticationType);
+
+    /**
+     * 作用于哪里 拦截器或者认证
+     *
+     * @return
+     */
+    @Desc("作用于哪里 拦截器或者认证 默认是认证")
+    AuthenticationScopeType getScope();
+
+    /**
+     * 设置作用于哪里 拦截器或者认证
+     *
+     * @param scope
+     */
+    @Desc("作用于哪里 拦截器或者认证")
+    void setScope(AuthenticationScopeType scope);
 
 
 }

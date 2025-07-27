@@ -17,6 +17,7 @@ package easy4j.module.sauth.core;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
@@ -58,7 +59,7 @@ public abstract class AbstractSecurityService extends StandardResolve implements
     @Override
     public OnlineUserInfo getOnlineUser() {
         SecurityContext securityContext = getSecurityContext();
-        SecuritySession session = securityContext.getSession();
+        ISecurityEasy4jSession session = securityContext.getSession();
         if (session != null && session.isValid()) {
             return sessionToSecurityUserInfo(session);
         }
@@ -84,7 +85,7 @@ public abstract class AbstractSecurityService extends StandardResolve implements
 
     // 默认实现 返回null
     @Override
-    public OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware) {
+    public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
         // by sub class impl
         return null;
     }

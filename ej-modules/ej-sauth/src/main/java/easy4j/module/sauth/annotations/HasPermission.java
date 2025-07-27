@@ -14,30 +14,54 @@
  */
 package easy4j.module.sauth.annotations;
 
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.utils.BusCode;
 
 import java.lang.annotation.*;
 
 /**
- * 需要有某个角色
+ * 是否需要权限
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface HasRole {
+public @interface HasPermission {
 
     /**
-     * 角色编码
+     * 权限编码
      *
      * @author bokun.li
      * @date 2025-07-27
      */
+    @Desc("权限编码")
     String[] value() default {};
 
     /**
-     * 提示消息
+     * 权限组,由权限扩展接口传入
+     *
+     * @author bokun.li
+     * @date 2025-07-27
+     */
+    @Desc("权限组,由权限扩展接口传入")
+    String[] group() default {};
+
+
+    /**
+     * 是否要同时满足所有设置的权限，权限组和权限编码都适用，默认不用全部满足，默认只满足一个就行
+     *
+     * @author bokun.li
+     * @date 2025-07-27
+     */
+    @Desc("是否要同时满足所有设置的权限，权限组和权限编码都适用，默认不用全部满足，默认只满足一个就行")
+    boolean and() default false;
+
+
+    /**
+     * 提示消息可以是i18n码也可以直接是想要提示的内容
      *
      * @return
      */
+    @Desc("提示消息可以是i18n码也可以直接是想要提示的内容")
     String message() default BusCode.A00051;
+
 }

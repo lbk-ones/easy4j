@@ -10,8 +10,7 @@ import easy4j.infra.dbaccess.condition.FWhereBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.sauth.core.Easy4jAuth;
-import easy4j.module.sauth.core.EncryptionService;
-import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
 
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +38,7 @@ public class AuthController {
     DBAccess dbAccess;
 
     @Autowired
-    EncryptionService encryptionService;
+    IPwdEncryptionService encryptionService;
 
 
     @NoLogin
@@ -53,6 +51,10 @@ public class AuthController {
         securityUser.setPassword(password);
         securityUser.setDeptCode("A00001");
         securityUser.setDeptName("测试部门");
+        securityUser.setCredentialsNonExpired(true);
+        securityUser.setAccountNonExpired(true);
+        securityUser.setAccountNonLocked(true);
+        securityUser.setEnabled(true);
         WhereBuild equal = FWhereBuild.get(SecurityUser.class).equal(SecurityUser::getUsername, username);
         List<SecurityUser> securityUsers = dbAccess.selectByCondition(equal, SecurityUser.class);
         if (CollUtil.isEmpty(securityUsers)) {
@@ -69,7 +71,8 @@ public class AuthController {
         Map<@Nullable String, @Nullable Object> extMap = Maps.newHashMap();
         extMap.put("test", "testValue");
         securityUser.setExtMap(extMap);
-        OnlineUserInfo login = Easy4jAuth.login(securityUser, null);
+
+        OnlineUserInfo login = Easy4jAuth.authentication(securityUser, null);
 
         OnlineUserInfo onlineUser = Easy4jAuth.getOnlineUser();
         return EasyResult.ok(onlineUser.getUser());

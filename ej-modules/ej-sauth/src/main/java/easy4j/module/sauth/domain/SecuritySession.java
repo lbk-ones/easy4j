@@ -18,8 +18,6 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.jwt.JWT;
-import cn.hutool.jwt.signers.JWTSigner;
-import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -159,11 +157,11 @@ public class SecuritySession implements ISecurityEasy4jSession {
     /**
      * 初始化token
      *
-     * @param securityUser
+     * @param reqUser 请求传参|区别于数据库中查出来的用户信息
      */
-    public SecuritySession init(ISecurityEasy4jUser securityUser) {
-        String username = securityUser.getUsername();
-        String usernameCn = securityUser.getUsernameCn();
+    public SecuritySession init(ISecurityEasy4jUser reqUser) {
+        String username = reqUser.getUsername();
+        String usernameCn = reqUser.getUsernameCn();
         String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
         String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
         // unique
@@ -187,16 +185,16 @@ public class SecuritySession implements ISecurityEasy4jSession {
         this.shaToken = genShaToken();
         this.loginDateTime = new Date();
         this.isInvalid = 0;
-        this.userName = securityUser.getUsername();
-        this.userId = securityUser.getUserId();
+        this.userName = reqUser.getUsername();
+        this.userId = reqUser.getUserId();
         this.sessionId = CommonKey.gennerLong();
         long l = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class) * 1000L;
         this.expireTimeSeconds = new Date().getTime() + l;
-        this.extMap = securityUser.getExtMap();
-        this.deptCode = securityUser.getDeptCode();
-        this.deptName = securityUser.getDeptName();
-        this.deviceInfo = securityUser.getDeviceInfo();
-        this.ip = securityUser.getIp();
+        this.extMap = reqUser.getExtMap();
+        this.deptCode = reqUser.getDeptCode();
+        this.deptName = reqUser.getDeptName();
+        this.deviceInfo = reqUser.getDeviceInfo();
+        this.ip = reqUser.getIp();
         return this;
     }
 

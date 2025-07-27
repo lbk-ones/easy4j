@@ -15,6 +15,7 @@
 package easy4j.module.sauth.core;
 
 import easy4j.infra.common.annotations.Desc;
+import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 
@@ -63,14 +64,14 @@ public interface SecurityService {
     boolean isOnline(String token);
 
     /**
-     * 登录接口
+     * 认证
      *
      * @param securityUser 传过来的用户信息
      * @param loginAware   登录成功之后的回调
      * @return
      */
-    @Desc("登录")
-    OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware);
+    @Desc("认证")
+    OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware);
 
     /**
      * 退出登录

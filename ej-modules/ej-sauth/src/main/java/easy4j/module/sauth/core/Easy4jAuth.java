@@ -15,6 +15,7 @@
 package easy4j.module.sauth.core;
 
 import cn.hutool.extra.spring.SpringUtil;
+import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 
@@ -59,9 +60,9 @@ public class Easy4jAuth {
                 .orElse(false);
     }
 
-    public static OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware) {
+    public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
         return get()
-                .map(e -> e.login(securityUser, loginAware))
+                .map(e -> e.authentication(securityUser, loginAware))
                 .orElse(null);
     }
 

@@ -16,5 +16,4 @@ public interface LoadUserBy {
     ISecurityEasy4jUser loadUserByUserName(String username);
 
     ISecurityEasy4jUser loadUserByUserId(long userId);
-
 }

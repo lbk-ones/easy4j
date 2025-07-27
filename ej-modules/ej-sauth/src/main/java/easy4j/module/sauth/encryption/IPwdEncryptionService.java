@@ -12,15 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.sauth.annotations;
+package easy4j.module.sauth.encryption;
 
-import java.lang.annotation.*;
+import easy4j.infra.common.annotations.Desc;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+
 
 /**
- * 是否需要权限
+ * EncryptionService
+ *
+ * @author bokun.li
+ * @date 2025-05
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface HasAuthority {
+public interface IPwdEncryptionService {
+
+    /**
+     * @param securityUser 数据库查出来的数据
+     * @author bokun.li
+     * @date 2025-06-17
+     */
+    @Desc("securityUser 为数据库查出来的数据")
+    String encrypt(String pwd, ISecurityEasy4jUser securityUser);
+
+    String decrypt(String str, ISecurityEasy4jUser securityUser);
+
 }

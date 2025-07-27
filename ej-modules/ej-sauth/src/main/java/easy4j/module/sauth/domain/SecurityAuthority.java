@@ -77,6 +77,12 @@ public class SecurityAuthority implements Serializable {
      */
     private String authorityType;
 
+
+    /**
+     * 权限组
+     */
+    private String group;
+
     /**
      * 额外信息
      */

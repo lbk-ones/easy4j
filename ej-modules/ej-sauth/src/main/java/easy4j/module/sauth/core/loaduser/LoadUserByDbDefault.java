@@ -11,7 +11,7 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.condition.FWhereBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
-import easy4j.module.sauth.core.EncryptionService;
+import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,30 +39,12 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
 
 
     @Resource
-    EncryptionService encryptionService;
+    IPwdEncryptionService encryptionService;
 
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String username = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME);
-        String password = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_PASSWORD);
-        if (StrUtil.isAllNotBlank(username, password)) {
-            String username_CN = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME_CN);
-            SecurityUser securityUserInfo = new SecurityUser();
-            securityUserInfo.setUsername(username);
-            String salt = RandomUtil.randomString(4);
-            securityUserInfo.setPwdSalt(salt);
-            securityUserInfo.setCreateDate(new Date());
-            securityUserInfo.setUsernameCn(username_CN);
-            securityUserInfo.setAccountNonExpired(true);
-            securityUserInfo.setAccountNonLocked(true);
-            securityUserInfo.setCredentialsNonExpired(true);
-            securityUserInfo.setEnabled(true);
-            securityUserInfo.setExtMap(Maps.newHashMap());
-            String encrypt = encryptionService.encrypt(password, securityUserInfo);
-            securityUserInfo.setPassword(encrypt);
-            simpleUser = securityUserInfo;
-        }
+        simpleUser = LoadUserApi.getSimpleUser();
     }
 
     @Override
@@ -107,5 +89,4 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
         }
         return null;
     }
-
 }

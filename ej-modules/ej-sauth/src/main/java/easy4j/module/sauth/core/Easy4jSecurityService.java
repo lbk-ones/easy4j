@@ -14,20 +14,15 @@
  */
 package easy4j.module.sauth.core;
 
-import cn.hutool.core.util.StrUtil;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.module.sauth.authentication.SecurityAuthentication;
+import easy4j.module.sauth.authentication.AuthenticationContext;
+import easy4j.module.sauth.authentication.AuthenticationCore;
+import easy4j.module.sauth.authentication.AuthenticationFactory;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
-import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.function.Consumer;
 
 
@@ -40,9 +35,6 @@ import java.util.function.Consumer;
 public class Easy4jSecurityService extends AbstractSecurityService {
 
 
-    SecurityAuthentication securityAuthentication;
-
-
     SessionStrategy sessionStrategy;
     SecurityContext securityContext;
 
@@ -50,12 +42,10 @@ public class Easy4jSecurityService extends AbstractSecurityService {
     SecurityAuthorization authorizationStrategy;
 
     public Easy4jSecurityService(
-            SecurityAuthentication securityAuthentication,
             SessionStrategy sessionStrategy,
             SecurityAuthorization authorizationStrategy,
             SecurityContext securityContext
     ) {
-        this.securityAuthentication = securityAuthentication;
         this.sessionStrategy = sessionStrategy;
         this.authorizationStrategy = authorizationStrategy;
         this.securityContext = securityContext;
@@ -77,74 +67,53 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         return authorizationStrategy;
     }
 
-    public HttpServletRequest getServletRequest() {
-        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-        assert sra != null;
-        return (HttpServletRequest) sra.getRequest();
-    }
-
-
-    public ISecurityEasy4jUser verifyPre(ISecurityEasy4jUser user) {
-        if (null == user) {
-            user = new SecurityUser();
-            user.setErrorCode(BusCode.A00004 + ",user");
-            return user;
-        }
-        HttpServletRequest servletRequest = getServletRequest();
-        String method = servletRequest.getMethod();
-        if (!"post".equalsIgnoreCase(method)) {
-            user.setErrorCode(BusCode.A00030);
-            return user;
-        }
-        String username = user.getUsername();
-        String password = user.getPassword();
-        if (StrUtil.isBlank(username)) {
-            user.setErrorCode(BusCode.A00031);
-            return user;
-        }
-        boolean isSkip = user.isSkipPassword();
-        if (StrUtil.isBlank(password) && !isSkip) {
-            user.setErrorCode(BusCode.A00032);
-            return user;
-        }
-        return user;
-    }
-
 
     @Override
-    public OnlineUserInfo login(ISecurityEasy4jUser securityUser, Consumer<ISecurityEasy4jUser> loginAware) {
+    public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
 
-        ISecurityEasy4jUser iSecurityEasy4jUser = verifyPre(securityUser);
-        String username = securityUser.getUsername();
-        if (StrUtil.isNotBlank(iSecurityEasy4jUser.getErrorCode()))
-            throw new EasyException(iSecurityEasy4jUser.getErrorCode());
+        AuthenticationCore authenticationCore = AuthenticationFactory.get(securityUser.getAuthenticationType());
+        AuthenticationContext ctx = AuthenticationFactory.ctx(securityUser);
+        // querySession from db/redis
+        authenticationCore.querySession(ctx);
+        ctx.checkError();
+        // queryUserInfo from db
+        authenticationCore.queryUser(ctx);
+        ctx.checkError();
 
+        // pre verify
+        authenticationCore.verifyPre(ctx);
+        ctx.checkError();
 
-        // 1、first query user info
-        ISecurityEasy4jUser dbUser = LoadUserApi.getByUserName(username);
+        // verify
+        authenticationCore.verify(ctx);
+        ctx.checkError();
 
-        ISecurityEasy4jUser securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser, dbUser);
-
-        if (StrUtil.isNotBlank(securityUserInfo.getErrorCode()))
-            throw new EasyException(securityUserInfo.getErrorCode());
-
-        if (!securityAuthentication.checkUser(securityUser)) {
-            throw new EasyException(BusCode.A00036);
+        // checkUser
+        if (!authenticationCore.checkUser(ctx)) {
+            ctx.checkError(BusCode.A00036);
         }
-        SecuritySession init = new SecuritySession().init(securityUser);
-        saveSession(init);
-        securityUserInfo.setPassword(null);
-        securityUserInfo.setShaToken(init.getShaToken());
+        // if query session is null,then gen session and save
+        ISecurityEasy4jSession dbReqSession = ctx.getDbSession();
+        if (null == dbReqSession) {
+            SecuritySession init = new SecuritySession().init(securityUser);
+            saveSession(init);
+            ctx.setDbSession(init);
+        }
+        // refresh session
+        authenticationCore.refreshSession(ctx);
+        ctx.checkError();
 
+        //  genOnlineUserInfo
+        OnlineUserInfo onlineUserInfo = authenticationCore.genOnlineUserInfo(ctx);
+        ctx.checkError();
+
+        // bind ctx
+        authenticationCore.bindSessionToCtx(ctx);
+        ctx.checkError();
+        // authentication aware
         if (null != loginAware) {
-            loginAware.accept(securityUserInfo);
+            loginAware.accept(ctx);
         }
-
-        bindCtx(init);
-
-        OnlineUserInfo onlineUserInfo = new OnlineUserInfo(init, dbUser);
-        onlineUserInfo.handlerAuthorityList(username);
         return onlineUserInfo;
     }
 
