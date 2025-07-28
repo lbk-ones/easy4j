@@ -344,4 +344,5 @@ public class SysConstant {
     public static final String REDIS_CONNECTION_FACTORY = "redissonConnectionFactory";
 
 
+    public static final String SESSION_USER = "SESSION_USER";
 }

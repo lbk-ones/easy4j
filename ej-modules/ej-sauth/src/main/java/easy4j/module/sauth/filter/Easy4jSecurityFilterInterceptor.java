@@ -102,6 +102,8 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                     throw new EasyException(user.getErrorCode());
                 }
 
+                request.setAttribute(SysConstant.SESSION_USER,user);
+
 
             } else {
                 // 先不做这种功能

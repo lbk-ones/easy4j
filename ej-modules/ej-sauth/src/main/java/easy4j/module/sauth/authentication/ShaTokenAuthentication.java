@@ -37,10 +37,12 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
         if (null != session) {
             String userName = session.getUserName();
             ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
-            context.setDbUser(byUserName);
             if (null == byUserName) {
                 context.setErrorCode(BusCode.A00037);
+            }else{
+                byUserName.setShaToken(shaToken);
             }
+            context.setDbUser(byUserName);
             return byUserName;
         } else {
             context.setErrorCode(BusCode.A00034);
