@@ -159,4 +159,7 @@ public class BusCode {
     @Desc("删除失败:{0}")
     public static final String A00050 = "A00050";
 
+    @Desc("您没有访问该资源的权限")
+    public static final String A00051 = "A00051";
+
 }

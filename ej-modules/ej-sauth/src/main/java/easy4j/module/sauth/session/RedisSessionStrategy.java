@@ -31,11 +31,9 @@ import javax.annotation.Resource;
  * @author bokun.li
  * @date 2025-05
  */
-@ModuleBoolean(SysConstant.EASY4J_REDIS_ENABLE)
 public class RedisSessionStrategy extends AbstractSessionStrategy {
 
-
-    @Resource(name = "redisCacheManager")
+    @Resource(name = SysConstant.REDIS_CACHE_MANAGER)
     CacheManager cacheManager;
 
     @Override

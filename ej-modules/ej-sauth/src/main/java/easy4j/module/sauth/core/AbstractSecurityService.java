@@ -17,9 +17,13 @@ package easy4j.module.sauth.core;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecuritySession;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+
 import easy4j.module.sauth.session.SessionStrategy;
 
 import java.util.Objects;
@@ -40,7 +44,7 @@ public abstract class AbstractSecurityService extends StandardResolve implements
 
 
     @Override
-    public SecurityUserInfo logoutByUserName(String userName) {
+    public OnlineUserInfo logoutByUserName(String userName) {
         SessionStrategy sessionStrategy = getSessionStrategy();
         SecuritySession sessionByUserName = sessionStrategy.getSessionByUserName(userName);
         if (sessionByUserName != null) {
@@ -53,9 +57,9 @@ public abstract class AbstractSecurityService extends StandardResolve implements
     }
 
     @Override
-    public SecurityUserInfo getOnlineUser() {
+    public OnlineUserInfo getOnlineUser() {
         SecurityContext securityContext = getSecurityContext();
-        SecuritySession session = securityContext.getSession();
+        ISecurityEasy4jSession session = securityContext.getSession();
         if (session != null && session.isValid()) {
             return sessionToSecurityUserInfo(session);
         }
@@ -63,7 +67,7 @@ public abstract class AbstractSecurityService extends StandardResolve implements
     }
 
     @Override
-    public SecurityUserInfo getOnlineUser(String token) {
+    public OnlineUserInfo getOnlineUser(String token) {
         SessionStrategy sessionStrategy = getSessionStrategy();
         SecuritySession session = sessionStrategy.getSession(token);
         if (session != null && session.isValid()) {
@@ -81,16 +85,16 @@ public abstract class AbstractSecurityService extends StandardResolve implements
 
     // 默认实现 返回null
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
+    public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
         // by sub class impl
         return null;
     }
 
     @Override
-    public SecurityUserInfo logout() {
-        SecurityUserInfo onlineUser = getOnlineUser();
+    public OnlineUserInfo logout() {
+        OnlineUserInfo onlineUser = getOnlineUser();
         if (onlineUser != null) {
-            String shaToken = onlineUser.getShaToken();
+            String shaToken = onlineUser.getSession().getShaToken();
             SessionStrategy sessionStrategy = getSessionStrategy();
             if (Objects.nonNull(sessionStrategy) && StrUtil.isNotBlank(shaToken)) {
                 sessionStrategy.deleteSession(shaToken);
@@ -102,18 +106,26 @@ public abstract class AbstractSecurityService extends StandardResolve implements
 
     @Override
     public String getToken() {
-        SecurityUserInfo onlineUser = getOnlineUser();
+        OnlineUserInfo onlineUser = getOnlineUser();
         if (null != onlineUser) {
-            return onlineUser.getShaToken();
+            ISecurityEasy4jSession session = onlineUser.getSession();
+            if (null != session) {
+                return session.getShaToken();
+            } else {
+                ISecurityEasy4jUser user = onlineUser.getUser();
+                if (null != user) {
+                    return user.getShaToken();
+                }
+            }
         }
         return null;
     }
 
     @Override
     public String refreshToken(int expireTime, TimeUnit timeUnit) {
-        SecurityUserInfo onlineUser = getOnlineUser();
+        OnlineUserInfo onlineUser = getOnlineUser();
         if (null != onlineUser) {
-            String shaToken = onlineUser.getShaToken();
+            String shaToken = onlineUser.getSession().getShaToken();
             SessionStrategy sessionStrategy = getSessionStrategy();
             sessionStrategy.refreshSession(shaToken, expireTime, timeUnit);
         }

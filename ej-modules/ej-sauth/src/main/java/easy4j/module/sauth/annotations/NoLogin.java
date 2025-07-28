@@ -14,15 +14,23 @@
  */
 package easy4j.module.sauth.annotations;
 
+import easy4j.infra.common.annotations.Desc;
+
 import java.lang.annotation.*;
 
 /**
  * 不需要登陆
  */
+@Desc("不需要登录，可以标在方法上也可以标在类上")
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface NoLogin {
 
+    /**
+     * rpc 调用的时候是否一样跳过登录
+     *
+     * @return
+     */
     boolean rpcNoLogin() default true;
 }

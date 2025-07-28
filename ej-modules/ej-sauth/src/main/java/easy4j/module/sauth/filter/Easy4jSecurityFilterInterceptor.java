@@ -22,9 +22,14 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import easy4j.module.sauth.annotations.OpenApi;
-import easy4j.module.sauth.authentication.SecurityAuthentication;
+import easy4j.module.sauth.authentication.AuthenticationScopeType;
+import easy4j.module.sauth.authentication.AuthenticationType;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.core.Easy4jAuth;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+
+import easy4j.module.sauth.domain.SecurityUser;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,9 +43,6 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
 
     SecurityAuthorization authorizationStrategy;
 
-
-    SecurityAuthentication securityAuthentication;
-
     public SecurityAuthorization getAuthorizationStrategy() {
         if (authorizationStrategy == null) {
             authorizationStrategy = SpringUtil.getBean(SecurityAuthorization.class);
@@ -48,12 +50,6 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         return authorizationStrategy;
     }
 
-    public SecurityAuthentication getSecurityAuthentication() {
-        if (securityAuthentication == null) {
-            securityAuthentication = SpringUtil.getBean(SecurityAuthentication.class);
-        }
-        return securityAuthentication;
-    }
 
     public Easy4jSecurityFilterInterceptor() {
     }
@@ -67,7 +63,6 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         }
 
         SecurityAuthorization authorizationStrategy1 = getAuthorizationStrategy();
-        SecurityAuthentication securityAuthentication1 = getSecurityAuthentication();
         Method method = handler.getMethod();
         // 开放api授权
         if (method.isAnnotationPresent(OpenApi.class)) {
@@ -81,23 +76,34 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 return true;
             }
             boolean b1 = authorizationStrategy1.needTakeToken(handler, request, response);
-            SecurityUserInfo securityUserInfo = null;
+            OnlineUserInfo onlineUserInfo = null;
             if (b1) {
                 if (StrUtil.isBlank(token)) {
                     throw EasyException.wrap(BusCode.A00029, SysConstant.X_ACCESS_TOKEN);
                 }
                 Easy4j.getContext().registerThreadHash(SysConstant.X_ACCESS_TOKEN, SysConstant.X_ACCESS_TOKEN, token);
-                securityUserInfo = securityAuthentication1.tokenAuthentication(token);
+                String header = request.getHeader(SysConstant.AUTHORIZATION_TYPE);
+                SecurityUser securityUser = new SecurityUser();
+                securityUser.setShaToken(token);
+                securityUser.setScope(AuthenticationScopeType.Interceptor);
+                if (StrUtil.isBlank(header) || StrUtil.equals(header, AuthenticationType.ShaToken.name())) {
+                    securityUser.setAuthenticationType(AuthenticationType.ShaToken);
+                } else if (StrUtil.equals(header, AuthenticationType.Jwt.name())) {
+                    securityUser.setAuthenticationType(AuthenticationType.Jwt);
+                }
+                onlineUserInfo = Easy4jAuth.authentication(securityUser, null);
+
+                ISecurityEasy4jUser user = onlineUserInfo.getUser();
                 if (
-                        StrUtil.isNotBlank(securityUserInfo.getErrorCode())
+                        StrUtil.isNotBlank(user.getErrorCode())
                 ) {
-                    throw new EasyException(securityUserInfo.getErrorCode());
+                    throw new EasyException(user.getErrorCode());
                 }
             } else {
                 // 先不做这种功能
                 throw EasyException.wrap(BusCode.A00041);
             }
-            authorizationStrategy1.customAuthenticationByMethod(securityUserInfo, handler);
+            authorizationStrategy1.customAuthenticationByMethod(onlineUserInfo, handler);
         }
         return true;
     }

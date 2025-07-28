@@ -17,8 +17,10 @@ package easy4j.module.sauth.authorization;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityAuthority;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +37,7 @@ public interface SecurityAuthorization {
      *
      * @param handlerMethod
      */
-    void customAuthenticationByMethod(SecurityUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException;
+    void customAuthenticationByMethod(OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException;
 
     /**
      * 根究url来检查
@@ -70,20 +72,12 @@ public interface SecurityAuthorization {
      * @param securityUserInfo
      * @return
      */
-    boolean checkByUserInfo(SecurityUserInfo securityUserInfo);
+    boolean checkByUserInfo(ISecurityEasy4jUser securityUserInfo);
 
     /**
      * 是否需要鉴权
      *
      * @return
      */
-    boolean isNeedAuthentication(SecurityUserInfo userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response);
-
-    /**
-     * 根据用户名查询权限
-     *
-     * @param userName
-     * @return
-     */
-    Set<SecurityAuthority> getAuthorizationByUsername(String userName);
+    boolean isNeedAuthentication(ISecurityEasy4jUser userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response);
 }

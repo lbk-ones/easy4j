@@ -14,9 +14,12 @@
  */
 package easy4j.module.sauth.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -26,9 +29,11 @@ import java.util.Date;
  * @author bokun.li
  * @date 2025-05
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @JdbcTable(name = "sys_security_user")
-public class SecurityUser {
+public class SecurityUser extends AbstractSecurityEasy4jUser {
+
 
     /**
      * userId 长号 (主键)
@@ -40,6 +45,31 @@ public class SecurityUser {
      * 用户名 短号 唯一索引 IDX_SYS_SECURITY_USER_USERNAME
      */
     private String username;
+
+
+    /**
+     * 出生年月日
+     */
+    private Date birthDate;
+
+    /**
+     * 性别
+     */
+    private int sex;
+    /**
+     * 联系电话号码
+     */
+    private String phone;
+    /**
+     * 身份证号
+     */
+    private String idCard;
+
+    /**
+     * 地址
+     */
+    private String address;
+
 
     /**
      * 密码（加密之后的）
@@ -110,26 +140,46 @@ public class SecurityUser {
      */
     private Date updateDate;
 
+    /**
+     * 机构代码
+     */
+    private String orgCode;
 
-    public SecurityUserInfo toSecurityUserInfo() {
-        SecurityUserInfo user = new SecurityUserInfo();
-        user.setUserId(this.getUserId());
-        user.setUsername(this.getUsername());
-        user.setPassword(this.getPassword());
-        user.setUsernameCn(this.getUsernameCn());
-        user.setUsernameEn(this.getUsernameEn());
-        user.setNickName(this.getNickName());
-        user.setPwdSalt(this.getPwdSalt());
-        user.setAccountNonExpired(true);
-        user.setAccountNonLocked(true);
-        user.setCredentialsNonExpired(true);
-        user.setEnabled(true);
-        user.setCreateDate(this.getCreateDate());
-        user.setUpdateDate(this.getUpdateDate());
-        user.setDeptCode(this.getDeptCode());
-        user.setDeptName(this.getDeptName());
-        return user;
-    }
+    /**
+     * 机构名称
+     */
+    private String orgName;
+
+    /**
+     * 租户ID
+     */
+    private String tenantId;
+
+    /**
+     * 租户名称
+     */
+    private String tenantName;
+
+    /**
+     * 创建人代码
+     */
+    private String createBy;
+
+
+    /**
+     * 创建人姓名
+     */
+    private String createName;
+
+    /**
+     * 更新人
+     */
+    private String updateBy;
+
+    /**
+     * 更新人姓名
+     */
+    private String updateName;
 
 
 }

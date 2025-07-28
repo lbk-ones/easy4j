@@ -14,14 +14,13 @@
  */
 package easy4j.module.sauth.core;
 
-import cn.hutool.core.util.StrUtil;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.module.sauth.authentication.SecurityAuthentication;
+import easy4j.module.sauth.authentication.AuthenticationContext;
+import easy4j.module.sauth.authentication.AuthenticationCore;
+import easy4j.module.sauth.authentication.AuthenticationFactory;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
-import easy4j.module.sauth.domain.SecuritySession;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
 
 import java.util.function.Consumer;
@@ -36,9 +35,6 @@ import java.util.function.Consumer;
 public class Easy4jSecurityService extends AbstractSecurityService {
 
 
-    SecurityAuthentication securityAuthentication;
-
-
     SessionStrategy sessionStrategy;
     SecurityContext securityContext;
 
@@ -46,12 +42,10 @@ public class Easy4jSecurityService extends AbstractSecurityService {
     SecurityAuthorization authorizationStrategy;
 
     public Easy4jSecurityService(
-            SecurityAuthentication securityAuthentication,
             SessionStrategy sessionStrategy,
             SecurityAuthorization authorizationStrategy,
             SecurityContext securityContext
     ) {
-        this.securityAuthentication = securityAuthentication;
         this.sessionStrategy = sessionStrategy;
         this.authorizationStrategy = authorizationStrategy;
         this.securityContext = securityContext;
@@ -75,27 +69,52 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
 
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
-        SecurityUserInfo securityUserInfo = securityAuthentication.verifyLoginAuthentication(securityUser);
-        String errorCode = securityUserInfo.getErrorCode();
-        if (StrUtil.isNotBlank(errorCode)) {
-            throw new EasyException(errorCode);
-        }
-        if (!securityAuthentication.checkUser(securityUser)) {
-            throw new EasyException(BusCode.A00036);
-        }
-        SecuritySession init = new SecuritySession().init(securityUser);
-        saveSession(init);
-        securityUserInfo.setPassword(null);
-        securityUserInfo.setShaToken(init.getShaToken());
+    public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
 
+        AuthenticationCore authenticationCore = AuthenticationFactory.get(securityUser.getAuthenticationType());
+        AuthenticationContext ctx = AuthenticationFactory.ctx(securityUser);
+        // querySession from db/redis
+        authenticationCore.querySession(ctx);
+        ctx.checkError();
+        // queryUserInfo from db
+        authenticationCore.queryUser(ctx);
+        ctx.checkError();
+
+        // pre verify
+        authenticationCore.verifyPre(ctx);
+        ctx.checkError();
+
+        // verify
+        authenticationCore.verify(ctx);
+        ctx.checkError();
+
+        // checkUser
+        if (!authenticationCore.checkUser(ctx)) {
+            ctx.checkError(BusCode.A00036);
+        }
+        // if query session is null,then gen session and save
+        ISecurityEasy4jSession dbReqSession = ctx.getDbSession();
+        if (null == dbReqSession) {
+            SecuritySession init = new SecuritySession().init(securityUser);
+            saveSession(init);
+            ctx.setDbSession(init);
+        }
+        // refresh session
+        authenticationCore.refreshSession(ctx);
+        ctx.checkError();
+
+        //  genOnlineUserInfo
+        OnlineUserInfo onlineUserInfo = authenticationCore.genOnlineUserInfo(ctx);
+        ctx.checkError();
+
+        // bind ctx
+        authenticationCore.bindSessionToCtx(ctx);
+        ctx.checkError();
+        // authentication aware
         if (null != loginAware) {
-            loginAware.accept(securityUserInfo);
+            loginAware.accept(ctx);
         }
-
-        bindCtx(init);
-
-        return securityUserInfo;
+        return onlineUserInfo;
     }
 
     private void bindCtx(SecuritySession init) {

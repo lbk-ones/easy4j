@@ -14,22 +14,17 @@
  */
 package easy4j.module.sauth.controller;
 
-import cn.hutool.core.collection.CollUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.dbaccess.DBAccess;
-import easy4j.infra.dbaccess.condition.FWhereBuild;
-import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.module.sauth.core.Easy4jAuth;
-import easy4j.module.sauth.domain.SecuritySession;
-import easy4j.module.sauth.domain.SecurityUser;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.core.loaduser.LoadUserApi;
+import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,7 +45,7 @@ public class SAuthController {
 
     @GetMapping("getOnlineUserByToken/{token}")
     public EasyResult<Object> getOnlineUserByToken(@PathVariable(name = "token") String token) {
-        SecurityUserInfo onlineUser = Easy4jAuth.getOnlineUser(token);
+        OnlineUserInfo onlineUser = Easy4jAuth.getOnlineUser(token);
         return EasyResult.ok(onlineUser);
     }
 
@@ -75,13 +70,13 @@ public class SAuthController {
 
     @GetMapping("getOnlineUserInfo")
     public EasyResult<Object> getOnlineUserInfo() {
-        SecurityUserInfo onlineUser = Easy4jAuth.getOnlineUser();
+        OnlineUserInfo onlineUser = Easy4jAuth.getOnlineUser();
         return EasyResult.ok(onlineUser);
     }
 
     @GetMapping("logOut")
     public EasyResult<Object> logOut() {
-        SecurityUserInfo onlineUser = Easy4jAuth.logout();
+        OnlineUserInfo onlineUser = Easy4jAuth.logout();
         return EasyResult.ok(onlineUser);
     }
 
@@ -111,13 +106,8 @@ public class SAuthController {
 
     @GetMapping("loadUserByUserName/{username}")
     public EasyResult<Object> loadUserByUserName(@PathVariable(name = "username") String username) {
-        WhereBuild equal = FWhereBuild.get(SecurityUser.class).equal(SecurityUser::getUsername, username);
-        List<SecurityUser> securityUsers = dbAccess.selectByCondition(equal, SecurityUser.class);
-        if (CollUtil.isNotEmpty(securityUsers)) {
-            SecurityUser securityUser = securityUsers.get(0);
-            return EasyResult.ok(securityUser.toSecurityUserInfo());
-        }
-        return EasyResult.ok(null);
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+        return EasyResult.ok(byUserName);
     }
 
     @GetMapping("refreshSession/{token}")

@@ -39,10 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Jackson通用工具类，封装常用的JSON序列化和反序列化操作
@@ -157,6 +154,23 @@ public class JacksonUtil {
      */
     public static <T> List<T> toList(String json, Class<T> elementClass) {
         JavaType javaType = mapper.getTypeFactory().constructCollectionType(List.class, elementClass);
+        try {
+            return mapper.readValue(json, javaType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON反序列化失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * JSON字符串转Set集合
+     *
+     * @param json         JSON字符串
+     * @param elementClass 元素类型
+     * @param <T>          泛型
+     * @return List集合
+     */
+    public static <T> Set<T> toSet(String json, Class<T> elementClass) {
+        JavaType javaType = mapper.getTypeFactory().constructCollectionType(Set.class, elementClass);
         try {
             return mapper.readValue(json, javaType);
         } catch (JsonProcessingException e) {

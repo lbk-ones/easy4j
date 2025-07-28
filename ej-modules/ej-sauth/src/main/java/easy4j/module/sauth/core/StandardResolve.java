@@ -17,9 +17,8 @@ package easy4j.module.sauth.core;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Sets;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
-import easy4j.module.sauth.domain.SecurityAuthority;
-import easy4j.module.sauth.domain.SecuritySession;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.core.loaduser.LoadUserApi;
+import easy4j.module.sauth.domain.*;
 
 import java.util.Set;
 
@@ -33,41 +32,13 @@ public abstract class StandardResolve {
 
     public abstract SecurityAuthorization getAuthorizationStrategy();
 
-
-    /**
-     * 为了性能这里不查库 只单纯的转换
-     *
-     * @param session
-     * @return
-     */
-    public SecurityUserInfo sessionToSecurityUserInfo(SecuritySession session) {
+    public OnlineUserInfo sessionToSecurityUserInfo(ISecurityEasy4jSession session) {
         String userName = session.getUserName();
-        SecurityUserInfo securityUser = new SecurityUserInfo();
-        SecurityAuthorization authorizationStrategy = getAuthorizationStrategy();
-        if (null != authorizationStrategy) {
-            Set<SecurityAuthority> authorizationByUsername = authorizationStrategy.getAuthorizationByUsername(userName);
-            securityUser.setAuthorities(CollUtil.isEmpty(authorizationByUsername) ? Sets.newHashSet() : authorizationByUsername);
-        } else {
-            securityUser.setAuthorities(Sets.newHashSet());
-        }
-        securityUser.setSkipAuthentication(false);
-        securityUser.setPassword(null);
-        securityUser.setNickName(null);
-        securityUser.setPwdSalt(null);
-        securityUser.setCreateDate(null);
-        securityUser.setUpdateDate(null);
-        securityUser.setAccountNonExpired(true);
-        securityUser.setAccountNonLocked(true);
-        securityUser.setCredentialsNonExpired(true);
-        securityUser.setEnabled(true);
-        securityUser.setNickName(session.getNickName());
-
-        securityUser.setUserId(session.getUserId());
-        securityUser.setUsername(userName);
-        securityUser.setUsernameCn(session.getUserNameCn());
-        securityUser.setUsernameEn(session.getUserNameEn());
-        securityUser.setShaToken(session.getShaToken());
-        securityUser.setJwtToken(session.getJwtToken());
-        return securityUser;
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
+        byUserName.setShaToken(session.getShaToken());
+        OnlineUserInfo onlineUserInfo = new OnlineUserInfo(session, byUserName);
+        onlineUserInfo.handlerAuthorityList(userName);
+        onlineUserInfo.handlerSession(userName);
+        return onlineUserInfo;
     }
 }

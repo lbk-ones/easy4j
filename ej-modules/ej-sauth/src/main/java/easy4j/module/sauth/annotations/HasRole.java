@@ -14,6 +14,8 @@
  */
 package easy4j.module.sauth.annotations;
 
+import easy4j.infra.common.utils.BusCode;
+
 import java.lang.annotation.*;
 
 /**
@@ -23,4 +25,19 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface HasRole {
+
+    /**
+     * 角色编码
+     *
+     * @author bokun.li
+     * @date 2025-07-27
+     */
+    String[] value() default {};
+
+    /**
+     * 提示消息
+     *
+     * @return
+     */
+    String message() default BusCode.A00051;
 }

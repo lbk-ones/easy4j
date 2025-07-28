@@ -14,10 +14,13 @@
  */
 package easy4j.module.security.core;
 
+import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.AbstractSecurityService;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -74,12 +77,12 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     @Override
-    public SecurityUserInfo getOnlineUser() {
+    public OnlineUserInfo getOnlineUser() {
         return null;
     }
 
     @Override
-    public SecurityUserInfo getOnlineUser(String token) {
+    public OnlineUserInfo getOnlineUser(String token) {
         return null;
     }
 
@@ -89,7 +92,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     @Override
-    public SecurityUserInfo logout() {
+    public OnlineUserInfo logout() {
         return null;
     }
 
@@ -104,7 +107,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     @Override
-    public SecurityUserInfo login(SecurityUserInfo securityUser, Consumer<SecurityUserInfo> loginAware) {
+    public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
         String username = securityUser.getUsername();
         String password = securityUser.getPassword();
         // 1. 创建认证请求
@@ -127,7 +130,7 @@ public class SpringSecurityService extends AbstractSecurityService {
 //                .map(GrantedAuthority::getAuthority)
 //                .collect(Collectors.toList());
         if (null != loginAware) {
-            loginAware.accept(securityUser);
+            loginAware.accept(null);
         }
         return null;
     }

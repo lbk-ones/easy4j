@@ -14,17 +14,17 @@
  */
 package easy4j.module.sauth.context;
 
-import easy4j.module.sauth.domain.SecuritySession;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 
 /**
  * 这一次请求的上下文
  */
 public interface SecurityContext {
 
-    SecuritySession getSession();
+    ISecurityEasy4jSession getSession();
 
     void removeSession();
 
-    void setSession(SecuritySession securitySession);
+    void setSession(ISecurityEasy4jSession securitySession);
 
 }

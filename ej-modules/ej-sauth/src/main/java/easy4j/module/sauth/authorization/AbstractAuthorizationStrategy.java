@@ -23,13 +23,16 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.sauth.annotations.OpenApi;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityAuthority;
-import easy4j.module.sauth.domain.SecurityUserInfo;
+
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,15 +45,10 @@ import java.util.Set;
 public abstract class AbstractAuthorizationStrategy implements SecurityAuthorization {
 
 
-    @Override
-    public Set<SecurityAuthority> getAuthorizationByUsername(String userName) {
-        return null;
-    }
-
     // 默认通过
     @Override
-    public void customAuthenticationByMethod(SecurityUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException {
-        Set<SecurityAuthority> authorities = securityUserInfo.getAuthorities();
+    public void customAuthenticationByMethod(OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException {
+        Set<SecurityAuthority> authorities = securityUserInfo.getAuthorityList();
         Method method = handlerMethod.getMethod();
         NoLogin annotation = method.getAnnotation(NoLogin.class);
         if (Objects.nonNull(annotation)) {
@@ -59,7 +57,7 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     }
 
     @Override
-    public boolean isNeedAuthentication(SecurityUserInfo userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response) {
+    public boolean isNeedAuthentication(ISecurityEasy4jUser userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response) {
         return false;
     }
 
@@ -102,7 +100,7 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     }
 
     @Override
-    public boolean checkByUserInfo(SecurityUserInfo securityUserInfo) {
+    public boolean checkByUserInfo(ISecurityEasy4jUser securityUserInfo) {
         return true;
     }
 }

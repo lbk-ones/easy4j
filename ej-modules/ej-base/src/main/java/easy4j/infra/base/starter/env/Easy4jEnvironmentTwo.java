@@ -14,7 +14,6 @@
  */
 package easy4j.infra.base.starter.env;
 
-import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
