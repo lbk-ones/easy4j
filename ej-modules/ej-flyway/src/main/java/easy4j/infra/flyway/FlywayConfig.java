@@ -18,6 +18,8 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.context.annotation.Bean;
 
 public class FlywayConfig implements InitializingBean {
 
@@ -30,5 +32,10 @@ public class FlywayConfig implements InitializingBean {
         } else {
             Easy4j.info(SysLog.compact("Flyway is disabled. If you are sure you want to enable it, please set " + SysConstant.EASY4J_FLYWAY_ENABLE + "=true"));
         }
+    }
+
+    @Bean
+    public FlywayMigrationStrategy migrationStrategy() {
+        return new Easy4jFlywayMigrationStrategy();
     }
 }
