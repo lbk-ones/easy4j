@@ -5,7 +5,6 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
-import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.session.SessionStrategy;
 
@@ -81,7 +80,7 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
     public void verify(AuthenticationContext context) {
         ISecurityEasy4jUser dbUser = context.getDbUser();
         // verify user enable
-        if (!checkUser(dbUser, context)) {
+        if (checkUserIsNotEnable(dbUser, context)) {
             return;
         }
         ISecurityEasy4jSession dbSession = context.getDbSession();

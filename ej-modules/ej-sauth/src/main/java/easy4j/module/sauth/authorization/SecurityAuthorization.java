@@ -35,17 +35,10 @@ public interface SecurityAuthorization {
     /**
      * 自定义鉴权根据方法来拦截是否该过
      *
+     * @param request
      * @param handlerMethod
      */
-    void customAuthenticationByMethod(OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException;
-
-    /**
-     * 根究url来检查
-     *
-     * @param handlerMethod
-     * @return
-     */
-    boolean checkUri(HandlerMethod handlerMethod);
+    void authorization(HttpServletRequest request, OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException;
 
     /**
      * 是否需要登录
@@ -68,16 +61,10 @@ public interface SecurityAuthorization {
 
     /**
      * 根据用户信息来过滤
-     *
+     * 通过 setErrorCode 或者抛出异常的方式来 处理异常
      * @param securityUserInfo
      * @return
      */
-    boolean checkByUserInfo(ISecurityEasy4jUser securityUserInfo);
+    void checkByUserInfo(ISecurityEasy4jUser securityUserInfo);
 
-    /**
-     * 是否需要鉴权
-     *
-     * @return
-     */
-    boolean isNeedAuthentication(ISecurityEasy4jUser userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response);
 }

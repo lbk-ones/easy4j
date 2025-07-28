@@ -76,7 +76,7 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
         ISecurityEasy4jUser reqUser = context.getReqUser();
         ISecurityEasy4jUser dbUser = context.getDbUser();
         // verify user enable
-        if (!checkUser(dbUser, context)) {
+        if (checkUserIsNotEnable(dbUser, context)) {
             return;
         }
         // verify http method

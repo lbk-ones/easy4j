@@ -1,17 +1,15 @@
 package easy4j.module.sauth.authentication;
 
+import easy4j.module.sauth.core.Easy4jSecurityService;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 
+import java.util.function.Consumer;
+
 /**
  * 认证器的认证流程
- * 1、 querySession 查询会话信息并保存
- * 2、 queryUser 查询用户信息并保存
- * 3、 verifyPre 预校验
- * 4、 verify 最后一步校验并生成结果
- * 5、 checkUser 最后一步进行用户检查
- *
+ * @see Easy4jSecurityService#authentication(ISecurityEasy4jUser, Consumer)
  * @author bokun.li
  * @date 2025-07-27
  */

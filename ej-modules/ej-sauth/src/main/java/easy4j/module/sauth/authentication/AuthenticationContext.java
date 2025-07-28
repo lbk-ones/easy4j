@@ -67,19 +67,25 @@ public class AuthenticationContext {
 
     public ISecurityEasy4jUser getReqUser() {
         if (reqUser == null) {
-            throw new EasyException(BusCode.A00037);
+            throw EasyException.wrap(BusCode.A00004,"【AuthenticationContext of reqUser】");
         }
         return reqUser;
     }
 
     public void checkError() {
         if (StrUtil.isNotBlank(this.errorCode)) {
+            if (this.reqUser != null) {
+                this.reqUser.setErrorCode(errorCode);
+            }
             throw new EasyException(this.errorCode);
         }
     }
 
     public void checkError(String code) {
         if (StrUtil.isNotBlank(this.errorCode)) {
+            if (this.reqUser != null) {
+                this.reqUser.setErrorCode(EasyException.getCodeFromMessage(this.errorCode));
+            }
             throw new EasyException(code);
         }
     }

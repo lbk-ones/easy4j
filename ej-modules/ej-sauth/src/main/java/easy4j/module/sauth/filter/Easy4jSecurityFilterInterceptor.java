@@ -83,6 +83,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 }
                 Easy4j.getContext().registerThreadHash(SysConstant.X_ACCESS_TOKEN, SysConstant.X_ACCESS_TOKEN, token);
                 String header = request.getHeader(SysConstant.AUTHORIZATION_TYPE);
+
                 SecurityUser securityUser = new SecurityUser();
                 securityUser.setShaToken(token);
                 securityUser.setScope(AuthenticationScopeType.Interceptor);
@@ -94,16 +95,19 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 onlineUserInfo = Easy4jAuth.authentication(securityUser, null);
 
                 ISecurityEasy4jUser user = onlineUserInfo.getUser();
+                authorizationStrategy1.checkByUserInfo(user);
                 if (
                         StrUtil.isNotBlank(user.getErrorCode())
                 ) {
                     throw new EasyException(user.getErrorCode());
                 }
+
+
             } else {
                 // 先不做这种功能
                 throw EasyException.wrap(BusCode.A00041);
             }
-            authorizationStrategy1.customAuthenticationByMethod(onlineUserInfo, handler);
+            authorizationStrategy1.authorization(request,onlineUserInfo, handler);
         }
         return true;
     }

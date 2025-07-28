@@ -34,6 +34,14 @@ public @interface HasRole {
      */
     String[] value() default {};
 
+
+    /**
+     * 是否要同时拥有所有角色才生效
+     * @return
+     */
+    boolean and() default false;
+
+
     /**
      * 提示消息
      *

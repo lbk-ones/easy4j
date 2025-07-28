@@ -18,9 +18,12 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.i18n.I18nUtils;
+import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import jodd.util.StringPool;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -42,8 +45,31 @@ public class EasyException extends RuntimeException {
 
     private final int error = 1;
 
+    /**
+     * 业务状态码
+     * @author bokun.li
+     * @date 2025/7/28
+     */
+    @Setter
+    private String code;
+
+
     public EasyException(String message) {
         super(message);
+        this.code = getCodeFromMessage(message);
+    }
+
+    public static String getCodeFromMessage(String message){
+        String code = null;
+        if(StrUtil.isNotBlank(message)){
+            String[] split = message.split(SP.COMMA);
+            if(split.length>0){
+                code = split[0];
+            }else{
+                code = message;
+            }
+        }
+        return code;
     }
 
     /**
@@ -63,8 +89,11 @@ public class EasyException extends RuntimeException {
                 messageBuilder.append(",").append(s);
             }
         }
+        final String code = message;
         message = messageBuilder.toString();
-        return new EasyException(message);
+        EasyException easyException = new EasyException(message);
+        easyException.setCode(code);
+        return easyException;
     }
 
 
@@ -104,9 +133,9 @@ public class EasyException extends RuntimeException {
     public static void isTrueThrow(boolean flag, String msgKey, String msgContent) {
         if (flag) {
             if (StrUtil.isBlank(msgKey)) {
-                throw new EasyException(I18nUtils.getOperateErrorStr());
+                throw EasyException.wrap(BusCode.A00002);
             } else {
-                throw new EasyException(I18nUtils.getMessage(msgKey, msgContent));
+                throw EasyException.wrap(msgKey,msgContent);
             }
         }
     }
@@ -131,7 +160,7 @@ public class EasyException extends RuntimeException {
 
             String s = handlerDotMessage(join);
 
-            throw new EasyException(I18nUtils.getMessage("A00004", s));
+            throw new EasyException(I18nUtils.getMessage(BusCode.A00004, s));
 
         }
 

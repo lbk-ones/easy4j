@@ -14,13 +14,16 @@
  */
 package easy4j.module.sauth.authorization;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.server.HttpServerRequest;
-import cn.hutool.http.server.HttpServerResponse;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
+import easy4j.module.sauth.annotations.HasPermission;
+import easy4j.module.sauth.annotations.HasRole;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
@@ -32,9 +35,8 @@ import org.springframework.web.method.HandlerMethod;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * AbstractAuthorizationStrategy
@@ -47,23 +49,186 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
 
     // 默认通过
     @Override
-    public void customAuthenticationByMethod(OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException {
+    public void authorization(HttpServletRequest request, OnlineUserInfo securityUserInfo, HandlerMethod handlerMethod) throws EasyException {
+        if(securityUserInfo == null) return;
         Set<SecurityAuthority> authorities = securityUserInfo.getAuthorityList();
+        if(CollUtil.isNotEmpty(authorities)){
+            authorities = authorities.stream().filter(SecurityAuthority::isEnabled).collect(Collectors.toSet());
+            if(CollUtil.isEmpty(authorities)){
+                return;
+            }
+        }else{
+            return;
+        }
         Method method = handlerMethod.getMethod();
-        NoLogin annotation = method.getAnnotation(NoLogin.class);
-        if (Objects.nonNull(annotation)) {
-
+        Class<?> classType = handlerMethod.getBeanType();
+        boolean role = hasRole(authorities, method, classType);
+        boolean permission = hasPermission(authorities, method, classType);
+        if(!(role && permission)){
+            String message = getMessage(method, classType);
+            String requestURI = request.getRequestURI();
+            throw EasyException.wrap(message,requestURI);
         }
     }
 
-    @Override
-    public boolean isNeedAuthentication(ISecurityEasy4jUser userInfo, Set<SecurityAuthority> authorities, HttpServerRequest request, HttpServerResponse response) {
-        return false;
+    private String getMessage(Method method, Class<?> aClass){
+        HasPermission hasPermissionAnnotation = getHasPermissionAnnotation(method, aClass);
+        HasRole hasRole = getHasRole(method, aClass);
+        String message = BusCode.A00051;
+        if(hasRole!=null){
+            message = hasRole.message();
+        }
+        // HasPermission Priority First !!
+        if(hasPermissionAnnotation!=null){
+            message = hasPermissionAnnotation.message();
+        }
+        return message;
+    }
+    private HasPermission getHasPermissionAnnotation(Method method, Class<?> aClass){
+        HasPermission annotation = null;
+        if(method.isAnnotationPresent(HasPermission.class)){
+            annotation = method.getAnnotation(HasPermission.class);
+            String[] value = annotation.value();
+            String[] group = annotation.group();
+            if(
+                    ListTs.asList(value).stream().allMatch(StrUtil::isBlank) &&
+                            ListTs.asList(group).stream().allMatch(StrUtil::isBlank)
+            ){
+                if(aClass.isAnnotationPresent(HasPermission.class)) annotation = aClass.getAnnotation(HasPermission.class);
+            }
+        }else{
+            if(aClass.isAnnotationPresent(HasPermission.class)) annotation = aClass.getAnnotation(HasPermission.class);
+        }
+        if(null == annotation) return null;
+        String[] value = annotation.value();
+        String[] group = annotation.group();
+        if(
+                ListTs.asList(value).stream().allMatch(StrUtil::isBlank) &&
+                ListTs.asList(group).stream().allMatch(StrUtil::isBlank)
+        ){
+            return null;
+        }
+        return annotation;
+    }
+    private HasRole getHasRole(Method method, Class<?> aClass){
+        HasRole annotation = null;
+        if(method.isAnnotationPresent(HasRole.class)){
+            annotation = method.getAnnotation(HasRole.class);
+            String[] value = annotation.value();
+            if(
+                    ListTs.asList(value).stream().allMatch(StrUtil::isBlank)
+            ){
+                if(aClass.isAnnotationPresent(HasRole.class)) annotation = aClass.getAnnotation(HasRole.class);
+            }
+        }else{
+            if(aClass.isAnnotationPresent(HasRole.class)) annotation = aClass.getAnnotation(HasRole.class);
+        }
+        if(null == annotation) return null;
+        String[] value = annotation.value();
+        if(
+                ListTs.asList(value).stream().allMatch(StrUtil::isBlank)
+        ){
+            return null;
+        }
+        return annotation;
     }
 
-    @Override
-    public boolean checkUri(HandlerMethod handlerMethod) {
-        return false;
+    private boolean hasPermission(Set<SecurityAuthority> authorities, Method method, Class<?> aClass) {
+        HasPermission annotation = getHasPermissionAnnotation(method,aClass);
+        if(null == annotation) return true;
+        String[] value = annotation.value();
+        boolean and = annotation.and();
+        boolean result = true;
+        boolean has = false;
+        String[] group = annotation.group();
+        // check group
+        for (String group2 : group) {
+            if(StrUtil.isBlank(group2)){
+                continue;
+            }
+            for (SecurityAuthority authority : authorities) {
+                String groupAuth = authority.getGroup();
+                if(StrUtil.equals(group2,groupAuth) && StrUtil.isNotBlank(groupAuth)){
+                    has = true;
+                    break;
+                }
+            }
+            if(and){
+                if(!has){
+                    result = false;
+                    break;
+                }
+            }
+        }
+        if(!and && !has){
+            result = false;
+        }
+        for (String permissionCode : value) {
+            if(StrUtil.isBlank(permissionCode)){
+                continue;
+            }
+            for (SecurityAuthority authority : authorities) {
+                String roleCode = authority.getRoleCode();
+                String menuCode = authority.getMenuCode();
+                String authorityCode = authority.getAuthorityCode();
+                String requestUri = authority.getRequestUri();
+                // role
+                if(StrUtil.equals(permissionCode,roleCode) && StrUtil.isNotBlank(roleCode)){
+                    has = true;
+                    break;
+                    // menucode
+                }else if(StrUtil.equals(menuCode,permissionCode) && StrUtil.isNotBlank(menuCode)){
+                    has = true;
+                    break;
+                    // authority code
+                }else if(StrUtil.equals(authorityCode,permissionCode) && StrUtil.isNotBlank(authorityCode)){
+                    has = true;
+                    break;
+                    // requestUri
+                }else if(StrUtil.equals(requestUri,permissionCode) && StrUtil.isNotBlank(requestUri)){
+                    has = true;
+                    break;
+                }
+            }
+            if(and){
+                if(!has){
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result && has;
+    }
+
+    private boolean hasRole(Set<SecurityAuthority> authorities,Method method,Class<?> aClass){
+        HasRole annotation = getHasRole(method,aClass);
+        if(null == annotation) return true;
+        String[] value = annotation.value();
+        boolean and = annotation.and();
+        boolean result = true;
+        boolean has = false;
+        for (String roleCode : value) {
+            if(StrUtil.isBlank(roleCode)){
+                continue;
+            }
+            for (SecurityAuthority authority : authorities) {
+                String roleCode1 = authority.getRoleCode();
+                if(StrUtil.equals(roleCode,roleCode1) && StrUtil.isNotBlank(roleCode1)){
+                    has = true;
+                    break;
+                }
+            }
+            if(and){
+                if(!has){
+                    result = false;
+                    break;
+                }
+            }
+        }
+        if(!and && !has){
+            result = false;
+        }
+        return result;
     }
 
     @Override
@@ -82,7 +247,8 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
             getContext().registerThreadHash(SysConstant.EASY4J_RPC_NO_LOGIN, SysConstant.EASY4J_RPC_NO_LOGIN, "1");
             return false;
         }
-        return !method.isAnnotationPresent(NoLogin.class);
+        // 其他全部需要登录
+        return true;
     }
 
     private Easy4jContext getContext() {
@@ -100,7 +266,7 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
     }
 
     @Override
-    public boolean checkByUserInfo(ISecurityEasy4jUser securityUserInfo) {
-        return true;
+    public void checkByUserInfo(ISecurityEasy4jUser securityUserInfo) {
+
     }
 }

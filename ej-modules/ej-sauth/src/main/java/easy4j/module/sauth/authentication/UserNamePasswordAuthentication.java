@@ -5,7 +5,6 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
-import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.session.SessionStrategy;
 
@@ -54,6 +53,10 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
     @Override
     public void verifyPre(AuthenticationContext context) {
         ISecurityEasy4jUser reqUser = context.getReqUser();
+        // verify user enable
+        if (checkUserIsNotEnable(context.getDbUser(), context)) {
+            return;
+        }
         verifyPre(reqUser);
         context.setErrorCode(reqUser.getErrorCode());
     }
@@ -81,9 +84,6 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
         if (!StrUtil.equals(encryptPwd, dbUser.getPassword())) {
             context.setErrorCode(BusCode.A00033);
         }
-
-        // verify user enable
-        checkUser(dbUser, context);
 
 
     }

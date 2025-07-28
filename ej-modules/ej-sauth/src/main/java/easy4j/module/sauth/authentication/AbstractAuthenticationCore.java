@@ -1,15 +1,12 @@
 package easy4j.module.sauth.authentication;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.infra.common.utils.ListTs;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
-import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.web.context.request.RequestAttributes;
@@ -81,20 +78,32 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
         return wrap.getMessage();
     }
 
-    public boolean checkUser(ISecurityEasy4jUser dbUser, AuthenticationContext context) {
+    public boolean checkUserIsNotEnable(ISecurityEasy4jUser dbUser, AuthenticationContext context) {
         if (null == dbUser) {
             context.setErrorCode(BusCode.A00037);
-            return false;
+            return true;
         }
         boolean accountNonExpired = dbUser.isAccountNonExpired();
         boolean accountNonLocked = dbUser.isAccountNonLocked();
         boolean credentialsNonExpired = dbUser.isCredentialsNonExpired();
         boolean enabled = dbUser.isEnabled();
-        if (!(accountNonExpired && credentialsNonExpired && enabled && accountNonLocked)) {
-            context.setErrorCode(BusCode.A00036);
-            return false;
+        if(!accountNonExpired){
+            context.setErrorCode(BusCode.A00052);
+            return true;
         }
-        return true;
+        if(!credentialsNonExpired){
+            context.setErrorCode(BusCode.A00054);
+            return true;
+        }
+        if(!enabled){
+            context.setErrorCode(BusCode.A00055);
+            return true;
+        }
+        if(!accountNonLocked){
+            context.setErrorCode(BusCode.A00053);
+            return true;
+        }
+        return false;
     }
 
     public boolean checkSession(ISecurityEasy4jSession dbSession, AuthenticationContext context) {
