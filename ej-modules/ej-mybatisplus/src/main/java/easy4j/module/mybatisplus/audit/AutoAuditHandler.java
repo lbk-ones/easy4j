@@ -68,19 +68,19 @@ public class AutoAuditHandler implements MetaObjectHandler {
         }
         try{
             UserContext userContext = this.getUserContext();
-            String userCode = userContext.getUserCode();
             String userName = userContext.getUserName();
+            String userNameCn = userContext.getUserNameCn();
             if (metaObject.hasSetter(CREATE_BY)) {
-                this.setFieldValByName(CREATE_BY, userCode, metaObject);
+                this.setFieldValByName(CREATE_BY, userName, metaObject);
             }
             if (metaObject.hasSetter(CREATE_NAME)) {
-                this.setFieldValByName(CREATE_NAME, userName, metaObject);
+                this.setFieldValByName(CREATE_NAME, userNameCn, metaObject);
             }
             if (metaObject.hasSetter(UPDATE_BY)) {
-                this.setFieldValByName(UPDATE_BY, userCode, metaObject);
+                this.setFieldValByName(UPDATE_BY, userName, metaObject);
             }
             if (metaObject.hasSetter(UPDATE_NAME)) {
-                this.setFieldValByName(UPDATE_NAME, userName, metaObject);
+                this.setFieldValByName(UPDATE_NAME, userNameCn, metaObject);
             }
         }catch (Exception ignored){
 
@@ -93,13 +93,13 @@ public class AutoAuditHandler implements MetaObjectHandler {
     public void updateFill(MetaObject metaObject) {
         try{
             UserContext userContext = this.getUserContext();
-            String userCode = userContext.getUserCode();
             String userName = userContext.getUserName();
+            String userNameCn = userContext.getUserNameCn();
             if (metaObject.hasSetter(UPDATE_BY)) {
-                this.setFieldValByName(UPDATE_BY, userCode, metaObject);
+                this.setFieldValByName(UPDATE_BY, userName, metaObject);
             }
             if (metaObject.hasSetter(UPDATE_NAME)) {
-                this.setFieldValByName(UPDATE_NAME, userName, metaObject);
+                this.setFieldValByName(UPDATE_NAME, userNameCn, metaObject);
             }
             if (metaObject.hasSetter(UPDATE_DATE)) {
                 this.setFieldValByName(UPDATE_DATE, new Date(), metaObject);

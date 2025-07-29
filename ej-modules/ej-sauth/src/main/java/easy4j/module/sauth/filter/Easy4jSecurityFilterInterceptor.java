@@ -20,6 +20,8 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
@@ -101,7 +103,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 ) {
                     throw new EasyException(user.getErrorCode());
                 }
-
+                bindUserCtx(user);
                 request.setAttribute(SysConstant.SESSION_USER,user);
 
 
@@ -112,6 +114,14 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
             authorizationStrategy1.authorization(request,onlineUserInfo, handler);
         }
         return true;
+    }
+
+    private static void bindUserCtx(ISecurityEasy4jUser user) {
+        Easy4jContext context = Easy4j.getContext();
+        UserContext userContext = new UserContext();
+        userContext.setUserName(user.getUsername());
+        userContext.setUserNameCn(user.getUsernameCn());
+        context.registerThreadHash(UserContext.USER_CONTEXT_NAME,UserContext.USER_CONTEXT_NAME,userContext);
     }
 
     @Override
