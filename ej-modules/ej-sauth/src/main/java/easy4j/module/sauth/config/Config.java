@@ -30,6 +30,10 @@ import easy4j.module.sauth.context.Easy4jSecurityContext;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.controller.SAuthController;
 import easy4j.module.sauth.core.*;
+import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
+import easy4j.module.sauth.core.loadauthority.LoadAuthorityBy;
+import easy4j.module.sauth.core.loadauthority.LoadAuthorityByRpc;
+import easy4j.module.sauth.core.loadauthority.LoadAuthorityByRpcDefault;
 import easy4j.module.sauth.core.loaduser.*;
 import easy4j.module.sauth.encryption.PwdEncryptionService;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
@@ -199,5 +203,12 @@ public class Config implements CommandLineRunner {
     @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
     public LoadUserByRpc loadUserByRpcDefault() {
         return new LoadUserByRpcDefault();
+    }
+
+
+    @Bean(LoadAuthorityApi.rpcBeanName)
+    @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
+    public LoadAuthorityByRpc loadAuthorityByRpc(){
+        return new LoadAuthorityByRpcDefault();
     }
 }

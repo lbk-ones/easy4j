@@ -19,12 +19,14 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.module.sauth.core.Easy4jAuth;
+import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -116,6 +118,12 @@ public class SAuthController {
         int sessionExpireTimeSeconds1 = ejSysProperties2.getSessionExpireTimeSeconds();
         SecuritySession securitySession1 = sessionStrategy.refreshSession(token, sessionExpireTimeSeconds1, TimeUnit.SECONDS);
         return EasyResult.ok(securitySession1);
+    }
+
+    @GetMapping("loadSecurityAuthoritiesByUsername/{username}")
+    public EasyResult<Object> loadSecurityAuthoritiesByUsername(@PathVariable(name = "username") String username) {
+        Set<SecurityAuthority> authorityList = LoadAuthorityApi.getAuthorityListByDb(username);
+        return EasyResult.ok(authorityList);
     }
 
 }

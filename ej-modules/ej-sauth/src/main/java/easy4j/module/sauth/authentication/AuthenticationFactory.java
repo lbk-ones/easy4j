@@ -21,7 +21,7 @@ public class AuthenticationFactory {
     public static final String USERNAME_PASSWORD = "username";
 
 
-    public static final Map<AuthenticationType, AuthenticationCore> authenticationMap = Maps.newHashMap();
+    private static final Map<String, AuthenticationCore> authenticationMap = Maps.newHashMap();
 
     /**
      * 设置默认认证器，同时通过SPI加载默认扩展认证器
@@ -39,11 +39,15 @@ public class AuthenticationFactory {
         authenticationMap.put(simpleUserAuthentication.getName(), simpleUserAuthentication);
         List<AuthenticationCore> load = ServiceLoaderUtils.load(AuthenticationCore.class);
         for (AuthenticationCore authenticationCore : load) {
-            AuthenticationType name = authenticationCore.getName();
-            if (null != name) {
+            String name = authenticationCore.getName();
+            if (StrUtil.isNotBlank(name)) {
                 authenticationMap.put(name, authenticationCore);
             }
         }
+    }
+
+    public static void register(String name,AuthenticationCore core){
+        authenticationMap.putIfAbsent(name,core);
     }
 
     /**
@@ -52,10 +56,10 @@ public class AuthenticationFactory {
      * @param type
      * @return
      */
-    public static AuthenticationCore get(AuthenticationType type) {
+    public static AuthenticationCore get(String type) {
         AuthenticationCore authenticationCore = authenticationMap.get(type);
         if (authenticationCore == null) {
-            throw EasyException.wrap(BusCode.A00047, type.name());
+            throw EasyException.wrap(BusCode.A00047, type);
         }
         return authenticationCore;
     }

@@ -413,7 +413,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("获取认证器类型，默认为用户名密码认证")
-    AuthenticationType getAuthenticationType();
+    String getAuthenticationType();
 
     /**
      * 设置认证器类型，默认为用户名密码认证
@@ -421,7 +421,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("设置认证器类型，默认为用户名密码认证")
-    void setAuthenticationType(AuthenticationType authenticationType);
+    void setAuthenticationType(String authenticationType);
 
     /**
      * 作用于哪里 拦截器或者认证

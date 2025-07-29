@@ -90,9 +90,9 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 securityUser.setShaToken(token);
                 securityUser.setScope(AuthenticationScopeType.Interceptor);
                 if (StrUtil.isBlank(header) || StrUtil.equals(header, AuthenticationType.ShaToken.name())) {
-                    securityUser.setAuthenticationType(AuthenticationType.ShaToken);
+                    securityUser.setAuthenticationType(AuthenticationType.ShaToken.name());
                 } else if (StrUtil.equals(header, AuthenticationType.Jwt.name())) {
-                    securityUser.setAuthenticationType(AuthenticationType.Jwt);
+                    securityUser.setAuthenticationType(AuthenticationType.Jwt.name());
                 }
                 onlineUserInfo = Easy4jAuth.authentication(securityUser, null);
 

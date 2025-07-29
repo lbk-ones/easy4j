@@ -22,7 +22,7 @@ public interface AuthenticationCore {
      * @author bokun.li
      * @date 2025-07-27
      */
-    AuthenticationType getName();
+    String getName();
 
     /**
      * 查询用户信息

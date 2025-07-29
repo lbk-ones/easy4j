@@ -20,8 +20,8 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
 
 
     @Override
-    public AuthenticationType getName() {
-        return AuthenticationType.UserNamePassword;
+    public String getName() {
+        return AuthenticationType.UserNamePassword.name();
     }
 
     @Override

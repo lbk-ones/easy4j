@@ -24,8 +24,8 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
 
 
     @Override
-    public AuthenticationType getName() {
-        return AuthenticationType.Jwt;
+    public String getName() {
+        return AuthenticationType.Jwt.name();
     }
 
     @Override

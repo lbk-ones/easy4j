@@ -39,8 +39,6 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
     @Resource
     Easy4jContext easy4jContext;
 
-    boolean isClient;
-
     String serverName;
 
 
@@ -52,7 +50,6 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (!isServer) {
             serverName = Config.AUTH_SERVER_NAME;
-            isClient = true;
         }
     }
 

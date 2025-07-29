@@ -19,8 +19,8 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
 
 
     @Override
-    public AuthenticationType getName() {
-        return AuthenticationType.ShaToken;
+    public String getName() {
+        return AuthenticationType.ShaToken.name();
     }
 
     @Override

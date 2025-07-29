@@ -23,8 +23,8 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
 
 
     @Override
-    public AuthenticationType getName() {
-        return AuthenticationType.Basic;
+    public String getName() {
+        return AuthenticationType.Basic.name();
     }
 
     @Override

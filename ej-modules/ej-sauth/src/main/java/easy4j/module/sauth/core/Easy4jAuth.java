@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 public class Easy4jAuth {
     private static SecurityService bean;
 
-    public static Optional<SecurityService> get() {
+    private static Optional<SecurityService> get() {
         if (bean == null) {
             synchronized (Easy4jAuth.class) {
                 bean = SpringUtil.getBean(SecurityService.class);

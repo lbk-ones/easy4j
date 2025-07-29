@@ -46,7 +46,7 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
 
     @Desc("认证类型")
     @JdbcIgnore
-    private AuthenticationType authenticationType = AuthenticationType.UserNamePassword;
+    private String authenticationType = AuthenticationType.UserNamePassword.name();
 
 
     @Desc("作用域")
