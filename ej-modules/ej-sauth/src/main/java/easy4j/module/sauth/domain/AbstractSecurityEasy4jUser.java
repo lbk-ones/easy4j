@@ -5,6 +5,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
 import easy4j.module.sauth.authentication.AuthenticationType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Map;
@@ -22,36 +23,44 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Desc("错误代码")
     @JdbcIgnore
     @JsonIgnore
+    @Schema(description = "错误代码")
     private String errorCode;
 
     @Desc("最终请求token")
     @JdbcIgnore
+    @Schema(description = "返回给客户端（前端）保存之后后续使用的token")
     private String shaToken;
 
     @Desc("请求IP")
     @JdbcIgnore
+    @Schema(description = "请求IP")
     private String ip;
 
     @Desc("附加信息")
     @JdbcIgnore
+    @Schema(description = "附加信息")
     private Map<String, Object> extMap;
 
     @Desc("设备信息")
     @JdbcIgnore
+    @Schema(description = "客户端设备信息")
     private String deviceInfo;
 
     @Desc("是否是超级管理员")
     @JdbcIgnore
+    @Schema(description = "是否是超级管理员")
     private boolean superAdmin = false;
 
     @Desc("认证类型")
     @JdbcIgnore
+    @Schema(description = "认证类型，username，jwt，basic，simple")
     private String authenticationType = AuthenticationType.UserNamePassword.name();
 
 
     @Desc("作用域")
     @JdbcIgnore
     @JsonIgnore
+    @Schema(description = "作用域，（认证、拦截）")
     private AuthenticationScopeType scope = AuthenticationScopeType.Authentication;
 
 
