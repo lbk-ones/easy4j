@@ -120,6 +120,11 @@ public class Easy4j implements ApplicationContextAware {
     public static String getProperty(String name) {
         return getProperty(name, String.class);
     }
+    public static String getProperty(String name,String defaultValue) {
+        String property = getProperty(name, String.class);
+        property = ObjectUtil.isEmpty(property)?defaultValue:property;
+        return property;
+    }
 
     public static <T> T getRequiredProperty(String name, Class<T> aclass) {
         return getPropertyWith(name, aclass, true, null);
@@ -131,6 +136,11 @@ public class Easy4j implements ApplicationContextAware {
 
     public static <T> T getProperty(String name, Class<T> aclass) {
         return getPropertyWith(name, aclass, false, null);
+    }
+    public static <T> T getProperty(String name, Class<T> aclass,T defaultValue) {
+        T propertyWith = getPropertyWith(name, aclass, false, null);
+        propertyWith = ObjectUtil.isEmpty(propertyWith)?defaultValue:propertyWith;
+        return propertyWith;
     }
 
     public static <T> T getEnvProperty(String name, Class<T> aclass, Environment environment) {
