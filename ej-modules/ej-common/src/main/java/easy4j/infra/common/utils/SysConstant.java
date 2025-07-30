@@ -25,6 +25,8 @@ import jodd.util.StringPool;
 public class SysConstant {
 
     public static final String PARAM_PREFIX = "easy4j";
+    // 包结构的前缀
+    public static final String PACKAGE_PREFIX = PARAM_PREFIX;
 
     public static final String X_ACCESS_TOKEN = "X-Access-Token";
     public static final String X_SIGN = "X-Sign";
@@ -132,6 +134,7 @@ public class SysConstant {
     public static final String EASY4J_AUTH_SESSION_EXPIRE_TIME = PARAM_PREFIX + StringPool.DOT + "session-expire-time-seconds";
     public static final String EASY4J_SIMPLE_AUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
     public static final String EASY4J_SIMPLE_AUTH_IS_SERVER = PARAM_PREFIX + StringPool.DOT + "simple-auth-is-server";
+    public static final String EASY4J_SIMPLE_AUTH_SCAN_PACKAGE_PREFIX = PARAM_PREFIX + StringPool.DOT + "simple-auth-scan-package-prefix";
     public static final String EASY4J_SIMPLE_AUTH_USERNAME = PARAM_PREFIX + StringPool.DOT + "simple-auth-username";
     public static final String EASY4J_SIMPLE_AUTH_USERNAME_CN = PARAM_PREFIX + StringPool.DOT + "simple-auth-username-cn";
 

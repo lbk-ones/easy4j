@@ -53,6 +53,7 @@
 - **easy4j.simple-auth-user-impl-type**: 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置
 - **easy4j.simple-auth-is-cache-authority**: 简单权限是否缓存权限列表
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用
+- **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M

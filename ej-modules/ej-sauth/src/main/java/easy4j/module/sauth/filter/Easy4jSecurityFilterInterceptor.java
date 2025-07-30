@@ -63,7 +63,6 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         if (!property1) {
             return true;
         }
-
         SecurityAuthorization authorizationStrategy1 = getAuthorizationStrategy();
         Method method = handler.getMethod();
         // 开放api授权

@@ -20,6 +20,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.module.sauth.annotations.HasPermission;
@@ -233,8 +234,18 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
 
     @Override
     public boolean isNeedLogin(HandlerMethod handlerMethod, HttpServletRequest httpServerRequest, HttpServletResponse httpServerResponse) {
+
+
         Method method = handlerMethod.getMethod();
         Class<?> beanType = handlerMethod.getBeanType();
+
+        // 外部接口直接跳过，可以指定权限扫描路径
+        String packageNme = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_SCAN_PACKAGE_PREFIX);
+        packageNme = StrUtil.isBlank(packageNme)?Easy4j.mainClassPath:packageNme;
+        String name = beanType.getName();
+
+        if(ListTs.asList(packageNme.split(SP.COMMA)).stream().noneMatch(name::startsWith) && !StrUtil.startWith(name,SysConstant.PACKAGE_PREFIX+ SP.DOT))return false;
+
         boolean classNoLogin = beanType.isAnnotationPresent(NoLogin.class) && beanType.getAnnotation(NoLogin.class).rpcNoLogin();
         boolean methodNoLogin = method.isAnnotationPresent(NoLogin.class) && method.getAnnotation(NoLogin.class).rpcNoLogin();
         // rpc 传递

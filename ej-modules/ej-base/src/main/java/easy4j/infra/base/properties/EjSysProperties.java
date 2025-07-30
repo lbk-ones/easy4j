@@ -421,6 +421,14 @@ public class EjSysProperties {
     private boolean simpleAuthRegisterToNacos = true;
 
     /**
+     * 权限扫描包名，比如org.springframework这种前缀
+     */
+    @SpringVs(
+            desc = "权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径"
+    )
+    private String simpleAuthScanPackagePrefix;
+
+    /**
      * 是否启用RequestLog注解进行请求日志收集 true代表开启
      */
     @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")
