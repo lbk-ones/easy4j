@@ -44,7 +44,7 @@ public class BaseAudit implements Serializable {
      * 创建时间
      */
     @Schema(description = "创建时间")
-    private Date createdTime;
+    private Date createTime;
 
     /**
      * 更新人编码
