@@ -64,6 +64,7 @@
 - **easy4j.redis-min-ide-size**: redis最小空闲连接数 默认30
 - **easy4j.redis-connection-pool-size**: redis连接池最大连接数量 默认500
 - **easy4j.flyway-enable**: 是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效
+- **easy4j.flyway-checksum-disabled**: 是否启用flyway启动时的内容检查，默认禁用，如果不禁用，已执行脚本更改过之后则启动失败
 - **easy4j.sca-gateway-flow-qps**: spring-cloud-gateway 流控规则
 - **easy4j.seata-enable**: 是否启用seata
 - **easy4j.seata-nacos-url**: seata注册中心地址,地址(多个地址用逗号隔开)@用户:密码

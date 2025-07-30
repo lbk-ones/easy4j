@@ -503,6 +503,12 @@ public class EjSysProperties {
     /**
      * 是否启用flyway
      */
+    @SpringVs(desc = "是否启用flyway启动时的内容检查，默认禁用，如果不禁用，已执行脚本更改过之后则启动失败")
+    private boolean flywayChecksumDisabled = true;
+
+    /**
+     * 是否启用flyway
+     */
     @SpringVs(desc = "spring-cloud-gateway 流控规则")
     private int scaGatewayFlowQps = 400;
 

@@ -17,6 +17,7 @@ package easy4j.infra.flyway;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
@@ -37,8 +38,10 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
             flyway.migrate();
         } catch (FlywayException e) {
             if (e instanceof FlywayValidateException) {
+                // default disabled content check
+                boolean checkSumDisabled = Easy4j.getProperty(SysConstant.EASY4J_FLYWAY_CHECKSUM_DISABLED, boolean.class, true);
                 // only server can throw checksum exception
-                if (!SystemUtil.getOsInfo().isLinux()) {
+                if (!SystemUtil.getOsInfo().isLinux() || checkSumDisabled) {
                     String message = e.getMessage();
                     if (StrUtil.contains(message, "Migration checksum mismatch")) {
                         Easy4j.error(SysLog.compact("flyway localhost not checksum"));
