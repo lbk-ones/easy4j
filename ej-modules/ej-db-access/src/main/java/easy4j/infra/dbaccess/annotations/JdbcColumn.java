@@ -14,6 +14,8 @@
  */
 package easy4j.infra.dbaccess.annotations;
 
+import easy4j.infra.common.annotations.Desc;
+
 import java.lang.annotation.*;
 
 /**
@@ -38,4 +40,8 @@ public @interface JdbcColumn {
 
     // 转为json字符串
     boolean toJson() default false;
+
+    // postgresql 特殊类型映射 比如jsonb、json之类的
+    @Desc("postgresql 特殊类型映射 比如jsonb、json之类的")
+    String pgType() default "";
 }

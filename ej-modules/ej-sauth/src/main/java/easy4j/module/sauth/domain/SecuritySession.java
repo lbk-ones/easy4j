@@ -120,7 +120,7 @@ public class SecuritySession implements ISecurityEasy4jSession {
     /**
      * 额外信息 存入 长文本 json 字符串
      */
-    @JdbcColumn(toJson = true)
+    @JdbcColumn(toJson = true,pgType = "jsonb")
     private Map<String, Object> extMap;
 
 

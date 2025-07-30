@@ -12,6 +12,8 @@ import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.helper.PGHelper;
 import easy4j.infra.dbaccess.helper.SqlPlaceholderReplacer;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
@@ -226,13 +228,14 @@ public abstract class CommonDBAccess {
             String name = field.getName();
             boolean annotationPresent = field.isAnnotationPresent(JdbcColumn.class);
             boolean toJson = false;
+            String pgFieldType = null;
             if (annotationPresent) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 String name1 = annotation.name();
                 name = StrUtil.isBlank(name1) ? name : name1;
 
                 toJson = annotation.toJson();
-
+                pgFieldType = annotation.pgType();
             }
             if (isToUnderline) {
                 name = StrUtil.toUnderlineCase(name);
@@ -246,6 +249,14 @@ public abstract class CommonDBAccess {
             // force convert to json text
             if (toJson) {
                 fieldValue = JacksonUtil.toJson(fieldValue);
+                if(StrUtil.isNotBlank(pgFieldType)){
+                    fieldValue = PGHelper.wrap(pgFieldType, fieldValue);
+                }
+            }else{
+                // handle pgtype vs
+                if(StrUtil.isNotBlank(pgFieldType)){
+                    fieldValue = PGHelper.wrap(pgFieldType, fieldValue);
+                }
             }
             resMap.put(name, fieldValue);
         }

@@ -123,7 +123,7 @@ public class DbLog implements Easy4jDbLog {
      * @param isPop 是否从最末尾弹出
      * @return
      */
-    public synchronized static SysLogRecord getLast(boolean isPop) {
+    private synchronized static SysLogRecord getLast(boolean isPop) {
         Deque<SysLogRecord> logRecord = threadLocalMap.get();
         try {
             if (Objects.isNull(logRecord)) {
@@ -141,7 +141,7 @@ public class DbLog implements Easy4jDbLog {
 
     }
 
-    public synchronized static boolean checkIsEmpty() {
+    private synchronized static boolean checkIsEmpty() {
         Deque<SysLogRecord> logRecord = threadLocalMap.get();
 
         if (null != logRecord) {
@@ -369,16 +369,16 @@ public class DbLog implements Easy4jDbLog {
                     if (lastExeTime.get() == 0) {
                         lastExeTime.addAndGet(time);
                     }
-                    long l = lastExeTime.get();
+                    long lastTime = lastExeTime.get();
 
                     // 默认保留7天的日志
                     Date startTime = DateUtil.endOfDay(DateUtil.offsetDay(new Date(), -7));
                     if (!firstEd) {
-                        if (time > l && (time - l) >= initlimitHours) {
+                        if (time > lastTime && (time - lastTime) >= initlimitHours) {
                             clearLog(startTime);
                         }
                     } else {
-                        if (time > l && (time - l) >= limitHours) {
+                        if (time > lastTime && (time - lastTime) >= limitHours) {
                             clearLog(startTime);
                         }
                     }
