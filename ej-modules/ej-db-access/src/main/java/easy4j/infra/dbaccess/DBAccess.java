@@ -21,6 +21,7 @@ import org.springframework.core.io.Resource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DBAccess
@@ -129,6 +130,14 @@ public interface DBAccess {
      * @throws SQLException
      */
     <T> List<T> selectList(String sql, Class<T> clazz, Object... args);
+
+    /**
+     * 返回List<Map>
+     *
+     * @author bokun.li
+     * @date 2025-07-31
+     */
+    List<Map<String, Object>> selectListMap(String sql, Object... args);
 
 
     /**

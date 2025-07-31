@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.condition;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -79,6 +80,46 @@ public class SqlBuild extends CommonDBAccess {
             throw new EasyException("insert sql no where segment!");
         }
         String tableName = getTableName(aclass, dialect);
+        return buildWith(sqlType, whereBuild, tableName, obj, returnZwf, argList, connection);
+    }
+
+
+    /**
+     * 单表简单sql构建
+     * SELECT,INSERT,UPDATE 需要传入值
+     * INSERT 可以不用传条件构造器
+     *
+     * @param sqlType    构建的sql类型
+     * @param whereBuild 构建器
+     * @param tableName  表名
+     * @param obj        如果是要更新则需要携带这个
+     * @param returnZwf  返回字符串是否携带占位符 ?  直接返回sql有风险 返回的sql并不一定能百分百执行
+     * @param argList    参数集合
+     * @param <T>
+     * @return
+     */
+    public <T> String buildByTableName(
+            String sqlType,
+            WhereBuild whereBuild,
+            String tableName,
+            T obj,
+            boolean returnZwf,
+            List<Object> argList,
+            Connection connection
+    ) {
+        if (!ListTs.asList(SELECT, DELETE, UPDATE, INSERT).contains(sqlType)) {
+            throw new EasyException("SqlType is inValid");
+        }
+        if (INSERT.equals(sqlType) && Objects.nonNull(whereBuild)) {
+            throw new EasyException("insert sql no where segment!");
+        }
+        if (StrUtil.isBlank(tableName)) {
+            throw new EasyException("tableName is not null!");
+        }
+        return buildWith(sqlType, whereBuild, tableName, obj, returnZwf, argList, connection);
+    }
+
+    private <T> String buildWith(String sqlType, WhereBuild whereBuild, String tableName, T obj, boolean returnZwf, List<Object> argList, Connection connection) {
         List<Object> objects = ListTs.newArrayList();
         String build = Optional.ofNullable(whereBuild).map(e -> e.build(objects)).orElse("");
         List<String> selectFields = Optional.ofNullable(whereBuild).map(WhereBuild::getSelectFields).orElse(new ArrayList<>());

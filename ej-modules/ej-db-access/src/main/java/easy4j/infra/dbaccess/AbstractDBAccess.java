@@ -33,6 +33,7 @@ import easy4j.infra.dbaccess.condition.LogicOperator;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
@@ -266,6 +267,36 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     public <T> List<T> selectList(String sql, Class<T> clazz, Object... args) {
         Connection connection = getConnection();
         return selectListWith(sql, clazz, args, connection);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectListMap(String sql, Object... args) {
+        Connection connection = getConnection();
+        return selectListMapWith(sql, args, connection);
+    }
+
+    private <T> List<Map<String, Object>> selectListMapWith(String sql, Object[] args, Connection connection) {
+        MapListHandler tBeanListHandler = new MapListHandler();
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            logSql(sql, connection, args);
+            if (ObjectUtil.isNotEmpty(args)) {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
+            } else {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql);
+            }
+            resultSet = preparedStatement.executeQuery();
+            List<Map<String, Object>> t = tBeanListHandler.handle(resultSet);
+
+            return ObjectUtil.defaultIfNull(t, new ArrayList<>());
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("selectList", sql, e);
+        } finally {
+            JdbcHelper.close(resultSet);
+            JdbcHelper.close(preparedStatement);
+            DataSourceUtils.releaseConnection(connection, getDataSource());
+        }
     }
 
     private <T> List<T> selectListWith(String sql, Class<T> clazz, Object[] args, Connection connection) {

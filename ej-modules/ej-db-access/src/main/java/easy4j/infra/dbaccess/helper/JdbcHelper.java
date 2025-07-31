@@ -302,7 +302,7 @@ public abstract class JdbcHelper {
      * @return 类型
      * @throws Exception
      */
-    public static String getDatabaseType(Connection conn) throws Exception {
+    public static String getDatabaseType(Connection conn) throws SQLException {
         DatabaseMetaData databaseMetaData = conn.getMetaData();
         String databaseProductName = databaseMetaData.getDatabaseProductName();
         return databaseTypeMappings.getProperty(databaseProductName);
@@ -314,7 +314,7 @@ public abstract class JdbcHelper {
         sqlErrorCodeSQLExceptionTranslator.setDataSource(getDataSource());
         DataAccessException translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
         if (translate == null) {
-            throw new DbAccessException(sqlException.getMessage(),sqlException.getSQLState(),sqlException.getCause());
+            throw new DbAccessException(sqlException.getMessage(), sqlException.getSQLState(), sqlException.getCause());
         }
         return translate;
     }

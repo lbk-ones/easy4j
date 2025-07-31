@@ -47,6 +47,7 @@ public class EasyException extends RuntimeException {
 
     /**
      * 业务状态码
+     *
      * @author bokun.li
      * @date 2025/7/28
      */
@@ -59,13 +60,13 @@ public class EasyException extends RuntimeException {
         this.code = getCodeFromMessage(message);
     }
 
-    public static String getCodeFromMessage(String message){
+    public static String getCodeFromMessage(String message) {
         String code = null;
-        if(StrUtil.isNotBlank(message)){
+        if (StrUtil.isNotBlank(message)) {
             String[] split = message.split(SP.COMMA);
-            if(split.length>0){
+            if (split.length > 0) {
                 code = split[0];
-            }else{
+            } else {
                 code = message;
             }
         }
@@ -135,7 +136,7 @@ public class EasyException extends RuntimeException {
             if (StrUtil.isBlank(msgKey)) {
                 throw EasyException.wrap(BusCode.A00002);
             } else {
-                throw EasyException.wrap(msgKey,msgContent);
+                throw EasyException.wrap(msgKey, msgContent);
             }
         }
     }
