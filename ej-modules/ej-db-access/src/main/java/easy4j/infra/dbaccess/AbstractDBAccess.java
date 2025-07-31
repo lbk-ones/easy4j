@@ -18,6 +18,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -238,17 +239,20 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         List<Map<String, Object>> collect = object.stream().map(e -> castBeanMap(e, false, false)).collect(Collectors.toList());
         PreparedStatement batchInsertSql = null;
 
+        Pair<String, Date> sqlPair = null;
         try {
-            batchInsertSql = dialect.psForBatchInsert(
+            Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForBatchInsert(
                     getTableName(aClass, dialect),
                     getColumns(aClass, SAVE).toArray(new String[]{}),
                     collect, connection
             );
+            batchInsertSql = preparedStatementPairPair.getKey();
+            sqlPair = preparedStatementPairPair.getValue();
             return batchInsertSql.executeUpdate();
         } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("saveListByBean", null, e);
-
+            throw JdbcHelper.translateSqlException("saveListByBean", getPrintSql(sqlPair), e);
         } finally {
+            printSql(sqlPair);
             JdbcHelper.close(batchInsertSql);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
@@ -279,8 +283,9 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         MapListHandler tBeanListHandler = new MapListHandler();
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(sql, connection, args);
+            stringDatePair = recordSql(sql, connection, args);
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
             } else {
@@ -293,6 +298,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("selectList", sql, e);
         } finally {
+            printSql(stringDatePair);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -303,8 +309,9 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(sql, connection, args);
+            stringDatePair = recordSql(sql, connection, args);
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
             } else {
@@ -317,6 +324,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("selectList", sql, e);
         } finally {
+            printSql(stringDatePair);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -339,8 +347,9 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         Integer column = Convert.toInt(map.get(INDEX_COLUMN));
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(sql, connection, args);
+            stringDatePair = recordSql(sql, connection, args);
             ScalarHandler<Object> objectScalarHandler = new ScalarHandler<>(column);
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
@@ -352,6 +361,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("query", sql, e);
         } finally {
+            printSql(stringDatePair);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -391,18 +401,22 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             columns = getColumns(aClass, UPDATE);
         }
         PreparedStatement batchInsertSql = null;
+        Pair<String, Date> sqlPair = null;
         try {
             dialect.printPrintLog(this.isPrintLog());
-            batchInsertSql = dialect.psForBatchUpdate(
+            Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForBatchUpdate(
                     getTableName(aClass, dialect),
                     columns.toArray(new String[]{}),
                     collect, updateCondition, updateIgnoreNull, connection
             );
+            batchInsertSql = preparedStatementPairPair.getKey();
+            sqlPair = preparedStatementPairPair.getValue();
 
             return batchInsertSql.executeUpdate();
         } catch (SQLException sqlException) {
             throw JdbcHelper.translateSqlException("updateListByBean", null, sqlException);
         } finally {
+            printSql(sqlPair);
             JdbcHelper.close(batchInsertSql);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
@@ -551,7 +565,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
 
         String tableName = this.getTableName(tClass, dialect);
         String sql = DDlLine(DELETE, tableName, null);
-        Map<String, Object> stringObjectMap = buildMap(connection, sql, DELETE, null);
+        Map<String, Object> stringObjectMap = buildMap(connection, sql, DELETE, new Object[]{});
         return this.saveOrUpdate(stringObjectMap);
     }
 
@@ -792,13 +806,16 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         Map<String, Object> stringObjectMap = castBeanMap(update, true, true);
 
         dialect.printPrintLog(this.isPrintLog());
-        PreparedStatement preparedStatement = dialect.psForUpdateBySqlBuildStr(tableName, stringObjectMap, build, newArgList, true, connection);
+        Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForUpdateBySqlBuildStr(tableName, stringObjectMap, build, newArgList, true, connection);
+        PreparedStatement preparedStatement = preparedStatementPairPair.getKey();
+        Pair<String, Date> sqlPair = preparedStatementPairPair.getValue();
         int effectRows;
         try {
             effectRows = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("updateByCondition", build, e);
         } finally {
+            printSql(sqlPair);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }

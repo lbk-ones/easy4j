@@ -38,6 +38,7 @@ class DynamicTableQueryTest {
         // Nice !
         WhereBuild equal = WhereBuild.get().equal("type", "SQL");
         List<Dict> query = new DynamicTableQuery(equal, dataSource, "public", "sys_flyway_schema_history")
+                .setPrintSqlLog(true)
                 .query();
 
         System.out.println(JacksonUtil.toJson(query));

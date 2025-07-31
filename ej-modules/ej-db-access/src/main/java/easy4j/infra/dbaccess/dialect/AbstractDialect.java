@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dialect;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
@@ -30,10 +31,7 @@ import jodd.util.StringPool;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static easy4j.infra.dbaccess.AbstractDBAccess.getSelectByMap;
 
@@ -65,11 +63,11 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
         return preparedBatchInsertAnsi(tableName, columns, recordList, connection);
     }
 
-    private PreparedStatement preparedBatchInsertAnsi(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
+    private Pair<PreparedStatement, Pair<String, Date>> preparedBatchInsertAnsi(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
 
         List<String> zwfList = ListTs.newArrayList();
         List<String> columnFieldNames = ListTs.newArrayList();
@@ -94,11 +92,12 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         }
         String subSqlsStr = String.join(StringPool.SPACE, subSql);
         String finalSql = DDlLine(INSERT, tableName, subSqlsStr, columnFieldNames.toArray(new String[]{}));
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(finalSql, connection, objects);
+            stringDatePair = recordSql(finalSql, connection, objects);
             PreparedStatement preparedStatement = connection.prepareStatement(finalSql);
             StatementUtil.fillParams(preparedStatement, objects);
-            return preparedStatement;
+            return new Pair<>(preparedStatement, stringDatePair);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("preparedBatchInsertAnsi", finalSql, e);
         }
@@ -108,7 +107,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
 
     // 单个添加
     @Override
-    public PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection) {
         List<Map<String, Object>> list = new ArrayList<>();
         list.add(record);
         return preparedBatchInsertAnsi(tableName, columns, list, connection);
@@ -121,13 +120,13 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
 
     // 单个跟新
     @Override
-    public PreparedStatement psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
 
         return psForUpdateByCondition(tableName, record, updateCondition, ignoreNull, connection);
     }
 
     @Override
-    public PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuild, boolean ignoreNull, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuild, boolean ignoreNull, Connection connection) {
 
         List<Object> objects = ListTs.newCopyOnWriteArrayList();
         String buildSql = whereBuild.build(objects);
@@ -136,7 +135,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
 
     }
 
-    private PreparedStatement psForUpdateBySqlBuildWith(String tableName, Map<String, Object> record, boolean ignoreNull, Connection connection, List<Object> objects, String buildSql) {
+    private Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuildWith(String tableName, Map<String, Object> record, boolean ignoreNull, Connection connection, List<Object> objects, String buildSql) {
         List<String> nameList = ListTs.newLinkedList();
         Set<String> strings = record.keySet();
         Wrapper wrapper = getWrapper();
@@ -156,21 +155,22 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         firstObject.addAll(objects);
         String s = DDlLine(UPDATE, tableName, where(buildSql), nameList.toArray(new String[]{}));
         PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(s, connection, firstObject);
+            stringDatePair = recordSql(s, connection, firstObject);
             preparedStatement = StatementUtil.prepareStatement(connection, s, firstObject.toArray(new Object[]{}));
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("psForUpdateBySqlBuider", s, e);
         }
-        return preparedStatement;
+        return new Pair<>(preparedStatement, stringDatePair);
     }
 
     @Override
-    public PreparedStatement psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection) {
         return psForUpdateBySqlBuildWith(tableName, record, ignoreNull, connection, args, sqlBuilder);
     }
 
-    private PreparedStatement psForUpdateByCondition(String tableName, Map<String, Object> record, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
+    private Pair<PreparedStatement, Pair<String, Date>> psForUpdateByCondition(String tableName, Map<String, Object> record, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
         List<Object> objects = ListTs.newCopyOnWriteArrayList();
         List<String> nameList = ListTs.newLinkedList();
         Set<String> strings = record.keySet();
@@ -225,7 +225,7 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection) {
         if (recordList.isEmpty()) {
             throw new EasyException("No recordList need to be updated!");
         }
@@ -284,15 +284,15 @@ public class AbstractDialect extends CommonDBAccess implements Dialect {
         return preparedStatement(updateCondition, connection, stringBuilder, objects, segmentList);
     }
 
-    private PreparedStatement preparedStatement(Map<String, Object> updateCondition, Connection connection, StringBuilder stringBuilder, List<Object> objects, List<String> segmentList) {
+    private Pair<PreparedStatement, Pair<String, Date>> preparedStatement(Map<String, Object> updateCondition, Connection connection, StringBuilder stringBuilder, List<Object> objects, List<String> segmentList) {
         stringBuilder.append(String.join(",", segmentList));
         unionWhere(updateCondition, stringBuilder, objects);
         String string = StrUtil.trim(stringBuilder.toString());
         try {
-            logSql(string, connection, objects);
+            Pair<String, Date> stringDatePair = recordSql(string, connection, objects);
             PreparedStatement preparedStatement = connection.prepareStatement(string);
             StatementUtil.fillParams(preparedStatement, objects);
-            return preparedStatement;
+            return new Pair<>(preparedStatement, stringDatePair);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("prepareStatement", string, e);
         }

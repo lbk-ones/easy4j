@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.db.StatementUtil;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 
 import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
@@ -106,8 +108,9 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         Object args = map.get(KEY_ARGS);
         final String sql = (String) o;
         PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
         try {
-            logSql(sql, connection, args);
+            stringDatePair = recordSql(sql, connection, args);
             int effectRows;
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
@@ -120,6 +123,7 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
         } finally {
+            printSql(stringDatePair);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }

@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dialect;
 
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.condition.WhereBuild;
@@ -22,6 +23,7 @@ import easy4j.infra.dbaccess.condition.WhereBuild;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +57,7 @@ public interface Dialect {
      * @return
      * @throws SQLException
      */
-    PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection);
 
     /**
      * 单个写入
@@ -67,7 +69,7 @@ public interface Dialect {
      * @return
      * @throws SQLException
      */
-    PreparedStatement psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection);
 
     /**
      * 根据主键更新
@@ -94,7 +96,7 @@ public interface Dialect {
      * @return
      * @throws SQLException
      */
-    PreparedStatement psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 
     /**
      * 根据SqlBuild条件类更新
@@ -106,7 +108,7 @@ public interface Dialect {
      * @param connection
      * @return
      */
-    PreparedStatement psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuilder, boolean ignoreNull, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuilder, boolean ignoreNull, Connection connection);
 
     /**
      * 根据字符串条件来更新
@@ -119,7 +121,7 @@ public interface Dialect {
      * @param connection
      * @return
      */
-    PreparedStatement psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection);
 
     /**
      * 多个批量更新
@@ -133,7 +135,7 @@ public interface Dialect {
      * @return
      * @throws SQLException
      */
-    PreparedStatement psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+    Pair<PreparedStatement, Pair<String, Date>> psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
 
 
     /**

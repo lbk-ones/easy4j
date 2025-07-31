@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -8,11 +9,11 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.helper.PGHelper;
 import easy4j.infra.dbaccess.helper.SqlPlaceholderReplacer;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -253,12 +254,12 @@ public abstract class CommonDBAccess {
             // force convert to json text
             if (toJson) {
                 fieldValue = JacksonUtil.toJson(fieldValue);
-                if(StrUtil.isNotBlank(pgFieldType)){
+                if (StrUtil.isNotBlank(pgFieldType)) {
                     fieldValue = PGHelper.wrap(pgFieldType, fieldValue);
                 }
-            }else{
+            } else {
                 // handle pgtype vs
-                if(StrUtil.isNotBlank(pgFieldType)){
+                if (StrUtil.isNotBlank(pgFieldType)) {
                     fieldValue = PGHelper.wrap(pgFieldType, fieldValue);
                 }
             }
@@ -325,6 +326,7 @@ public abstract class CommonDBAccess {
         }
     }
 
+    @Deprecated
     public void logSql(String sql, Connection connection, Object... args) {
         try {
             boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_PRINT_SYS_DB_SQL, boolean.class);
@@ -334,8 +336,38 @@ public abstract class CommonDBAccess {
 
             }
         } catch (Exception e) {
-            logger.error("log sql has error,{}",e.getMessage());
+            logger.error("log sql has error,{}", e.getMessage());
         }
+    }
+
+    public Pair<String, Date> recordSql(String sql, Connection connection, Object... args) {
+        try {
+            Date date = new Date();
+            boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_PRINT_SYS_DB_SQL, boolean.class);
+            if (property && this.isPrintLog) {
+                String logSql = getSql(sql, connection, args);
+                return new Pair<>(logSql, date);
+            }
+        } catch (Exception e) {
+            logger.error("log sql has error,{}", e.getMessage());
+        }
+
+        return null;
+    }
+
+    public void printSql(Pair<String, Date> pair) {
+        if (pair == null) return;
+        String key = pair.getKey();
+        Date value = pair.getValue();
+        CheckUtils.notNull(key, "logSql key is not null!");
+        CheckUtils.notNull(value, "logSql value is not null!");
+        long subTime = new Date().getTime() - value.getTime();
+        logger.info("[SQL] -> {}ms {}", subTime, key);
+    }
+
+    public String getPrintSql(Pair<String, Date> pair) {
+        if (pair == null) return "";
+        return pair.getKey();
     }
 
 }

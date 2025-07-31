@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dialect;
 
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.common.utils.ListTs;
@@ -26,6 +27,7 @@ import easy4j.infra.common.exception.EasyException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +68,7 @@ public class OracleDialect extends AbstractDialect {
      * @throws SQLException
      */
     @Override
-    public PreparedStatement psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
+    public Pair<PreparedStatement, Pair<String, Date>> psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection) {
         if (recordList.isEmpty()) {
             throw new EasyException("recordList is empty!");
         }
@@ -117,7 +119,8 @@ public class OracleDialect extends AbstractDialect {
         stringBuilder.append(")");
         String string = stringBuilder.toString();
         try {
-            return connection.prepareStatement(string);
+            Pair<String, Date> stringDatePair = recordSql(string, connection);
+            return new Pair<>(connection.prepareStatement(string), stringDatePair);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("psForBatchInsert", string, e);
         }
