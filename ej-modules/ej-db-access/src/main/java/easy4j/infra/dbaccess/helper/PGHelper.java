@@ -43,9 +43,9 @@ public class PGHelper {
             String json;
             try{
                 if (JacksonUtil.isValidJson(value.toString())) {
-                    json = JacksonUtil.toJson(value);
-                }else{
                     json = value.toString();
+                }else{
+                    json = JacksonUtil.toJson(value);
                 }
             }catch (Exception e){
                 json = value.toString();
