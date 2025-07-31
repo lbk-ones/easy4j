@@ -292,6 +292,8 @@ public class SysConstant {
      * 对应 H2 控制台路径配置项的键
      */
     public static final String SPRING_H2_CONSOLE_PATH = "spring.h2.console.path";
+    public static final String SPRING_REGISTER_TO_NACOS = "spring.cloud.nacos.discovery.register-enabled";
+    public static final String SPRING_REGISTER_AND_DISCOVERY_NACOS = "spring.cloud.nacos.discovery.enabled";
 
 
     /**

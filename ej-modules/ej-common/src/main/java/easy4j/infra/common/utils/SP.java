@@ -101,4 +101,5 @@ public interface SP {
     String BOOTSTRAP = "bootstrap";
 
     String DEFAULT = "default";
+    String URL = "url";
 }

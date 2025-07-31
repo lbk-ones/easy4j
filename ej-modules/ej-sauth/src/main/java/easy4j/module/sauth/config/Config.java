@@ -61,7 +61,7 @@ import javax.sql.DataSource;
 @Configuration
 public class Config implements CommandLineRunner {
 
-    public static final String AUTH_SERVER_NAME = "easy4j-sauth-server";
+    public static final String AUTH_SERVER_NAME = "easy4j-ns-server";
 
     @Resource
     EventPublisher eventPublisher;

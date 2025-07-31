@@ -25,6 +25,8 @@ import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.AutoRegisterContext;
@@ -34,6 +36,7 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sca.common.PublicHeaders;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -43,6 +46,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Slf4j
 public class NamingServerInvoker extends StandAbstractEasy4jResolve implements AutoRegisterContext, Easy4jNacosInvokerApi {
 
     // 命名空间
@@ -397,8 +402,27 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         if (StrUtil.isBlank(groupName)) {
             groupName = this.group;
         }
-        NamingService namingService = getNamingService();
-        List<Instance> instances = namingService.selectInstances(serviceName, groupName, true);
+        List<Instance> instances = ListTs.newArrayList();
+        String dUrl = Easy4j.getProperty("feign."+SP.DOT+serviceName + SP.DOT + groupName+SP.DOT+SP.URL);
+        if (StrUtil.isNotBlank(dUrl)) {
+            try{
+                Instance instance = new Instance();
+                if (!StrUtil.startWith(dUrl, "http://") && !StrUtil.startWith(dUrl, "https://")) {
+                    dUrl += "http://";
+                }
+                URL uri = new URL(dUrl);
+                String host = uri.getHost();
+                instance.setIp(host);
+                instance.setPort(uri.getPort());
+                instances.add(instance);
+            }catch (Exception e){
+                log.error("地址解析异常",e);
+                throw new NacosException(NacosException.CLIENT_ERROR,e);
+            }
+        }else{
+            NamingService namingService = getNamingService();
+            instances = namingService.selectInstances(serviceName, groupName, true);
+        }
 
         if (instances == null || instances.isEmpty()) {
             throw new RuntimeException("找不到可用的服务实例: " + serviceName);

@@ -3,6 +3,7 @@ package easy4j.module.sca.config;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
@@ -30,8 +31,10 @@ public class NacosEventListener implements DisposableBean {
             serverName = nacosSauthServerRegisterEvent.getServerName();
             boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
             boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
+            Boolean registerEnable = Easy4j.getProperty(SysConstant.SPRING_REGISTER_TO_NACOS, Boolean.class,true);
+            Boolean discoveryOrRegisterEnable = Easy4j.getProperty(SysConstant.SPRING_REGISTER_AND_DISCOVERY_NACOS, Boolean.class,true);
             enableServer = isServer && property;
-            if (enableServer) {
+            if (enableServer && (registerEnable && discoveryOrRegisterEnable)) {
                 Easy4j.info(SysLog.compact("accept listen event,begin handler!" + serverName));
                 NamingServerInvoker byEnv = NamingServerInvoker.createByEnv(null);
                 namingService = byEnv.getNamingService();
@@ -47,11 +50,14 @@ public class NacosEventListener implements DisposableBean {
                 instance.setWeight(1.0);
                 instance.setHealthy(true);
                 instance.setEnabled(true);
-                instance.setEphemeral(false);
+                instance.setEphemeral(true);
                 Easy4j.info(SysLog.compact("register info:" + instance));
                 namingService.registerInstance(serverName, SysConstant.NACOS_AUTH_GROUP, instance);
                 Easy4j.info(SysLog.compact("event handler success,cost " + (System.currentTimeMillis() - beginTime) + "ms"));
+            }else{
+                Easy4j.info(SysLog.compact("【"+serverName+"】skip register to nacos"));
             }
+            Easy4j.info(SysLog.compact("auth feign direct url config is: feign."+serverName+ SP.DOT+SysConstant.NACOS_AUTH_GROUP+SP.DOT+SP.URL));
         } catch (Exception e) {
             log.error(SysLog.compact("event error!"), e);
         }
