@@ -3,6 +3,7 @@ package easy4j.module.sauth.authentication;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.module.sauth.authentication.repeat.RepeatAuthentication;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
@@ -106,11 +107,16 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
         return false;
     }
 
-    public boolean checkSession(ISecurityEasy4jSession dbSession, AuthenticationContext context) {
+    public boolean checkSessionIsValid(ISecurityEasy4jSession dbSession, AuthenticationContext context) {
         if (null == dbSession || !dbSession.isValid()) {
             context.setErrorCode(BusCode.A00035);
             return false;
         }
         return true;
+    }
+
+
+    public boolean checkRepeatSession(AuthenticationContext authenticationContext){
+        return !RepeatAuthentication.check(authenticationContext);
     }
 }

@@ -45,7 +45,7 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
             context.setDbUser(byUserName);
             return byUserName;
         } else {
-            context.setErrorCode(BusCode.A00034);
+            context.setErrorCode(BusCode.A00035);
         }
         return null;
     }
@@ -86,7 +86,7 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
             return;
         }
         ISecurityEasy4jSession dbSession = context.getDbSession();
-        checkSession(dbSession, context);
+        checkSessionIsValid(dbSession, context);
     }
 
     @Override

@@ -76,6 +76,31 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             serverName = Config.AUTH_SERVER_NAME;
             isClient = true;
         }
+        // server run session clear thread
+        if(isServer && property){
+            scheduleClear();
+        }
+    }
+
+    private void scheduleClear() {
+        Thread thread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    TimeUnit.MINUTES.sleep(5L);
+                    clearInValidSession();
+                } catch (InterruptedException e) {
+                    log.error("db-session-clear-thread 被中断，准备退出");
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (Exception e) {
+                    log.error("user db session clear occurred exception", e);
+                }
+            }
+            log.info("db-session-clear-thread 已退出");
+        });
+        thread.setDaemon(true);
+        thread.setName("db-session-clear-thread");
+        thread.start();
     }
 
     @Override

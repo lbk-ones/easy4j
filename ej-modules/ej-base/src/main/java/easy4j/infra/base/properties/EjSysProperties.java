@@ -429,6 +429,15 @@ public class EjSysProperties {
     private String simpleAuthScanPackagePrefix;
 
     /**
+     * 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线
+     */
+    @SpringVs(
+            valueEnums = {"default","new","reject","public","kick"},
+            desc = "认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线"
+    )
+    private String simpleAuthSessionRepeatStrategy = "default";
+
+    /**
      * 是否启用RequestLog注解进行请求日志收集 true代表开启
      */
     @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")

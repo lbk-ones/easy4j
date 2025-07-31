@@ -144,6 +144,7 @@ public class SysConstant {
     public static final String EASY4J_SIMPLE_AUTH_IS_CACHE_AUTHORITY = PARAM_PREFIX + StringPool.DOT + "simple-auth-is-cache-authority";
 
     public static final String EASY4J_SIMPLE_AUTH_PASSWORD = PARAM_PREFIX + StringPool.DOT + "simple-auth-password";
+    public static final String EASY4J_SIMPLE_AUTH_SESSION_REPEAT_STRATEGY = PARAM_PREFIX + StringPool.DOT + "simple-auth-session-repeat-strategy";
     public static final String EASY4J_ENABLE_DB_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "db-request-log-enable";
 
 

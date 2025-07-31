@@ -63,22 +63,10 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
 
     @Override
     public void verify(AuthenticationContext context) {
-        SessionStrategy sessionStrategy = getSessionStrategy();
         String pwd = context.getReqUser().getPassword();
-        ISecurityEasy4jSession dbSession = context.getDbSession();
         ISecurityEasy4jUser dbUser = context.getDbUser();
-        if (null != dbSession) {
-            if (dbSession.isValid()) {
-                context.setErrorCode(BusCode.A00044);
-                return;
-            } else {
-
-                // inValid delete session
-                String shaToken = dbSession.getShaToken();
-                if (StrUtil.isNotBlank(shaToken)) sessionStrategy.deleteSession(shaToken);
-
-                context.setDbSession(null);
-            }
+        if (checkRepeatSession(context)) {
+            return;
         }
         String encryptPwd = getPwdEncryptionService().encrypt(pwd, dbUser);
         if (!StrUtil.equals(encryptPwd, dbUser.getPassword())) {

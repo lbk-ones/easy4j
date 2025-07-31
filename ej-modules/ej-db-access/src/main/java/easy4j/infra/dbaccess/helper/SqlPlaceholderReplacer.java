@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.helper;
 
 import easy4j.infra.dbaccess.dialect.Dialect;
+import org.postgresql.util.PGobject;
 
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
@@ -82,7 +83,13 @@ public class SqlPlaceholderReplacer {
             return dialectFromUrl.strDateToFunc(dateStr); // 日期转为字符串字面量
         } else if (param instanceof Number || param instanceof Boolean) {
             return param.toString(); // 数值和布尔值直接转换
-        } else {
+        } else if(param instanceof PGobject){
+            String value = ((PGobject) param).getValue();
+            if(null!=value){
+                return "'" + value.replace("'", "''") + "'";
+            }
+            return "NULL";
+        }else{
             throw new IllegalArgumentException("不支持的参数类型: " + param.getClass());
         }
     }

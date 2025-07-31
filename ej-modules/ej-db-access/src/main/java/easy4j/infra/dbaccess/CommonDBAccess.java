@@ -21,6 +21,8 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import jodd.util.StringPool;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 
 
 public abstract class CommonDBAccess {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Getter
     private boolean isPrintLog = false;
@@ -329,7 +333,8 @@ public abstract class CommonDBAccess {
                 Easy4j.info("[SQL] -> {}", logSql);
 
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("log sql has error,{}",e.getMessage());
         }
     }
 

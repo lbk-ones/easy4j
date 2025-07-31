@@ -99,16 +99,8 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
 
     @Override
     public void verify(AuthenticationContext context) {
-        ISecurityEasy4jSession dbSession = context.getDbSession();
-        if (null != dbSession) {
-            if (dbSession.isValid()) {
-                context.setErrorCode(BusCode.A00044);
-                return;
-            } else {
-                // inValid delete session
-                String shaToken = dbSession.getShaToken();
-                if (StrUtil.isNotBlank(shaToken)) getSessionStrategy().deleteSession(shaToken);
-            }
+        if (checkRepeatSession(context)) {
+            return;
         }
         ISecurityEasy4jUser dbUser = context.getDbUser();
         ISecurityEasy4jUser reqUser = context.getReqUser();

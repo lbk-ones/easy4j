@@ -94,7 +94,7 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
             }
             // check session
             ISecurityEasy4jSession dbSession = context.getDbSession();
-            checkSession(dbSession, context);
+            checkSessionIsValid(dbSession, context);
         }
     }
 
@@ -103,7 +103,7 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
         ISecurityEasy4jUser reqUser = context.getReqUser();
         AuthenticationScopeType scope = reqUser.getScope();
         if (scope == AuthenticationScopeType.Authentication) {
-            super.verifyPre(context);
+            super.verify(context);
         }
     }
 
