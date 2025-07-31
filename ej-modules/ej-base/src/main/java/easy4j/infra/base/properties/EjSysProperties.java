@@ -597,6 +597,13 @@ public class EjSysProperties {
 
 
     /**
+     * 默认i18n,默认中文
+     */
+    @SpringVs(desc = "默认i18n")
+    private String defaultI18n = "zh_CN";
+
+
+    /**
      * 根据常量获取 对应的springboot变量
      *
      * @param constant

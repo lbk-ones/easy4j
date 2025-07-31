@@ -15,6 +15,8 @@
 package easy4j.infra.webmvc;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,14 +66,22 @@ public class EasyLocaleResolver implements LocaleResolver, InitializingBean {
         String lang2 = httpServletRequest.getHeader("lang");
         String language = StrUtil.blankToDefault(lang1, lang2);
         //如果没有就使用默认的（根据主机的语言环境生成一个 Locale
-        Locale locale = Locale.getDefault();
-        //如果请求的链接中携带了 国际化的参数
-        if (!StrUtil.isEmpty(language)) {
-            //zh_CN
-            String[] s = language.split("_");
-            //国家，地区
-            locale = new Locale(s[0], s[1]);
+        if(StrUtil.isBlank(language)){
+            language = Easy4j.getProperty(SysConstant.EASY4J_DEFAULT_I18N);
         }
+        Locale locale = null;
+        try{
+            //如果请求的链接中携带了 国际化的参数
+            if (!StrUtil.isEmpty(language)) {
+                //zh_CN
+                String[] s = language.split("_");
+                //国家，地区
+                locale = new Locale(s[0], s[1]);
+            }
+        }catch (Exception e){
+            locale = Locale.getDefault();
+        }
+
         return locale;
     }
 
