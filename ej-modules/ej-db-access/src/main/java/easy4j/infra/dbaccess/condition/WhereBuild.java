@@ -27,6 +27,7 @@ import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.common.exception.EasyException;
 import jodd.util.StringPool;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -79,11 +80,11 @@ import java.util.stream.Collectors;
  */
 public class WhereBuild implements Serializable {
     @Getter
-    private final List<Condition> conditions = new ArrayList<>();
+    private List<Condition> conditions = new ArrayList<>();
     @Getter
     private final List<Condition> groupBy = new ArrayList<>();
     @Getter
-    private final List<Condition> orderBy = new ArrayList<>();
+    private List<Condition> orderBy = new ArrayList<>();
     private final List<Condition> selectFields = new ArrayList<>();
     @Getter
     private final List<WhereBuild> subBuilders = new ArrayList<>();
@@ -105,6 +106,18 @@ public class WhereBuild implements Serializable {
     @Getter
     public boolean toUnderLine = true;
 
+    public void setConditions(List<Condition> conditions) {
+        if (null != conditions) {
+            this.conditions = conditions;
+        }
+    }
+
+    public void setOrderBy(List<Condition> orderBy) {
+        if (null != orderBy) {
+            this.orderBy = orderBy;
+        }
+    }
+
     public void setToUnderLine(boolean toUnderLine) {
         this.toUnderLine = toUnderLine;
     }
@@ -113,13 +126,13 @@ public class WhereBuild implements Serializable {
     public List<String> getSelectFields() {
         Wrapper wrapper = getDialect().getWrapper();
         return selectFields.stream()
-                .peek(e->e.setToUnderLine(this.toUnderLine))
+                .peek(e -> e.setToUnderLine(this.toUnderLine))
                 .map(e -> wrapper.wrap(e.getColumn()))
                 .filter(StrUtil::isNotBlank)
                 .collect(Collectors.toList());
     }
 
-    public void clearSelectFields(){
+    public void clearSelectFields() {
         this.selectFields.clear();
     }
 
@@ -181,15 +194,17 @@ public class WhereBuild implements Serializable {
 
     // LIKE 条件
     public WhereBuild like(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.LIKE, "%"+value+"%"));
+        conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value + "%"));
         return this;
     }
+
     public WhereBuild likeLeft(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.LIKE, value+"%"));
+        conditions.add(new Condition(column, CompareOperator.LIKE, value + "%"));
         return this;
     }
+
     public WhereBuild likeRight(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.LIKE, "%"+value));
+        conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value));
         return this;
     }
 
@@ -305,6 +320,7 @@ public class WhereBuild implements Serializable {
         subBuilders.add(subBuilder);
         return this;
     }
+
     public WhereBuild and(Consumer<WhereBuild> subBuilder) {
         WhereBuild whereBuild = get();
         subBuilder.accept(whereBuild);
@@ -324,6 +340,7 @@ public class WhereBuild implements Serializable {
         subBuilder.isSubSql = true;
         return this;
     }
+
     public WhereBuild or(Consumer<WhereBuild> subBuilder) {
         WhereBuild whereBuild = get();
         subBuilder.accept(whereBuild);
@@ -343,6 +360,7 @@ public class WhereBuild implements Serializable {
         subBuilders.add(subBuilder);
         return this;
     }
+
     public WhereBuild not(Consumer<WhereBuild> subBuilder) {
         WhereBuild whereBuild = get();
         subBuilder.accept(whereBuild);

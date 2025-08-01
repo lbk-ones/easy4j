@@ -39,7 +39,7 @@ public class AutoAudit implements Serializable {
     private String createName;
 
     // 创建时间
-    @TableField(value="create_date",fill = FieldFill.INSERT)
+    @TableField(value="create_time",fill = FieldFill.INSERT)
     private Date createTime;
 
     // 更新人

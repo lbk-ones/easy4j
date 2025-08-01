@@ -57,6 +57,8 @@ public class FlywayEnviroment extends AbstractEasy4jEnvironment {
         properties.setProperty("spring.flyway.baseline-on-migrate", "true");
         // 从0开始
         properties.setProperty("spring.flyway.baseline-version", "0");
+        // 跳过检查
+        properties.setProperty("spring.flyway.validate-on-migrate", "false");
 
 
         boolean enable = Easy4j.getProperty(SysConstant.EASY4J_FLYWAY_ENABLE, boolean.class);
