@@ -60,14 +60,13 @@ public class WhereBuilderTest {
         String condition1 = fSqlBuilder
                 .select("groupArg1", "groupArg2")
                 .equal("age", 30)
-                .and(WhereBuild.get(connection, dialect)
+                .and(e2 -> e2
                         .equal("gender", "F")
-                        .or(WhereBuild.get(connection, dialect)
-                                .equal("department", "IT")
+                        .or((e) -> e.equal("department", "IT")
                                 .ne("salary", 5000)
                         )
                 ).or(
-                        WhereBuild.get(connection, dialect)
+                        e -> e
                                 .gt("create_date", new Date()).isNotNull("ord_class")
                 ).inArray("order_no", "1234151", "2151251651")
                 .asc("ageMax", "xx")
@@ -89,9 +88,9 @@ public class WhereBuilderTest {
                 .like("name", "A%")
                 .inArray("department", "IT", "HR")
                 .between("salary", 3000, 5000)
-                .not(WhereBuild.get()
+                .not(e1 -> e1
                         .isNull("email")
-                        .or(WhereBuild.get()
+                        .or(e2 -> e2
                                 .equal("status", "INACTIVE")
                         )
                 ).build(argList);

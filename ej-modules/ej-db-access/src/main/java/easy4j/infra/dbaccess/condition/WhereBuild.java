@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -265,22 +266,58 @@ public class WhereBuild {
     // 构建子条件
     public WhereBuild and(WhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.AND);
+        subBuilder.bind(this.dialect);
+        subBuilder.bind(this.connection);
         subBuilder.isSubSql = true;
         subBuilders.add(subBuilder);
+        return this;
+    }
+    public WhereBuild and(Consumer<WhereBuild> subBuilder) {
+        WhereBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.AND);
+        whereBuild.bind(this.dialect);
+        whereBuild.bind(this.connection);
+        whereBuild.isSubSql = true;
+        subBuilders.add(whereBuild);
         return this;
     }
 
     public WhereBuild or(WhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.OR);
+        subBuilder.bind(this.dialect);
+        subBuilder.bind(this.connection);
         subBuilders.add(subBuilder);
         subBuilder.isSubSql = true;
+        return this;
+    }
+    public WhereBuild or(Consumer<WhereBuild> subBuilder) {
+        WhereBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.OR);
+        whereBuild.bind(this.dialect);
+        whereBuild.bind(this.connection);
+        subBuilders.add(whereBuild);
+        whereBuild.isSubSql = true;
         return this;
     }
 
     public WhereBuild not(WhereBuild subBuilder) {
         subBuilder.isSubSql = true;
         subBuilder.withLogicOperator(LogicOperator.NOT);
+        subBuilder.bind(this.dialect);
+        subBuilder.bind(this.connection);
         subBuilders.add(subBuilder);
+        return this;
+    }
+    public WhereBuild not(Consumer<WhereBuild> subBuilder) {
+        WhereBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.isSubSql = true;
+        whereBuild.withLogicOperator(LogicOperator.NOT);
+        whereBuild.bind(this.dialect);
+        whereBuild.bind(this.connection);
+        subBuilders.add(whereBuild);
         return this;
     }
 
