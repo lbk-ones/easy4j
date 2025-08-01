@@ -50,7 +50,7 @@ public class AutoAudit implements Serializable {
     private String updateName;
 
     // 更新时间
-    @TableField(value="last_update_date",fill = FieldFill.INSERT_UPDATE)
+    @TableField(value="last_update_time",fill = FieldFill.INSERT_UPDATE)
     private Date lastUpdateTime;
 
 
