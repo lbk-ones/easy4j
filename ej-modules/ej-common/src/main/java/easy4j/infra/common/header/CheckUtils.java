@@ -307,9 +307,9 @@ public class CheckUtils {
     }
 
     @Desc("检查一个对象是否为空，为空则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
-    public static void notNull(Object obj, String msgCode, String... args) {
-        if (ObjectUtil.isEmpty(obj) && StrUtil.isNotBlank(msgCode)) {
-            throw EasyException.wrap(msgCode, args);
+    public static void notNull(Object obj, String msgOrMsgCode, String... args) {
+        if (ObjectUtil.isEmpty(obj) && StrUtil.isNotBlank(msgOrMsgCode)) {
+            throw EasyException.wrap(msgOrMsgCode, args);
         }
     }
 

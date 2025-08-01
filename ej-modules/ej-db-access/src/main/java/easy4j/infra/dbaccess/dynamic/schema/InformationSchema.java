@@ -14,8 +14,13 @@
  */
 package easy4j.infra.dbaccess.dynamic.schema;
 
+import cn.hutool.cache.impl.WeakCache;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.JdbcDbAccess;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -38,6 +43,9 @@ public class InformationSchema {
 
 
     private static final Map<String, DyInformationSchema> informationSchemaMap = Maps.newConcurrentMap();
+
+    // cache ten minutes
+    private static final WeakCache<String, List<DynamicColumn>> dynamicColumnCache = new WeakCache<>(10 * 60 * 1000L);
 
 
     static {
@@ -93,9 +101,23 @@ public class InformationSchema {
     }
 
     public static List<DynamicColumn> getColumns(DataSource dataSource, String schema, String tableName, Connection connection) throws SQLException {
-        DyInformationSchema dyInformationSchema = getDyInformationSchema(dataSource, connection);
+        List<DynamicColumn> dynamicColumns;
+        Boolean property = Easy4j.getProperty(SysConstant.EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA, Boolean.class, false);
+        if(property){
+            // not cache
+            DyInformationSchema dyInformationSchema = getDyInformationSchema(dataSource, connection);
+            dynamicColumns = dyInformationSchema.getColumns(schema, tableName);
+        }else{
+            String s = (StrUtil.isBlank(schema) ? "" : schema + SP.DOT) + tableName;
+            dynamicColumns = dynamicColumnCache.get(s);
+            if (CollUtil.isEmpty(dynamicColumns)) {
+                DyInformationSchema dyInformationSchema = getDyInformationSchema(dataSource, connection);
+                dynamicColumns = dyInformationSchema.getColumns(schema, tableName);
+                dynamicColumnCache.put(s, dynamicColumns);
+            }
+        }
 
-        return dyInformationSchema.getColumns(schema, tableName);
+        return dynamicColumns;
     }
 
 

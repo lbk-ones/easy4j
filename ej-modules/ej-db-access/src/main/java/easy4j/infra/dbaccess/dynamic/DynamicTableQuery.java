@@ -14,13 +14,19 @@
  */
 package easy4j.infra.dbaccess.dynamic;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
+import cn.hutool.db.sql.Wrapper;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.condition.Condition;
 import easy4j.infra.dbaccess.condition.SqlBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -29,6 +35,7 @@ import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +46,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +58,7 @@ import java.util.stream.Collectors;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Accessors(chain = true)
 public class DynamicTableQuery extends CommonDBAccess {
 
     public final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -68,7 +74,22 @@ public class DynamicTableQuery extends CommonDBAccess {
 
     private boolean isPrintSqlLog;
 
+    // all fields to underline,if false then field and condition will keep not change
+    private boolean toUnderLine = true;
+
+    // chec the fields is exists
+    private boolean checkFieldExists = true;
+
+    // check field ignore case
+    private boolean checkFieldIgnoreCase = true;
+
+
+    private int pageSize;
+
+    private int pageNo;
+
     /**
+     * 条件查询
      * @param whereBuild 条件构造器
      * @param dataSource 数据源
      * @param schema     schema
@@ -82,14 +103,104 @@ public class DynamicTableQuery extends CommonDBAccess {
         this.whereBuild = whereBuild;
     }
 
+    /**
+     * 全查询
+     * @param dataSource 数据源
+     * @param schema     schema
+     * @param tableName  表名
+     */
+    public DynamicTableQuery(DataSource dataSource, String schema, String tableName) {
+        this.dataSource = dataSource;
+        this.schema = schema;
+        this.tableName = tableName;
+    }
+
     public DynamicTableQuery setPrintSqlLog(boolean printSqlLog) {
         isPrintSqlLog = printSqlLog;
         this.setPrintLog(printSqlLog);
         return this;
     }
 
+    public DynamicTableQuery setToUnderLine(boolean toUnderLine) {
+        this.toUnderLine = toUnderLine;
+        WhereBuild whereBuild1 = this.getWhereBuild();
+        if (null != whereBuild1) {
+            whereBuild1.setToUnderLine(this.toUnderLine);
+        }
+        return this;
+    }
+
+    public String handlerColumn(String columnName) {
+        Dialect dialect = this.whereBuild.getDialect();
+        Wrapper wrapper = dialect.getWrapper();
+        String s = columnName;
+        try {
+            char preWrapQuote = wrapper.getPreWrapQuote();
+            char sufWrapQuote = wrapper.getSufWrapQuote();
+            s = StrUtil.unWrap(columnName, preWrapQuote, sufWrapQuote);
+        } catch (Throwable ignored) {
+        }
+        String underlineCase = StrUtil.toUnderlineCase(s);
+        if (!toUnderLine) {
+            underlineCase = StrUtil.toCamelCase(underlineCase);
+        }else{
+            underlineCase = s;
+        }
+        return underlineCase;
+    }
+
+    public Set<String> getAllFields(WhereBuild whereBuild1) {
+        Set<String> allFields = new HashSet<>();
+        List<Condition> conditions = whereBuild1.getConditions();
+        conditions.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
+        List<String> fields = whereBuild1.getSelectFields();
+        fields.forEach(e -> allFields.add(handlerColumn(e)));
+        List<Condition> orderBy = whereBuild1.getOrderBy();
+        orderBy.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
+        List<Condition> groupBy = whereBuild1.getGroupBy();
+        groupBy.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
+        return allFields;
+    }
+
+    public void getFields(WhereBuild whereBuild, Set<String> allFields) {
+        allFields.addAll(getAllFields(whereBuild));
+        List<WhereBuild> subBuilders = whereBuild.getSubBuilders();
+        for (WhereBuild subBuilder : subBuilders) {
+            getFields(subBuilder, allFields);
+        }
+    }
+
+    public void checkFields(Set<String> allFields, List<DynamicColumn> columns) {
+        Set<String> notEqualFields = new HashSet<>();
+        for (String allField : allFields) {
+            boolean result = false;
+            for (DynamicColumn column : columns) {
+                String columnName = column.getColumnName();
+                String s = handlerColumn(columnName);
+                if (checkFieldIgnoreCase) {
+                    allField = allField.toLowerCase();
+                    s = s.toLowerCase();
+                }
+                if (StrUtil.equals(allField, s)) {
+                    result = true;
+                    break;
+                }
+            }
+            if (!result) {
+                notEqualFields.add(allField);
+            }
+        }
+        if (!notEqualFields.isEmpty()) {
+            String join = String.join("、", notEqualFields);
+            String finalTableName = (StrUtil.isBlank(this.schema) ? "" : this.schema + ".") + this.tableName;
+            throw new EasyException("the field 【" + join + "】 is not exists in table " + finalTableName);
+        }
+    }
+
     public List<Dict> query() {
-        CheckUtils.notNull(whereBuild, "where build is not null");
+        if (this.whereBuild == null) {
+            this.whereBuild = WhereBuild.get();
+        }
         CheckUtils.notNull(dataSource, "datasource is not null");
         CheckUtils.notNull(tableName, "tableName is not null");
         Connection connection = null;
@@ -100,22 +211,47 @@ public class DynamicTableQuery extends CommonDBAccess {
         try {
             connection = this.dataSource.getConnection();
             List<Object> args = ListTs.newArrayList();
-            List<DynamicColumn> columns = InformationSchema.getColumns(this.dataSource, this.schema, this.tableName, connection);
-            List<String> collect = columns.stream().map(DynamicColumn::getColumnName).collect(Collectors.toList());
-            this.whereBuild.bind(connection);
             Dialect dialect1 = JdbcHelper.getDialect(connection);
+            this.whereBuild.setToUnderLine(this.toUnderLine);
+            this.whereBuild.bind(connection);
             this.whereBuild.bind(dialect1);
-            this.whereBuild.select(collect.toArray(new String[]{}));
+            // get columns information schema from db
+            List<DynamicColumn> columns = InformationSchema.getColumns(this.dataSource, this.schema, this.tableName, connection);
+            if (CollUtil.isEmpty(this.whereBuild.getSelectFields())) {
+                List<String> collect = columns.stream()
+                        .map(DynamicColumn::getColumnName)
+                        .filter(StrUtil::isNotBlank)
+                        .collect(Collectors.toList());
+                this.whereBuild.select(collect.toArray(new String[]{}));
+            }
+            // select fields transform to underline fields
+            if (toUnderLine) {
+                List<String> selectFields = this.whereBuild.getSelectFields().stream().map(StrUtil::toUnderlineCase).collect(Collectors.toList());
+                this.whereBuild.clearSelectFields();
+                this.whereBuild.select(selectFields.toArray(new String[]{}));
+            }
+            // check fields is exists in table
+            if (checkFieldExists) {
+                Set<String> allFields = new HashSet<>();
+                getFields(this.whereBuild, allFields);
+                checkFields(allFields, columns);
+            }
+            // build sql
             SqlBuild sqlBuild = SqlBuild.get();
+            String finalTableName = (StrUtil.isBlank(this.schema) ? "" : this.schema + ".") + this.tableName;
             sql = sqlBuild.buildByTableName(
                     SqlBuild.SELECT,
                     this.whereBuild,
-                    this.tableName,
-                    null,
-                    true,
-                    args,
-                    connection
+                    finalTableName, null, true, args, connection
             );
+            // page
+            if(pageSize>0){
+                Page<Object> objectPage = new Page<>();
+                objectPage.setPageNo(pageNo);
+                objectPage.setPageSize(pageSize);
+                sql = dialect1.getPageSql(sql, objectPage);
+            }
+            // prepare statement
             MapListHandler tBeanListHandler = new MapListHandler();
             stringDatePair = recordSql(sql, connection, args.toArray(new Object[]{}));
             if (ObjectUtil.isNotEmpty(args)) {
@@ -124,6 +260,7 @@ public class DynamicTableQuery extends CommonDBAccess {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql);
             }
             resultSet = preparedStatement.executeQuery();
+            // handler result
             List<Map<String, Object>> maps = tBeanListHandler.handle(resultSet);
             return maps.stream().map(Dict::new).collect(Collectors.toList());
         } catch (SQLException e) {

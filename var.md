@@ -54,7 +54,7 @@
 - **easy4j.simple-auth-is-cache-authority**: 简单权限是否缓存权限列表
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
-- **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是新建会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线
+- **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
@@ -82,3 +82,4 @@
 - **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）
 - **easy4j.metrics-enable**: 是否开启指标采集 默认开启
 - **easy4j.default-i18n**: 默认i18n
+- **easy4j.db-access-not-cache-schema**: 是否不缓存动态表查询的schema信息，默认false也就是要缓存

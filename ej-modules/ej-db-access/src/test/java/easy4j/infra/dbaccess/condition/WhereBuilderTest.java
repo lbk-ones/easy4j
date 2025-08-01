@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.condition;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -57,7 +58,7 @@ public class WhereBuilderTest {
         fSqlBuilder.clear();
         List<Object> argList = ListTs.newArrayList();
         // 示例 1：简单条件
-        String condition1 = fSqlBuilder
+        WhereBuild whereBuild = fSqlBuilder
                 .select("groupArg1", "groupArg2")
                 .equal("age", 30)
                 .and(e2 -> e2
@@ -71,8 +72,19 @@ public class WhereBuilderTest {
                 ).inArray("order_no", "1234151", "2151251651")
                 .asc("ageMax", "xx")
                 .desc("xxx")
-                .groupBy("groupArg1", "groupArg2")
-                .build(argList);
+                .groupBy("groupArg1", "groupArg2");
+
+        String json = JacksonUtil.toJson(whereBuild);
+        System.out.println("JSON-->"+ json);
+
+        FWhereBuild<SysLogRecord> object = JacksonUtil.toObject(json, new TypeReference<FWhereBuild<SysLogRecord>>() {
+        });
+
+        object.bind(connection);
+        object.bind(dialect);
+        String condition1 = object.build(argList);
+
+
         assertEquals("[\"group_arg1\",\"group_arg2\"]", JacksonUtil.toJson(fSqlBuilder.getSelectFields()));
         System.out.println("字段 1: " + fSqlBuilder.getSelectFields());
         System.out.println("条件 1: " + condition1);

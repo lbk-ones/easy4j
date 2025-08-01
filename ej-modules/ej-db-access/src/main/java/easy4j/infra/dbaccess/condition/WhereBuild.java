@@ -18,6 +18,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -26,6 +28,7 @@ import easy4j.infra.common.exception.EasyException;
 import jodd.util.StringPool;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,30 +77,50 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  */
-public class WhereBuild {
-
+public class WhereBuild implements Serializable {
+    @Getter
     private final List<Condition> conditions = new ArrayList<>();
+    @Getter
     private final List<Condition> groupBy = new ArrayList<>();
+    @Getter
     private final List<Condition> orderBy = new ArrayList<>();
-
     private final List<Condition> selectFields = new ArrayList<>();
+    @Getter
     private final List<WhereBuild> subBuilders = new ArrayList<>();
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LogicOperator logicOperator = LogicOperator.AND; // 默认使用 AND 连接条件
     private boolean isSubSql = false;
 
     @Getter
     private boolean isDistinct;
 
-
+    @JsonIgnore
     public Connection connection;
+
+    @JsonIgnore
     public Dialect dialect;
 
+
+    @Getter
+    public boolean toUnderLine = true;
+
+    public void setToUnderLine(boolean toUnderLine) {
+        this.toUnderLine = toUnderLine;
+    }
+
+    @JsonIgnore
     public List<String> getSelectFields() {
         Wrapper wrapper = getDialect().getWrapper();
         return selectFields.stream()
+                .peek(e->e.setToUnderLine(this.toUnderLine))
                 .map(e -> wrapper.wrap(e.getColumn()))
                 .filter(StrUtil::isNotBlank)
                 .collect(Collectors.toList());
+    }
+
+    public void clearSelectFields(){
+        this.selectFields.clear();
     }
 
     public Dialect getDialect() {
@@ -158,7 +181,15 @@ public class WhereBuild {
 
     // LIKE 条件
     public WhereBuild like(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.LIKE, value));
+        conditions.add(new Condition(column, CompareOperator.LIKE, "%"+value+"%"));
+        return this;
+    }
+    public WhereBuild likeLeft(String column, String value) {
+        conditions.add(new Condition(column, CompareOperator.LIKE, value+"%"));
+        return this;
+    }
+    public WhereBuild likeRight(String column, String value) {
+        conditions.add(new Condition(column, CompareOperator.LIKE, "%"+value));
         return this;
     }
 
@@ -195,11 +226,13 @@ public class WhereBuild {
     }
 
     // NULL 条件
+    @JsonIgnore
     public WhereBuild isNull(String column) {
         conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
         return this;
     }
 
+    @JsonIgnore
     public WhereBuild isNotNull(String column) {
         conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
         return this;
@@ -349,10 +382,12 @@ public class WhereBuild {
         List<String> parts = new ArrayList<>();
         // 添加基本条件
         for (Condition condition : conditions) {
+            condition.setToUnderLine(this.toUnderLine);
             parts.add(condition.getSqlSegment(argsList, sqlDialect));
         }
         // 添加子条件
         for (WhereBuild subBuilder : subBuilders) {
+            subBuilder.setToUnderLine(this.toUnderLine);
             subBuilder.bind(sqlDialect);
             subBuilder.bind(connection);
             String subCondition = subBuilder.build(argsList);
@@ -370,6 +405,7 @@ public class WhereBuild {
         String join = String.join(operator, parts);
 
         String groupBySegment = groupBy.stream().map(e -> {
+            e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
             return wrapper.wrap(column);
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
@@ -379,6 +415,7 @@ public class WhereBuild {
         }
 
         String orderBySegment = orderBy.stream().map(e -> {
+            e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
             String value = Convert.toStr(e.getValue());
             return wrapper.wrap(column) + StringPool.SPACE + value;

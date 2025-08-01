@@ -39,8 +39,15 @@ public abstract class CommonDBAccess {
     @Getter
     private boolean isPrintLog = false;
 
+    @Getter
+    private boolean toUnderline = true;
+
     public void setPrintLog(boolean printLog) {
         isPrintLog = printLog;
+    }
+
+    public void setToUnderline(boolean toUnderline) {
+        this.toUnderline = toUnderline;
     }
 
     public static final String UPDATE = "UPDATE";
@@ -108,7 +115,7 @@ public abstract class CommonDBAccess {
         }
         List<String> fields = ListTs.asList(_fields);
         // 更新的时候 字段 形式为 name='xx' 这种所以不需要转下划线
-        if (!UPDATE.equalsIgnoreCase(type)) {
+        if (!UPDATE.equalsIgnoreCase(type) && toUnderline) {
             fields = ListTs.objectToListT(_fields, String.class, e -> StrUtil.toUnderlineCase(e.toString()));
         }
 

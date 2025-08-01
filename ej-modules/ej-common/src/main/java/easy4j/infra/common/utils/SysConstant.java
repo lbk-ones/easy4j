@@ -175,6 +175,7 @@ public class SysConstant {
     public static final String EASY4J_XXLJOB_ACCESS_TOKEN = PARAM_PREFIX + SP.DOT + "xxl-job-access-token";
     public static final String EASY4J_METRICS_ENABLE = PARAM_PREFIX + SP.DOT + "metrics-enable";
     public static final String EASY4J_DEFAULT_I18N = PARAM_PREFIX + SP.DOT + "default-i18n";
+    public static final String EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA = PARAM_PREFIX + SP.DOT + "db-access-not-cache-schema";
 
 
     // -------------------------EASY4j PROPERTIES end----------------------------------------

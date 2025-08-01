@@ -611,6 +611,12 @@ public class EjSysProperties {
     @SpringVs(desc = "默认i18n")
     private String defaultI18n = "zh_CN";
 
+    /**
+     * 是否不缓存动态表查询的schema信息，默认true也就是缓存
+     */
+    @SpringVs(desc = "是否不缓存动态表查询的schema信息，默认false也就是要缓存")
+    private boolean dbAccessNotCacheSchema = false;
+
 
     /**
      * 根据常量获取 对应的springboot变量

@@ -14,7 +14,7 @@
  */
 package easy4j.infra.dbaccess.condition;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * CompareOperator
@@ -22,7 +22,6 @@ import lombok.Getter;
  *
  * @author bokun.li
  */
-@Getter
 public enum CompareOperator {
     EQUAL("="),
     NOT_EQUAL("!="),
@@ -45,4 +44,8 @@ public enum CompareOperator {
         this.symbol = symbol;
     }
 
+    @JsonValue
+    public String getSymbol() {
+        return symbol;
+    }
 }

@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.condition;
 
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.dbaccess.dialect.Dialect;
 
 import java.sql.Connection;
@@ -66,7 +67,12 @@ public class FWhereBuild<T> extends WhereBuild {
         return super.like(getName(column), value);
     }
 
-
+    public WhereBuild likeLeft(Func1<T, ?> column, String value) {
+        return super.likeLeft(getName(column),value);
+    }
+    public WhereBuild likeRight(Func1<T, ?> column, String value) {
+        return super.likeRight(getName(column),value);
+    }
     public WhereBuild notLike(Func1<T, ?> column, String value) {
         return super.notLike(getName(column), value);
     }
@@ -98,11 +104,12 @@ public class FWhereBuild<T> extends WhereBuild {
     }
 
 
+    @JsonIgnore
     public WhereBuild isNull(Func1<T, ?> column) {
         return super.isNull(getName(column));
     }
 
-
+    @JsonIgnore
     public WhereBuild isNotNull(Func1<T, ?> column) {
         return super.isNotNull(getName(column));
     }

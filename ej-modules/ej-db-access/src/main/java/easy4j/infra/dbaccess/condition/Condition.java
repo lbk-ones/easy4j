@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.condition;
 
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.annotation.*;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import lombok.Getter;
 
@@ -30,15 +31,27 @@ import java.util.stream.Collectors;
 
 public class Condition {
     private String column;
+    @JsonFormat(shape=JsonFormat.Shape.STRING)
     private final CompareOperator operator;
     @Getter
     private final Object value;
 
-    public String getColumn() {
-        return StrUtil.isNotBlank(this.column) ? StrUtil.toUnderlineCase(this.column) : this.column;
+    public boolean toUnderLine = true;
+
+    public void setToUnderLine(boolean toUnderLine) {
+        this.toUnderLine = toUnderLine;
     }
 
-    public Condition(String column, CompareOperator operator, Object value) {
+    public String getColumn() {
+        if(toUnderLine){
+            return StrUtil.isNotBlank(this.column) ? StrUtil.toUnderlineCase(this.column) : this.column;
+        }else{
+            return this.column;
+        }
+    }
+
+    @JsonCreator
+    public Condition(@JsonProperty("column") String column, @JsonProperty("operator")  CompareOperator operator, @JsonProperty("value")  Object value) {
         this.column = column;
         this.operator = operator;
         this.value = value;
@@ -46,9 +59,9 @@ public class Condition {
 
 
     public String getSqlSegment(List<Object> argsList, Dialect dialect) {
-        this.column = dialect.getWrapper().wrap(StrUtil.toUnderlineCase(this.column));
+       String column2 = dialect.getWrapper().wrap(getColumn());
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
-            return String.format("%s %s", column, operator.getSymbol());
+            return String.format("%s %s", column2, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
             if (value instanceof List) {
                 List<?> list = (List<?>) value;
@@ -58,7 +71,7 @@ public class Condition {
                             return "?";
                         })
                         .collect(Collectors.joining(", "));
-                return String.format("%s %s (%s)", column, operator.getSymbol(), values);
+                return String.format("%s %s (%s)", column2, operator.getSymbol(), values);
             }
         } else if (operator == CompareOperator.BETWEEN) {
             if (value instanceof List && ((List<?>) value).size() == 2) {
@@ -67,10 +80,10 @@ public class Condition {
                 Object v2 = list.get(1);
                 argsList.add(v1);
                 argsList.add(v2);
-                return String.format("%s %s %s AND %s", column, operator.getSymbol(), "?", "?");
+                return String.format("%s %s %s AND %s", column2, operator.getSymbol(), "?", "?");
             }
         }
         argsList.add(value);
-        return String.format("%s %s %s", column, operator.getSymbol(), "?");
+        return String.format("%s %s %s", column2, operator.getSymbol(), "?");
     }
 }

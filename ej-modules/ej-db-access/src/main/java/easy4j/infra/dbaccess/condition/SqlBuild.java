@@ -125,6 +125,7 @@ public class SqlBuild extends CommonDBAccess {
         List<String> selectFields = Optional.ofNullable(whereBuild).map(WhereBuild::getSelectFields).orElse(new ArrayList<>());
         String sql = null;
         List<Object> frgment1SqlValue = ListTs.newArrayList();
+        this.setToUnderline(Optional.ofNullable(whereBuild).map(WhereBuild::isToUnderLine).orElse(true));
         switch (sqlType) {
             case SELECT:
                 sql = DDlLine(sqlType, tableName, where(build), selectFields.toArray(new String[]{}));
