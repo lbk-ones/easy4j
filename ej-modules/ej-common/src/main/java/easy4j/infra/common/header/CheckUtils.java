@@ -305,6 +305,12 @@ public class CheckUtils {
             throw EasyException.wrap("[Check failed] - this argument is required; it must not be null");
         }
     }
+    @Desc("检查一个对象是否为空，为空则抛出A00056异常")
+    public static void notNull(Object obj,String argName) {
+        if (ObjectUtil.isEmpty(obj)) {
+            throw EasyException.wrap(BusCode.A00056,argName);
+        }
+    }
 
     @Desc("检查一个对象是否为空，为空则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
     public static void notNull(Object obj, String msgOrMsgCode, String... args) {

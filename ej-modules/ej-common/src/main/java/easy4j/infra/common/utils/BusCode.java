@@ -174,4 +174,7 @@ public class BusCode {
     @Desc("用户未启用")
     public static final String A00055 = "A00055";
 
+    @Desc("【检查失败】-此参数【{0}】为必填项；它不能为空")
+    public static final String A00056 = "A00056";
+
 }
