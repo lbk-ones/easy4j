@@ -1,0 +1,140 @@
+package easy4j.infra.dbaccess.dynamic.dll;
+
+import cn.hutool.core.collection.CollUtil;
+import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
+import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtModelExecutor;
+import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
+import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
+import easy4j.infra.dbaccess.helper.DDlHelper;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * 动态ddl解析，从domain模型然后逆向到数据库
+ *
+ * @author bokun.li
+ * @date 2025-08-03
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Accessors(chain = true)
+public class DDLParseModel extends CommonDBAccess implements DDLParse {
+
+    public final String schema;
+
+    private final DataSource dataSource;
+
+    private boolean enableExe;
+
+    private boolean isToUnderLine = true;
+
+    private final DDLTableInfo ddlTableInfo;
+
+    private DDLConfig dllConfig;
+
+    /**
+     * @param ddlTableInfo 传入表模型
+     * @param dataSource   传入数据源
+     * @param schema       传入schema
+     */
+    public DDLParseModel(DDLTableInfo ddlTableInfo, DataSource dataSource, String schema) {
+        CheckUtils.notNull(ddlTableInfo, "ddlTableInfo");
+        CheckUtils.notNull(ddlTableInfo, "tableName");
+        CheckUtils.checkByPath(ddlTableInfo, "fieldInfoList");
+        CheckUtils.notNull(dataSource, "dataSource");
+        this.ddlTableInfo = ddlTableInfo;
+        this.dataSource = dataSource;
+        this.schema = schema;
+        mount();
+    }
+
+    public void mount() {
+        Connection connection = null;
+        String ddl = null;
+        boolean hasException = false;
+        try {
+            connection = dataSource.getConnection();
+            String dbType = InformationSchema.getDbType(dataSource, connection);
+            String dbVersion = InformationSchema.getDbVersion(dataSource, connection);
+            String ddlTableName = this.ddlTableInfo.getTableName();
+            List<DDLFieldInfo> fieldInfoList = this.ddlTableInfo.getFieldInfoList();
+            fieldInfoList.forEach(ddlFieldInfo -> {
+                ddlFieldInfo.setDbType(dbType);
+                ddlFieldInfo.setDbVersion(dbVersion);
+            });
+            this.ddlTableInfo.setDbType(dbType);
+            this.ddlTableInfo.setDbVersion(dbVersion);
+            List<DynamicColumn> columns = InformationSchema.getColumns(dataSource, schema, ddlTableName, connection);
+
+            this.dllConfig = new DDLConfig()
+                    .setDataSource(dataSource)
+                    .setConnection(connection)
+                    .setSchema(schema)
+                    .setTableName(ddlTableName)
+                    .setDbType(dbType)
+                    .setDbVersion(dbVersion)
+                    .setDbColumns(columns)
+                    .setDialect(JdbcHelper.getDialect(connection))
+                    .setDdlTableInfo(this.ddlTableInfo);
+
+        } catch (SQLException sqlE) {
+            hasException = true;
+            throw JdbcHelper.translateSqlException("", ddl, sqlE);
+        } catch (Exception e) {
+            hasException = true;
+            throw e;
+        } finally {
+            if (hasException) {
+                JdbcHelper.close(connection);
+            }
+        }
+    }
+
+    // 创建表sql
+    public String getCreateTableTxt() {
+
+        DDLParseExecutor ddlCtExecutor = new DdlCtModelExecutor(this.dllConfig);
+        return ddlCtExecutor.execute();
+    }
+
+    // 新增字段sql
+    public String getAddColumnTxt() {
+
+        return "";
+    }
+
+    public String getDDLTxt() {
+
+        if (CollUtil.isNotEmpty(this.dllConfig.getDbColumns())) {
+            return getAddColumnTxt();
+        } else {
+            return getCreateTableTxt();
+        }
+    }
+
+    public void execDDL() {
+        try {
+            String ddl = getDDLTxt();
+            DDlHelper.execDDL(this.dllConfig.getConnection(), ddl, null, true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String getDDLFragment() {
+        return getDDLTxt();
+    }
+
+
+}

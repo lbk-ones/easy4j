@@ -366,8 +366,8 @@ public abstract class CommonDBAccess {
         if (pair == null) return;
         String key = pair.getKey();
         Date value = pair.getValue();
-        CheckUtils.notNull(key, "logSql key is not null!");
-        CheckUtils.notNull(value, "logSql value is not null!");
+        CheckUtils.notNull(key, "logSql_key");
+        CheckUtils.notNull(value, "logSql_value");
         long subTime = new Date().getTime() - value.getTime();
         logger.info("[SQL] -> {}ms {}", subTime, key);
     }
@@ -375,6 +375,10 @@ public abstract class CommonDBAccess {
     public String getPrintSql(Pair<String, Date> pair) {
         if (pair == null) return "";
         return pair.getKey();
+    }
+
+    public String toUnderLine(String str) {
+        return StrUtil.toUnderlineCase(str);
     }
 
 }

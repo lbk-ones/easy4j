@@ -62,7 +62,7 @@ public class InformationSchema {
     }
 
 
-    private static String getDbType(DataSource dataSource, Connection connection) throws SQLException {
+    public static String getDbType(DataSource dataSource, Connection connection) throws SQLException {
         String s = dbTypeMap.get(dataSource);
         if (StrUtil.isBlank(s)) {
             String databaseType = null;
@@ -72,6 +72,11 @@ public class InformationSchema {
         }
         return s;
 
+    }
+
+    public static String getDbVersion(DataSource dataSource, Connection connection) throws SQLException {
+        DyInformationSchema dyInformationSchema = getDyInformationSchema(dataSource, connection);
+        return dyInformationSchema.getVersion();
     }
 
     public static DBAccess getDbAccess(DataSource dataSource, Connection connection) throws SQLException {
@@ -103,11 +108,11 @@ public class InformationSchema {
     public static List<DynamicColumn> getColumns(DataSource dataSource, String schema, String tableName, Connection connection) throws SQLException {
         List<DynamicColumn> dynamicColumns;
         Boolean property = Easy4j.getProperty(SysConstant.EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA, Boolean.class, false);
-        if(property){
+        if (property) {
             // not cache
             DyInformationSchema dyInformationSchema = getDyInformationSchema(dataSource, connection);
             dynamicColumns = dyInformationSchema.getColumns(schema, tableName);
-        }else{
+        } else {
             String s = (StrUtil.isBlank(schema) ? "" : schema + SP.DOT) + tableName;
             dynamicColumns = dynamicColumnCache.get(s);
             if (CollUtil.isEmpty(dynamicColumns)) {

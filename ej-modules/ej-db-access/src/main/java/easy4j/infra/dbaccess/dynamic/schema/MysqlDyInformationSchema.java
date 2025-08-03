@@ -59,4 +59,9 @@ public class MysqlDyInformationSchema extends AbstractDyInformationSchema {
 
         return dbAccess.selectList(sql, DynamicColumn.class, schema, table);
     }
+
+    @Override
+    public String getVersion() {
+        return dbAccess.selectScalar("select version()", String.class);
+    }
 }

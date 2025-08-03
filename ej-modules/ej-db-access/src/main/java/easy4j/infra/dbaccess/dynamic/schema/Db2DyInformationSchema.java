@@ -70,4 +70,10 @@ public class Db2DyInformationSchema extends AbstractDyInformationSchema {
     public List<DynamicColumn> getColumns(String schema, String table) {
         return dbAccess.selectList(sql, DynamicColumn.class, schema, table);
     }
+
+    @Override
+    public String getVersion() {
+        String s = dbAccess.selectScalar("SELECT GETVARIABLE('SYSIBM.VERSION') FROM SYSIBM.SYSDUMMY1", String.class);
+        return extractVersion(s);
+    }
 }

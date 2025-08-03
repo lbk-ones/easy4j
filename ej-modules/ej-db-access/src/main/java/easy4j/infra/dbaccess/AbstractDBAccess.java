@@ -266,6 +266,12 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         return JdbcHelper.requiredSingleResult(query);
     }
 
+    @Override
+    public <T> T selectScalar(String sql, Class<T> clazz, Object... args) {
+        Connection connection = getConnection();
+        return selectScalarWith(sql, clazz, args, connection);
+    }
+
     // 查多个
     @Override
     public <T> List<T> selectList(String sql, Class<T> clazz, Object... args) {
@@ -277,6 +283,30 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     public List<Map<String, Object>> selectListMap(String sql, Object... args) {
         Connection connection = getConnection();
         return selectListMapWith(sql, args, connection);
+    }
+
+    private <T> T selectScalarWith(String sql, Class<T> aclass, Object[] args, Connection connection) {
+        ScalarHandler<T> scalarHandler = new ScalarHandler<>(1);
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
+        Pair<String, Date> stringDatePair = null;
+        try {
+            stringDatePair = recordSql(sql, connection, args);
+            if (ObjectUtil.isNotEmpty(args)) {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
+            } else {
+                preparedStatement = StatementUtil.prepareStatement(connection, sql);
+            }
+            resultSet = preparedStatement.executeQuery();
+            return scalarHandler.handle(resultSet);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("selectList", sql, e);
+        } finally {
+            printSql(stringDatePair);
+            JdbcHelper.close(resultSet);
+            JdbcHelper.close(preparedStatement);
+            DataSourceUtils.releaseConnection(connection, getDataSource());
+        }
     }
 
     private <T> List<Map<String, Object>> selectListMapWith(String sql, Object[] args, Connection connection) {

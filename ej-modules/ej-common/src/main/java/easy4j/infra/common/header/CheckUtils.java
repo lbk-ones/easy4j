@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * 检查工具类
@@ -71,7 +72,7 @@ public class CheckUtils {
         }
         if (!resultList.isEmpty()) {
             String join = String.join("，", resultList);
-            throw new EasyException("A00004," + join);
+            throw EasyException.wrap(BusCode.A00004, join);
         }
     }
 
@@ -107,7 +108,7 @@ public class CheckUtils {
      * 根据路径表达式从对象中获取值，支持 list.[].wt 和 list.[0].wt 等形式
      *
      * @param obj       要从中获取值的对象
-     * @param path      路径表达式 list.wt | list.[0].wt | list.[].wt.name | list.[0].wt.name.city
+     * @param path      路径表达式 [].wt | list.wt | list.[0].wt | list.[].wt.name | list.[0].wt.name.city
      * @param fastError 快速失败 list.[].wt 如果list集合有属性中的对象wt为空那么直接返回null
      * @return 获取到的值，如果未找到则返回 null
      * @author bokun
@@ -187,7 +188,7 @@ public class CheckUtils {
     }
 
     public static void checkParam(Object t, @NotNull String fieldName) {
-        checkByPathWith(t, fieldName, "");
+        checkByPathWith(t, fieldName, fieldName);
     }
 
     public static void checkByPath(Object t, String... message) {
@@ -203,24 +204,23 @@ public class CheckUtils {
     private static void checkByPathWith(Object t, String fname, String... message) {
         if (ObjectUtil.isEmpty(t)) {
             if (fname != null) {
-                throw new EasyException("A00004," + fname);
+                throw EasyException.wrap(BusCode.A00004, fname);
             } else {
-                throw new EasyException("A00004");
+                throw EasyException.wrap(BusCode.A00004);
             }
         }
-        Set<String> resultList = new HashSet<>();
-        if (t instanceof Iterator) {
-            Iterator<?> t1 = (Iterator<?>) t;
-            while (t1.hasNext()) {
-                Object next = t1.next();
-                checkObj(resultList, next, message);
-            }
-        } else {
-            checkObj(resultList, t, message);
-        }
+        final Set<String> resultList = new HashSet<>();
+        ListTs.loop(t, next -> checkObj(resultList, next, message));
         if (!resultList.isEmpty()) {
-            String join = String.join("，", resultList);
-            throw new EasyException("A00004," + join);
+            Set<String> newCollect = resultList.stream().map(e -> {
+                if (e.startsWith("[].")) {
+                    return e.replace("[].", "");
+                } else {
+                    return e;
+                }
+            }).collect(Collectors.toSet());
+            String join = String.join("，", newCollect);
+            throw EasyException.wrap(BusCode.A00004, join);
         }
     }
 
@@ -246,9 +246,16 @@ public class CheckUtils {
      * @date 2025-06-15
      */
     @Desc("检查是否为true 如果是true那么则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
-    public static void checkTrue(boolean flag, String msgCode, String... args) {
-        if (flag && StrUtil.isNotBlank(msgCode)) {
-            throw EasyException.wrap(msgCode, args);
+    public static void checkTrue(boolean flag, String msgCodeOrMsg, String... args) {
+        if (flag && StrUtil.isNotBlank(msgCodeOrMsg)) {
+            throw EasyException.wrap(msgCodeOrMsg, args);
+        }
+    }
+
+    @Desc("检查是否为false 如果是false那么则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
+    public static void checkNotTrue(boolean flag, String msgCodeOrMsg, String... args) {
+        if (!flag && StrUtil.isNotBlank(msgCodeOrMsg)) {
+            throw EasyException.wrap(msgCodeOrMsg, args);
         }
     }
 
@@ -305,15 +312,16 @@ public class CheckUtils {
             throw EasyException.wrap("[Check failed] - this argument is required; it must not be null");
         }
     }
+
     @Desc("检查一个对象是否为空，为空则抛出A00056异常")
-    public static void notNull(Object obj,String argName) {
+    public static void notNull(Object obj, String argName) {
         if (ObjectUtil.isEmpty(obj)) {
-            throw EasyException.wrap(BusCode.A00056,argName);
+            throw EasyException.wrap(BusCode.A00056, argName);
         }
     }
 
     @Desc("检查一个对象是否为空，为空则抛出异常,msgCode是i18n代码，args是i18n占位符填充")
-    public static void notNull(Object obj, String msgOrMsgCode, String... args) {
+    public static void notNullMsg(Object obj, String msgOrMsgCode, String... args) {
         if (ObjectUtil.isEmpty(obj) && StrUtil.isNotBlank(msgOrMsgCode)) {
             throw EasyException.wrap(msgOrMsgCode, args);
         }

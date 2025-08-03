@@ -120,6 +120,17 @@ public interface DBAccess {
     <T> T selectOne(String sql, Class<T> clazz, Object... args);
 
     /**
+     * 查询第一个字段的值
+     *
+     * @param sql   要传入的sql
+     * @param clazz 最后要转成的类型
+     * @param args  sql对应的参数
+     * @param <T>
+     * @return
+     */
+    <T> T selectScalar(String sql, Class<T> clazz, Object... args);
+
+    /**
      * 根据sql查询某一个对象集合
      *
      * @param sql

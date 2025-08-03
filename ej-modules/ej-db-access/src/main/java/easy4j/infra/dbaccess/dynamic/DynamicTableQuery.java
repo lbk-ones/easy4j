@@ -90,6 +90,7 @@ public class DynamicTableQuery extends CommonDBAccess {
 
     /**
      * 条件查询
+     *
      * @param whereBuild 条件构造器
      * @param dataSource 数据源
      * @param schema     schema
@@ -105,6 +106,7 @@ public class DynamicTableQuery extends CommonDBAccess {
 
     /**
      * 全查询
+     *
      * @param dataSource 数据源
      * @param schema     schema
      * @param tableName  表名
@@ -143,7 +145,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         String underlineCase = StrUtil.toUnderlineCase(s);
         if (!toUnderLine) {
             underlineCase = StrUtil.toCamelCase(underlineCase);
-        }else{
+        } else {
             underlineCase = s;
         }
         return underlineCase;
@@ -245,7 +247,7 @@ public class DynamicTableQuery extends CommonDBAccess {
                     finalTableName, null, true, args, connection
             );
             // page
-            if(pageSize>0){
+            if (pageSize > 0) {
                 Page<Object> objectPage = new Page<>();
                 objectPage.setPageNo(pageNo);
                 objectPage.setPageSize(pageSize);

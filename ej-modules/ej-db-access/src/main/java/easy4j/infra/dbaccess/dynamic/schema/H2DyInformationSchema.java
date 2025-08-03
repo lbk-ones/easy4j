@@ -77,4 +77,11 @@ public class H2DyInformationSchema extends AbstractDyInformationSchema {
 
         return dbAccess.selectList(sql, DynamicColumn.class, schema, table);
     }
+
+    @Override
+    public String getVersion() {
+        String s = dbAccess.selectScalar("SELECT SETTING_VALUE   from  INFORMATION_SCHEMA.SETTINGS where \n" +
+                "SETTING_NAME = 'info.VERSION'", String.class);
+        return extractVersion(s);
+    }
 }

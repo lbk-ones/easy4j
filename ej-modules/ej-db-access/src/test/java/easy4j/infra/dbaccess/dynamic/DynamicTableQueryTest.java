@@ -3,7 +3,6 @@ package easy4j.infra.dbaccess.dynamic;
 import cn.hutool.core.lang.Dict;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.dbaccess.condition.FWhereBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.sql.DataSource;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Easy4JStarter(
         serverName = "test-db-access",
@@ -38,9 +35,9 @@ class DynamicTableQueryTest {
         // Nice !
         WhereBuild equal = WhereBuild.get()
                 .select("user_id")
-                .like("user_code","admin");
-        List<Dict> query = new DynamicTableQuery(equal,dataSource, "public", "ssc_sys_user")
-//                .setToUnderLine(true)
+                .like("user_code", "admin");
+        List<Dict> query = new DynamicTableQuery(equal, dataSource, "public", "ssc_sys_user")
+                .setToUnderLine(true)
                 .setPrintSqlLog(true)
                 .query();
 
@@ -48,9 +45,9 @@ class DynamicTableQueryTest {
 
 
         WhereBuild equal2 = WhereBuild.get()
-                .like("user_code","admin")
+                .like("user_code", "admin")
                 .asc("user_id");
-        List<Dict> query2 = new DynamicTableQuery(equal2,dataSource, "public", "ssc_sys_user")
+        List<Dict> query2 = new DynamicTableQuery(equal2, dataSource, "public", "ssc_sys_user")
 //                .setToUnderLine(true)
                 .setPageSize(2)
                 .setPrintSqlLog(true)

@@ -31,7 +31,20 @@ public interface DyInformationSchema {
 
     DBAccess getDbAccess();
 
-
+    /**
+     * get schema [tablename] table's all columns
+     *
+     * @author bokun.li
+     * @date 2025-08-03
+     */
     List<DynamicColumn> getColumns(String schema, String table);
+
+    /**
+     * get database version x.x
+     *
+     * @author bokun.li
+     * @date 2025-08-03
+     */
+    String getVersion();
 
 }

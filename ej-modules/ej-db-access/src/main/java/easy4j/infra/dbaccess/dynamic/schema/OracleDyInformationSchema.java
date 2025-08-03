@@ -73,4 +73,13 @@ public class OracleDyInformationSchema extends AbstractDyInformationSchema {
         table = table.toUpperCase();
         return dbAccess.selectList(sql, DynamicColumn.class, table, table);
     }
+
+    @Override
+    public String getVersion() {
+        String s = dbAccess.selectScalar("SELECT \n" +
+                "  REGEXP_SUBSTR(BANNER, '\\d+\\.\\d+\\.\\d+\\.\\d+\\.\\d+') AS db_version\n" +
+                "FROM v$version \n" +
+                "WHERE BANNER LIKE 'Oracle Database%';", String.class);
+        return extractVersion(s);
+    }
 }

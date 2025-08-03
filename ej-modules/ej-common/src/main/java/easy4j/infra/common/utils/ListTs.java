@@ -392,7 +392,7 @@ public class ListTs {
     }
 
     /**
-     * 将传入obj转为集合集合的类型为Object
+     * 将传入obj转为集合 集合的类型为Object
      *
      * @param obj_
      * @param convertFunction 可以为null 如果是null那么就不转换
