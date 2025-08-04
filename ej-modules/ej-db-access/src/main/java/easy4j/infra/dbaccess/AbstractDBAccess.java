@@ -240,6 +240,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         PreparedStatement batchInsertSql = null;
 
         Pair<String, Date> sqlPair = null;
+        int effectRows = -1;
         try {
             Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForBatchInsert(
                     getTableName(aClass, dialect),
@@ -248,11 +249,11 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             );
             batchInsertSql = preparedStatementPairPair.getKey();
             sqlPair = preparedStatementPairPair.getValue();
-            return batchInsertSql.executeUpdate();
+            return (effectRows = batchInsertSql.executeUpdate());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveListByBean", getPrintSql(sqlPair), e);
         } finally {
-            printSql(sqlPair);
+            printSql(sqlPair, effectRows);
             JdbcHelper.close(batchInsertSql);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
@@ -290,6 +291,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             stringDatePair = recordSql(sql, connection, args);
             if (ObjectUtil.isNotEmpty(args)) {
@@ -298,11 +300,14 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                 preparedStatement = StatementUtil.prepareStatement(connection, sql);
             }
             resultSet = preparedStatement.executeQuery();
-            return scalarHandler.handle(resultSet);
+            T handle = scalarHandler.handle(resultSet);
+            effectRows = null == handle ? 0 : 1;
+
+            return handle;
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("selectList", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -314,6 +319,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             stringDatePair = recordSql(sql, connection, args);
             if (ObjectUtil.isNotEmpty(args)) {
@@ -323,12 +329,12 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             }
             resultSet = preparedStatement.executeQuery();
             List<Map<String, Object>> t = tBeanListHandler.handle(resultSet);
-
+            effectRows = CollUtil.isEmpty(t) ? 0 : t.size();
             return ObjectUtil.defaultIfNull(t, new ArrayList<>());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("selectList", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -340,6 +346,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             stringDatePair = recordSql(sql, connection, args);
             if (ObjectUtil.isNotEmpty(args)) {
@@ -349,12 +356,12 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             }
             resultSet = preparedStatement.executeQuery();
             List<T> t = tBeanListHandler.handle(resultSet);
-
+            effectRows = CollUtil.isEmpty(t) ? 0 : t.size();
             return ObjectUtil.defaultIfNull(t, new ArrayList<>());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("selectList", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -378,6 +385,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             stringDatePair = recordSql(sql, connection, args);
             ScalarHandler<Object> objectScalarHandler = new ScalarHandler<>(column);
@@ -387,11 +395,13 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                 preparedStatement = StatementUtil.prepareStatement(connection, sql);
             }
             resultSet = preparedStatement.executeQuery();
-            return objectScalarHandler.handle(resultSet);
+            Object handle = objectScalarHandler.handle(resultSet);
+            effectRows = ObjectUtil.isEmpty(handle) ? 0 : 1;
+            return handle;
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("query", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
@@ -432,6 +442,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         }
         PreparedStatement batchInsertSql = null;
         Pair<String, Date> sqlPair = null;
+        int effectRows = -1;
         try {
             dialect.printPrintLog(this.isPrintLog());
             Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForBatchUpdate(
@@ -442,11 +453,11 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             batchInsertSql = preparedStatementPairPair.getKey();
             sqlPair = preparedStatementPairPair.getValue();
 
-            return batchInsertSql.executeUpdate();
+            return (effectRows = batchInsertSql.executeUpdate());
         } catch (SQLException sqlException) {
             throw JdbcHelper.translateSqlException("updateListByBean", null, sqlException);
         } finally {
-            printSql(sqlPair);
+            printSql(sqlPair, effectRows);
             JdbcHelper.close(batchInsertSql);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
@@ -839,13 +850,13 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         Pair<PreparedStatement, Pair<String, Date>> preparedStatementPairPair = dialect.psForUpdateBySqlBuildStr(tableName, stringObjectMap, build, newArgList, true, connection);
         PreparedStatement preparedStatement = preparedStatementPairPair.getKey();
         Pair<String, Date> sqlPair = preparedStatementPairPair.getValue();
-        int effectRows;
+        int effectRows = -1;
         try {
             effectRows = preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("updateByCondition", build, e);
         } finally {
-            printSql(sqlPair);
+            printSql(sqlPair, effectRows);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }

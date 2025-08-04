@@ -208,6 +208,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         PreparedStatement preparedStatement = null;
         String sql = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             connection = this.dataSource.getConnection();
             List<Object> args = ListTs.newArrayList();
@@ -262,11 +263,12 @@ public class DynamicTableQuery extends CommonDBAccess {
             resultSet = preparedStatement.executeQuery();
             // handler result
             List<Map<String, Object>> maps = tBeanListHandler.handle(resultSet);
+            effectRows = CollUtil.isEmpty(maps) ? 0 : maps.size();
             return maps.stream().map(Dict::new).collect(Collectors.toList());
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("dynamic query", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(resultSet);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());

@@ -362,14 +362,14 @@ public abstract class CommonDBAccess {
         return null;
     }
 
-    public void printSql(Pair<String, Date> pair) {
+    public void printSql(Pair<String, Date> pair, int effectRows) {
         if (pair == null) return;
         String key = pair.getKey();
         Date value = pair.getValue();
         CheckUtils.notNull(key, "logSql_key");
         CheckUtils.notNull(value, "logSql_value");
         long subTime = new Date().getTime() - value.getTime();
-        logger.info("[SQL] -> {}ms {}", subTime, key);
+        logger.info("[SQL] -> {}ms {}row {}", subTime,effectRows, key);
     }
 
     public String getPrintSql(Pair<String, Date> pair) {

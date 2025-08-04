@@ -109,9 +109,9 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         final String sql = (String) o;
         PreparedStatement preparedStatement = null;
         Pair<String, Date> stringDatePair = null;
+        int effectRows = -1;
         try {
             stringDatePair = recordSql(sql, connection, args);
-            int effectRows;
             if (ObjectUtil.isNotEmpty(args)) {
                 preparedStatement = StatementUtil.prepareStatement(connection, sql, (Object[]) args);
                 effectRows = preparedStatement.executeUpdate();
@@ -123,7 +123,7 @@ public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("saveOrUpdate", sql, e);
         } finally {
-            printSql(stringDatePair);
+            printSql(stringDatePair, effectRows);
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, dataSource);
         }
