@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtClassExecutor;
@@ -141,8 +142,16 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
                 fName = toUnderLine(fName);
             }
             return fName;
+        }else{
+            if(aclass.isAnnotationPresent(JdbcTable.class)){
+                JdbcTable annotation = aclass.getAnnotation(JdbcTable.class);
+                String name = annotation.name();
+                if(StrUtil.isNotBlank(name)) return name;
+            }
+            String simpleName = aclass.getSimpleName();
+            return StrUtil.toUnderlineCase(simpleName);
         }
-        return null;
+//        return null;
     }
 
 

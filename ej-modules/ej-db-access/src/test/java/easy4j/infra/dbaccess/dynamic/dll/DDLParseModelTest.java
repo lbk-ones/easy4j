@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
         "spring.datasource.type=com.zaxxer.hikari.HikariDataSource",
         "spring.datasource.username=root",
         "spring.datasource.password=123456",
-        "spring.datasource.url=jdbc:mysql://localhost:3306/seata",
+        "spring.datasource.url=jdbc:mysql://localhost:3306/vcc_portal_v1",
         "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver",
         "spring.datasource.hikari.maximum-pool-size=50"
 })

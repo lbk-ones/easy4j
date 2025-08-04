@@ -15,12 +15,12 @@ public class DDLTableCoreSelector {
         list.add(new MysqlDDLTableStrategy());
     }
 
-    public static DDLTableExecutor getDDlTableExecutor(DDLTableInfo ddlFieldInfo) {
+    public static DDLTableExecutor getDDlTableExecutor(DDLTableInfo ddlTableInfo) {
         for (IDDLTableStrategy iddlFieldCore : list) {
-            if (iddlFieldCore.match(ddlFieldInfo)) {
-                return new DDLTableExecutor(iddlFieldCore, ddlFieldInfo);
+            if (iddlFieldCore.match(ddlTableInfo)) {
+                return new DDLTableExecutor(iddlFieldCore, ddlTableInfo);
             }
         }
-        throw EasyException.wrap(BusCode.A00047, ddlFieldInfo.getDbType());
+        throw EasyException.wrap(BusCode.A00047, ddlTableInfo.getDbType());
     }
 }

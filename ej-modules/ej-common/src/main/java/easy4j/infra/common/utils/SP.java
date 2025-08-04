@@ -102,4 +102,6 @@ public interface SP {
 
     String DEFAULT = "default";
     String URL = "url";
+    String FORMAT_ZWF_0 = "{0}";
+    String FORMAT_ZWF_1 = "{1}";
 }

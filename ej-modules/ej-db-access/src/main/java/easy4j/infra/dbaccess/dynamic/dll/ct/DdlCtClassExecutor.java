@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategyExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategySelector;
@@ -43,9 +44,9 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
         ddlTableInfo.setDbVersion(this.dllConfig.getDbVersion());
         ddlTableInfo.setSchema(this.dllConfig.getSchema());
         ddlTableInfo.setDllConfig(this.dllConfig);
-        DDLTableExecutor dDlTableExecutor = DDLTableCoreSelector.getDDlTableExecutor(ddlTableInfo);
         List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(domainClass);
         ddlTableInfo.setFieldInfoList(ddlFieldInfos);
+        DDLTableExecutor dDlTableExecutor = DDLTableCoreSelector.getDDlTableExecutor(ddlTableInfo);
         List<String> objects = ListTs.newLinkedList();
         Set<String> distinctSet = new HashSet<>();
         for (DDLFieldInfo ddlFieldInfo : ddlFieldInfos) {
@@ -97,9 +98,12 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
                     ddlFieldInfo1.setComment(comment);
                     objects.add(ddlFieldInfo1);
                 } else {
+                    String name = field.getName();
+                    JdbcColumn jdbcColumn = field.getAnnotation(JdbcColumn.class);
+                    if (null != jdbcColumn) name = jdbcColumn.name();
                     DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
                     ddlFieldInfo.setFieldClass(type);
-                    ddlFieldInfo.setName(field.getName());
+                    ddlFieldInfo.setName(name);
                     if (field.isAnnotationPresent(Desc.class)) {
                         ddlFieldInfo.setComment(field.getAnnotation(Desc.class).value());
                     }

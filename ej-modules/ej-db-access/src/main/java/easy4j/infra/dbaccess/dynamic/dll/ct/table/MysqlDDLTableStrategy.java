@@ -36,20 +36,40 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
         String tableInfoSchema = ddlTableInfo.getSchema();
         String fTableName = StrUtil.isNotBlank(tableInfoSchema) ? tableInfoSchema + SP.DOT + tableName : tableName;
         String comment = ddlTableInfo.getComment();
-        List<String> objects = ListTs.newArrayList();
-        objects.add("create");
-        if (ddlTableInfo.isTemporary()) {
-            objects.add(" temporary");
+        List<String> segments = ListTs.newArrayList();
+        handlerTitle(ddlTableInfo, fTableName, segments);
+        segments.add(SP.LEFT_BRACKET);
+        segments.add(SP.FORMAT_ZWF_0 + SP.COMMA);
+        boolean hasExtraLine = handlerExtraLineAndReturnHasExtraLine(ddlTableInfo, dllConfig, fTableName, segments);
+        // remove last comma
+        if (!hasExtraLine && CollUtil.isNotEmpty(segments)) {
+            segments.remove(segments.size() - 1);
+            segments.add(StrUtil.replaceLast(segments.get(segments.size() - 1), SP.COMMA, ""));
         }
-        objects.add(" table");
-        if (ddlTableInfo.isIfNotExists()) {
-            objects.add(" if not exists");
+        segments.add(SP.RIGHT_BRACKET);
+        segments.add("engine = " + StrUtil.blankToDefault(ddlTableInfo.getEngine(), DEFAULT_ENGINE));
+        segments.add("default charset = " + StrUtil.blankToDefault(ddlTableInfo.getCharset(), DEFAULT_CHARSET));
+        segments.add("collate = " + StrUtil.blankToDefault(ddlTableInfo.getCollate(), DEFAULT_CHARSET_COLLATE));
+        if (StrUtil.isNotBlank(comment)) {
+            segments.add("comment = " + dllConfig.wrapQuote(comment));
         }
-        objects.add(" " + fTableName);
-        objects.add("(\n{0},\n");
+        return String.join(SP.NEWLINE, segments);
+    }
+
+    /**
+     * 处理索引 和其他约束
+     *
+     * @param ddlTableInfo 表格信息
+     * @param dllConfig    配置信息
+     * @param fTableName   表格名称
+     * @param segments     需要合并的片段集合
+     * @return
+     */
+    private static boolean handlerExtraLineAndReturnHasExtraLine(DDLTableInfo ddlTableInfo, DDLConfig dllConfig, String fTableName, List<String> segments) {
+        boolean hasExtraLine = false;
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
         if (CollUtil.isNotEmpty(fieldInfoList)) {
-            List<String> primaryKey = ListTs.newArrayList();
+            List<String> indexes = ListTs.newArrayList();
             List<String> uniqueKey = ListTs.newArrayList();
             List<String> indexKey = ListTs.newArrayList();
             for (DDLFieldInfo ddlFieldInfo : fieldInfoList) {
@@ -60,27 +80,39 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
                 boolean isIndex = ddlFieldInfo.isIndex();
                 if (isPrimary) {
                     String wt = "primary key (" + columnName + ")";
-                    primaryKey.add(wt);
+                    indexes.add(wt);
                 } else if (unique) {
                     uniqueKey.add("unique key `uk_" + fTableName.replace(".", "_") + "_" + columnName + "` (" + columnName + ")");
                 } else if (isIndex) {
                     indexKey.add("index `idx_" + fTableName.replace(".", "_") + "_" + columnName + "` (" + columnName + ")");
                 }
             }
-            primaryKey.addAll(uniqueKey);
-            primaryKey.addAll(indexKey);
-            String join = String.join(",\n", primaryKey);
-            if (StrUtil.isNotBlank(join)) {
-                objects.add(join + "\n");
+            indexes.addAll(uniqueKey);
+            indexes.addAll(indexKey);
+            if (CollUtil.isNotEmpty(indexes)) {
+                String join = String.join(",\n", indexes);
+                if (StrUtil.isNotBlank(join)) {
+                    hasExtraLine = true;
+                    segments.add(join);
+                }
             }
         }
-        objects.add(")\nengine = " + StrUtil.blankToDefault(ddlTableInfo.getEngine(), DEFAULT_ENGINE) + "\n");
-        objects.add("default charset = " + StrUtil.blankToDefault(ddlTableInfo.getCharset(), DEFAULT_CHARSET) + "\n");
-        objects.add("collate = " + StrUtil.blankToDefault(ddlTableInfo.getCollate(), DEFAULT_CHARSET_COLLATE) + "\n");
-        if (StrUtil.isNotBlank(comment)) {
-            objects.add("comment = " + dllConfig.wrapQuote(comment));
+        return hasExtraLine;
+    }
+
+    private static void handlerTitle(DDLTableInfo ddlTableInfo, String fTableName, List<String> segments) {
+        List<String> tempList = ListTs.newArrayList();
+        tempList.add("create");
+        if (ddlTableInfo.isTemporary()) {
+            tempList.add("temporary");
         }
-        return String.join("", objects);
+        tempList.add("table");
+        if (ddlTableInfo.isIfNotExists()) {
+            tempList.add("if not exists");
+        }
+        tempList.add(fTableName);
+        segments.add(String.join(SP.SPACE, tempList));
+        tempList.clear();
     }
 
     @Override
