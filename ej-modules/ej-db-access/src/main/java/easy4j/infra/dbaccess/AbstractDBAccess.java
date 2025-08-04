@@ -800,7 +800,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         whereBuilder.bind(connection);
         List<Object> newArgList = ListTs.newArrayList();
 
-        List<String> selectFields = whereBuilder.getSelectFields();
+        List<String> selectFields = whereBuilder.getSelectFieldsStr();
         String[] array = selectFields.toArray(new String[]{});
 
 

@@ -142,11 +142,9 @@ public class DynamicTableQuery extends CommonDBAccess {
             s = StrUtil.unWrap(columnName, preWrapQuote, sufWrapQuote);
         } catch (Throwable ignored) {
         }
-        String underlineCase = StrUtil.toUnderlineCase(s);
-        if (!toUnderLine) {
-            underlineCase = StrUtil.toCamelCase(underlineCase);
-        } else {
-            underlineCase = s;
+        String underlineCase = s;
+        if (toUnderLine) {
+            underlineCase = StrUtil.toUnderlineCase(s);
         }
         return underlineCase;
     }
@@ -155,7 +153,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         Set<String> allFields = new HashSet<>();
         List<Condition> conditions = whereBuild1.getConditions();
         conditions.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
-        List<String> fields = whereBuild1.getSelectFields();
+        List<String> fields = whereBuild1.getSelectFieldsStr();
         fields.forEach(e -> allFields.add(handlerColumn(e)));
         List<Condition> orderBy = whereBuild1.getOrderBy();
         orderBy.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
@@ -219,7 +217,7 @@ public class DynamicTableQuery extends CommonDBAccess {
             this.whereBuild.bind(dialect1);
             // get columns information schema from db
             List<DynamicColumn> columns = InformationSchema.getColumns(this.dataSource, this.schema, this.tableName, connection);
-            if (CollUtil.isEmpty(this.whereBuild.getSelectFields())) {
+            if (CollUtil.isEmpty(this.whereBuild.getSelectFieldsStr())) {
                 List<String> collect = columns.stream()
                         .map(DynamicColumn::getColumnName)
                         .filter(StrUtil::isNotBlank)
@@ -228,7 +226,7 @@ public class DynamicTableQuery extends CommonDBAccess {
             }
             // select fields transform to underline fields
             if (toUnderLine) {
-                List<String> selectFields = this.whereBuild.getSelectFields().stream().map(StrUtil::toUnderlineCase).collect(Collectors.toList());
+                List<String> selectFields = this.whereBuild.getSelectFieldsStr().stream().map(StrUtil::toUnderlineCase).collect(Collectors.toList());
                 this.whereBuild.clearSelectFields();
                 this.whereBuild.select(selectFields.toArray(new String[]{}));
             }

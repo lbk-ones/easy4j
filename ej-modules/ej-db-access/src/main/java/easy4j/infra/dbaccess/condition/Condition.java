@@ -16,7 +16,10 @@ package easy4j.infra.dbaccess.condition;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.*;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 import lombok.Getter;
 
 import java.util.List;
@@ -28,14 +31,20 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  */
-
+@Schema(description = "条件")
+@Data
 public class Condition {
+    @Schema(description = "字段名称，驼峰和下划线都支持")
     private String column;
-    @JsonFormat(shape=JsonFormat.Shape.STRING)
-    private final CompareOperator operator;
-    @Getter
-    private final Object value;
 
+    @JsonFormat(shape=JsonFormat.Shape.STRING)
+    private CompareOperator operator;
+
+
+    @Schema(description = "字段值，如果是 IN,NOT IN,BETWEEN 查询那么就是集合")
+    private Object value;
+
+    @Schema(description = "是否转下划线，默认要转")
     public boolean toUnderLine = true;
 
     public void setToUnderLine(boolean toUnderLine) {
@@ -63,6 +72,7 @@ public class Condition {
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
             return String.format("%s %s", column2, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
+
             if (value instanceof List) {
                 List<?> list = (List<?>) value;
                 String values = list.stream()
@@ -72,6 +82,15 @@ public class Condition {
                         })
                         .collect(Collectors.joining(", "));
                 return String.format("%s %s (%s)", column2, operator.getSymbol(), values);
+            }else{
+                if(value instanceof  CharSequence){
+                    String values = ListTs.asList(value).stream().map(v -> {
+                                argsList.add(v);
+                                return "?";
+                            })
+                            .collect(Collectors.joining(", "));
+                    return String.format("%s %s (%s)", column2, operator.getSymbol(), values);
+                }
             }
         } else if (operator == CompareOperator.BETWEEN) {
             if (value instanceof List && ((List<?>) value).size() == 2) {

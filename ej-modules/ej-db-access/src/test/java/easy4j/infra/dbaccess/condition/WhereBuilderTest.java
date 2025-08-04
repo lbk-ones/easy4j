@@ -85,8 +85,8 @@ public class WhereBuilderTest {
         String condition1 = object.build(argList);
 
 
-        assertEquals("[\"group_arg1\",\"group_arg2\"]", JacksonUtil.toJson(fSqlBuilder.getSelectFields()));
-        System.out.println("字段 1: " + fSqlBuilder.getSelectFields());
+        assertEquals("[\"group_arg1\",\"group_arg2\"]", JacksonUtil.toJson(fSqlBuilder.getSelectFieldsStr()));
+        System.out.println("字段 1: " + fSqlBuilder.getSelectFieldsStr());
         System.out.println("条件 1: " + condition1);
         System.out.println("值 1: " + JacksonUtil.toJson(argList));
         argList.clear();

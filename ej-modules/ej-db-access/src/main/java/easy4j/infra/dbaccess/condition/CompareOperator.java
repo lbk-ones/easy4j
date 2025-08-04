@@ -30,6 +30,8 @@ public enum CompareOperator {
     GREATER_OR_EQUAL(">="),
     LESS_OR_EQUAL("<="),
     LIKE("LIKE"),
+    LIKE_LEFT("LIKE LEFT"),
+    LIKE_RIGHT("LIKE RIGHT"),
     NOT_LIKE("NOT LIKE"),
     IN("IN"),
     NOT_IN("NOT IN"),

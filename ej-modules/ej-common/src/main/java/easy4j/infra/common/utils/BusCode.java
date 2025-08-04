@@ -123,7 +123,7 @@ public class BusCode {
     @Desc("SQL条件不能为空")
     public static final String A00038 = "A00038";
 
-    @Desc("该资源【{0}】已经被锁定，备注：{0}")
+    @Desc("该资源【{0}】已经被锁定，备注：{1}")
     public static final String A00039 = "A00039";
 
     @Desc("JSON不合法")
@@ -144,7 +144,7 @@ public class BusCode {
     @Desc("远程调用异常,{0}")
     public static final String A00045 = "A00045";
 
-    @Desc("{0}查询{0}结果为空")
+    @Desc("{0}查询{1}结果为空")
     public static final String A00046 = "A00046";
 
     @Desc("不支持的类型:{0}")

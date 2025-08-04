@@ -122,7 +122,7 @@ public class SqlBuild extends CommonDBAccess {
     private <T> String buildWith(String sqlType, WhereBuild whereBuild, String tableName, T obj, boolean returnZwf, List<Object> argList, Connection connection) {
         List<Object> objects = ListTs.newArrayList();
         String build = Optional.ofNullable(whereBuild).map(e -> e.build(objects)).orElse("");
-        List<String> selectFields = Optional.ofNullable(whereBuild).map(WhereBuild::getSelectFields).orElse(new ArrayList<>());
+        List<String> selectFields = Optional.ofNullable(whereBuild).map(WhereBuild::getSelectFieldsStr).orElse(new ArrayList<>());
         String sql = null;
         List<Object> frgment1SqlValue = ListTs.newArrayList();
         this.setToUnderline(Optional.ofNullable(whereBuild).map(WhereBuild::isToUnderLine).orElse(true));

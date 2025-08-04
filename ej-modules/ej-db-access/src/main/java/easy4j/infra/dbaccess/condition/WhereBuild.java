@@ -27,7 +27,6 @@ import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.common.exception.EasyException;
 import jodd.util.StringPool;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -85,7 +84,10 @@ public class WhereBuild implements Serializable {
     private final List<Condition> groupBy = new ArrayList<>();
     @Getter
     private List<Condition> orderBy = new ArrayList<>();
+
+    @Getter
     private final List<Condition> selectFields = new ArrayList<>();
+
     @Getter
     private final List<WhereBuild> subBuilders = new ArrayList<>();
 
@@ -122,8 +124,10 @@ public class WhereBuild implements Serializable {
         this.toUnderLine = toUnderLine;
     }
 
+
+
     @JsonIgnore
-    public List<String> getSelectFields() {
+    public List<String> getSelectFieldsStr() {
         Wrapper wrapper = getDialect().getWrapper();
         return selectFields.stream()
                 .peek(e -> e.setToUnderLine(this.toUnderLine))
@@ -209,7 +213,7 @@ public class WhereBuild implements Serializable {
     }
 
     public WhereBuild notLike(String column, String value) {
-        conditions.add(new Condition(column, CompareOperator.NOT_LIKE, value));
+        conditions.add(new Condition(column, CompareOperator.NOT_LIKE, "%" + value + "%"));
         return this;
     }
 

@@ -17,6 +17,7 @@ package easy4j.infra.dbaccess.condition;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dialect.Dialect;
 
 import java.sql.Connection;
@@ -117,8 +118,12 @@ public class FWhereBuild<T> extends WhereBuild {
 
     @SafeVarargs
     public final WhereBuild select(Func1<T, ?>... columns) {
-        String[] array = (String[]) Arrays.stream(columns).map(this::getName).toArray();
-        return super.select(array);
+        List<String> objects = ListTs.newArrayList();
+        for (Func1<T, ?> column : columns) {
+            String name = this.getName(column);
+            objects.add(name);
+        }
+        return super.select(objects.toArray(new String[]{}));
     }
 
 
