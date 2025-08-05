@@ -76,7 +76,17 @@ public abstract class CommonDBAccess {
 
     public String where(String sql) {
 
+
+
         if (StrUtil.isNotBlank(sql)) {
+            String trim = StrUtil.trim(sql);
+            if(
+                    StrUtil.startWithIgnoreCase(trim,"group by") ||
+                    StrUtil.startWithIgnoreCase(trim,"order by") ||
+                    StrUtil.startWithIgnoreCase(trim,"having")
+            ){
+                return sql;
+            }
             return " WHERE " + sql;
         }
         return "";

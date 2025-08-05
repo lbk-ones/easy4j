@@ -21,6 +21,7 @@ import cn.hutool.db.sql.Wrapper;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -86,6 +87,9 @@ public class WhereBuild implements Serializable {
     private List<Condition> orderBy = new ArrayList<>();
 
     @Getter
+    private final List<Condition> havingList = new ArrayList<>();
+
+    @Getter
     private final List<Condition> selectFields = new ArrayList<>();
 
     @Getter
@@ -123,7 +127,6 @@ public class WhereBuild implements Serializable {
     public void setToUnderLine(boolean toUnderLine) {
         this.toUnderLine = toUnderLine;
     }
-
 
 
     @JsonIgnore
@@ -315,6 +318,13 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+    public WhereBuild having(String name, String value) {
+        if (!this.isSubSql && StrUtil.isNotBlank(name) && StrUtil.isNotBlank(value)) {
+            havingList.add(new Condition(name, CompareOperator.EMPTY, value));
+        }
+        return this;
+    }
+
     // 构建子条件
     public WhereBuild and(WhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.AND);
@@ -390,9 +400,9 @@ public class WhereBuild implements Serializable {
     // 构建最终 SQL 条件
     public String build(List<Object> argsList) {
 
-        if (conditions.isEmpty() && subBuilders.isEmpty()) {
+        /*if (conditions.isEmpty() && subBuilders.isEmpty()) {
             return "";
-        }
+        }*/
 
         if (this.connection == null) {
             throw new EasyException("condition is not bind connection please bind a connection");
@@ -434,6 +444,16 @@ public class WhereBuild implements Serializable {
 
         if (StrUtil.isNotBlank(groupBySegment)) {
             join += " GROUP BY " + groupBySegment;
+        }
+
+        if (CollUtil.isNotEmpty(havingList)) {
+            StringBuilder builder = new StringBuilder();
+            for (Condition condition : havingList) {
+                builder.append(SP.SPACE).append(condition.getSqlSegment(argsList, dialect));
+            }
+            if (!builder.toString().isEmpty()) {
+                join += " HAVING" + builder;
+            }
         }
 
         String orderBySegment = orderBy.stream().map(e -> {

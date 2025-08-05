@@ -17,9 +17,11 @@ package easy4j.infra.common.utils;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.annotations.Desc;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -177,6 +179,10 @@ public class ListTs {
     }
 
     public static <T> ArrayList<T> newArrayList() {
+        return new ArrayList<>();
+    }
+
+    public static <T> List<T> newList() {
         return new ArrayList<>();
     }
 
@@ -501,5 +507,25 @@ public class ListTs {
             return "";
         }
         return map.stream().map(String::valueOf).collect(Collectors.joining(s));
+    }
+
+    @Desc("根据指定的类型过滤出集合对象中的类型，如果是基本类型使用包装类型来匹配比如:Integer.class")
+    public static <T> List<T> pickByClass(List<Object> originList, Class<T> tClass) {
+        List<T> objects = ListTs.newList();
+        if (tClass == null) {
+            return objects;
+        }
+        if (CollUtil.isNotEmpty(originList)) {
+            objects = originList.stream().map(e -> {
+                if (ObjectUtil.isNotEmpty(e)) {
+                    Class<?> aClass = e.getClass();
+                    if (tClass.isAssignableFrom(aClass)) {
+                        return Convert.convert(tClass, e);
+                    }
+                }
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+        }
+        return objects;
     }
 }

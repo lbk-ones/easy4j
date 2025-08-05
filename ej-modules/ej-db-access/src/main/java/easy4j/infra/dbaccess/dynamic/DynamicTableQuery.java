@@ -33,9 +33,8 @@ import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
+import lombok.Getter;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +48,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static easy4j.infra.dbaccess.condition.SqlBuild.distinctSql;
+
 /**
  * DynamicTableQuery
  * 动态表查询
@@ -57,36 +58,61 @@ import java.util.stream.Collectors;
  * @date 2025-07-31 19:41:07
  */
 @EqualsAndHashCode(callSuper = true)
-@Data
-@Accessors(chain = true)
 public class DynamicTableQuery extends CommonDBAccess {
 
     public final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Getter
     private DataSource dataSource;
-
+    @Getter
     private String schema;
-
+    @Getter
     private String tableName;
 
-
+    @Getter
     private WhereBuild whereBuild;
 
+    @Getter
     private boolean isPrintSqlLog;
 
     // all fields to underline,if false then field and condition will keep not change
+    @Getter
     private boolean toUnderLine = true;
 
     // chec the fields is exists
+    @Getter
     private boolean checkFieldExists = true;
-
     // check field ignore case
+    @Getter
     private boolean checkFieldIgnoreCase = true;
-
-
+    // pageSize
+    @Getter
     private int pageSize;
-
+    // pageNo
+    @Getter
     private int pageNo;
+
+    // connection
+    protected Connection connection = null;
+
+    // resultSet
+    protected ResultSet resultSet = null;
+
+    // preparedStatement
+    protected PreparedStatement preparedStatement = null;
+
+    // finalSql
+    protected String sql = null;
+
+    // record sql
+    protected Pair<String, Date> stringDatePair = null;
+
+    // effectRows
+    protected int effectRows = -1;
+
+    // db dialect
+    protected Dialect dialect;
+
 
     /**
      * 条件查询
@@ -119,7 +145,7 @@ public class DynamicTableQuery extends CommonDBAccess {
 
     public DynamicTableQuery setPrintSqlLog(boolean printSqlLog) {
         isPrintSqlLog = printSqlLog;
-        this.setPrintLog(printSqlLog);
+        super.setPrintLog(printSqlLog);
         return this;
     }
 
@@ -132,7 +158,47 @@ public class DynamicTableQuery extends CommonDBAccess {
         return this;
     }
 
-    public String handlerColumn(String columnName) {
+    public DynamicTableQuery setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+        return this;
+    }
+
+    public DynamicTableQuery setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+        return this;
+    }
+
+    public DynamicTableQuery setSchema(String schema) {
+        this.schema = schema;
+        return this;
+    }
+
+    public DynamicTableQuery setTableName(String tableName) {
+        this.tableName = tableName;
+        return this;
+    }
+
+    public DynamicTableQuery setCheckFieldExists(boolean checkFieldExists) {
+        this.checkFieldExists = checkFieldExists;
+        return this;
+    }
+
+    public DynamicTableQuery setCheckFieldIgnoreCase(boolean checkFieldIgnoreCase) {
+        this.checkFieldIgnoreCase = checkFieldIgnoreCase;
+        return this;
+    }
+
+    public DynamicTableQuery setPageNo(int pageNo) {
+        this.pageNo = pageNo;
+        return this;
+    }
+
+    public DynamicTableQuery setWhereBuild(WhereBuild whereBuild) {
+        this.whereBuild = whereBuild;
+        return this;
+    }
+
+    private String handlerColumn(String columnName) {
         Dialect dialect = this.whereBuild.getDialect();
         Wrapper wrapper = dialect.getWrapper();
         String s = columnName;
@@ -149,7 +215,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         return underlineCase;
     }
 
-    public Set<String> getAllFields(WhereBuild whereBuild1) {
+    private Set<String> getAllFields(WhereBuild whereBuild1) {
         Set<String> allFields = new HashSet<>();
         List<Condition> conditions = whereBuild1.getConditions();
         conditions.forEach(e -> allFields.add(handlerColumn(e.getColumn())));
@@ -162,7 +228,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         return allFields;
     }
 
-    public void getFields(WhereBuild whereBuild, Set<String> allFields) {
+    private void getFields(WhereBuild whereBuild, Set<String> allFields) {
         allFields.addAll(getAllFields(whereBuild));
         List<WhereBuild> subBuilders = whereBuild.getSubBuilders();
         for (WhereBuild subBuilder : subBuilders) {
@@ -170,7 +236,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         }
     }
 
-    public void checkFields(Set<String> allFields, List<DynamicColumn> columns) {
+    private void checkFields(Set<String> allFields, List<DynamicColumn> columns) {
         Set<String> notEqualFields = new HashSet<>();
         for (String allField : allFields) {
             boolean result = false;
@@ -197,25 +263,12 @@ public class DynamicTableQuery extends CommonDBAccess {
         }
     }
 
+    // 会检查参数是否存在
     public List<Dict> query() {
-        if (this.whereBuild == null) {
-            this.whereBuild = WhereBuild.get();
-        }
         CheckUtils.notNull(dataSource, "datasource is not null");
         CheckUtils.notNull(tableName, "tableName is not null");
-        Connection connection = null;
-        ResultSet resultSet = null;
-        PreparedStatement preparedStatement = null;
-        String sql = null;
-        Pair<String, Date> stringDatePair = null;
-        int effectRows = -1;
         try {
-            connection = this.dataSource.getConnection();
-            List<Object> args = ListTs.newArrayList();
-            Dialect dialect1 = JdbcHelper.getDialect(connection);
-            this.whereBuild.setToUnderLine(this.toUnderLine);
-            this.whereBuild.bind(connection);
-            this.whereBuild.bind(dialect1);
+            List<Object> args = init();
             // get columns information schema from db
             List<DynamicColumn> columns = InformationSchema.getColumns(this.dataSource, this.schema, this.tableName, connection);
             if (CollUtil.isEmpty(this.whereBuild.getSelectFieldsStr())) {
@@ -246,25 +299,7 @@ public class DynamicTableQuery extends CommonDBAccess {
                     finalTableName, null, true, args, connection
             );
             // page
-            if (pageSize > 0) {
-                Page<Object> objectPage = new Page<>();
-                objectPage.setPageNo(pageNo);
-                objectPage.setPageSize(pageSize);
-                sql = dialect1.getPageSql(sql, objectPage);
-            }
-            // prepare statement
-            MapListHandler tBeanListHandler = new MapListHandler();
-            stringDatePair = recordSql(sql, connection, args.toArray(new Object[]{}));
-            if (ObjectUtil.isNotEmpty(args)) {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
-            } else {
-                preparedStatement = StatementUtil.prepareStatement(connection, sql);
-            }
-            resultSet = preparedStatement.executeQuery();
-            // handler result
-            List<Map<String, Object>> maps = tBeanListHandler.handle(resultSet);
-            effectRows = CollUtil.isEmpty(maps) ? 0 : maps.size();
-            return maps.stream().map(Dict::new).collect(Collectors.toList());
+            return queryByArgs(args);
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("dynamic query", sql, e);
         } finally {
@@ -273,5 +308,77 @@ public class DynamicTableQuery extends CommonDBAccess {
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
+    }
+
+
+    // 指定参数且不检查参数是否存在
+    public List<Dict> queryNoCheck(List<String> fields) {
+        CheckUtils.notNull(dataSource, "datasource is not null");
+        CheckUtils.notNull(tableName, "tableName is not null");
+        try {
+            if (null == fields) {
+                fields = ListTs.newList();
+            }
+            List<Object> args = init();
+            super.setToUnderline(toUnderLine);
+            // get sql
+            String build = this.whereBuild.build(args);
+            List<String> selectFieldsStr = this.whereBuild.getSelectFieldsStr();
+            if(CollUtil.isNotEmpty(fields)){
+                selectFieldsStr.addAll(fields);
+            }
+            sql = DDlLine(SELECT, tableName, where(build), selectFieldsStr.toArray(new String[]{}));
+            sql = distinctSql(this.whereBuild, selectFieldsStr, sql);
+            // page
+            return queryByArgs(args);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("dynamic query", sql, e);
+        } finally {
+            printSql(stringDatePair, effectRows);
+            JdbcHelper.close(resultSet);
+            JdbcHelper.close(preparedStatement);
+            DataSourceUtils.releaseConnection(connection, getDataSource());
+        }
+    }
+
+    private List<Dict> queryByArgs(List<Object> args) throws SQLException {
+        sql = page(sql, dialect);
+        // prepare statement
+        MapListHandler tBeanListHandler = new MapListHandler();
+        stringDatePair = recordSql(sql, connection, args.toArray(new Object[]{}));
+        if (ObjectUtil.isNotEmpty(args)) {
+            preparedStatement = StatementUtil.prepareStatement(connection, sql, args);
+        } else {
+            preparedStatement = StatementUtil.prepareStatement(connection, sql);
+        }
+        resultSet = preparedStatement.executeQuery();
+        // handler result
+        List<Map<String, Object>> maps = tBeanListHandler.handle(resultSet);
+        effectRows = CollUtil.isEmpty(maps) ? 0 : maps.size();
+        return maps.stream().map(Dict::new).collect(Collectors.toList());
+    }
+
+    // 初始化
+    private List<Object> init() throws SQLException {
+        if (this.whereBuild == null) {
+            this.whereBuild = WhereBuild.get();
+        }
+        connection = this.dataSource.getConnection();
+        List<Object> args = ListTs.newArrayList();
+        dialect = JdbcHelper.getDialect(connection);
+        this.whereBuild.setToUnderLine(this.toUnderLine);
+        this.whereBuild.bind(connection);
+        this.whereBuild.bind(dialect);
+        return args;
+    }
+
+    private String page(String sql, Dialect dialect1) {
+        if (pageSize > 0) {
+            Page<Object> objectPage = new Page<>();
+            objectPage.setPageNo(pageNo);
+            objectPage.setPageSize(pageSize);
+            sql = dialect1.getPageSql(sql, objectPage);
+        }
+        return sql;
     }
 }

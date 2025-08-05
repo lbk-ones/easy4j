@@ -186,7 +186,7 @@ public class SqlBuild extends CommonDBAccess {
         }
     }
 
-    private static String distinctSql(WhereBuild whereBuild, List<String> selectFields, String sql) {
+    public static String distinctSql(WhereBuild whereBuild, List<String> selectFields, String sql) {
         if (whereBuild != null && whereBuild.isDistinct() && CollUtil.isNotEmpty(selectFields)) {
             sql = sql.replaceAll(SELECT, SELECT + " DISTINCT");
         }
