@@ -30,7 +30,6 @@ import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.Easy4JStarterTest;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
-import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
@@ -38,6 +37,7 @@ import easy4j.infra.context.Easy4jContext;
 import jodd.util.StringPool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.bind.BindResult;
@@ -74,10 +74,40 @@ public class Easy4j implements ApplicationContextAware {
 
     public static DbType dbType;
 
+    public  static String[] inputArgs;
 
     public static String mainClassPath = "";
     public static Class<?> mainClass;
     private static final AtomicBoolean isReady = new AtomicBoolean(false);
+
+    public static Map<String, String> getSpringInputArgsMap() {
+        Map<@Nullable String, @Nullable String> rm = Maps.newHashMap();
+        if (inputArgs != null) {
+            for (String inputArg : inputArgs) {
+                try{
+                    if (inputArg.startsWith("--")) {
+                        String[] split = inputArg.substring(2).split("=");
+                        String key = split[0];
+                        String value = split[1];
+                        rm.put(key,value);
+                    }
+                }catch (Exception ignored){
+                }
+            }
+        }
+        return rm;
+    }
+
+    public static void main(String[] args) {
+        String wt = "--name=ggg";
+
+        String substring = wt.substring(2);
+        String[] split = substring.split("=");
+        String key = split[0];
+        String value = split[1];
+        System.out.println(key + "=" + value);
+        System.out.println(substring);
+    }
 
     public static boolean isReady() {
         return isReady.get();
@@ -120,9 +150,10 @@ public class Easy4j implements ApplicationContextAware {
     public static String getProperty(String name) {
         return getProperty(name, String.class);
     }
-    public static String getProperty(String name,String defaultValue) {
+
+    public static String getProperty(String name, String defaultValue) {
         String property = getProperty(name, String.class);
-        property = ObjectUtil.isEmpty(property)?defaultValue:property;
+        property = ObjectUtil.isEmpty(property) ? defaultValue : property;
         return property;
     }
 
@@ -137,9 +168,10 @@ public class Easy4j implements ApplicationContextAware {
     public static <T> T getProperty(String name, Class<T> aclass) {
         return getPropertyWith(name, aclass, false, null);
     }
-    public static <T> T getProperty(String name, Class<T> aclass,T defaultValue) {
+
+    public static <T> T getProperty(String name, Class<T> aclass, T defaultValue) {
         T propertyWith = getPropertyWith(name, aclass, false, null);
-        propertyWith = ObjectUtil.isEmpty(propertyWith)?defaultValue:propertyWith;
+        propertyWith = ObjectUtil.isEmpty(propertyWith) ? defaultValue : propertyWith;
         return propertyWith;
     }
 

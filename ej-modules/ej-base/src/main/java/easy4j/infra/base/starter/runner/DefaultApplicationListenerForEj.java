@@ -44,6 +44,7 @@ public class DefaultApplicationListenerForEj implements ApplicationListenerForEj
         Class<?> mainApplicationClass = application.getMainApplicationClass();
         Easy4j.mainClass = mainApplicationClass;
         Easy4j.mainClassPath = mainApplicationClass.getPackage().getName();
+        Easy4j.inputArgs = args;
     }
 
     @Override

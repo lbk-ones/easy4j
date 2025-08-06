@@ -301,6 +301,13 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             if (StrUtil.isNotBlank(property1)) {
                 mapProperties.put(e, property1);
                 return;
+            }else{
+                Map<String, String> sMap = Easy4j.getSpringInputArgsMap();
+                String var2 = sMap.get(e);
+                if(StrUtil.isNotBlank(var2)){
+                    mapProperties.put(e, var2);
+                    return;
+                }
             }
             // loop all properties order by sort
             allProperties.forEach(e2 -> {
