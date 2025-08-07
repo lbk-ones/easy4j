@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
@@ -16,6 +17,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.persistence.Table;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
@@ -146,6 +148,14 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
             if(aclass.isAnnotationPresent(JdbcTable.class)){
                 JdbcTable annotation = aclass.getAnnotation(JdbcTable.class);
                 String name = annotation.name();
+                if(StrUtil.isNotBlank(name)) return name;
+            }else if(aclass.isAnnotationPresent(TableName.class)){
+                TableName tableName1 = aclass.getAnnotation(TableName.class);
+                String name = tableName1.value();
+                if(StrUtil.isNotBlank(name)) return name;
+            }else if(aclass.isAnnotationPresent(Table.class)){
+                Table table = aclass.getAnnotation(Table.class);
+                String name = table.name();
                 if(StrUtil.isNotBlank(name)) return name;
             }
             String simpleName = aclass.getSimpleName();

@@ -24,6 +24,8 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
 import cn.hutool.db.sql.Wrapper;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.dbaccess.condition.WhereBuild;
@@ -38,6 +40,8 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.sql.DataSource;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -102,15 +106,22 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                     continue;
                 }
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
-                if (null != annotation) {
+                TableField annotation1 = field.getAnnotation(TableField.class);
+                Column annotation2 = field.getAnnotation(Column.class);
+                if (null != annotation || null != annotation1 || annotation2 != null) {
                     if (SAVE.equals(sqlType)) {
-                        if (!(annotation.isPrimaryKey() && annotation.autoIncrement())) {
-                            String name1 = annotation.name();
-                            if (StrUtil.isNotBlank(name1)) {
-                                nameList.add(name1);
-                            } else {
-                                nameList.add(name);
-                            }
+                        String name1 = null;
+                        if (annotation != null && !(annotation.isPrimaryKey() && annotation.autoIncrement())) {
+                            name1 = annotation.name();
+                        }else if (annotation1 != null && !field.isAnnotationPresent(TableId.class)) {
+                            name1 = annotation1.value();
+                        }else if (annotation2 != null && !field.isAnnotationPresent(Id.class)) {
+                            name1 = annotation2.name();
+                        }
+                        if (StrUtil.isNotBlank(name1)) {
+                            nameList.add(name1);
+                        } else {
+                            nameList.add(name);
                         }
                     } else if (UPDATE.equals(sqlType)) {
                         nameList.add(name);

@@ -24,6 +24,7 @@ import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.condition.Condition;
@@ -46,6 +47,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static easy4j.infra.dbaccess.condition.SqlBuild.distinctSql;
@@ -241,8 +244,8 @@ public class DynamicTableQuery extends CommonDBAccess {
         for (String allField : allFields) {
             boolean result = false;
             for (DynamicColumn column : columns) {
-                String columnName = column.getColumnName();
-                String s = handlerColumn(columnName);
+                String s = column.getColumnName();
+                allField = handlerColumn(allField);
                 if (checkFieldIgnoreCase) {
                     allField = allField.toLowerCase();
                     s = s.toLowerCase();
@@ -310,9 +313,21 @@ public class DynamicTableQuery extends CommonDBAccess {
         }
     }
 
+    /**
+     * 判断字符串中是否包含被圆括号()包裹的内容
+     */
+    public static boolean hasParenthesesContent(String str) {
+        // 只匹配完整的圆括号对及其内容
+        String regex = "\\([^)]*\\)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(str);
+
+        // 判断是否有匹配项
+        return matcher.find();
+    }
 
     // 指定参数且不检查参数是否存在
-    public List<Dict> queryNoCheck(List<String> fields) {
+    public List<Dict> queryNoCheck(List<String> fields, List<String> checkFields) {
         CheckUtils.notNull(dataSource, "datasource is not null");
         CheckUtils.notNull(tableName, "tableName is not null");
         try {
@@ -324,9 +339,10 @@ public class DynamicTableQuery extends CommonDBAccess {
             // get sql
             String build = this.whereBuild.build(args);
             List<String> selectFieldsStr = this.whereBuild.getSelectFieldsStr();
-            if(CollUtil.isNotEmpty(fields)){
+            if (CollUtil.isNotEmpty(fields)) {
                 selectFieldsStr.addAll(fields);
             }
+            checkPickFields(fields, checkFields);
             sql = DDlLine(SELECT, tableName, where(build), selectFieldsStr.toArray(new String[]{}));
             sql = distinctSql(this.whereBuild, selectFieldsStr, sql);
             // page
@@ -339,6 +355,58 @@ public class DynamicTableQuery extends CommonDBAccess {
             JdbcHelper.close(preparedStatement);
             DataSourceUtils.releaseConnection(connection, getDataSource());
         }
+    }
+
+    /**
+     * CheckPickFields
+     * 兼容检查字段是否存在
+     *
+     * @author bokun.li
+     * @date 2025/8/7
+     */
+    private void checkPickFields(List<String> selectFieldsStr, List<String> checkFields) {
+        try {
+            Set<String> allFields = new HashSet<>();
+            if (CollUtil.isNotEmpty(selectFieldsStr)) {
+                Wrapper wrapper = this.dialect.getWrapper();
+                String preWrapQuote = "";
+                String sufWrapQuote = "";
+                try {
+                    preWrapQuote = String.valueOf(wrapper.getPreWrapQuote());
+                    sufWrapQuote = String.valueOf(wrapper.getSufWrapQuote());
+                } catch (Exception ignored) {
+                }
+                String finalPreWrapQuote = preWrapQuote;
+                String finalSufWrapQuote = sufWrapQuote;
+                // skip special character
+                // skip  contain empty str 、 contain () 、contain as 、 escape wrap
+                List<String> collect = selectFieldsStr.stream().filter(e ->
+                        {
+                            e = StrUtil.trim(e);
+                            if (StrUtil.isEmpty(e)) {
+                                return false;
+                            }
+                            boolean isEscape = StrUtil.isNotBlank(finalPreWrapQuote) && StrUtil.isNotBlank(finalSufWrapQuote) && StrUtil.isWrap(e, finalPreWrapQuote, finalSufWrapQuote);
+                            if (isEscape) {
+                                return false;
+                            }
+                            return !(e.contains(SP.SPACE) || hasParenthesesContent(e) || StrUtil.containsIgnoreCase(e, " as "));
+                        }
+                ).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)) {
+                    allFields.addAll(collect);
+                }
+            }
+            if (CollUtil.isNotEmpty(checkFields)) {
+                allFields.addAll(checkFields);
+            }
+            getFields(this.whereBuild, allFields);
+            List<DynamicColumn> columns = InformationSchema.getColumns(this.dataSource, this.schema, this.tableName, connection);
+            checkFields(allFields, columns);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("checkPickFields", null, e);
+        }
+
     }
 
     private List<Dict> queryByArgs(List<Object> args) throws SQLException {

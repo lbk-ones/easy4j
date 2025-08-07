@@ -7,6 +7,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
@@ -25,6 +28,10 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
@@ -71,7 +78,7 @@ public abstract class CommonDBAccess {
         ) {
             return true;
         }
-        return field.isAnnotationPresent(JdbcIgnore.class);
+        return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class);
     }
 
     public String where(String sql) {
@@ -198,7 +205,8 @@ public abstract class CommonDBAccess {
             Field[] fields = ReflectUtil.getFields(object.getClass());
             for (Field field : fields) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
-                if (Objects.nonNull(annotation) && annotation.isPrimaryKey()) {
+                // compatible jpa mybatis-plus
+                if ((Objects.nonNull(annotation) && annotation.isPrimaryKey()) || field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class)) {
                     String name = field.getName();
                     Object fieldValue = ReflectUtil.getFieldValue(object, field);
                     if (ObjectUtil.isNotEmpty(fieldValue)) {
@@ -258,6 +266,14 @@ public abstract class CommonDBAccess {
 
                 toJson = annotation.toJson();
                 pgFieldType = annotation.pgType();
+            }else if(field.isAnnotationPresent(TableField.class)){
+                TableField tableField = field.getAnnotation(TableField.class);
+                String value = tableField.value();
+                name = StrUtil.isBlank(value) ? name : value;
+            }else if(field.isAnnotationPresent(Column.class)){
+                Column tableField = field.getAnnotation(Column.class);
+                String value = tableField.name();
+                name = StrUtil.isBlank(value) ? name : value;
             }
             if (isToUnderline) {
                 name = StrUtil.toUnderlineCase(name);
@@ -292,8 +308,7 @@ public abstract class CommonDBAccess {
             if (field.isAnnotationPresent(JdbcColumn.class)) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 return annotation.isPrimaryKey();
-            }
-            return false;
+            }else return field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class);
         });
         return Arrays.stream(fields).map(e -> {
             if (e.isAnnotationPresent(JdbcColumn.class)) {
@@ -302,6 +317,14 @@ public abstract class CommonDBAccess {
                 if (StrUtil.isNotBlank(name)) {
                     return name;
                 }
+            }else if (e.isAnnotationPresent(TableId.class)) {
+                TableId annotation = e.getAnnotation(TableId.class);
+                String name = annotation.value();
+                if (StrUtil.isNotBlank(name)) {
+                    return name;
+                }
+            }else if (e.isAnnotationPresent(Id.class)) {
+                return e.getName();
             }
             return e.getName();
         }).collect(Collectors.toList());
@@ -312,6 +335,7 @@ public abstract class CommonDBAccess {
         StringBuilder sb = new StringBuilder();
 
         Wrapper wrapper = dialect.getWrapper();
+        // compatible db-access mybatis-plus jpa
         JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
         if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
             String schema = StrUtil.blankToDefault(annotation.schema(), "");
@@ -319,6 +343,23 @@ public abstract class CommonDBAccess {
             String join = String.join(".", list);
             sb.append(join);
         } else {
+            if(clazz.isAnnotationPresent(TableName.class)){
+                TableName annotation1 = clazz.getAnnotation(TableName.class);
+                if(Objects.nonNull(annotation1)){
+                    String value = annotation1.value();
+                    if(StrUtil.isNotBlank(value)){
+                        return value;
+                    }
+                }
+            }else if(clazz.isAnnotationPresent(Table.class)){
+                Table table = clazz.getAnnotation(Table.class);
+                if(Objects.nonNull(table)){
+                    String value = table.name();
+                    if(StrUtil.isNotBlank(value)){
+                        return value;
+                    }
+                }
+            }
             String simpleName = clazz.getSimpleName();
             String underlineCase = wrapper.wrap(StrUtil.toUnderlineCase(simpleName)).toLowerCase();
             sb.append(underlineCase);

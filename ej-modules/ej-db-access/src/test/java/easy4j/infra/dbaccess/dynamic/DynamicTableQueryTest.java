@@ -12,6 +12,8 @@ import javax.sql.DataSource;
 
 import java.util.List;
 
+import static easy4j.infra.dbaccess.dynamic.DynamicTableQuery.hasParenthesesContent;
+
 @Easy4JStarter(
         serverName = "test-db-access",
         serverPort = 9090,
@@ -21,7 +23,7 @@ import java.util.List;
         "spring.datasource.type=com.zaxxer.hikari.HikariDataSource",
         "spring.datasource.username=drhi_user",
         "spring.datasource.password=drhi_password",
-        "spring.datasource.url=jdbc:postgresql://10.0.32.20:31541/ds",
+        "spring.datasource.url=jdbc:postgresql://10.0.32.19:30163/ds",
         "spring.datasource.driver-class-name=org.postgresql.Driver",
         "spring.datasource.hikari.maximum-pool-size=50"
 })
@@ -55,5 +57,20 @@ class DynamicTableQueryTest {
         System.out.println("-----------------------------");
         System.out.println(JacksonUtil.toJson(query2));
 
+    }
+
+    @Test
+    void test2(){
+        String str1 = "这是(测试)字符串";
+        String str2 = "这个字符串没有括号";
+        String str3 = "带(多个)括号(的)例子";
+        String str4 = "只有左括号(";
+        String str5 = "只有右括号)";
+
+        System.out.println(hasParenthesesContent(str1)); // true
+        System.out.println(hasParenthesesContent(str2)); // false
+        System.out.println(hasParenthesesContent(str3)); // true
+        System.out.println(hasParenthesesContent(str4)); // false（只有左括号，不匹配）
+        System.out.println(hasParenthesesContent(str5)); // false（只有右括号，不匹配）
     }
 }
