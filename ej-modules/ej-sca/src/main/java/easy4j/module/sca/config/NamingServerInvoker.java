@@ -16,6 +16,7 @@ package easy4j.module.sca.config;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
@@ -38,8 +39,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -79,15 +78,25 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
 
     private String serverAddr = "localhost:8848";
 
-    private RestTemplate restTemplate;
+    private volatile RestTemplate restTemplate;
 
     private static final Map<String, NamingService> namingServiceCache = new ConcurrentHashMap<>();
 
     public NamingServerInvoker(String serverAddr) {
         this.serverAddr = serverAddr;
-        this.restTemplate = new RestTemplate();
-        initJackson(this.restTemplate);
+        this.restTemplate = getRestTemplate();
 
+    }
+
+    public RestTemplate getRestTemplate() {
+        if(restTemplate == null){
+            synchronized (NamingServerInvoker.class){
+                if(restTemplate == null){
+                    restTemplate = SpringUtil.getBean(RestTemplate.class);
+                }
+            }
+        }
+        return restTemplate;
     }
 
     public NamingServerInvoker(String nameSpace2, String serverAddr, String username, String password) {
@@ -95,39 +104,12 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         this.serverAddr = serverAddr;
         this.username = username;
         this.password = password;
-        this.restTemplate = new RestTemplate();
-        initJackson(this.restTemplate);
+        this.restTemplate = getRestTemplate();
     }
 
     public NamingServerInvoker(String serverAddr, RestTemplate restTemplate) {
         this.serverAddr = serverAddr;
-        if (null == restTemplate) {
-            restTemplate = new RestTemplate();
-            initJackson(restTemplate);
-
-        }
         this.restTemplate = restTemplate;
-    }
-
-    public NamingServerInvoker(String nameSpace2, String serverAddr, String username, String password, RestTemplate restTemplate) {
-        this.nameSpace = nameSpace2;
-        this.serverAddr = serverAddr;
-        this.username = username;
-        this.password = password;
-        if (null == restTemplate) {
-            restTemplate = new RestTemplate();
-            initJackson(restTemplate);
-        }
-        this.restTemplate = restTemplate;
-    }
-
-    private static void initJackson(RestTemplate restTemplate) {
-        List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
-        messageConverters.removeIf(e -> e instanceof MappingJackson2HttpMessageConverter);
-        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
-        mappingJackson2HttpMessageConverter.setObjectMapper(JacksonUtil.getMapper());
-        messageConverters.add(0, mappingJackson2HttpMessageConverter);
-        restTemplate.setMessageConverters(messageConverters);
     }
 
 
@@ -390,7 +372,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
     }
 
     private void initHeader(HttpHeaders headers, String accessToken) {
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        //headers.setContentType(MediaType.APPLICATION_JSON);
         PublicHeaders.initHeader(headers);
         headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
     }
@@ -403,23 +385,23 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             groupName = this.group;
         }
         List<Instance> instances = ListTs.newArrayList();
-        String dUrl = Easy4j.getProperty("feign."+SP.DOT+serviceName + SP.DOT + groupName+SP.DOT+SP.URL);
+        String dUrl = Easy4j.getProperty("feign." + SP.DOT + serviceName + SP.DOT + groupName + SP.DOT + SP.URL);
         if (StrUtil.isNotBlank(dUrl)) {
-            try{
+            try {
                 Instance instance = new Instance();
                 if (!StrUtil.startWith(dUrl, "http://") && !StrUtil.startWith(dUrl, "https://")) {
-                    dUrl += "http://";
+                    dUrl = "http://" + dUrl;
                 }
                 URL uri = new URL(dUrl);
                 String host = uri.getHost();
                 instance.setIp(host);
                 instance.setPort(uri.getPort());
                 instances.add(instance);
-            }catch (Exception e){
-                log.error("地址解析异常",e);
-                throw new NacosException(NacosException.CLIENT_ERROR,e);
+            } catch (Exception e) {
+                log.error("地址解析异常", e);
+                throw new NacosException(NacosException.CLIENT_ERROR, e);
             }
-        }else{
+        } else {
             NamingService namingService = getNamingService();
             instances = namingService.selectInstances(serviceName, groupName, true);
         }
@@ -480,8 +462,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
                             nacosNameSpace,
                             url,
                             username1,
-                            password1,
-                            restTemplate
+                            password1
                     );
                 }
             }

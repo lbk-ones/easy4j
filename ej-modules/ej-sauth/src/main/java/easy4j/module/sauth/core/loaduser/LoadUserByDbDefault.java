@@ -58,7 +58,8 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_IS_SERVER, boolean.class);
         boolean equals1 = StrUtil.equals(SP.DEFAULT, implType);
         if (!equals1) {
-            throw new IllegalArgumentException(SysLog.compact("the 【" + SysConstant.EASY4J_SIMPLE_AUTH_USER_IMPL_TYPE + "】 should be " + SP.DEFAULT));
+            return false;
+            //throw new IllegalArgumentException(SysLog.compact("the 【" + SysConstant.EASY4J_SIMPLE_AUTH_USER_IMPL_TYPE + "】 should be " + SP.DEFAULT));
         }
         return authEnable && isServer;
     }

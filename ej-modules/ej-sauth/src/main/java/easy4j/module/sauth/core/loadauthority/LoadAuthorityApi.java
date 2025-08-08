@@ -64,7 +64,7 @@ public class LoadAuthorityApi {
 
     // directly use db query
     public static Set<SecurityAuthority> getAuthorityListByDb(String userName) {
-        LoadAuthorityBy authorityBy = LoadAuthorityByRpcHolder.loadAuthorityByRpc;
+        LoadAuthorityBy authorityBy = getLoadAuthorityByDb();
         if (StrUtil.isNotBlank(userName) && null != authorityBy) {
             Set<SecurityAuthority> securityAuthorities = authorityBy.loadSecurityAuthoritiesByUsername(userName);
             if (CollUtil.isNotEmpty(securityAuthorities)) {

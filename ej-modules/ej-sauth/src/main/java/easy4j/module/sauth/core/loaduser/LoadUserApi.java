@@ -30,7 +30,7 @@ public final class LoadUserApi {
             loadUserByDb = SpringUtil.getBean(LoadUserByDb.class);
         }
         if (!loadUserByDb.select()) {
-            Easy4j.error("not select load user rule ! please check");
+            //Easy4j.error("not select load user rule ! please check");
             return null;
         }
         return loadUserByDb;
