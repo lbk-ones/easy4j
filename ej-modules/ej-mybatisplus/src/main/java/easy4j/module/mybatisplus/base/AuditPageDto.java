@@ -37,6 +37,7 @@ public class AuditPageDto extends BaseAudit implements APage {
     @Schema(description = "每页多少条，默认20")
     private int pageSize = 20;
 
+    @Schema(description = "如果一个输入的值可以查很多字段那么就用这个，比如就一个框然后啥都查")
     private String searchKey;
 
     @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持eq in like gt gte lt lte tgt(t开头的是时间) tgte tlt tlte between betweene(包含) 为in的话第三个参数为json类型的字符串数组其他不用转成json")

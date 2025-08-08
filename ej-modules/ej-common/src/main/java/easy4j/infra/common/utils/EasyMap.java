@@ -14,6 +14,7 @@
  */
 package easy4j.infra.common.utils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.json.JacksonUtil;
@@ -31,6 +32,8 @@ import java.util.Set;
  */
 public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
     private static final long serialVersionUID = 334636121615156130L;
+
+    @JsonIgnore
     private List<K> cacheKeys = ListTs.newArrayList();
 
     public EasyMap() {
