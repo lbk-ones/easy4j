@@ -76,5 +76,9 @@ public class EasyPageResult extends EasyMap<String, Object> {
         put(RECORDS,records);
         return this;
     }
+    public EasyPageResult setTotal(long total){
+        put(TOTAL,total);
+        return this;
+    }
 
 }
