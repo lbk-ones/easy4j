@@ -10,6 +10,7 @@ import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
+import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -27,6 +28,9 @@ public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc, Initializi
     @Resource
     Easy4jContext easy4jContext;
 
+    @Resource
+    SecurityContext securityContext;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         easy4jNacosInvokerApi = easy4jContext.get(Easy4jNacosInvokerApi.class);
@@ -34,17 +38,22 @@ public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc, Initializi
 
     @Override
     public Set<SecurityAuthority> loadSecurityAuthoritiesByUsername(String userName) {
-        NacosInvokeDto build = NacosInvokeDto.builder()
-                .group(SysConstant.NACOS_AUTH_GROUP)
-                .serverName(Config.AUTH_SERVER_NAME)
-                .path(LOAD_URL + SP.SLASH + userName)
-                .build();
-        EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
-        CheckUtils.checkRpcRes(securitySessionEasyResult);
-        Object data = securitySessionEasyResult.getData();
-        if(ObjectUtil.isNotEmpty(data)){
-            List<SecurityAuthority> list = JacksonUtil.toList(JacksonUtil.toJson(data), SecurityAuthority.class);
-            return new HashSet<>(list);
+        Set<SecurityAuthority> authority = securityContext.getAuthority(userName);
+        if (null == authority) {
+            NacosInvokeDto build = NacosInvokeDto.builder()
+                    .group(SysConstant.NACOS_AUTH_GROUP)
+                    .serverName(Config.AUTH_SERVER_NAME)
+                    .path(LOAD_URL + SP.SLASH + userName)
+                    .build();
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            CheckUtils.checkRpcRes(securitySessionEasyResult);
+            Object data = securitySessionEasyResult.getData();
+            if (ObjectUtil.isNotEmpty(data)) {
+                List<SecurityAuthority> list = JacksonUtil.toList(JacksonUtil.toJson(data), SecurityAuthority.class);
+                HashSet<SecurityAuthority> securityAuthorities = new HashSet<>(list);
+                securityContext.setAuthority(userName, securityAuthorities);
+                return securityAuthorities;
+            }
         }
         return new HashSet<>();
     }

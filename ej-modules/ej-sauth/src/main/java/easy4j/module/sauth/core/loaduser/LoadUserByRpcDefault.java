@@ -9,6 +9,7 @@ import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
+import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,6 +40,9 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
     @Resource
     Easy4jContext easy4jContext;
 
+    @Resource
+    SecurityContext securityContext;
+
     String serverName;
 
 
@@ -56,14 +60,20 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
 
     @Override
     public ISecurityEasy4jUser loadUserByUserName(String username) {
-        NacosInvokeDto build = NacosInvokeDto.builder()
-                .group(SysConstant.NACOS_AUTH_GROUP)
-                .serverName(serverName)
-                .path(LOAD_USER_BY_USER_NAME + SP.SLASH + username)
-                .build();
-        EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
-        CheckUtils.checkRpcRes(securitySessionEasyResult);
-        return CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUser.class);
+        ISecurityEasy4jUser user = securityContext.getUser(username);
+        if (user == null) {
+            NacosInvokeDto build = NacosInvokeDto.builder()
+                    .group(SysConstant.NACOS_AUTH_GROUP)
+                    .serverName(serverName)
+                    .path(LOAD_USER_BY_USER_NAME + SP.SLASH + username)
+                    .build();
+            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            CheckUtils.checkRpcRes(securitySessionEasyResult);
+            user = CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUser.class);
+            securityContext.setUser(username, user);
+        }
+
+        return user;
     }
 
     @Override

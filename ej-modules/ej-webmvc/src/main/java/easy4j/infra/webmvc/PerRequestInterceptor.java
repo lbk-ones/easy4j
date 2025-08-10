@@ -21,6 +21,7 @@ import easy4j.infra.common.utils.ServiceLoaderUtils;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.Easy4jContextFactory;
+import easy4j.infra.context.THConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.web.method.HandlerMethod;
@@ -131,7 +132,7 @@ public class PerRequestInterceptor implements HandlerInterceptor {
 
     private static void setAttribute(HttpServletRequest request, HttpServletResponse response) {
         String requestId = request.getHeader(SysConstant.SERVER_TRACE_NAME);
-        String easy4jTraceId = request.getHeader(SysConstant.EASY4J_RPC_TRACE);
+        String easy4jTraceId = request.getHeader(THConstant.EASY4J_RPC_TRACE);
 
         // 标记已拦截
         request.setAttribute(INTERCEPTOR_MARK, true);
@@ -155,13 +156,13 @@ public class PerRequestInterceptor implements HandlerInterceptor {
         if (StrUtil.isBlank(easy4jTraceId)) {
             easy4jTraceId = UUID.randomUUID().toString().replaceAll("-", "");
         }
-        request.setAttribute(SysConstant.EASY4J_RPC_TRACE, easy4jTraceId);
+        request.setAttribute(THConstant.EASY4J_RPC_TRACE, easy4jTraceId);
 
         response.setHeader(SysConstant.TRACE_ID_NAME, requestId);
         MDC.put(SysConstant.TRACE_ID_NAME, "[" + requestId + "]");
         Easy4jContext context = Easy4jContextFactory.getContext();
         context.registerThreadHash(SysConstant.TRACE_ID_NAME, SysConstant.TRACE_ID_NAME, requestId);
-        context.registerThreadHash(SysConstant.EASY4J_RPC_TRACE, SysConstant.EASY4J_RPC_TRACE, easy4jTraceId);
+        context.registerThreadHash(THConstant.EASY4J_RPC_TRACE, THConstant.EASY4J_RPC_TRACE, easy4jTraceId);
     }
 
     /**

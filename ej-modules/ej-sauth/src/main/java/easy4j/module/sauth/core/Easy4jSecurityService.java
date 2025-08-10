@@ -117,11 +117,6 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         return onlineUserInfo;
     }
 
-    private void bindCtx(SecuritySession init) {
-        SecurityContext securityContext1 = getSecurityContext();
-        securityContext1.setSession(init);
-    }
-
     /**
      * 几种选择
      * 1、存入数据库

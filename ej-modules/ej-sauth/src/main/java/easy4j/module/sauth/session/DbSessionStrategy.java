@@ -14,8 +14,10 @@
  */
 package easy4j.module.sauth.session;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
@@ -28,6 +30,8 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.module.sauth.config.Config;
+import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.SecuritySession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,6 +65,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Resource
     Easy4jContext easy4jContext;
 
+    @Resource
+    SecurityContext securityContext;
+
     boolean isClient;
 
     String serverName;
@@ -77,7 +84,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             isClient = true;
         }
         // server run session clear thread
-        if(isServer && property){
+        if (isServer && property) {
             scheduleClear();
         }
     }
@@ -106,16 +113,22 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public SecuritySession getSession(String token) {
         if (isClient) {
-            NacosInvokeDto build = NacosInvokeDto.builder()
-                    .group(SysConstant.NACOS_AUTH_GROUP)
-                    .serverName(serverName)
-                    .accessToken(token)
-                    .path(GET_SESSION + SP.SLASH + token)
-                    .build();
+            // cache
+            ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
+            if (session == null) {
+                NacosInvokeDto build = NacosInvokeDto.builder()
+                        .group(SysConstant.NACOS_AUTH_GROUP)
+                        .serverName(serverName)
+                        .accessToken(token)
+                        .path(GET_SESSION + SP.SLASH + token)
+                        .build();
 
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+                EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+                CheckUtils.checkRpcRes(securitySessionEasyResult);
+                session = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+                securityContext.setSessionByToken(token, session);
+            }
+            return session == null ? null : Convert.convert(SecuritySession.class, session);
         } else {
             Dict dict = Dict.create()
                     .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
@@ -139,7 +152,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
             EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.post(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+            SecuritySession securitySession1 = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+            securityContext.setSession(securitySession1);
+            return securitySession1;
         } else {
             int i = dbAccess.saveOne(securitySession, SecuritySession.class);
             if (i > 0) {
@@ -162,6 +177,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
             EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.delete(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
+            securityContext.removeSessionByToken(token);
         } else {
             Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
             dbAccess.deleteByMap(dict, SecuritySession.class);
@@ -174,15 +190,23 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
 
         if (isClient) {
-            NacosInvokeDto build = NacosInvokeDto.builder()
-                    .group(SysConstant.NACOS_AUTH_GROUP)
-                    .serverName(serverName)
-                    .path(GET_SESSION_BY_USER_NAME + SP.SLASH + userName)
-                    .build();
+            ISecurityEasy4jSession o = securityContext.getSession();
+            if (o == null || !StrUtil.equals(o.getUserName(), userName)) {
+                NacosInvokeDto build = NacosInvokeDto.builder()
+                        .group(SysConstant.NACOS_AUTH_GROUP)
+                        .serverName(serverName)
+                        .path(GET_SESSION_BY_USER_NAME + SP.SLASH + userName)
+                        .build();
 
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+                EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+                CheckUtils.checkRpcRes(securitySessionEasyResult);
+                o = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+                if (o != null) {
+                    securityContext.setSessionByToken(o.getShaToken(), o);
+                }
+            }
+            return Convert.convert(SecuritySession.class, o);
+
         } else {
             Dict dict = Dict.create()
                     .set(LambdaUtil.getFieldName(SecuritySession::getUserName), userName);
@@ -202,7 +226,11 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
             EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
-            return CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+            SecuritySession securitySession = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
+            if (null != securitySession) {
+                securityContext.setSessionByToken(securitySession.getShaToken(), securitySession);
+            }
+            return securitySession;
         } else {
             return super.refreshSession(token, expireTime, timeUnit);
         }

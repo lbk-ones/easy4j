@@ -44,8 +44,6 @@ public class SysConstant {
 
     public static final String X_API_KEY = "X-API-Key";
     public static final String EASY4J_NO_NEED_TOKEN = "X-Skip-Token";
-    public static final String EASY4J_RPC_NO_LOGIN = "X-Rpc-No-Login";
-    public static final String EASY4J_IS_NO_LOGIN = "X-Rpc-Is-No-Login";
 
 
     public static final String DOT = ".";
@@ -152,8 +150,6 @@ public class SysConstant {
 
     public static final String EASY4J_CACHE_CONTENT_LENGTH = PARAM_PREFIX + StringPool.DOT + "cache-http-content-length";
 
-    public static final String EASY4J_RPC_TRACE = PARAM_PREFIX + StringPool.DOT + "rpc-trace-id";
-
     public static final String EASY4J_BOOT_ADMIN_SERVER_URL = PARAM_PREFIX + StringPool.DOT + "admin-server-url";
 
     public static final String EASY4J_REDIS_URL = PARAM_PREFIX + StringPool.DOT + "redis-server-url";
@@ -178,14 +174,6 @@ public class SysConstant {
     public static final String EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA = PARAM_PREFIX + SP.DOT + "db-access-not-cache-schema";
 
 
-    // -------------------------EASY4j PROPERTIES end----------------------------------------
-
-    // -------------------------EASY4j CONTEXT begin----------------------------------------
-    public static final String EASY4J_SECURITY_CONTEXT_KEY = PARAM_PREFIX + StringPool.DOT + "security-session-context-key";
-
-    public static final String EASY4J_SECURITY_CONTEXT_SESSIONINFO_KEY = PARAM_PREFIX + StringPool.DOT + "security-context-key-session";
-
-    // -------------------------EASY4j CONTEXT end----------------------------------------
     public static final int SUCCESSCODE = 0;
 
     public static final int ERRORCODE = 1;

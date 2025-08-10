@@ -27,6 +27,7 @@ import java.util.Optional;
 
 /**
  * 自动审计
+ *
  * @author bokun.li
  * @date 2023/11/18
  */
@@ -38,13 +39,13 @@ public class AutoAuditHandler implements MetaObjectHandler {
     public static final String CREATE_NAME = "createName";
     public static final String UPDATE_BY = "updateBy";
     public static final String UPDATE_NAME = "updateName";
-    public static final String CREATE_DATE = "createDate";
-    public static final String UPDATE_DATE = "updateDate";
+    public static final String CREATE_TIME = "createTime";
+    public static final String UPDATE_DATE = "lastUpdateTime";
 
 
-    private final Logger log  = LoggerFactory.getLogger(AutoAuditHandler.class);
+    private final Logger log = LoggerFactory.getLogger(AutoAuditHandler.class);
 
-    public UserContext getUserContext(){
+    public UserContext getUserContext() {
         Easy4jContext context = Easy4j.getContext();
         Optional<Object> threadHashValue = context.getThreadHashValue(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME);
         if (threadHashValue.isPresent()) {
@@ -53,20 +54,21 @@ public class AutoAuditHandler implements MetaObjectHandler {
         }
         return null;
     }
+
     @Override
     public void insertFill(MetaObject metaObject) {
         boolean updateDate = metaObject.hasSetter(UPDATE_DATE);
-        boolean createDate = metaObject.hasSetter(CREATE_DATE);
-        if(updateDate || createDate){
+        boolean createDate = metaObject.hasSetter(CREATE_TIME);
+        if (updateDate || createDate) {
             Date date = new Date();
-            if(createDate){
-                this.setFieldValByName(CREATE_DATE, date, metaObject);
+            if (createDate) {
+                this.setFieldValByName(CREATE_TIME, date, metaObject);
             }
-            if(updateDate){
+            if (updateDate) {
                 this.setFieldValByName(UPDATE_DATE, date, metaObject);
             }
         }
-        try{
+        try {
             UserContext userContext = this.getUserContext();
             String userName = userContext.getUserName();
             String userNameCn = userContext.getUserNameCn();
@@ -82,7 +84,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
             if (metaObject.hasSetter(UPDATE_NAME)) {
                 this.setFieldValByName(UPDATE_NAME, userNameCn, metaObject);
             }
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
 
@@ -91,7 +93,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        try{
+        try {
             UserContext userContext = this.getUserContext();
             String userName = userContext.getUserName();
             String userNameCn = userContext.getUserNameCn();
@@ -104,7 +106,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
             if (metaObject.hasSetter(UPDATE_DATE)) {
                 this.setFieldValByName(UPDATE_DATE, new Date(), metaObject);
             }
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
 

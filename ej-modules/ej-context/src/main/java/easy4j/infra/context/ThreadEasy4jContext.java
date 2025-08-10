@@ -47,6 +47,21 @@ public abstract class ThreadEasy4jContext implements Easy4jContextThread {
     }
 
     @Override
+    public void clearThreadHash(String key, String key2) {
+
+        Map<String, Map<String, Object>> contextMap = contextThreadLocal.get();
+        if (null == contextMap) {
+            contextThreadLocal.set(new HashMap<>());
+        }
+        if (StrUtil.isAllNotBlank(key, key2)) {
+            Optional.ofNullable(contextThreadLocal.get().get(key)).ifPresent(e -> {
+                e.remove(key2);
+            });
+        }
+
+    }
+
+    @Override
     public Optional<Object> getThreadHashValue(String key, String key2) {
         return Optional.ofNullable(contextThreadLocal.get()).map(e -> e.get(key)).map(e -> e.get(key2));
     }

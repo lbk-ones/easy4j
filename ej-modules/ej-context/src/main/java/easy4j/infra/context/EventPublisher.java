@@ -1,4 +1,3 @@
-package easy4j.infra.context;
 /**
  * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +12,8 @@ package easy4j.infra.context;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package easy4j.infra.context;
+
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;

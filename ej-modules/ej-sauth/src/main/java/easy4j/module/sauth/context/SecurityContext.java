@@ -15,6 +15,10 @@
 package easy4j.module.sauth.context;
 
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.SecurityAuthority;
+
+import java.util.Set;
 
 /**
  * 这一次请求的上下文
@@ -23,8 +27,27 @@ public interface SecurityContext {
 
     ISecurityEasy4jSession getSession();
 
+    void setSession(ISecurityEasy4jSession securitySession);
+
+    ISecurityEasy4jSession getSessionByToken(String byToken);
+
+    void setSessionByToken(String byToken, ISecurityEasy4jSession securitySession);
+
+    void setUser(String userName, ISecurityEasy4jUser user);
+
+    ISecurityEasy4jUser getUser(String userName);
+
+    void removeUser(String userName);
+
     void removeSession();
 
-    void setSession(ISecurityEasy4jSession securitySession);
+    void removeSessionByToken(String token);
+
+
+    void setAuthority(String userName, Set<SecurityAuthority> user);
+
+    Set<SecurityAuthority> getAuthority(String userName);
+
+    void removeAuthority(String userName);
 
 }

@@ -34,6 +34,8 @@ public interface Easy4jContextThread {
      */
     void registerThreadHash(String key, String key2, Object value);
 
+    void clearThreadHash(String key, String key2);
+
 
     /**
      * 从当前线程中拿取key和key2对应的值

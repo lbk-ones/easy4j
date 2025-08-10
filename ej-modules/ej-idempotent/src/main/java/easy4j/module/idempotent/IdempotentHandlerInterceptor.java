@@ -22,6 +22,7 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.THConstant;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
@@ -101,7 +102,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         if (StrUtil.isBlank(generateKey)) {
             Easy4jContext context = Easy4j.getContext();
             boolean isNoLogin = false;
-            Optional<Object> threadHashValue = context.getThreadHashValue(SysConstant.EASY4J_IS_NO_LOGIN, SysConstant.EASY4J_IS_NO_LOGIN);
+            Optional<Object> threadHashValue = context.getThreadHashValue(THConstant.EASY4J_IS_NO_LOGIN, THConstant.EASY4J_IS_NO_LOGIN);
             if (threadHashValue.isPresent()) {
                 // nologin will be ignore
                 if ((boolean) threadHashValue.get()) {

@@ -88,19 +88,19 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
         boolean accountNonLocked = dbUser.isAccountNonLocked();
         boolean credentialsNonExpired = dbUser.isCredentialsNonExpired();
         boolean enabled = dbUser.isEnabled();
-        if(!accountNonExpired){
+        if (!accountNonExpired) {
             context.setErrorCode(BusCode.A00052);
             return true;
         }
-        if(!credentialsNonExpired){
+        if (!credentialsNonExpired) {
             context.setErrorCode(BusCode.A00054);
             return true;
         }
-        if(!enabled){
+        if (!enabled) {
             context.setErrorCode(BusCode.A00055);
             return true;
         }
-        if(!accountNonLocked){
+        if (!accountNonLocked) {
             context.setErrorCode(BusCode.A00053);
             return true;
         }
@@ -116,7 +116,7 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
     }
 
 
-    public boolean checkRepeatSession(AuthenticationContext authenticationContext){
+    public boolean checkRepeatSession(AuthenticationContext authenticationContext) {
         return !RepeatAuthentication.check(authenticationContext);
     }
 }
