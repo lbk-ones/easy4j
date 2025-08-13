@@ -43,8 +43,8 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
         boolean hasExtraLine = handlerExtraLineAndReturnHasExtraLine(ddlTableInfo, dllConfig, fTableName, segments);
         // remove last comma
         if (!hasExtraLine && CollUtil.isNotEmpty(segments)) {
-            segments.remove(segments.size() - 1);
-            segments.add(StrUtil.replaceLast(segments.get(segments.size() - 1), SP.COMMA, ""));
+            String remove = segments.remove(segments.size() - 1);
+            segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
         }
         segments.add(SP.RIGHT_BRACKET);
         segments.add("engine = " + StrUtil.blankToDefault(ddlTableInfo.getEngine(), DEFAULT_ENGINE));
