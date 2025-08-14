@@ -18,6 +18,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.exception.ExceptionList;
 import easy4j.infra.common.header.EasyResult;
@@ -26,6 +27,7 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.dblog.Easy4jDbLog;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -39,6 +41,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
+import java.util.Optional;
 
 /**
  * 捕捉到Exception、EasyException异常，会由此对象拦截处理
@@ -96,7 +100,7 @@ public class GlobalExceptionHandler {
         ExceptionList<String> list = new ExceptionList<String>();
         for (ObjectError o : e.getBindingResult().getAllErrors()) {
             String fieldValue = Convert.toStr(ReflectUtil.getFieldValue(o, "field"), "");
-            list.add((StrUtil.isNotBlank(fieldValue) ? "【" + fieldValue + "】" : "") + o.getDefaultMessage());
+            list.add((StrUtil.isNotBlank(fieldValue) ? "【" + fieldValue + extractSchemaMsg(fieldValue, o) + "】" : "") + o.getDefaultMessage());
         }
         try {
             Easy4jDbLog easy4jDbLog = easy4jContext.get(Easy4jDbLog.class);
@@ -108,6 +112,52 @@ public class GlobalExceptionHandler {
             e.printStackTrace();
         }
         return EasyResult.error(list.toString());
+    }
+
+    /**
+     * 兼容读取schema的信息
+     *
+     * @author bokun.li
+     * @date 2025/8/14
+     */
+    private String extractSchemaMsg(String fieldName, ObjectError o) {
+        String defaultMessage = "";
+        if(StrUtil.isBlank(fieldName)){
+            return defaultMessage;
+        }
+        try {
+            Object source = ReflectUtil.getFieldValue(o, "source");
+            defaultMessage = Optional.ofNullable(source)
+                    .map(e -> {
+                        if (!(e instanceof Throwable)) {
+                            return e;
+                        }
+                        return null;
+                    })
+                    .map(e -> ReflectUtil.getFieldValue(e, "rootBeanClass"))
+                    .map(e -> {
+                        if (e instanceof Class<?>) {
+                            return e;
+                        }
+                        return null;
+                    })
+                    .map(e -> {
+                        Class<?> e1 = (Class<?>) e;
+                        return ReflectUtil.getField(e1, fieldName);
+                    })
+                    .map(e -> {
+                        if (e.isAnnotationPresent(Schema.class)) {
+                            Schema annotation = e.getAnnotation(Schema.class);
+                            return annotation.description();
+                        } else if (e.isAnnotationPresent(Desc.class)) {
+                            return e.getAnnotation(Desc.class).value();
+                        }
+                        return "";
+                    })
+                    .orElse("");
+        } catch (Exception ignored) {
+        }
+        return StrUtil.isNotBlank(defaultMessage) ? "-" + defaultMessage : defaultMessage;
     }
 
     @ExceptionHandler(value = HttpMessageNotReadableException.class)

@@ -15,10 +15,14 @@
 package easy4j.module.mybatisplus.base;
 
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -26,11 +30,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.module.mybatisplus.audit.AutoAudit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -91,14 +99,17 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         List<List<Object>> keys = pageDto.getKeys();
         parseKeysWith(queryWrapper, keys, true);
     }
+
     public void parsePageKeysToQuery(APage pageDto, QueryWrapper<T> queryWrapper, boolean toUnderLine) {
         List<List<Object>> keys = pageDto.getKeys();
         parseKeysWith(queryWrapper, keys, toUnderLine);
     }
+
     public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper) {
         parseKeysWith(queryWrapper, keys, true);
     }
-    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper,boolean toUnderLine) {
+
+    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper, boolean toUnderLine) {
         parseKeysWith(queryWrapper, keys, toUnderLine);
     }
 
@@ -107,14 +118,14 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             return;
         }
         for (List<Object> key : keys) {
-            try{
+            try {
                 String s = StrUtil.trim(key.get(0).toString());
                 String s2 = StrUtil.trim(key.get(1).toString());
                 Object s3 = key.get(2);
                 if (StrUtil.hasBlank(s, s2) || null == s3) {
                     continue;
                 }
-                if(toUnderLine){
+                if (toUnderLine) {
                     s = StrUtil.toUnderlineCase(s);
                 }
                 switch (s2) {
@@ -129,7 +140,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                                 queryWrapper.in(s, object);
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031,"query in values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query in values is error!");
                         }
                         break;
                     case "like":
@@ -173,7 +184,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                                 queryWrapper.between(false, s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031,"query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
                         }
                         break;
                     case "betweene":
@@ -184,20 +195,46 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                                 queryWrapper.between(true, s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031,"query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
                         }
                         break;
                     default:
-                        throw EasyException.wrap(BusCode.A00047,s2);
+                        throw EasyException.wrap(BusCode.A00047, s2);
                 }
-            }catch (Exception e){
-                if(e instanceof EasyException){
+            } catch (Exception e) {
+                if (e instanceof EasyException) {
                     throw e;
-                }else{
-                    logger.error("parsePageKeys has error ",e);
+                } else {
+                    logger.error("parsePageKeys has error ", e);
                 }
             }
 
         }
+    }
+
+    public void copyObjIgnoreAudit(Object source, Object target) {
+        if (null == source || null == target) return;
+        String[] auditParams = getAuditParams();
+        CopyOptions copyOptions = CopyOptions.create();
+        copyOptions.ignoreNullValue();
+        copyOptions.setIgnoreProperties(auditParams);
+        BeanUtil.copyProperties(source, target, copyOptions);
+    }
+
+    public void clearAudit(Object source) {
+        if (source == null) return;
+        String[] auditParams = getAuditParams();
+        for (String auditParam : auditParams) {
+            ReflectUtil.setFieldValue(source, auditParam, null);
+        }
+    }
+
+    protected static String[] getAuditParams() {
+        List<String> objects = ListTs.newList();
+        Field[] fields = ReflectUtil.getFields(AutoAudit.class);
+        for (Field field : fields) {
+            objects.add(field.getName());
+        }
+        return objects.toArray(new String[]{});
     }
 }
