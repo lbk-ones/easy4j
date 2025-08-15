@@ -21,25 +21,30 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.context.api.user.UserContext;
+import easy4j.infra.dbaccess.DBAccess;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.module.mybatisplus.audit.AutoAudit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Id;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * service层父类
@@ -237,4 +242,122 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         }
         return objects.toArray(new String[]{});
     }
+
+    private DBAccess dbAccess;
+
+    public DBAccess access() {
+        if (dbAccess == null) {
+            dbAccess = SpringUtil.getBean(DBAccess.class);
+        }
+        return dbAccess;
+    }
+
+    /**
+     * 更新审计
+     */
+    public <A extends AutoAudit> void updateAudit(A autoAudit, Class<A> tClass, boolean updateDb) {
+        if (null == autoAudit || tClass == null) return;
+        UserContext userContext = getUserContext();
+        if (null != userContext) {
+            A a = ReflectUtil.newInstance(tClass);
+            if (setId(autoAudit, a)) {
+                return;
+            }
+            a.setUpdateBy(userContext.getUserName());
+            a.setUpdateName(userContext.getUserNameCn());
+            a.setLastUpdateTime(new Date());
+            if (updateDb) {
+                access().updateByPrimaryKeySelective(a, tClass, false);
+            }
+        }
+
+    }
+
+    /**
+     * 更新审计 但是不跟新值
+     */
+    public <A extends AutoAudit> void updateAuditNoDb(A autoAudit, Class<A> tClass) {
+        updateAudit(autoAudit, tClass, false);
+    }
+
+    /**
+     * 更新审计 同时更新数据库
+     * 数据库一定要有值
+     */
+    public <A extends AutoAudit> void updateAuditDb(A autoAudit, Class<A> tClass) {
+        updateAudit(autoAudit, tClass, true);
+    }
+
+    /**
+     * 写入主键的值
+     *
+     * @param from
+     * @param to
+     * @param <A>
+     */
+    public <A> boolean setId(A from, A to) {
+        if (null == from || null == to) return true;
+        Field[] fields = ReflectUtil.getFields(from.getClass(), e -> e.isAnnotationPresent(Id.class) || e.isAnnotationPresent(TableId.class) || (e.isAnnotationPresent(JdbcColumn.class) && e.getAnnotation(JdbcColumn.class).isPrimaryKey()));
+
+        if (fields != null) {
+            for (Field field : fields) {
+                Object fieldValue = ReflectUtil.getFieldValue(from, field);
+                ReflectUtil.setFieldValue(to, field, fieldValue);
+            }
+        }
+        return fields == null || fields.length == 0;
+    }
+
+    /**
+     * 写入审计
+     */
+    @Desc("写入审计 updateDb为true自动更新")
+    public <A extends AutoAudit> void saveAudit(A autoAudit, Class<A> tClass, boolean updateDb) {
+        if (null == autoAudit || tClass == null) return;
+        UserContext userContext = getUserContext();
+        if (null != userContext) {
+            String userName = userContext.getUserName();
+            String userNameCn = userContext.getUserNameCn();
+            A a = ReflectUtil.newInstance(tClass);
+            if (setId(autoAudit, a)) {
+                return;
+            }
+            a.setCreateBy(userName);
+            a.setCreateName(userNameCn);
+            a.setCreateTime(new Date());
+            a.setUpdateBy(userName);
+            a.setUpdateName(userNameCn);
+            a.setLastUpdateTime(new Date());
+            if (updateDb) {
+                access().updateByPrimaryKeySelective(a, tClass, false);
+            }
+        }
+    }
+
+    /**
+     * 写入审计 但是不跟新值
+     */
+    @Desc("写入审计 但是不跟新值")
+    public <A extends AutoAudit> void saveAuditNoDb(A autoAudit, Class<A> tClass) {
+        saveAudit(autoAudit, tClass, false);
+    }
+
+    /**
+     * 写入审计 同时更新数据库
+     * 一定要在写入之后调用
+     */
+    @Desc("写入审计 同时更新数据库 调用时一定要保证数据库中有值")
+    public <A extends AutoAudit> void saveAuditDb(A autoAudit, Class<A> tClass) {
+        saveAudit(autoAudit, tClass, true);
+    }
+
+    public UserContext getUserContext() {
+        Optional<Object> threadHashValue = Easy4j.getContext().getThreadHashValue(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME);
+        if (threadHashValue.isPresent()) {
+            Object o = threadHashValue.get();
+            return (UserContext) o;
+        }
+        return null;
+    }
+
 }
