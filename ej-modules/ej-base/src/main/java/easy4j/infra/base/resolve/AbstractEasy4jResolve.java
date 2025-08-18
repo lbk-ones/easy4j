@@ -280,7 +280,8 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         if (cn.hutool.system.SystemUtil.getOsInfo().isWindows()) {
             path = "logs";
         } else {
-            path = "/app/logs";
+            path = Easy4j.getProperty(SysConstant.EASY4J_LOG_PATH,"logs");
+            //path = "/app/logs";
         }
         return path;
     }

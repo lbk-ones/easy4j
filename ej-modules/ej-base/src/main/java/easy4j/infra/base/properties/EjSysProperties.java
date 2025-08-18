@@ -291,7 +291,7 @@ public class EjSysProperties {
 
 
     /**
-     * nacos配置中心data-ids 多个,逗号分割
+     * nacos配置中心data-ids 多个,逗号分割如果属于不同组那么就 data-id?group=XXX_GROUP
      */
     @SpringVs(
             desc = "nacos配置中心data-ids 多个,逗号分割如果属于不同组那么就 data-id?group=XXX_GROUP"
@@ -299,7 +299,7 @@ public class EjSysProperties {
     private String dataIds;
 
     /**
-     * nacos配置中心group
+     * nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group
      */
     @SpringVs(
             desc = "nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group"
@@ -307,7 +307,7 @@ public class EjSysProperties {
     private String nacosGroup;
 
     /**
-     * nacos配置中心namespace
+     * nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace
      */
     @SpringVs(
             desc = "nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace"
@@ -334,19 +334,19 @@ public class EjSysProperties {
 
 
     /**
-     * 会话过期时间
+     * 会话过期时间 默认3个小时
      */
     @SpringVs(desc = "会话过期时间 默认3个小时")
     private int sessionExpireTimeSeconds = 60 * 60 * 3;
 
     /**
-     * 会话刷新剩余时间，秒为单位
+     * 会话刷新剩余时间，秒为单位，默认十分钟
      */
     @SpringVs(desc = "会话刷新剩余时间，秒为单位，默认十分钟")
     private int sessionRefreshTimeRemaining = 60 * 10;
 
     /**
-     * 单服务简单链路追踪
+     * 单服务简单链路追踪，默认未开启，true为开启
      */
     @SpringVs(desc = "单服务简单链路追踪，默认未开启，true为开启")
     private boolean simpleLinkTracking = false;
@@ -358,7 +358,7 @@ public class EjSysProperties {
     private boolean printRequestLog = false;
 
     /**
-     * 简单权限认证
+     * 简单权限认证 默认没开启 true为开启
      */
     @SpringVs(desc = "简单权限认证 默认没开启 true为开启")
     private boolean simpleAuthEnable = false;
@@ -412,7 +412,7 @@ public class EjSysProperties {
     private boolean simpleAuthIsCacheAuthority = false;
 
     /**
-     * 是否将权限注册到nacos去远程调用
+     * 服务端是否将权限注册到nacos去远程调用
      */
     @SpringVs(
             valueEnums = {"true", "false"},
@@ -421,7 +421,7 @@ public class EjSysProperties {
     private boolean simpleAuthRegisterToNacos = true;
 
     /**
-     * 权限扫描包名，比如org.springframework这种前缀
+     * 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
      */
     @SpringVs(
             desc = "权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径"
@@ -438,7 +438,7 @@ public class EjSysProperties {
     private String simpleAuthSessionRepeatStrategy = "default";
 
     /**
-     * 是否启用RequestLog注解进行请求日志收集 true代表开启
+     * 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
      */
     @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")
     private boolean dbRequestLogEnable = true;
@@ -457,7 +457,7 @@ public class EjSysProperties {
     private int cacheHttpContentLength = 5 * 1024 * 1024;
 
     /**
-     * BootAdminServer地址
+     * BootAdmin监控地址,配置了代表自动开启admin-client
      */
     @SpringVs(desc = "BootAdmin监控地址,配置了代表自动开启admin-client", vs = {
             "spring.boot.admin.client.url"
@@ -466,13 +466,13 @@ public class EjSysProperties {
 
 
     /**
-     * BootAdminServer地址
+     * redis server 地址 127.0.0.1:6379@user:123456 用户名如果省略第一位就是密码
      */
     @SpringVs(desc = "redis server 地址 127.0.0.1:6379@user:123456 用户名如果省略第一位就是密码")
     private String redisServerUrl = "";
 
     /**
-     * Redis连接方式: Single、Sentinel、Cluster
+     * Redis连接方式: Single、Sentinel、Cluster 默认单点
      */
     @SpringVs(desc = "Redis连接方式: Single、Sentinel、Cluster 默认单点")
     private String redisConnectionType = "Single";
@@ -504,19 +504,19 @@ public class EjSysProperties {
     private int redisConnectionPoolSize = 500;
 
     /**
-     * 是否启用flyway
+     * 是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效
      */
     @SpringVs(desc = "是否启用flyway默认没启动，但是如果在linux服务器上默认是启用了的，开发环境需要置为true才会生效")
     private boolean flywayEnable = false;
 
     /**
-     * 是否启用flyway
+     * 是否启用flyway启动时的内容检查，默认禁用，如果不禁用，已执行脚本更改过之后则启动失败
      */
     @SpringVs(desc = "是否启用flyway启动时的内容检查，默认禁用，如果不禁用，已执行脚本更改过之后则启动失败")
     private boolean flywayChecksumDisabled = true;
 
     /**
-     * 是否启用flyway
+     * spring-cloud-gateway 流控规则
      */
     @SpringVs(desc = "spring-cloud-gateway 流控规则")
     private int scaGatewayFlowQps = 400;
@@ -533,6 +533,9 @@ public class EjSysProperties {
     @SpringVs(desc = "seata注册中心地址,地址(多个地址用逗号隔开)@用户:密码")
     private String seataNacosUrl;
 
+    /**
+     * seata注册中心集群名称，通常和vgroup-mapping对应起来
+     */
     @SpringVs(desc = "seata注册中心集群名称，通常和vgroup-mapping对应起来", vs = "seata.registry.nacos.cluster")
     private String seataNacosCluster = "default";
 
@@ -557,7 +560,7 @@ public class EjSysProperties {
     private String seataRegistryType;
 
     /**
-     * seata事务日志是否整合到logback，默认整合
+     * seata事务日志是否整合到logback（true代表整合false代表不整合），默认不整合
      */
     @SpringVs(desc = "seata事务日志是否整合到logback（true代表整合false代表不整合），默认不整合")
     private boolean seataTxLog = false;
@@ -587,7 +590,7 @@ public class EjSysProperties {
     private boolean sentinelDashboardEnable = false;
 
     /**
-     * sentinel控制台是否提前初始化，默认如果启用则提前初始化
+     * （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化
      */
     @SpringVs(desc = " （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化")
     private boolean sentinelDashboardEager = true;
@@ -608,14 +611,19 @@ public class EjSysProperties {
     /**
      * 默认i18n,默认中文
      */
-    @SpringVs(desc = "默认i18n")
+    @SpringVs(desc = "默认i18n，默认中文")
     private String defaultI18n = "zh_CN";
 
     /**
-     * 是否不缓存动态表查询的schema信息，默认true也就是缓存
+     * 是否不缓存动态表查询的schema信息，默认false也就是要缓存
      */
     @SpringVs(desc = "是否不缓存动态表查询的schema信息，默认false也就是要缓存")
     private boolean dbAccessNotCacheSchema = false;
+    /**
+     * 日志所在目录,默认程序运行当前目录logs文件夹下面
+     */
+    @SpringVs(desc = "日志所在目录,默认程序运行当前目录logs文件夹下面")
+    private String logPath="logs";
 
 
     /**

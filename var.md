@@ -81,5 +81,6 @@
 - **easy4j.sentinel-dashboard-eager**:  （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化
 - **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）
 - **easy4j.metrics-enable**: 是否开启指标采集 默认开启
-- **easy4j.default-i18n**: 默认i18n
+- **easy4j.default-i18n**: 默认i18n，默认中文
 - **easy4j.db-access-not-cache-schema**: 是否不缓存动态表查询的schema信息，默认false也就是要缓存
+- **easy4j.log-path**: 日志所在目录,默认程序运行当前目录logs文件夹下面

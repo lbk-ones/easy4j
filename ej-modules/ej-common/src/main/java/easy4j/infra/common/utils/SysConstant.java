@@ -173,6 +173,9 @@ public class SysConstant {
     public static final String EASY4J_DEFAULT_I18N = PARAM_PREFIX + SP.DOT + "default-i18n";
     public static final String EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA = PARAM_PREFIX + SP.DOT + "db-access-not-cache-schema";
 
+    public static final String EASY4J_LOG_PATH = PARAM_PREFIX + SP.DOT + "log-path";
+
+
 
     public static final int SUCCESSCODE = 0;
 
