@@ -34,10 +34,12 @@ public class DDLIndexInfo {
      * 索引的类型
      */
     private IndexType type;
+
     /**
      * 特殊索引解析的时候进行参数传参
      */
     private String[] args;
+
     /**
      * 注解信息
      */

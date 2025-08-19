@@ -13,6 +13,9 @@ import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategyExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategySelector;
 import easy4j.infra.dbaccess.dynamic.dll.ct.table.DDLTableExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.table.DDLTableCoreSelector;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.reflect.Field;
@@ -43,9 +46,13 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
         DDLTableInfo ddlTableInfo = getDdlTableInfo(domainClass);
         ddlTableInfo.setDbVersion(this.dllConfig.getDbVersion());
         ddlTableInfo.setSchema(this.dllConfig.getSchema());
+        ddlTableInfo.setDbType(this.dllConfig.getDbType());
+        ddlTableInfo.setTableName(this.dllConfig.getTableName());
         ddlTableInfo.setDllConfig(this.dllConfig);
         List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(domainClass);
         ddlTableInfo.setFieldInfoList(ddlFieldInfos);
+        List<DDLIndexInfo> ddlIndexInfos = getIndexInfoList(domainClass);
+        ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
         DDLTableExecutor dDlTableExecutor = DDLTableCoreSelector.getDDlTableExecutor(ddlTableInfo);
         List<String> objects = ListTs.newLinkedList();
         Set<String> distinctSet = new HashSet<>();
@@ -66,6 +73,27 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
         return getString(dDlTableExecutor, objects);
     }
 
+    /**
+     * 解析索引注解
+     *
+     * @author bokun.li
+     * @date 2025/8/19
+     */
+    private List<DDLIndexInfo> getIndexInfoList(Class<?> domainClass) {
+        List<DDLIndexInfo> objects = ListTs.newList();
+        if (domainClass.isAnnotationPresent(DDLTable.class)) {
+            DDLTable annotation = domainClass.getAnnotation(DDLTable.class);
+            DDLIndex[] indexes = annotation.indexes();
+            for (DDLIndex index : indexes) {
+                Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(index);
+                DDLIndexInfo ddlIndexInfo = BeanUtil.mapToBean(annotationAttributes, DDLIndexInfo.class, true, CopyOptions.create().ignoreError());
+                ddlIndexInfo.setDdlIndex(index);
+                objects.add(ddlIndexInfo);
+            }
+        }
+        return objects;
+    }
+
 
     private DDLTableInfo getDdlTableInfo(Class<?> aclass) {
         String tableName = this.dllConfig.getTableName();
@@ -73,6 +101,7 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
         DDLTableInfo ddlTableInfo = new DDLTableInfo();
         ddlTableInfo.setTableName(tableName);
         ddlTableInfo.setDbType(dbType);
+        ddlTableInfo.setDomainClass(aclass);
         DDLTable annotation = aclass.getAnnotation(DDLTable.class);
         if (null != annotation) {
             Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
@@ -95,7 +124,14 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
                     String comment = ddlFieldInfo1.getComment();
                     if (StrUtil.isBlank(comment) && field.isAnnotationPresent(Desc.class))
                         comment = field.getAnnotation(Desc.class).value();
+                    if (StrUtil.isBlank(comment) && field.isAnnotationPresent(Schema.class))
+                        comment = field.getAnnotation(Schema.class).description();
+
                     ddlFieldInfo1.setComment(comment);
+                    String name = ddlFieldInfo1.getName();
+                    if (StrUtil.isBlank(name)) {
+                        ddlFieldInfo1.setName(field.getName());
+                    }
                     objects.add(ddlFieldInfo1);
                 } else {
                     String name = field.getName();
@@ -106,6 +142,8 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
                     ddlFieldInfo.setName(name);
                     if (field.isAnnotationPresent(Desc.class)) {
                         ddlFieldInfo.setComment(field.getAnnotation(Desc.class).value());
+                    } else if (field.isAnnotationPresent(Schema.class)) {
+                        ddlFieldInfo.setComment(field.getAnnotation(Schema.class).description());
                     }
                     objects.add(ddlFieldInfo);
                 }

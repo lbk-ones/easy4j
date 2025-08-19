@@ -52,4 +52,7 @@ public class DDLConfig {
     public String wrapQuote(String txt) {
         return StrUtil.wrap(txt, SP.SINGLE_QUOTE + SP.SINGLE_QUOTE, SP.SINGLE_QUOTE + SP.SINGLE_QUOTE);
     }
+    public String wrapSingleQuote(String txt) {
+        return StrUtil.wrap(txt,  SP.SINGLE_QUOTE, SP.SINGLE_QUOTE);
+    }
 }

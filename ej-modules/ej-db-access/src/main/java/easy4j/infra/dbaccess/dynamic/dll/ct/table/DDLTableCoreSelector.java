@@ -13,6 +13,7 @@ public class DDLTableCoreSelector {
 
     static {
         list.add(new MysqlDDLTableStrategy());
+        list.add(new PgDDLTableStrategy());
     }
 
     public static DDLTableExecutor getDDlTableExecutor(DDLTableInfo ddlTableInfo) {

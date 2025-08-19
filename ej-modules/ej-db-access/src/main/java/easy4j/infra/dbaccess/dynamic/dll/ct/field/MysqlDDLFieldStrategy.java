@@ -45,9 +45,9 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         // default
         String currentTimeFunction = getCurrentTimeFunctionName(mysqlFieldType);
         if (ddlFieldInfo.isDefTime() && null != currentTimeFunction) {
-            objects.add(dllConfig.getTxt(currentTimeFunction));
+            objects.add("default " + dllConfig.getTxt(currentTimeFunction));
         } else if (StrUtil.isNotBlank(ddlFieldInfo.getDef())) {
-            objects.add(dllConfig.getTxt(ddlFieldInfo.getDef()));
+            objects.add("default " + dllConfig.getTxt(ddlFieldInfo.getDef()));
         }
 
         // primary key or unique
@@ -59,7 +59,7 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
 
         // comment
         if (StrUtil.isNotBlank(ddlFieldInfo.getComment())) {
-            objects.add(dllConfig.getTxt("comment " + dllConfig.wrapQuote(ddlFieldInfo.getComment())));
+            objects.add(dllConfig.getTxt("comment " + dllConfig.wrapSingleQuote(ddlFieldInfo.getComment())));
         }
         return String.join(SP.SPACE, objects);
     }

@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * @author bokun.li
  * @date 2025-08-03
  */
-@Target({ElementType.TYPE})
+@Target({})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface DDLIndex {

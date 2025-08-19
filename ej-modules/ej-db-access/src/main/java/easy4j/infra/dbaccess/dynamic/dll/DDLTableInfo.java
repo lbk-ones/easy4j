@@ -5,6 +5,7 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.persistence.Index;
 import java.util.List;
 
 @Data
@@ -40,6 +41,9 @@ public class DDLTableInfo {
 
     @Desc("表名注释")
     private String comment;
+
+    @Desc("domain class对象")
+    private Class<?> domainClass;
 
     @Desc("字段信息列表")
     private List<DDLFieldInfo> fieldInfoList;

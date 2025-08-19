@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.CommonDBAccess;
@@ -55,15 +56,14 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         String ddl = null;
         boolean hasException = false;
         try {
+            this.dllConfig = new DDLConfig();
             connection = dataSource.getConnection();
             Dialect dialect = JdbcHelper.getDialect(connection);
             String dbType = InformationSchema.getDbType(dataSource, connection);
             String dbVersion = InformationSchema.getDbVersion(dataSource, connection);
-            String ddlTableName = getDDLTableName(aClass, getTableName(aClass, dialect));
+            String ddlTableName = getDDLTableName(dialect,aClass, getTableName(aClass, dialect));
             List<DynamicColumn> columns = InformationSchema.getColumns(dataSource, schema, ddlTableName, connection);
-
-            this.dllConfig = new DDLConfig()
-                    .setDataSource(dataSource)
+            this.dllConfig.setDataSource(dataSource)
                     .setConnection(connection)
                     .setSchema(schema)
                     .setTableName(ddlTableName)
@@ -129,9 +129,17 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         return ddl;
     }
 
-    private String getDDLTableName(Class<?> aclass, String tableName) {
+    private String getDDLTableName(Dialect dialect,Class<?> aclass, String tableName) {
         boolean annotationPresent = aclass.isAnnotationPresent(DDLTable.class);
         if (annotationPresent) {
+            Wrapper wrapper = dialect.getWrapper();
+            try{
+                char preWrapQuote = wrapper.getPreWrapQuote();
+                char sufWrapQuote = wrapper.getSufWrapQuote();
+                tableName = StrUtil.unWrap(tableName,preWrapQuote,sufWrapQuote);
+            }catch (Exception ignored){
+            }
+
             DDLTable annotation = aclass.getAnnotation(DDLTable.class);
             String s = annotation.tableName();
             String fName;

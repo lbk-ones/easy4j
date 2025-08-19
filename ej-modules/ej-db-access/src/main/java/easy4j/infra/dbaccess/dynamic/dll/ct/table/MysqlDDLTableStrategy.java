@@ -32,12 +32,10 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
     public String getTableTemplate(DDLTableInfo ddlTableInfo) {
         DDLConfig dllConfig = ddlTableInfo.getDllConfig();
         CheckUtils.checkByLambda(ddlTableInfo, DDLTableInfo::getTableName);
-        String tableName = ddlTableInfo.getTableName();
-        String tableInfoSchema = ddlTableInfo.getSchema();
-        String fTableName = StrUtil.isNotBlank(tableInfoSchema) ? tableInfoSchema + SP.DOT + tableName : tableName;
+        String fTableName = getTableName(ddlTableInfo);
         String comment = ddlTableInfo.getComment();
         List<String> segments = ListTs.newArrayList();
-        handlerTitle(ddlTableInfo, fTableName, segments);
+        handlerPgAndMysqlTitle(ddlTableInfo, fTableName, segments);
         segments.add(SP.LEFT_BRACKET);
         segments.add(SP.FORMAT_ZWF_0 + SP.COMMA);
         boolean hasExtraLine = handlerExtraLineAndReturnHasExtraLine(ddlTableInfo, dllConfig, fTableName, segments);
@@ -100,21 +98,6 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
         return hasExtraLine;
     }
 
-    private static void handlerTitle(DDLTableInfo ddlTableInfo, String fTableName, List<String> segments) {
-        List<String> tempList = ListTs.newArrayList();
-        tempList.add("create");
-        if (ddlTableInfo.isTemporary()) {
-            tempList.add("temporary");
-        }
-        tempList.add("table");
-        if (ddlTableInfo.isIfNotExists()) {
-            tempList.add("if not exists");
-        }
-        tempList.add(fTableName);
-        segments.add(String.join(SP.SPACE, tempList));
-        tempList.clear();
-    }
-
     @Override
     public List<String> getComments(DDLTableInfo ddlFieldInfo) {
         return null;
@@ -141,10 +124,7 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
             if (null != keys) {
                 for (String key : keys) {
                     String columnName = dllConfig.getColumnName(key);
-                    if (
-                            hasIndex.contains(columnName) ||
-                                    Objects.isNull(fieldMaps.get(columnName))
-                    ) {
+                    if (hasIndex.contains(columnName) || Objects.isNull(fieldMaps.get(columnName))) {
                         skip = true;
                         break;
                     }

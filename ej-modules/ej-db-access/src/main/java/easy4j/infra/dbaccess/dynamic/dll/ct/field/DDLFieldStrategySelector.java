@@ -20,6 +20,7 @@ public class DDLFieldStrategySelector {
 
     static {
         list.add(new MysqlDDLFieldStrategy());
+        list.add(new PgDDLFieldStrategy());
     }
 
 

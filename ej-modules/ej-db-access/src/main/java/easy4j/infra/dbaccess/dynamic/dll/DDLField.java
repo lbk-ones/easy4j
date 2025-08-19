@@ -33,6 +33,9 @@ public @interface DDLField {
     @Desc("默认值")
     String def() default "";
 
+    @Desc("默认值")
+    int defInt() default -1;
+
     @Desc("如果是时间的话那么可以选择是否默认时间")
     boolean defTime() default false;
 
@@ -50,4 +53,7 @@ public @interface DDLField {
 
     @Desc("注释")
     String comment() default "";
+
+    @Desc("check约束")
+    String check() default "";
 }

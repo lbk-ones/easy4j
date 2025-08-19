@@ -23,7 +23,7 @@ public class DDLFieldInfo {
     @Desc("是否是主键")
     private boolean isPrimary;
 
-    @Desc("是否递增")
+    @Desc("是否递增,pg数据库自动关联序列")
     private boolean isAutoIncrement;
 
     @Desc("字段类型")
@@ -41,6 +41,10 @@ public class DDLFieldInfo {
     @Desc("默认值")
     private String def;
 
+    @Desc("整形默认值")
+    private int defNum = -1;
+
+    @Desc("时间是否是默认时间")
     private boolean defTime;
 
     @Desc("是否为空")
@@ -48,6 +52,9 @@ public class DDLFieldInfo {
 
     @Desc("是否唯一")
     private boolean isUnique;
+
+    @Desc("check约束，直接传入check括号里面的约束")
+    private String check;
 
     @Desc("是否是单字段索引")
     private boolean isIndex;
