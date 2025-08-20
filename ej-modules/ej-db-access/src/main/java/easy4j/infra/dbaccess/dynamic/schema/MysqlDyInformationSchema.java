@@ -14,8 +14,9 @@
  */
 package easy4j.infra.dbaccess.dynamic.schema;
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.dbaccess.DBAccess;
-
 import java.util.List;
 
 /**
@@ -56,6 +57,11 @@ public class MysqlDyInformationSchema extends AbstractDyInformationSchema {
 
     @Override
     public List<DynamicColumn> getColumns(String schema, String table) {
+
+        if(StrUtil.isBlank(schema)){
+            throw new EasyException("easy4j.infra.dbaccess.dynamic.schema.MysqlDyInformationSchema#getColumns,schema is not allow empty");
+        }
+
 
         return dbAccess.selectList(sql, DynamicColumn.class, schema, table);
     }

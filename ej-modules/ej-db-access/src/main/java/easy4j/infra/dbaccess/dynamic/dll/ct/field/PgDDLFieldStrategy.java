@@ -11,6 +11,7 @@ import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,6 +48,23 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         PgSQLFieldType pgSQLFieldType = parseDataType(objects, ddlFieldInfo, ddlConfig);
         // 解析非空和默认值
         parseNotNullDefault(pgSQLFieldType, objects, ddlFieldInfo, ddlConfig);
+
+        // 生成额外约束
+        // unique check
+        if (ddlFieldInfo.isGenConstraint()) {
+
+            if (ddlFieldInfo.isUnique()) {
+                objects.add("unique");
+            }
+            String check = ddlFieldInfo.getCheck();
+            if (StrUtil.isNotBlank(check)) {
+                objects.add("check (" + check + ")");
+            }
+            String[] constraint = ddlFieldInfo.getConstraint();
+            if (constraint != null) {
+                Collections.addAll(objects, constraint);
+            }
+        }
         return String.join(SP.SPACE, objects);
     }
 
@@ -85,9 +103,9 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         if (null == fromDataType) {
             if (ddlFieldInfo.isJson()) {
                 fromDataType = PgSQLFieldType.JSONB;
-            }else if (ddlFieldInfo.isLob()) {
+            } else if (ddlFieldInfo.isLob()) {
                 fromDataType = PgSQLFieldType.TEXT;
-            }else{
+            } else {
                 Class<?> fieldClass = ddlFieldInfo.getFieldClass();
                 if (null != fieldClass) {
                     fromDataType = PgSQLFieldType.getByClass(fieldClass);

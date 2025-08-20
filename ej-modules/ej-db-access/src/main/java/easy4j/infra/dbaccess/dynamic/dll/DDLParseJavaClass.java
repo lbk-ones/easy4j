@@ -1,13 +1,17 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dynamic.dll.ad.AnsiAdFieldStrategy;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtClassExecutor;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
@@ -21,9 +25,13 @@ import lombok.experimental.Accessors;
 import javax.persistence.Table;
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 动态ddl解析，从java实体逆向到数据库
@@ -58,10 +66,16 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         try {
             this.dllConfig = new DDLConfig();
             connection = dataSource.getConnection();
+            String catalog = connection.getCatalog();
+            String schema1 = connection.getSchema();
+            this.dllConfig.setConnectionCatalog(catalog);
+            this.dllConfig.setConnectionSchema(schema1);
             Dialect dialect = JdbcHelper.getDialect(connection);
             String dbType = InformationSchema.getDbType(dataSource, connection);
             String dbVersion = InformationSchema.getDbVersion(dataSource, connection);
-            String ddlTableName = getDDLTableName(dialect,aClass, getTableName(aClass, dialect));
+            String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
+            // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 和 postgresql的 其他的试过才知道，如果取错了 只能从外部传进来了
+            if(StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1,catalog);
             List<DynamicColumn> columns = InformationSchema.getColumns(dataSource, schema, ddlTableName, connection);
             this.dllConfig.setDataSource(dataSource)
                     .setConnection(connection)
@@ -96,6 +110,35 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
     // 新增字段sql
     public String getAddColumnTxt(Class<?> aclass) {
 
+        Object newInstance = ReflectUtil.newInstance(aclass);
+        List<DynamicColumn> dbColumns = this.dllConfig.getDbColumns();
+        Map<String, DynamicColumn> dbColumnsMap = ListTs.mapOne(dbColumns, DynamicColumn::getColumnName);
+        List<DDLFieldInfo> newAdList = ListTs.newList();
+        Field[] fields = ReflectUtil.getFields(aclass, e -> !skipColumn(e));
+        for (Field field : fields) {
+            String name = field.getName();
+            String columnName = this.dllConfig.getColumnName(name);
+            DynamicColumn orDefault = dbColumnsMap.get(columnName);
+            // only not exist can new add
+            if (Objects.isNull(orDefault)) {
+                DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
+                ddlFieldInfo.setDbType(this.dllConfig.getDbType());
+                ddlFieldInfo.setDbVersion(this.dllConfig.getDbVersion());
+                ddlFieldInfo.setDllConfig(this.dllConfig);
+                DdlCtClassExecutor.fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo);
+                newAdList.add(ddlFieldInfo);
+            }
+        }
+        if (CollUtil.isNotEmpty(newAdList)) {
+            this.dllConfig.setAdColumns(newAdList);
+            AnsiAdFieldStrategy ansiAdFieldStrategy = new AnsiAdFieldStrategy();
+            String columnSegment = ansiAdFieldStrategy.getColumnSegment(this.dllConfig);
+            String columnComment = ansiAdFieldStrategy.getColumnComment(this.dllConfig);
+            return ListTs.asList(columnSegment, columnComment)
+                    .stream()
+                    .filter(StrUtil::isNotBlank)
+                    .collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE));
+        }
         return "";
     }
 
@@ -112,7 +155,10 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         String ddl = null;
         try {
             ddl = getDDLTxt();
-            DDlHelper.execDDL(this.dllConfig.getConnection(), ddl, null, true);
+            System.out.println("ddl-sql->" + ddl);
+            if(StrUtil.isNotBlank(ddl)){
+                DDlHelper.execDDL(this.dllConfig.getConnection(), ddl, null, true);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -129,15 +175,15 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         return ddl;
     }
 
-    private String getDDLTableName(Dialect dialect,Class<?> aclass, String tableName) {
+    private String getDDLTableName(Dialect dialect, Class<?> aclass, String tableName) {
         boolean annotationPresent = aclass.isAnnotationPresent(DDLTable.class);
         if (annotationPresent) {
             Wrapper wrapper = dialect.getWrapper();
-            try{
+            try {
                 char preWrapQuote = wrapper.getPreWrapQuote();
                 char sufWrapQuote = wrapper.getSufWrapQuote();
-                tableName = StrUtil.unWrap(tableName,preWrapQuote,sufWrapQuote);
-            }catch (Exception ignored){
+                tableName = StrUtil.unWrap(tableName, preWrapQuote, sufWrapQuote);
+            } catch (Exception ignored) {
             }
 
             DDLTable annotation = aclass.getAnnotation(DDLTable.class);
@@ -152,19 +198,19 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
                 fName = toUnderLine(fName);
             }
             return fName;
-        }else{
-            if(aclass.isAnnotationPresent(JdbcTable.class)){
+        } else {
+            if (aclass.isAnnotationPresent(JdbcTable.class)) {
                 JdbcTable annotation = aclass.getAnnotation(JdbcTable.class);
                 String name = annotation.name();
-                if(StrUtil.isNotBlank(name)) return name;
-            }else if(aclass.isAnnotationPresent(TableName.class)){
+                if (StrUtil.isNotBlank(name)) return name;
+            } else if (aclass.isAnnotationPresent(TableName.class)) {
                 TableName tableName1 = aclass.getAnnotation(TableName.class);
                 String name = tableName1.value();
-                if(StrUtil.isNotBlank(name)) return name;
-            }else if(aclass.isAnnotationPresent(Table.class)){
+                if (StrUtil.isNotBlank(name)) return name;
+            } else if (aclass.isAnnotationPresent(Table.class)) {
                 Table table = aclass.getAnnotation(Table.class);
                 String name = table.name();
-                if(StrUtil.isNotBlank(name)) return name;
+                if (StrUtil.isNotBlank(name)) return name;
             }
             String simpleName = aclass.getSimpleName();
             return StrUtil.toUnderlineCase(simpleName);

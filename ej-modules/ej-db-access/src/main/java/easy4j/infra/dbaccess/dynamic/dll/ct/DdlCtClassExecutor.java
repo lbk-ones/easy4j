@@ -144,7 +144,7 @@ public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLP
      * @author bokun.li
      * @date 2025/8/20
      */
-    private void fieldMetaInfoExtraParse(Object newInstance, Field field, DDLFieldInfo ddlFieldInfo) {
+    public static void fieldMetaInfoExtraParse(Object newInstance, Field field, DDLFieldInfo ddlFieldInfo) {
         Class<?> type = field.getType();
         ddlFieldInfo.setFieldClass(type);
         // comment

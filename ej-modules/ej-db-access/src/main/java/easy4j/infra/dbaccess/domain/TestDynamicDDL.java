@@ -114,7 +114,7 @@ public class TestDynamicDDL {
     @Transient
     private String testTransientAnnotation;
 
-    private final String testFinal;
+    private final String testFinal = "";
 
     @DDLField(dataType = "jsonb",comment = "测试json")
     private String json;
@@ -127,6 +127,9 @@ public class TestDynamicDDL {
      */
     @DDLField(defTime = true,isNotNull = true,comment = "执行时间")
     private Date exeDate;
+
+
+    private Date testDate2;
 
     /**
      * 上一次执行时间

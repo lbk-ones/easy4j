@@ -71,6 +71,9 @@ public class DDLFieldInfo {
     @Desc("是否是json类型字段")
     private boolean isJson = false;
 
+    @Desc("生成字段列的约束")
+    private boolean genConstraint;
+
     @Desc("配置上下文信息")
     private DDLConfig dllConfig;
 

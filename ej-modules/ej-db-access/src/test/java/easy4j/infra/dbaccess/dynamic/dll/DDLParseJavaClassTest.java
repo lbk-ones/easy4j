@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.dbaccess.domain.SysDdlHistory;
+import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +30,8 @@ class DDLParseJavaClassTest {
 
     @Test
     void getDDLFragment() {
-        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(SysDdlHistory.class,dataSource,null);
-        System.out.println(ddlParseJavaClass.getDDLFragment());
+        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class,dataSource,"");
+        ddlParseJavaClass.execDDL();
+        System.out.println("执行成功----->");
     }
 }

@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
@@ -17,7 +18,15 @@ public class DDLConfig {
 
     private String dbType;
     private String dbVersion;
+    // mysql拿catalog当schema 其他数据库不一定是这个
+    private String connectionCatalog;
+    // 这个不一定有值 看驱动实现
+    private String connectionSchema;
     private List<DynamicColumn> dbColumns;
+
+    @Desc("需要新增的列")
+    private List<DDLFieldInfo> adColumns;
+
     private String schema;
     private String tableName;
     private DataSource dataSource;
