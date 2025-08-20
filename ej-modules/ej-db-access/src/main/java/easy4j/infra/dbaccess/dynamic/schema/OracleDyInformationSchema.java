@@ -79,7 +79,7 @@ public class OracleDyInformationSchema extends AbstractDyInformationSchema {
         String s = dbAccess.selectScalar("SELECT \n" +
                 "  REGEXP_SUBSTR(BANNER, '\\d+\\.\\d+\\.\\d+\\.\\d+\\.\\d+') AS db_version\n" +
                 "FROM v$version \n" +
-                "WHERE BANNER LIKE 'Oracle Database%';", String.class);
+                "WHERE BANNER LIKE 'Oracle Database%'", String.class);
         return extractVersion(s);
     }
 }

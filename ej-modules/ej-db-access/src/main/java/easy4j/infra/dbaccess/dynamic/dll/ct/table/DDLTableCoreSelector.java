@@ -14,6 +14,7 @@ public class DDLTableCoreSelector {
     static {
         list.add(new MysqlDDLTableStrategy());
         list.add(new PgDDLTableStrategy());
+        list.add(new OracleDDLTableStrategy());
     }
 
     public static DDLTableExecutor getDDlTableExecutor(DDLTableInfo ddlTableInfo) {

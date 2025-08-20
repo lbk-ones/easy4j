@@ -103,7 +103,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                 hasExtraLine = true;
                 String name = ddlFieldInfo.getName();
                 String columnName = dllConfig.getColumnName(name);
-                String tem = "CONSTRAINT uk_" + tableName + "_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")" + SP.COMMA;
+                String tem = "CONSTRAINT uk_" + tableName + "_" + columnName + "_" + idx + " UNIQUE (" + columnName + ")" + SP.COMMA;
                 segments.add(tem);
                 idx++;
             }

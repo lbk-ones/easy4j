@@ -74,8 +74,8 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
             String dbType = InformationSchema.getDbType(dataSource, connection);
             String dbVersion = InformationSchema.getDbVersion(dataSource, connection);
             String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
-            // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 和 postgresql的 其他的试过才知道，如果取错了 只能从外部传进来了
-            if(StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1,catalog);
+            // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 、 postgresql 、 oracle 、sqlserver 的 其他的试过才知道，如果取错了 只能从外部传进来了
+            if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
             List<DynamicColumn> columns = InformationSchema.getColumns(dataSource, schema, ddlTableName, connection);
             this.dllConfig.setDataSource(dataSource)
                     .setConnection(connection)
@@ -156,7 +156,7 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
         try {
             ddl = getDDLTxt();
             System.out.println("ddl-sql->" + ddl);
-            if(StrUtil.isNotBlank(ddl)){
+            if (StrUtil.isNotBlank(ddl)) {
                 DDlHelper.execDDL(this.dllConfig.getConnection(), ddl, null, true);
             }
         } catch (IOException e) {
