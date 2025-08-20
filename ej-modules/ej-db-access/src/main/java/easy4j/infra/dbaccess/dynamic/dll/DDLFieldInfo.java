@@ -62,8 +62,14 @@ public class DDLFieldInfo {
     @Desc("自定义约束 比如 unique、not null、default")
     private String[] constraint;
 
+    @Desc("字段注释")
     private String comment;
 
+    @Desc("是否长文本")
+    private boolean isLob = false;
+
+    @Desc("是否是json类型字段")
+    private boolean isJson = false;
 
     @Desc("配置上下文信息")
     private DDLConfig dllConfig;

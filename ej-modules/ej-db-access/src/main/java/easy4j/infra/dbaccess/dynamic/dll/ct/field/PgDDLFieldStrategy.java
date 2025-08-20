@@ -59,7 +59,7 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         int defInt = ddlFieldInfo.getDefNum();
         boolean defTime = ddlFieldInfo.isDefTime();
         if (StrUtil.isNotBlank(def)) {
-            objects.add("default " + ddlConfig.wrapQuote(ddlConfig.getTxt(def)));
+            objects.add("default " + ddlConfig.wrapSingleQuote(ddlConfig.getTxt(def)));
         } else if (defInt != -1) {
             objects.add("default " + defInt);
         } else if (defTime) {
@@ -83,17 +83,23 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         String fieldType = ddlFieldInfo.getDataType();
         PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(fieldType);
         if (null == fromDataType) {
-            Class<?> fieldClass = ddlFieldInfo.getFieldClass();
-            if (null != fieldClass) {
-                fromDataType = PgSQLFieldType.getByClass(fieldClass);
-                // auto increment
-                if (ddlFieldInfo.isAutoIncrement()) {
-                    if (fieldClass == int.class || fieldClass == Integer.class) {
-                        fromDataType = PgSQLFieldType.SERIAL;
-                    } else if (fieldClass == long.class || fieldClass == Long.class) {
-                        fromDataType = PgSQLFieldType.BIGSERIAL;
-                    } else if (fieldClass == short.class || fieldClass == Short.class) {
-                        fromDataType = PgSQLFieldType.SMALLSERIAL;
+            if (ddlFieldInfo.isJson()) {
+                fromDataType = PgSQLFieldType.JSONB;
+            }else if (ddlFieldInfo.isLob()) {
+                fromDataType = PgSQLFieldType.TEXT;
+            }else{
+                Class<?> fieldClass = ddlFieldInfo.getFieldClass();
+                if (null != fieldClass) {
+                    fromDataType = PgSQLFieldType.getByClass(fieldClass);
+                    // auto increment
+                    if (ddlFieldInfo.isAutoIncrement()) {
+                        if (fieldClass == int.class || fieldClass == Integer.class) {
+                            fromDataType = PgSQLFieldType.SERIAL;
+                        } else if (fieldClass == long.class || fieldClass == Long.class) {
+                            fromDataType = PgSQLFieldType.BIGSERIAL;
+                        } else if (fieldClass == short.class || fieldClass == Short.class) {
+                            fromDataType = PgSQLFieldType.SMALLSERIAL;
+                        }
                     }
                 }
             }
@@ -101,8 +107,8 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         if (null != fromDataType) {
             String dataTypeByPGFieldType = getDataTypeByPGFieldType(fromDataType, ddlFieldInfo);
             objects.add(dataTypeByPGFieldType);
-        }else{
-            throw new EasyException(ddlFieldInfo.getName()+" not select pgsql datatype please check!");
+        } else {
+            throw new EasyException(ddlFieldInfo.getName() + " not select pgsql datatype please check!");
         }
         return fromDataType;
 

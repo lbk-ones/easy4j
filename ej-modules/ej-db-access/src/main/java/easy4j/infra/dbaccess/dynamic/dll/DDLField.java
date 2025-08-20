@@ -48,6 +48,9 @@ public @interface DDLField {
     @Desc("是否是单字段索引")
     boolean isIndex() default false;
 
+    @Desc("是否长文本")
+    boolean isLob() default false;
+
     @Desc("自定义约束 比如 unique、not null、default")
     String[] constraint() default {};
 

@@ -43,11 +43,15 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         }
 
         // default
-        String currentTimeFunction = getCurrentTimeFunctionName(mysqlFieldType);
-        if (ddlFieldInfo.isDefTime() && null != currentTimeFunction) {
-            objects.add("default " + dllConfig.getTxt(currentTimeFunction));
-        } else if (StrUtil.isNotBlank(ddlFieldInfo.getDef())) {
-            objects.add("default " + dllConfig.getTxt(ddlFieldInfo.getDef()));
+        String def = ddlFieldInfo.getDef();
+        int defInt = ddlFieldInfo.getDefNum();
+        boolean defTime = ddlFieldInfo.isDefTime();
+        if (StrUtil.isNotBlank(def)) {
+            objects.add("default " + dllConfig.wrapSingleQuote(dllConfig.getTxt(def)));
+        } else if (defInt != -1) {
+            objects.add("default " + defInt);
+        } else if (defTime) {
+            objects.add("default " + getCurrentTimeFunctionName(mysqlFieldType));
         }
 
         // primary key or unique
@@ -114,6 +118,12 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
 
     public MySQLFieldType getMysqlFieldType(Class<?> fieldClass, DDLFieldInfo ddlFieldInfo) {
         String dataType = ddlFieldInfo.getDataType();
+        if (ddlFieldInfo.isJson()) {
+            return MySQLFieldType.JSON;
+        }
+        if (ddlFieldInfo.isLob()) {
+            return MySQLFieldType.LONGTEXT;
+        }
         MySQLFieldType mySQLFieldType;
         if (dataType != null) {
             mySQLFieldType = MySQLFieldType.getFromDataType(dataType);

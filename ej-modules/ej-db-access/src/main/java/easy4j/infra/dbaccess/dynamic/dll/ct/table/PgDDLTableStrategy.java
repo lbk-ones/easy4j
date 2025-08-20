@@ -65,6 +65,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
     private static boolean handlerConstraint(DDLTableInfo ddlTableInfo, DDLConfig dllConfig, String fTableName, List<String> segments) {
         boolean hasExtraLine = false;
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
+        String tableName = ddlTableInfo.getTableName();
         if (CollUtil.isNotEmpty(fieldInfoList)) {
             List<DDLFieldInfo> primaryKey = ListTs.newList();
             List<DDLFieldInfo> uniqueKey = ListTs.newList();
@@ -94,7 +95,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                 hasExtraLine = true;
                 String name = ddlFieldInfo.getName();
                 String columnName = dllConfig.getColumnName(name);
-                String tem = "CONSTRAINT pk_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")" + SP.COMMA;
+                String tem = "CONSTRAINT pk_" + tableName + "_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")" + SP.COMMA;
                 segments.add(tem);
                 idx++;
             }
@@ -102,7 +103,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                 hasExtraLine = true;
                 String name = ddlFieldInfo.getName();
                 String columnName = dllConfig.getColumnName(name);
-                String tem = "CONSTRAINT uk_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")" + SP.COMMA;
+                String tem = "CONSTRAINT uk_" + tableName + "_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")" + SP.COMMA;
                 segments.add(tem);
                 idx++;
             }
@@ -111,7 +112,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                 String check = ddlFieldInfo.getCheck();
                 String name = ddlFieldInfo.getName();
                 String columnName = dllConfig.getColumnName(name);
-                String tem = "CONSTRAINT check_" + columnName + "_" + idx + " CHECK (" + check + ")" + SP.COMMA;
+                String tem = "CONSTRAINT check_" + tableName + "_" + columnName + "_" + idx + " CHECK (" + check + ")" + SP.COMMA;
                 segments.add(tem);
                 idx++;
             }
@@ -121,13 +122,13 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                 String columnName = dllConfig.getColumnName(name);
                 String[] constraint = ddlFieldInfo.getConstraint();
                 for (String s : constraint) {
-                    String tem = "CONSTRAINT ctk_" + columnName + "_" + idx + SP.SPACE + s + SP.COMMA;
+                    String tem = "CONSTRAINT ctk_" + tableName + "_" + columnName + "_" + idx + SP.SPACE + s + SP.COMMA;
                     segments.add(tem);
                     idx++;
                 }
             }
         }
-        if(hasExtraLine){
+        if (hasExtraLine) {
             String remove = segments.remove(segments.size() - 1);
             segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
         }
