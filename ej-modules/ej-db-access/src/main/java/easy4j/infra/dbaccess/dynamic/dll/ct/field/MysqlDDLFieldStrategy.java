@@ -47,7 +47,21 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         int defInt = ddlFieldInfo.getDefNum();
         boolean defTime = ddlFieldInfo.isDefTime();
         if (StrUtil.isNotBlank(def)) {
-            objects.add("default " + dllConfig.wrapSingleQuote(dllConfig.getTxt(def)));
+            // compatible number
+            if (
+                    fieldClass == byte.class ||
+                            fieldClass == Byte.class ||
+                            fieldClass == int.class ||
+                            fieldClass == Integer.class ||
+                            fieldClass == long.class ||
+                            fieldClass == Long.class ||
+                            fieldClass == short.class ||
+                            fieldClass == Short.class
+            ) {
+                objects.add("default " + def);
+            } else {
+                objects.add("default " + dllConfig.wrapSingleQuote(def));
+            }
         } else if (defInt != -1) {
             objects.add("default " + defInt);
         } else if (defTime) {
@@ -60,6 +74,8 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         } else {
             objects.add(getTxt("UNIQUE"));
         }*/
+        genConstraint(ddlFieldInfo, objects);
+
 
         // comment
         if (StrUtil.isNotBlank(ddlFieldInfo.getComment())) {

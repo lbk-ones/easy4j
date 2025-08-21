@@ -54,6 +54,7 @@ class DDLParseModelTest {
         objects.add(new DDLFieldInfo().setName("order_no").setPrimary(true).setFieldClass(Long.class));
         objects.add(new DDLFieldInfo().setName("ordTxt").setDataLength(23).setFieldClass(String.class));
         objects.add(new DDLFieldInfo().setName("ordClass").setIndex(true).setFieldClass(String.class));
+        objects.add(new DDLFieldInfo().setName("is_enable").setIndex(true).setFieldClass(int.class));
         objects.add(new DDLFieldInfo().setName("create_date").setIndex(true).setFieldClass(Date.class));
         objects.add(new DDLFieldInfo().setName("backField1").setDataLength(33).setFieldClass(int.class));
         objects.add(new DDLFieldInfo().setName("backField2").setFieldClass(short.class));

@@ -51,20 +51,7 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
 
         // 生成额外约束
         // unique check
-        if (ddlFieldInfo.isGenConstraint()) {
-
-            if (ddlFieldInfo.isUnique()) {
-                objects.add("unique");
-            }
-            String check = ddlFieldInfo.getCheck();
-            if (StrUtil.isNotBlank(check)) {
-                objects.add("check (" + check + ")");
-            }
-            String[] constraint = ddlFieldInfo.getConstraint();
-            if (constraint != null) {
-                Collections.addAll(objects, constraint);
-            }
-        }
+        genConstraint(ddlFieldInfo, objects);
         return String.join(SP.SPACE, objects);
     }
 
@@ -77,7 +64,21 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         int defInt = ddlFieldInfo.getDefNum();
         boolean defTime = ddlFieldInfo.isDefTime();
         if (StrUtil.isNotBlank(def)) {
-            objects.add("default " + ddlConfig.wrapSingleQuote(ddlConfig.getTxt(def)));
+            Class<?> fieldClass = ddlFieldInfo.getFieldClass();
+            if (
+                    fieldClass == byte.class ||
+                            fieldClass == Byte.class ||
+                            fieldClass == int.class ||
+                            fieldClass == Integer.class ||
+                            fieldClass == long.class ||
+                            fieldClass == Long.class ||
+                            fieldClass == short.class ||
+                            fieldClass == Short.class
+            ) {
+                objects.add("default " + def);
+            } else {
+                objects.add("default " + ddlConfig.wrapSingleQuote(def));
+            }
         } else if (defInt != -1) {
             objects.add("default " + defInt);
         } else if (defTime) {

@@ -53,6 +53,7 @@ class DDLParseModelTestPg {
         ArrayList<DDLFieldInfo> objects = ListTs.newArrayList();
         objects.add(new DDLFieldInfo().setName("order_no").setPrimary(true).setAutoIncrement(true).setFieldClass(Long.class));
         objects.add(new DDLFieldInfo().setName("ordTxt").setFieldClass(String.class));
+        objects.add(new DDLFieldInfo().setName("is_enable").setIndex(true).setFieldClass(int.class).setDef("3"));
         objects.add(new DDLFieldInfo().setName("ordTxt").setDataLength(23).setFieldClass(String.class));
         objects.add(new DDLFieldInfo().setName("ordClass").setIndex(true).setFieldClass(String.class));
         objects.add(new DDLFieldInfo().setName("create_date").setIndex(true).setFieldClass(Date.class));
