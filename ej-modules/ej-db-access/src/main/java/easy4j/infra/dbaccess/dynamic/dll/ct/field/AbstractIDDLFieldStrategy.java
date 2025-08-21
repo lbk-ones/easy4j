@@ -29,7 +29,7 @@ public abstract class AbstractIDDLFieldStrategy implements IDDLFieldStrategy {
     }
 
     /**
-     * 校验 genConstraint 是否生成字段的额外约束
+     * 校验 genConstraint 是否生成字段的额外约束 用于新增字段时候使用
      *
      * @param ddlFieldInfo
      * @param objects

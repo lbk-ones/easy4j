@@ -138,11 +138,15 @@ public class DDLParseModel extends CommonDBAccess implements DDLParse {
                 newAdList.add(field);
             }
         }
+        return getStringNewAdList(newAdList, this.dllConfig);
+    }
+
+    public static String getStringNewAdList(List<DDLFieldInfo> newAdList, DDLConfig dllConfig) {
         if (CollUtil.isNotEmpty(newAdList)) {
-            this.dllConfig.setAdColumns(newAdList);
+            dllConfig.setAdColumns(newAdList);
             AnsiAdFieldStrategy ansiAdFieldStrategy = new AnsiAdFieldStrategy();
-            String columnSegment = ansiAdFieldStrategy.getColumnSegment(this.dllConfig);
-            String columnComment = ansiAdFieldStrategy.getColumnComment(this.dllConfig);
+            String columnSegment = ansiAdFieldStrategy.getColumnSegment(dllConfig);
+            String columnComment = ansiAdFieldStrategy.getColumnComment(dllConfig);
             return ListTs.asList(columnSegment, columnComment)
                     .stream()
                     .filter(StrUtil::isNotBlank)

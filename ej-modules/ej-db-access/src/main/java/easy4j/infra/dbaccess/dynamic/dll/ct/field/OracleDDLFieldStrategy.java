@@ -56,20 +56,7 @@ public class OracleDDLFieldStrategy extends AbstractIDDLFieldStrategy {
 
         // 生成额外约束
         // unique check
-        if (ddlFieldInfo.isGenConstraint()) {
-
-            if (ddlFieldInfo.isUnique()) {
-                objects.add("unique");
-            }
-            String check = ddlFieldInfo.getCheck();
-            if (StrUtil.isNotBlank(check)) {
-                objects.add("check (" + check + ")");
-            }
-            String[] constraint = ddlFieldInfo.getConstraint();
-            if (constraint != null) {
-                Collections.addAll(objects, constraint);
-            }
-        }
+        genConstraint(ddlFieldInfo, objects);
         return String.join(SP.SPACE, objects);
     }
 

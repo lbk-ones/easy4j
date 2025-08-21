@@ -31,7 +31,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static easy4j.infra.dbaccess.dynamic.dll.DDLParseModel.getStringNewAdList;
 
 /**
  * 动态ddl解析，从java实体逆向到数据库
@@ -129,17 +130,7 @@ public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
                 newAdList.add(ddlFieldInfo);
             }
         }
-        if (CollUtil.isNotEmpty(newAdList)) {
-            this.dllConfig.setAdColumns(newAdList);
-            AnsiAdFieldStrategy ansiAdFieldStrategy = new AnsiAdFieldStrategy();
-            String columnSegment = ansiAdFieldStrategy.getColumnSegment(this.dllConfig);
-            String columnComment = ansiAdFieldStrategy.getColumnComment(this.dllConfig);
-            return ListTs.asList(columnSegment, columnComment)
-                    .stream()
-                    .filter(StrUtil::isNotBlank)
-                    .collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE));
-        }
-        return "";
+        return getStringNewAdList(newAdList, this.dllConfig);
     }
 
     public String getDDLTxt() {
