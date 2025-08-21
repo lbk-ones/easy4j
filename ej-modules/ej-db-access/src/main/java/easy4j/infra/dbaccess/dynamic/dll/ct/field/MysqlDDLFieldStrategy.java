@@ -48,16 +48,7 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         boolean defTime = ddlFieldInfo.isDefTime();
         if (StrUtil.isNotBlank(def)) {
             // compatible number
-            if (
-                    fieldClass == byte.class ||
-                            fieldClass == Byte.class ||
-                            fieldClass == int.class ||
-                            fieldClass == Integer.class ||
-                            fieldClass == long.class ||
-                            fieldClass == Long.class ||
-                            fieldClass == short.class ||
-                            fieldClass == Short.class
-            ) {
+            if (isNumberDefaultType(fieldClass)) {
                 objects.add("default " + def);
             } else {
                 objects.add("default " + dllConfig.wrapSingleQuote(def));

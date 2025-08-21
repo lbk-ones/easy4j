@@ -41,6 +41,7 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
     public String getResColumn(DDLFieldInfo ddlFieldInfo) {
         DDLConfig ddlConfig = ddlFieldInfo.getDllConfig();
         CheckUtils.checkByLambda(ddlFieldInfo, DDLFieldInfo::getDllConfig);
+        CheckUtils.checkByLambda(ddlFieldInfo, DDLFieldInfo::getFieldClass);
         List<String> objects = ListTs.newList();
         // 解析字段名称
         parseFieldName(objects, ddlFieldInfo, ddlConfig);
@@ -65,16 +66,7 @@ public class PgDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         boolean defTime = ddlFieldInfo.isDefTime();
         if (StrUtil.isNotBlank(def)) {
             Class<?> fieldClass = ddlFieldInfo.getFieldClass();
-            if (
-                    fieldClass == byte.class ||
-                            fieldClass == Byte.class ||
-                            fieldClass == int.class ||
-                            fieldClass == Integer.class ||
-                            fieldClass == long.class ||
-                            fieldClass == Long.class ||
-                            fieldClass == short.class ||
-                            fieldClass == Short.class
-            ) {
+            if (isNumberDefaultType(fieldClass)) {
                 objects.add("default " + def);
             } else {
                 objects.add("default " + ddlConfig.wrapSingleQuote(def));

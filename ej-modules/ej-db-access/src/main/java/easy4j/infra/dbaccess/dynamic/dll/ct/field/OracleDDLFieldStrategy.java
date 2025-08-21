@@ -45,6 +45,7 @@ public class OracleDDLFieldStrategy extends AbstractIDDLFieldStrategy {
     public String getResColumn(DDLFieldInfo ddlFieldInfo) {
         DDLConfig ddlConfig = ddlFieldInfo.getDllConfig();
         CheckUtils.checkByLambda(ddlFieldInfo, DDLFieldInfo::getDllConfig);
+        CheckUtils.checkByLambda(ddlFieldInfo, DDLFieldInfo::getFieldClass);
         List<String> objects = ListTs.newList();
         // 解析字段名称
         parseFieldName(objects, ddlFieldInfo, ddlConfig);
@@ -77,8 +78,13 @@ public class OracleDDLFieldStrategy extends AbstractIDDLFieldStrategy {
         String def = ddlFieldInfo.getDef();
         int defInt = ddlFieldInfo.getDefNum();
         boolean defTime = ddlFieldInfo.isDefTime();
+        Class<?> fieldClass = ddlFieldInfo.getFieldClass();
         if (StrUtil.isNotBlank(def)) {
-            objects.add("default " + ddlConfig.wrapSingleQuote(ddlConfig.getTxt(def)));
+            if (isNumberDefaultType(fieldClass)) {
+                objects.add("default " + def);
+            } else {
+                objects.add("default " + ddlConfig.wrapSingleQuote(def));
+            }
         } else if (defInt != -1) {
             objects.add("default " + defInt);
         } else if (defTime) {

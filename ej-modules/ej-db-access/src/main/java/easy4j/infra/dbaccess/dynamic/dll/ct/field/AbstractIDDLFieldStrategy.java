@@ -50,4 +50,21 @@ public abstract class AbstractIDDLFieldStrategy implements IDDLFieldStrategy {
         }
     }
 
+    /**
+     * 是否是数字类型的默认值
+     *
+     * @author bokun.li
+     * @date 2025-08-21
+     */
+    public boolean isNumberDefaultType(Class<?> fieldClass) {
+        return fieldClass == byte.class ||
+                fieldClass == Byte.class ||
+                fieldClass == int.class ||
+                fieldClass == Integer.class ||
+                fieldClass == long.class ||
+                fieldClass == Long.class ||
+                fieldClass == short.class ||
+                fieldClass == Short.class;
+    }
+
 }
