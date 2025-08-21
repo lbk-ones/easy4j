@@ -39,6 +39,12 @@ public class DDLTableInfo {
     @Desc("是否临时表")
     private boolean isTemporary;
 
+    @Desc("pg数据库，unlogged 表")
+    private boolean pgUnlogged;
+
+    @Desc("pg 继承表")
+    private String pgInherits;
+
     @Desc("表名注释")
     private String comment;
 

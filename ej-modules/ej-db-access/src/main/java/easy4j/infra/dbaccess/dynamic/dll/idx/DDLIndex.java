@@ -22,6 +22,13 @@ public @interface DDLIndex {
     String name() default "";
 
     /**
+     * 索引的名称前缀，可以不填
+     *
+     * @return
+     */
+    String indexNamePrefix() default "";
+
+    /**
      * 索引的键
      * 如果是特殊的键比如千缀索引 就写成这样`name`(20)
      *

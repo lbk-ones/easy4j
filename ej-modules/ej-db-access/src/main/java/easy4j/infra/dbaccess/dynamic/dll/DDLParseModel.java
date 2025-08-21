@@ -3,7 +3,10 @@ package easy4j.infra.dbaccess.dynamic.dll;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dynamic.dll.ad.AnsiAdFieldStrategy;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtModelExecutor;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
@@ -19,6 +22,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 动态ddl解析，从domain模型然后逆向到数据库
@@ -119,6 +125,29 @@ public class DDLParseModel extends CommonDBAccess implements DDLParse {
     // 新增字段sql
     public String getAddColumnTxt() {
 
+        List<DDLFieldInfo> fieldInfoList = this.ddlTableInfo.getFieldInfoList();
+        List<DynamicColumn> dbColumns = this.dllConfig.getDbColumns();
+        Map<String, DynamicColumn> dbColumnsMap = ListTs.mapOne(dbColumns, DynamicColumn::getColumnName);
+        List<DDLFieldInfo> newAdList = ListTs.newList();
+        for (DDLFieldInfo field : fieldInfoList) {
+            String name = field.getName();
+            String columnName = this.dllConfig.getColumnName(name);
+            DynamicColumn orDefault = dbColumnsMap.get(columnName);
+            // only not exist can new add
+            if (Objects.isNull(orDefault)) {
+                newAdList.add(field);
+            }
+        }
+        if (CollUtil.isNotEmpty(newAdList)) {
+            this.dllConfig.setAdColumns(newAdList);
+            AnsiAdFieldStrategy ansiAdFieldStrategy = new AnsiAdFieldStrategy();
+            String columnSegment = ansiAdFieldStrategy.getColumnSegment(this.dllConfig);
+            String columnComment = ansiAdFieldStrategy.getColumnComment(this.dllConfig);
+            return ListTs.asList(columnSegment, columnComment)
+                    .stream()
+                    .filter(StrUtil::isNotBlank)
+                    .collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE));
+        }
         return "";
     }
 

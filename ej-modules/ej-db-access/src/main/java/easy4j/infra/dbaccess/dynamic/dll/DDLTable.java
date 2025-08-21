@@ -25,6 +25,12 @@ public @interface DDLTable {
     @Desc("是否存在，只支持mysql、pg")
     boolean ifNotExists() default false;
 
+    @Desc("pg数据库中的unlogged表")
+    boolean pgUnlogged() default false;
+
+    @Desc("pg 继承表")
+    String pgInherits() default "";
+
     @Desc("表名注释")
     String comment() default "";
 

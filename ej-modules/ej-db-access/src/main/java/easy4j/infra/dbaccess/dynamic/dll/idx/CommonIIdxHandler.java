@@ -20,6 +20,17 @@ public class CommonIIdxHandler implements IIdxHandler {
         return "common";
     }
 
+    /**
+     * 过滤特殊符号，然后转下划线
+     *
+     * @param wt
+     * @return
+     */
+    public String replaceSpecialSymbol(String wt) {
+        if (StrUtil.isBlank(wt)) return "";
+        return wt.replaceAll("[^a-zA-Z0-9_\u4e00-\u9fa5]", "_").replaceAll("_+", "_");
+    }
+
     @Override
     public String getIdx(DDLIndexInfo ddlIndexInfo) {
         String name = ddlIndexInfo.getName();
@@ -28,12 +39,15 @@ public class CommonIIdxHandler implements IIdxHandler {
         String indexTypeName = StrUtil.blankToDefault(ddlIndexInfo.getIndexTypeName(), "");
         if (StrUtil.isBlank(name)) {
             if (keys != null && keys.length > 0) {
-                String lowerCase = indexTypeName.toLowerCase();
+                String lowerCase = StrUtil.blankToDefault(indexTypeName.toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
                 String collect = ListTs.asList(keys)
                         .stream()
                         .map(StrUtil::toUnderlineCase)
                         .collect(Collectors.joining("_"));
+
+                collect = replaceSpecialSymbol(collect);
                 name = (StrUtil.isBlank(lowerCase) ? "" : (lowerCase + "_")) + "idx_" + ddlIndexInfo.getTableName().toLowerCase() + "_" + collect;
+                name = replaceSpecialSymbol(name);
             }
         }
         List<String> objects = ListTs.newArrayList();

@@ -49,7 +49,9 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
             String remove = segments.remove(segments.size() - 1);
             segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
         }
-        segments.add(SP.RIGHT_BRACKET);
+        String pgInherits = ddlTableInfo.getPgInherits();
+        String inheritsTable = StrUtil.isNotBlank(pgInherits) ? (" inherits ( " + pgInherits + " )") : "";
+        segments.add(SP.RIGHT_BRACKET + inheritsTable);
         return String.join(SP.NEWLINE, segments);
     }
 
@@ -153,10 +155,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
             }
         }
         if (StrUtil.isNotBlank(tableComments)) {
-            comments.add(String.format(
-                    "COMMENT ON TABLE %s IS '%s'",
-                    getTableName(ddlFieldInfo), tableComments
-            ));
+            comments.add(String.format("COMMENT ON TABLE %s IS '%s'", getTableName(ddlFieldInfo), tableComments));
         }
         if (CollUtil.isNotEmpty(fieldInfoList)) {
             for (DDLFieldInfo fieldInfo : fieldInfoList) {
@@ -171,10 +170,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
                     }
                 }
                 if (StrUtil.isNotBlank(comment)) {
-                    comments.add(String.format(
-                            "COMMENT ON COLUMN %s IS '%s'",
-                            getTableName(ddlFieldInfo) + SP.DOT + dllConfig.getColumnName(fieldInfo.getName()), comment
-                    ));
+                    comments.add(String.format("COMMENT ON COLUMN %s IS '%s'", getTableName(ddlFieldInfo) + SP.DOT + dllConfig.getColumnName(fieldInfo.getName()), comment));
                 }
             }
         }
@@ -200,7 +196,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
             if (null != keys) {
                 for (String key : keys) {
                     String columnName = dllConfig.getColumnName(key);
-                    if (hasIndex.contains(columnName) || Objects.isNull(fieldMaps.get(columnName))) {
+                    if (hasIndex.contains(columnName)) {
                         skip = true;
                         break;
                     }

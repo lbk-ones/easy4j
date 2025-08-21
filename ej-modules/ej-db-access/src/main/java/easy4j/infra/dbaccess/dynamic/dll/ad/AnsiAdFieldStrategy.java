@@ -36,6 +36,7 @@ public class AnsiAdFieldStrategy implements AdFieldStrategy {
                 stringBuilder.append(tableName);
                 stringBuilder.append(" ADD COLUMN ");
                 adColumn.setGenConstraint(true);
+                adColumn.setDllConfig(ddlConfig);
                 DDLFieldStrategyExecutor ddlFieldStrategyExecutor = DDLFieldStrategySelector.selectExecutor(adColumn);
                 String executor = ddlFieldStrategyExecutor.executor();
                 stringBuilder.append(executor);

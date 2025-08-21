@@ -124,7 +124,7 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
             if (null != keys) {
                 for (String key : keys) {
                     String columnName = dllConfig.getColumnName(key);
-                    if (hasIndex.contains(columnName) || Objects.isNull(fieldMaps.get(columnName))) {
+                    if (hasIndex.contains(columnName)) {
                         skip = true;
                         break;
                     }

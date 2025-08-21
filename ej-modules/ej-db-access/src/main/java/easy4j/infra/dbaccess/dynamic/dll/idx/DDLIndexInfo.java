@@ -25,6 +25,10 @@ public class DDLIndexInfo {
      */
     private String indexTypeName;
     /**
+     * 索引名称前缀
+     */
+    private String indexNamePrefix;
+    /**
      * 索引的键
      * 如果是特殊的键比如千缀索引 就写成这样`name`(20)
      */

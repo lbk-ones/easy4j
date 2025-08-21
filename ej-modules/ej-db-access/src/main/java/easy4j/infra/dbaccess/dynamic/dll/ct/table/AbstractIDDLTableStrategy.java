@@ -36,6 +36,9 @@ public abstract class AbstractIDDLTableStrategy implements IDDLTableStrategy {
         if (ddlTableInfo.isTemporary()) {
             tempList.add("temporary");
         }
+        if (ddlTableInfo.isPgUnlogged()) {
+            tempList.add("unlogged");
+        }
         tempList.add("table");
         if (ddlTableInfo.isIfNotExists()) {
             tempList.add("if not exists");
