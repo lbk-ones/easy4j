@@ -79,6 +79,39 @@ public class ListTs {
         return result;
     }
 
+    /**
+     * 动态返回集合的类型
+     *
+     * @param w
+     * @param function
+     * @param <R>
+     * @param <T>
+     * @return
+     */
+    @Desc("动态返回集合的类型")
+    public static <R, T> List<R> mapToList(List<T> w, Function<T, R> function) {
+        List<R> result = newArrayList();
+        if (!isEmpty(w) && null != function) {
+            List<R> collect = asStream(w).map(function).filter(ObjectUtil::isNotEmpty).collect(Collectors.toList());
+            if (isNotEmpty(collect)) {
+                result.addAll(collect);
+            }
+        }
+        return result;
+    }
+
+    @Desc("动态返回集合的类型,去从")
+    public static <R, T> List<R> mapDistinctToList(List<T> w, Function<T, R> function) {
+        List<R> result = newArrayList();
+        if (!isEmpty(w) && null != function) {
+            List<R> collect = asStream(w).map(function).filter(ObjectUtil::isNotEmpty).distinct().collect(Collectors.toList());
+            if (isNotEmpty(collect)) {
+                return collect;
+            }
+        }
+        return result;
+    }
+
     public static <T> List<String> mapStrDistToList(List<T> w, Function<T, String> function) {
         List<String> list = mapStringToList(w, function);
         return distinct(list, Function.identity());
@@ -105,6 +138,15 @@ public class ListTs {
         return result;
     }
 
+    @Desc("动态返回key的类型，过滤掉返回值为null的元素，groupBy null值会报错")
+    public static <R, T> Map<R, List<T>> groupBy(List<T> w, Function<T, R> function) {
+        Map<R, List<T>> result = new HashMap<>();
+        if (isNotEmpty(w) && null != function) {
+            return asStream(w).filter(e -> function.apply(e) != null).collect(Collectors.groupingBy(function));
+        }
+        return result;
+    }
+
     /**
      * 将集合中的某个元素和对象对应起来 相同key取第一个
      *
@@ -120,6 +162,39 @@ public class ListTs {
             }
         }
         return result;
+    }
+
+    /**
+     * 转为map 根据泛型来决定key的类型
+     *
+     * @param w
+     * @param function
+     * @param <R>
+     * @param <T>
+     * @return
+     */
+    @Desc("转为map 根据泛型来决定key的类型")
+    public static <R, T> Map<R, T> toMap(List<T> w, Function<T, R> function) {
+        Map<R, T> result = new HashMap<>();
+        if (isNotEmpty(w) && null != function) {
+            Map<R, T> collect = asStream(w).filter(e -> function.apply(e) != null).collect(Collectors.toMap(function, Function.identity(), (k1, k2) -> k1));
+            if (isNotEmpty(collect)) {
+                return collect;
+            }
+        }
+        return result;
+    }
+
+    @Desc("将集合转为另外一个类型的集合，同时去除null值")
+    public static <R, T> List<R> map(List<T> w, Function<T, R> function) {
+        List<R> list = newList();
+        if (isNotEmpty(w) && null != function) {
+            List<R> collect = asStream(w).map(function).filter(Objects::nonNull).collect(Collectors.toList());
+            if (isNotEmpty(collect)) {
+                return collect;
+            }
+        }
+        return list;
     }
 
     /**
