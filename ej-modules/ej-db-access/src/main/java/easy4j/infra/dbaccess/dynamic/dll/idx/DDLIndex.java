@@ -1,5 +1,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.idx;
 
+import easy4j.infra.common.annotations.Desc;
+
 import java.lang.annotation.*;
 
 /**
@@ -27,6 +29,12 @@ public @interface DDLIndex {
      * @return
      */
     String indexNamePrefix() default "";
+
+    /**
+     * 部分数据库索引支持 USING [索引类型]  PostgreSQL、部分MySql、
+     */
+    @Desc("部分数据库索引支持 USING [索引类型]  PostgreSQL、部分MySql")
+    String using() default "";
 
     /**
      * 索引的键

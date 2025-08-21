@@ -62,6 +62,12 @@ public class CommonIIdxHandler implements IIdxHandler {
         String tableName = ddlIndexInfo.getTableName();
         String join = (StrUtil.isBlank(schema) ? "" : schema + SP.DOT) + tableName;
         objects.add(join);
+
+        String using = ddlIndexInfo.getUsing();
+        if (StrUtil.isNotBlank(using)) {
+            objects.add("using " + using);
+        }
+
         objects.add("(");
         String nameA = ListTs.asList(keys)
                 .stream()

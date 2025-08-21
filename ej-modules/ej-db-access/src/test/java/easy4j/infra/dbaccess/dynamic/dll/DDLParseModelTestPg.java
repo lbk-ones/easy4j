@@ -70,6 +70,7 @@ class DDLParseModelTestPg {
         list.add(new DDLIndexInfo().setKeys(new String[]{"ord_class"}));
         list.add(new DDLIndexInfo().setKeys(new String[]{"create_date"}));
         list.add(new DDLIndexInfo().setKeys(new String[]{"upper(ord_txt)"}));
+        list.add(new DDLIndexInfo().setKeys(new String[]{"upper(ordClass)"}).setUsing("gin"));
         ddlTableInfo.setDdlIndexInfoList(list);
         DDLParse ddlParseModel = new DDLParseModel(ddlTableInfo, dataSource, null);
         String ddlFragment = ddlParseModel.getDDLFragment();

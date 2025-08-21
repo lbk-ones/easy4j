@@ -29,6 +29,11 @@ public class DDLIndexInfo {
      */
     private String indexNamePrefix;
     /**
+     * 部分数据库索引支持 USING [索引类型]  PostgreSQL、部分MySql、
+     */
+    @Desc("部分数据库索引支持 USING [索引类型]  PostgreSQL、部分MySql")
+    private String using;
+    /**
      * 索引的键
      * 如果是特殊的键比如千缀索引 就写成这样`name`(20)
      */
