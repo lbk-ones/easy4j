@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
@@ -30,7 +31,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class DDLParseModel extends CommonDBAccess implements DDLParse {
 
-    public final String schema;
+    private String schema;
 
     private final DataSource dataSource;
 
@@ -63,7 +64,12 @@ public class DDLParseModel extends CommonDBAccess implements DDLParse {
         String ddl = null;
         boolean hasException = false;
         try {
+            this.dllConfig = new DDLConfig();
             connection = dataSource.getConnection();
+            String catalog = connection.getCatalog();
+            String schema1 = connection.getSchema();
+            this.dllConfig.setConnectionCatalog(catalog);
+            this.dllConfig.setConnectionSchema(schema1);
             String dbType = InformationSchema.getDbType(dataSource, connection);
             String dbVersion = InformationSchema.getDbVersion(dataSource, connection);
             String ddlTableName = this.ddlTableInfo.getTableName();
@@ -74,10 +80,13 @@ public class DDLParseModel extends CommonDBAccess implements DDLParse {
             });
             this.ddlTableInfo.setDbType(dbType);
             this.ddlTableInfo.setDbVersion(dbVersion);
+
+            if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
+
             List<DynamicColumn> columns = InformationSchema.getColumns(dataSource, schema, ddlTableName, connection);
 
-            this.dllConfig = new DDLConfig()
-                    .setDataSource(dataSource)
+
+            this.dllConfig.setDataSource(dataSource)
                     .setConnection(connection)
                     .setSchema(schema)
                     .setTableName(ddlTableName)

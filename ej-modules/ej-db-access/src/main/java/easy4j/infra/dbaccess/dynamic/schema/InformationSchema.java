@@ -57,7 +57,7 @@ public class InformationSchema {
         informationSchemaMap.put("db2", new Db2DyInformationSchema());
     }
 
-    public void register(String name, DyInformationSchema dyInformationSchema) {
+    public static void register(String name, DyInformationSchema dyInformationSchema) {
         informationSchemaMap.putIfAbsent(name, dyInformationSchema);
     }
 

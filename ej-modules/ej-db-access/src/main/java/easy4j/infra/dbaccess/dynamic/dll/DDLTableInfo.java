@@ -33,7 +33,7 @@ public class DDLTableInfo {
     @Desc("排序规则 只支持mysql")
     private String collate;
 
-    @Desc("是否存在，只支持mysql")
+    @Desc("是否存在，只支持mysql 和 pg")
     private boolean ifNotExists;
 
     @Desc("是否临时表")
