@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-public abstract class CommonDBAccess {
+public class CommonDBAccess {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

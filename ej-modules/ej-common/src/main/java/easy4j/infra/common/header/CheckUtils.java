@@ -49,31 +49,38 @@ public class CheckUtils {
      */
     @SafeVarargs
     public static <T> void checkByLambda(T t, Func1<T, ?>... message) {
-        Set<String> resultList = new HashSet<>();
-        Class<?> aClass = t.getClass();
-        for (Func1<T, ?> trFunction : message) {
-            String fieldName = LambdaUtil.getFieldName(trFunction);
-            Field field = ReflectUtil.getField(aClass, fieldName);
-            Object value = ReflectUtil.getFieldValue(t, field);
-            if (ObjectUtil.isEmpty(value)) {
-                Schema annotation = field.getAnnotation(Schema.class);
-                if (Objects.nonNull(annotation)) {
-                    String description = annotation.description();
-                    if (StrUtil.isNotBlank(description)) {
-                        description += "【" + fieldName + "】";
-                        resultList.add(description);
+        if (t == null) {
+            throw EasyException.wrap(BusCode.A00004, "checkByLambda of first arg");
+        }
+        if (message != null) {
+            Set<String> resultList = new HashSet<>();
+            Class<?> aClass = t.getClass();
+            for (Func1<T, ?> trFunction : message) {
+                String fieldName = LambdaUtil.getFieldName(trFunction);
+                Field field = ReflectUtil.getField(aClass, fieldName);
+                Object value = ReflectUtil.getFieldValue(t, field);
+                if (ObjectUtil.isEmpty(value)) {
+                    Schema annotation = field.getAnnotation(Schema.class);
+                    if (Objects.nonNull(annotation)) {
+                        String description = annotation.description();
+                        if (StrUtil.isNotBlank(description)) {
+                            description += "【" + fieldName + "】";
+                            resultList.add(description);
+                        } else {
+                            resultList.add(field.getName());
+                        }
                     } else {
                         resultList.add(field.getName());
                     }
-                } else {
-                    resultList.add(field.getName());
                 }
             }
+            if (!resultList.isEmpty()) {
+                String join = String.join("，", resultList);
+                throw EasyException.wrap(BusCode.A00004, join);
+            }
         }
-        if (!resultList.isEmpty()) {
-            String join = String.join("，", resultList);
-            throw EasyException.wrap(BusCode.A00004, join);
-        }
+
+
     }
 
     public static String joinElementsAfterPosition(String[] array, int position, boolean boundary) {
