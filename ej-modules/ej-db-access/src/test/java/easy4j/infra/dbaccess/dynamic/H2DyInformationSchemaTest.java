@@ -1,16 +1,28 @@
 package easy4j.infra.dbaccess.dynamic;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import easy4j.infra.base.starter.Easy4JStarter;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.JdbcDbAccess;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpMeta;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.H2DyInformationSchema;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @Easy4JStarter(
         serverName = "test-db-access",
@@ -43,4 +55,50 @@ class H2DyInformationSchemaTest {
         System.out.println(JacksonUtil.toJson(columns));
 
     }
+
+
+    @Test
+    void dbDatabaseMetaInfo() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            int databaseMajorVersion = metaData.getDatabaseMajorVersion();
+            System.out.println(databaseMajorVersion);
+            int databaseMinorVersion = metaData.getDatabaseMinorVersion();
+            System.out.println(databaseMinorVersion);
+            String databaseProductVersion = metaData.getDatabaseProductVersion();
+            System.out.println(databaseProductVersion);
+            String catalog = connection.getCatalog();
+            String schema = connection.getSchema();
+            System.out.println(catalog);
+            System.out.println(schema);
+            ResultSet tables = metaData.getTables(catalog, schema, null, new String[]{"TABLE", "VIEW"});
+            MapListHandler mapListHandler = new MapListHandler();
+            List<Map<String, Object>> handle = mapListHandler.handle(tables);
+            System.out.println(JacksonUtil.toJson(handle));
+            JdbcHelper.close(tables);
+
+            ResultSet sscProduct = metaData.getColumns(catalog, schema, "SYS_LOG_RECORD", null);
+            List<Map<String, Object>> handle1 = new MapListHandler().handle(sscProduct);
+            List<DatabaseColumnMetadata> map = ListTs.map(handle1, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreNullValue()));
+            System.out.println(JacksonUtil.toJson(map));
+
+        }
+    }
+
+    @Test
+    void OpMetaTest() throws SQLException {
+        Connection connection = dataSource.getConnection();
+        String catalog = connection.getCatalog();
+        String schema = connection.getSchema();
+        OpMeta opMeta = new OpMeta();
+        opMeta.setConnection(connection);
+        System.out.println(JacksonUtil.toJson(opMeta.getAllTableInfo()));
+        System.out.println(opMeta.getMajorVersion());
+        System.out.println(opMeta.getMinorVersion());
+        System.out.println(opMeta.getProductVersion());
+        System.out.println(JacksonUtil.toJson(opMeta.getColumns(catalog, schema, "SYS_LOG_RECORD")));
+        System.out.println(JacksonUtil.toJson(opMeta.getPrimaryKes(catalog, schema, "SYS_LOG_RECORD")));
+
+    }
+
 }
