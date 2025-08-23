@@ -14,6 +14,7 @@ import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.ad.AnsiAdFieldStrategy;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtClassExecutor;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
 import easy4j.infra.dbaccess.helper.DDlHelper;
@@ -39,10 +40,12 @@ import static easy4j.infra.dbaccess.dynamic.dll.DDLParseModel.getStringNewAdList
  *
  * @author bokun.li
  * @date 2025-08-03
+ * @see DynamicDDL
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
+@Deprecated
 public class DDLParseJavaClass extends CommonDBAccess implements DDLParse {
 
     DDLConfig dllConfig;

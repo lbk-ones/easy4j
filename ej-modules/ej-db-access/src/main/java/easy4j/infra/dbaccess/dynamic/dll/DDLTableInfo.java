@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -58,6 +59,10 @@ public class DDLTableInfo {
     private List<DDLIndexInfo> ddlIndexInfoList;
 
     @Desc("配置上下文信息")
+    @Deprecated
     private DDLConfig dllConfig;
+
+    @Desc("配置")
+    private OpConfig opConfig;
 
 }

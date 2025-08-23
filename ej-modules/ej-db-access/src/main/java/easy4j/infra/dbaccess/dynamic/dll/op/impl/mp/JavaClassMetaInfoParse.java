@@ -1,4 +1,18 @@
-package easy4j.infra.dbaccess.dynamic.dll.op.impl;
+/**
+ * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package easy4j.infra.dbaccess.dynamic.dll.op.impl.mp;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
@@ -10,6 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
@@ -24,8 +39,12 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Column;
@@ -38,10 +57,24 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * JavaClassMetaInfoParse
+ * 从java类中解析表信息
+ *
+ * @author bokun.li
+ * @date 2025/8/23
+ */
+@Getter
 public class JavaClassMetaInfoParse implements MetaInfoParse {
 
     OpContext opContext;
+
+    public JavaClassMetaInfoParse() {
+    }
+
+    public JavaClassMetaInfoParse(OpContext opContext) {
+        this.opContext = opContext;
+    }
 
     @Override
     public void setOpContext(OpContext opContext) {
@@ -50,22 +83,10 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
 
     @Override
     public DDLTableInfo parse() {
-        try{
-            Class<?> domainClass = this.opContext.getDomainClass();
-            DDLTableInfo ddlTableInfo = getDdlTableInfo(domainClass);
-            ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
-            ddlTableInfo.setSchema(this.opContext.getSchema());
-            ddlTableInfo.setDbType(this.opContext.getDbType());
-            ddlTableInfo.setTableName(this.opContext.getTableName());
-
-            List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(domainClass);
-            ddlTableInfo.setFieldInfoList(ddlFieldInfos);
-            List<DDLIndexInfo> ddlIndexInfos = getIndexInfoList(domainClass);
-            ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
-
-            return ddlTableInfo;
-        }catch (SQLException e){
-            throw JdbcHelper.translateSqlException("DDLTableInfo Parse","",e);
+        try {
+            return getDdlTableInfo();
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("DDLTableInfo Parse", "", e);
         }
 
     }
@@ -92,18 +113,28 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
     }
 
 
-    private DDLTableInfo getDdlTableInfo(Class<?> aclass) throws SQLException {
-
+    private DDLTableInfo getDdlTableInfo() throws SQLException {
+        CheckUtils.checkByLambda(this.opContext, OpContext::getDomainClass);
+        Class<?> aclass = this.opContext.getDomainClass();
         DDLTableInfo ddlTableInfo = new DDLTableInfo();
-        ddlTableInfo.setTableName(getTableName(aclass));
-        String databaseType = JdbcHelper.getDatabaseType(opContext.getConnection());
-        ddlTableInfo.setDbType(databaseType);
-        ddlTableInfo.setDomainClass(aclass);
         DDLTable annotation = aclass.getAnnotation(DDLTable.class);
         if (null != annotation) {
             Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
             ddlTableInfo = BeanUtil.mapToBean(annotationAttributes, DDLTableInfo.class, true, CopyOptions.create().ignoreError());
         }
+        ddlTableInfo.setTableName(getTableName(aclass));
+        IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
+        List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
+        this.opContext.setDbColumns(columns);
+        ddlTableInfo.setDomainClass(aclass);
+
+        ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
+        ddlTableInfo.setSchema(this.opContext.getSchema());
+        ddlTableInfo.setDbType(this.opContext.getDbType());
+        List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(aclass);
+        ddlTableInfo.setFieldInfoList(ddlFieldInfos);
+        List<DDLIndexInfo> ddlIndexInfos = getIndexInfoList(aclass);
+        ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
         return ddlTableInfo;
     }
 
@@ -111,7 +142,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         CommonDBAccess commonDBAccess = this.opContext.getOpConfig().getCommonDBAccess();
         Dialect dialect = this.opContext.getDialect();
 
-        return getDDLTableName(dialect,aclass,commonDBAccess.getTableName(aclass, dialect));
+        return getDDLTableName(dialect, aclass, commonDBAccess.getTableName(aclass, dialect));
     }
 
     private String getDDLTableName(Dialect dialect, Class<?> aclass, String tableName) {

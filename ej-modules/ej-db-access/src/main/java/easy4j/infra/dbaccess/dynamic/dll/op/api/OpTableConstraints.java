@@ -16,19 +16,19 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 
+import java.util.List;
+
 /**
- * OpDdlCreateTable
- * 表创建
- *
+ * OpTableConstraints
+ * 表级约束
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
+public interface OpTableConstraints extends IOpContext {
 
-    String getCreateTableDDL();
+    boolean match(OpContext opContext);
 
-    @Override
-    default boolean match(OpContext opContext) {
-        return false;
-    }
+    List<String> getTableConstraints(OpContext opContext);
+
+
 }

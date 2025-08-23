@@ -12,23 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.dbaccess.dynamic.dll.op.api;
+package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlCreateTable;
+import lombok.Getter;
 
 /**
- * OpDdlCreateTable
- * 表创建
  *
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
+@Getter
+public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
 
-    String getCreateTableDDL();
+    OpContext opContext;
+
 
     @Override
-    default boolean match(OpContext opContext) {
-        return false;
+    public void setOpContext(OpContext opContext) {
+        this.opContext = opContext;
     }
+
+
 }

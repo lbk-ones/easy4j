@@ -13,22 +13,12 @@
  * limitations under the License.
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
-
-import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
-
 /**
- * OpDdlCreateTable
- * 表创建
+ * OpIndex
+ * 索引操作
  *
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
-
-    String getCreateTableDDL();
-
-    @Override
-    default boolean match(OpContext opContext) {
-        return false;
-    }
+public interface OpDdlIndex extends IOpContext {
 }

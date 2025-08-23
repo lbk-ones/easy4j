@@ -4,6 +4,7 @@ import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.domain.SysDdlHistory;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
@@ -69,5 +70,23 @@ class DDLParseJavaClassTestPG {
             System.out.println(JacksonUtil.toJson(handle1));
 
         }
+    }
+
+    @Test
+    void OpMetaTest() throws SQLException {
+        Connection connection = dataSource.getConnection();
+        System.out.println(connection.getMetaData().getURL());
+        String catalog = connection.getCatalog();
+        String schema = connection.getSchema();
+        OpDbMeta opDbMeta = new OpDbMeta(connection);
+        System.out.println(JacksonUtil.toJson(opDbMeta.getAllTableInfo()));
+        System.out.println(opDbMeta.getMajorVersion());
+        System.out.println(opDbMeta.getMinorVersion());
+        System.out.println(opDbMeta.getProductVersion());
+        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos( "test_create_table")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "test_create_table")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "test_create_table")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "test_create_table")));
+
     }
 }

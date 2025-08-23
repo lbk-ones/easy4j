@@ -7,7 +7,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.JdbcDbAccess;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.H2DyInformationSchema;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -90,14 +90,14 @@ class H2DyInformationSchemaTest {
         Connection connection = dataSource.getConnection();
         String catalog = connection.getCatalog();
         String schema = connection.getSchema();
-        OpMeta opMeta = new OpMeta();
-        opMeta.setConnection(connection);
-        System.out.println(JacksonUtil.toJson(opMeta.getAllTableInfo()));
-        System.out.println(opMeta.getMajorVersion());
-        System.out.println(opMeta.getMinorVersion());
-        System.out.println(opMeta.getProductVersion());
-        System.out.println(JacksonUtil.toJson(opMeta.getColumns(catalog, schema, "SYS_LOG_RECORD")));
-        System.out.println(JacksonUtil.toJson(opMeta.getPrimaryKes(catalog, schema, "SYS_LOG_RECORD")));
+        OpDbMeta opDbMeta = new OpDbMeta(connection);
+        System.out.println(JacksonUtil.toJson(opDbMeta.getAllTableInfo()));
+        System.out.println(opDbMeta.getMajorVersion());
+        System.out.println(opDbMeta.getMinorVersion());
+        System.out.println(opDbMeta.getProductVersion());
+        System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "SYS_LOG_RECORD")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "SYS_LOG_RECORD")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "SYS_LOG_RECORD")));
 
     }
 

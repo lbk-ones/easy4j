@@ -12,23 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.dbaccess.dynamic.dll.op.api;
+package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpColumnConstraints;
+import lombok.Getter;
 
 /**
- * OpDdlCreateTable
- * 表创建
+ * AbstractOpColumnConstraints
  *
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
+@Getter
+public abstract class AbstractOpColumnConstraints implements OpColumnConstraints {
 
-    String getCreateTableDDL();
+    String wt = "CONSTRAINT [constraint_name] ";
+
+    private OpContext opContext;
 
     @Override
-    default boolean match(OpContext opContext) {
-        return false;
+    public void setOpContext(OpContext opContext) {
+        this.opContext = opContext;
     }
+
 }

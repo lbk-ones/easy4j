@@ -12,23 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.dbaccess.dynamic.dll.op.api;
+package easy4j.infra.dbaccess.dynamic.dll.op.impl.tc;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
-
 /**
- * OpDdlCreateTable
- * 表创建
  *
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
-
-    String getCreateTableDDL();
+public class MysqlOpTableConstraints extends AbstractOpTableConstraints {
 
     @Override
-    default boolean match(OpContext opContext) {
-        return false;
+    public boolean match(OpContext opContext) {
+        String dbType = opContext.getDbType();
+        return "mysql".equals(dbType);
     }
 }

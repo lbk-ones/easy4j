@@ -9,6 +9,7 @@ import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.dynamic.dll.ad.AnsiAdFieldStrategy;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DDLParseExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.DdlCtModelExecutor;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
 import easy4j.infra.dbaccess.helper.DDlHelper;
@@ -31,7 +32,9 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  * @date 2025-08-03
+ * @see DynamicDDL
  */
+@Deprecated
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
