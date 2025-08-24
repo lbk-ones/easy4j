@@ -17,14 +17,14 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 
 /**
- *
  * @author bokun.li
  * @date 2025/8/23
  */
-public class SqlServerOpColumnConstraints extends AbstractOpColumnConstraints{
+public class SqlServerOpColumnConstraints extends AbstractOpColumnConstraints {
 
     @Override
     public boolean match(OpContext opContext) {
-        return false;
+        String dbType = opContext.getDbType();
+        return "mssql".equals(dbType);
     }
 }

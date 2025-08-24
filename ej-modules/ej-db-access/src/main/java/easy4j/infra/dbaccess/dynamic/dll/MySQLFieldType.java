@@ -23,6 +23,7 @@ public enum MySQLFieldType {
     TINYINT("TINYINT", "", "", "1字节有符号整数，范围-128~127；无符号0~255", byte.class, Byte.class),
     SMALLINT("SMALLINT", "", "", "2字节有符号整数，范围-32768~32767；无符号0~65535", short.class, Short.class),
     INT("INT", "", "", "4字节有符号整数，范围-2147483648~2147483647；无符号0~4294967295", int.class, Integer.class),
+    INT_UNSIGNED("INT UNSIGNED", "", "", "4字节无符号整数，范围0~4294967295", int.class, Integer.class),
     MEDIUMINT("MEDIUMINT", "", "", "3字节有符号整数，范围-8388608~8388607；无符号0~16777215", int.class, Integer.class),
     BIGINT("BIGINT", "", "", "8字节有符号整数，范围-9223372036854775808~9223372036854775807；无符号0~18446744073709551615", long.class, Long.class),
 

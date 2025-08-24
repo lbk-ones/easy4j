@@ -25,8 +25,14 @@ import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * OpConfig
@@ -163,4 +169,85 @@ public class OpConfig {
         }
         return false;
     }
+
+
+    public int getStrDefaultLength() {
+        return 255;
+    }
+
+    public int getNumLengthDefaultLength() {
+        return 6;
+    }
+
+    public int getNumDecimalDefaultLength() {
+        return 4;
+    }
+
+
+    /**
+     * 用正则提取字符串前面的数字
+     *
+     * @param str 待处理字符串
+     * @return 开头的数字（无则返回空字符串）
+     */
+    public String extractPrefixNumberByRegex(String str) {
+        if (str == null || str.isEmpty()) {
+            return "";
+        }
+        // 正则：^匹配开头，\\d+匹配1个及以上数字
+        Pattern pattern = Pattern.compile("^\\d+");
+        Matcher matcher = pattern.matcher(str);
+        // 找到匹配结果则返回，否则返回空
+        return matcher.find() ? matcher.group() : "";
+    }
+
+    public boolean checkSupportVersion(String dbVersion, int version) {
+        try {
+            if (StrUtil.isNotBlank(dbVersion)) {
+                String s = extractPrefixNumberByRegex(dbVersion);
+                if (StrUtil.isNotBlank(s)) {
+                    int version1 = Integer.parseInt(s);
+                    return version >= version1;
+                }
+            }
+        } catch (Exception e) {
+        }
+        return true;
+    }
+
+    /**
+     * 是否是数字类型的默认值
+     *
+     * @author bokun.li
+     * @date 2025-08-21
+     */
+    public boolean isNumberDefaultType(Class<?> fieldClass) {
+        return fieldClass == byte.class ||
+                fieldClass == Byte.class ||
+                fieldClass == int.class ||
+                fieldClass == Integer.class ||
+                fieldClass == long.class ||
+                fieldClass == Long.class ||
+                fieldClass == short.class ||
+                fieldClass == Short.class;
+    }
+
+    /**
+     * 判断是否是时间类型
+     *
+     * @param fieldClass
+     * @return
+     */
+    public boolean isDateDefaultType(Class<?> fieldClass) {
+
+        return fieldClass == Date.class ||
+                fieldClass == java.sql.Date.class ||
+                fieldClass == java.sql.Timestamp.class ||
+                fieldClass == java.sql.Time.class ||
+                fieldClass == LocalTime.class ||
+                fieldClass == LocalDate.class ||
+                fieldClass == LocalDateTime.class;
+    }
+
+
 }

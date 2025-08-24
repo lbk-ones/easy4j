@@ -26,6 +26,12 @@ public class DDLFieldInfo {
     @Desc("是否递增,pg数据库自动关联序列")
     private boolean isAutoIncrement;
 
+    @Desc("从哪个数开始递增")
+    private int startWith;
+
+    @Desc("每次递增多少，默认1")
+    private int increment = 1;
+
     @Desc("字段类型")
     private String dataType;
 
@@ -53,6 +59,9 @@ public class DDLFieldInfo {
     @Desc("是否唯一")
     private boolean isUnique;
 
+    @Desc("unique null是否也不能重复，默认是允许重复的")
+    private boolean isUniqueNotNullDistinct;
+
     @Desc("check约束，直接传入check括号里面的约束")
     private String check;
 
@@ -60,6 +69,7 @@ public class DDLFieldInfo {
     private boolean isIndex;
 
     @Desc("自定义约束 比如 unique、not null、default")
+    @Deprecated
     private String[] constraint;
 
     @Desc("字段注释")

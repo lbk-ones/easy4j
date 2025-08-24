@@ -16,16 +16,15 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.List;
+
 /**
  * OpContext
  * op的上下文

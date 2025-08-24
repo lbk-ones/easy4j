@@ -21,6 +21,7 @@ import java.util.List;
 /**
  * OpTableConstraints
  * 表级约束
+ *
  * @author bokun.li
  * @date 2025/8/23
  */
@@ -28,7 +29,21 @@ public interface OpTableConstraints extends IOpContext {
 
     boolean match(OpContext opContext);
 
+    /**
+     * 获取表约束
+     *
+     * @param opContext
+     * @return
+     */
     List<String> getTableConstraints(OpContext opContext);
+
+    /**
+     * 获取表的属性 通常来说 是在 create table xx() 右括号后面的属性
+     *
+     * @param opContext
+     * @return
+     */
+    List<String> getTableAttrs(OpContext opContext);
 
 
 }

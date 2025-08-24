@@ -29,7 +29,6 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- *
  * @author bokun.li
  * @date 2025/8/23
  */
@@ -51,9 +50,9 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
      */
     @Override
     public List<String> getTableConstraints(OpContext opContext) {
-        CheckUtils.checkByLambda(opContext,OpContext::getDdlTableInfo);
+        CheckUtils.checkByLambda(opContext, OpContext::getDdlTableInfo);
         List<String> segments = ListTs.newList();
-        handlerConstraint(opContext.getDdlTableInfo(),opContext.getOpConfig(),segments);
+        handlerConstraint(opContext.getDdlTableInfo(), opContext.getOpConfig(), segments);
         return segments;
     }
 
@@ -127,5 +126,10 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
             String remove = segments.remove(segments.size() - 1);
             segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
         }
+    }
+
+    @Override
+    public List<String> getTableAttrs(OpContext opContext) {
+        return null;
     }
 }

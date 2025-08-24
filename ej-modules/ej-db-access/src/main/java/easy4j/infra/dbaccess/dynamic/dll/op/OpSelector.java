@@ -36,6 +36,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.SqlServerOpTableConstraints;
 
 import java.util.Comparator;
 import java.util.List;
+
 /**
  * OpSelector
  * 选择器
@@ -78,41 +79,44 @@ public class OpSelector {
      * @param opContext
      * @return
      */
-    public static OpColumnConstraints selectOpCC(OpContext opContext){
+    public static OpColumnConstraints selectOpCC(OpContext opContext) {
         for (OpColumnConstraints opColumnConstraints : columnConstraintsList) {
+            opColumnConstraints.setOpContext(opContext);
             if (opColumnConstraints.match(opContext)) {
                 return opColumnConstraints;
             }
         }
-        throw EasyException.wrap(BusCode.A00047,"opContext");
+        throw EasyException.wrap(BusCode.A00047, "opContext");
     }
 
     /**
      * 选择表约束
+     *
      * @param opContext
      * @return
      */
-    public static OpTableConstraints selectOpCT(OpContext opContext){
+    public static OpTableConstraints selectOpCT(OpContext opContext) {
         for (OpTableConstraints opColumnConstraints : tableConstraintsList) {
             if (opColumnConstraints.match(opContext)) {
                 return opColumnConstraints;
             }
         }
-        throw EasyException.wrap(BusCode.A00047,"opContext");
+        throw EasyException.wrap(BusCode.A00047, "opContext");
     }
 
     /**
      * 选择建表器
+     *
      * @param opContext
      * @return
      */
-    public static OpDdlCreateTable selectOpCreateTable(OpContext opContext){
+    public static OpDdlCreateTable selectOpCreateTable(OpContext opContext) {
         for (OpDdlCreateTable opColumnConstraints : createTableList) {
             if (opColumnConstraints.match(opContext)) {
                 return opColumnConstraints;
             }
         }
-        throw EasyException.wrap(BusCode.A00047,"opContext");
+        throw EasyException.wrap(BusCode.A00047, "opContext");
     }
 
 }
