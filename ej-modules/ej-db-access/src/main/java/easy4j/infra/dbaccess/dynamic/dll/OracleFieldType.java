@@ -37,6 +37,8 @@ public enum OracleFieldType {
     NUMBER_DECIMAL("NUMBER", "NUMBER({0},{1})", "", "高精度定点数，M为总位数（1~38），D为小数位数（0~M）（对应 Java BigDecimal，适合财务数据）", BigDecimal.class),
     DECIMAL("DECIMAL", "DECIMAL({0},{1})", "", "NUMBER 的别名，高精度定点数（兼容语法）", BigDecimal.class),
     NUMERIC("NUMERIC", "NUMERIC({0},{1})", "", "NUMBER 的别名，高精度定点数（兼容语法）", BigDecimal.class),
+    FLOAT("FLOAT", "", "", "4字节单精度浮点数，精度约6~7位有效数字（对应 Java float/Float）", float.class, Float.class),
+    DOUBLE_PRECISION("DOUBLE PRECISION", "", "", "4字节单精度浮点数，精度约6~7位有效数字（对应 Java float/Float）", double.class, Double.class),
     BINARY_FLOAT("BINARY_FLOAT", "", "", "4字节单精度浮点数，精度约6~7位有效数字（对应 Java float/Float）", float.class, Float.class),
     BINARY_DOUBLE("BINARY_DOUBLE", "", "", "8字节双精度浮点数，精度约15~17位有效数字（对应 Java double/Double）", double.class, Double.class),
 

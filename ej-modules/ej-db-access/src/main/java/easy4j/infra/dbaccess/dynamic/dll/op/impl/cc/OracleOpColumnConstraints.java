@@ -73,7 +73,7 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
 
     // 递增不需要默认值oracle会报错的，非空也没必要
     private static void oracleAutoIncrement(DDLFieldInfo ddlFieldInfo, Map<String, String> templateParams, OpConfig opConfig) {
-        if (ddlFieldInfo.isAutoIncrement()) {
+        if (ddlFieldInfo.isAutoIncrement() && ddlFieldInfo.isPrimary()) {
             if (opConfig.checkSupportVersion(ddlFieldInfo.getDbVersion(), 12)) {
                 Class<?> fieldClass = ddlFieldInfo.getFieldClass();
                 if (opConfig.isNumberDefaultType(fieldClass)) {

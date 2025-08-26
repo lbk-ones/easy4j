@@ -293,7 +293,7 @@ public class OpConfig {
      * 清除模板字符串中的空格 和最后一个空格
      *
      * @param FIELD_MAP 参数map
-     * @param template 替换之后的模板字符
+     * @param template  替换之后的模板字符
      * @return String
      * @author bokun.li
      */
@@ -308,7 +308,7 @@ public class OpConfig {
         if (template.endsWith("\n")) {
             template = StrUtil.replaceLast(template, "\n", "");
         }
-        return StrUtil.trim(template) + ";";
+        return StrUtil.trim(template);
     }
 
 
