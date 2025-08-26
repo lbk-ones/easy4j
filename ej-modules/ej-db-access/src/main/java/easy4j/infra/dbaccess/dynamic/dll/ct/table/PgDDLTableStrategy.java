@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.dynamic.dll.ct.table;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -31,7 +32,7 @@ public class PgDDLTableStrategy extends AbstractIDDLTableStrategy {
     public boolean match(DDLTableInfo ddlTableInfo) {
         String dbType = ddlTableInfo.getDbType();
         CheckUtils.notNull(dbType, "dbType");
-        return StrUtil.equals("postgres", dbType);
+        return StrUtil.equals(DbType.POSTGRE_SQL.getDb(), dbType);
     }
 
     @Override

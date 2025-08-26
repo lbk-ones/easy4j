@@ -15,8 +15,10 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -34,7 +36,7 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return "postgres".equals(dbType);
+        return DbType.POSTGRE_SQL.getDb().equals(dbType);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
     }
 
     private static void oracleAutoIncrement(DDLFieldInfo ddlFieldInfo, Map<String, String> templateParams, OpConfig opConfig) {
-        if (ddlFieldInfo.isAutoIncrement()) {
+        if (ddlFieldInfo.isAutoIncrement() && ddlFieldInfo.isPrimary()) {
             Class<?> fieldClass = ddlFieldInfo.getFieldClass();
             int startWith = ddlFieldInfo.getStartWith();
             int increment = ddlFieldInfo.getIncrement();
@@ -84,6 +86,17 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
                 }
                 if (hasStart) gaai += gaaiTemp;
                 templateParams.put(GENERATED_ALWAYS_AS, gaai);
+            }
+        } else {
+            // generated always as (expr)
+            String generatedAlwaysAs = ddlFieldInfo.getGeneratedAlwaysAs();
+            if (StrUtil.isNotBlank(generatedAlwaysAs)) {
+                String generatedAlwaysAsModel = StrUtil.blankToDefault(ddlFieldInfo.getGeneratedAlwaysAsModel(), "stored");
+                generatedAlwaysAsModel = StrUtil.isNotBlank(generatedAlwaysAsModel) ? SP.SPACE + generatedAlwaysAsModel : generatedAlwaysAsModel;
+                if (ddlFieldInfo.isGeneratedAlwaysAsNotNull()) {
+                    generatedAlwaysAsModel += " not null";
+                }
+                templateParams.put(GENERATED_ALWAYS_AS, "generated always as (" + generatedAlwaysAs + ")" + generatedAlwaysAsModel);
             }
         }
     }

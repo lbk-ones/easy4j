@@ -19,6 +19,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -32,29 +33,25 @@ public abstract class AbstractCombinationOp implements CombinationOp {
 
     public abstract OpDdlAlter getOpDdlAlter();
 
-    public abstract OpDdlAlterAction getOpDdlAlterAction();
-
-    public abstract OpDdlAlterRename getOpDdlAlterRename();
-
     public abstract OpSqlCommands getOpSqlCommands();
 
     public abstract OpDdlCreateTable getOpDdlCreateTable();
 
     public abstract OpContext getContext();
 
-    public void init() {
-        OpContext context = getContext();
-        // alter 语句
-        getOpDdlAlter().setOpContext(context);
-        // alter [add | drop]  column
-        getOpDdlAlterAction().setOpContext(context);
-        // alter [rename]
-        getOpDdlAlterRename().setOpContext(context);
-        // 其他杂项比如说删除表格 删除视图等
-        getOpSqlCommands().setOpContext(context);
-        // create table | create table as
-        getOpDdlCreateTable().setOpContext(context);
-    }
+//    public void init() {
+//        OpContext context = getContext();
+//        // alter 语句
+//        getOpDdlAlter().setOpContext(context);
+//        // alter [add | drop]  column
+//        getOpDdlAlterAction().setOpContext(context);
+//        // alter [rename]
+//        getOpDdlAlterRename().setOpContext(context);
+//        // 其他杂项比如说删除表格 删除视图等
+//        getOpSqlCommands().setOpContext(context);
+//        // create table | create table as
+//        getOpDdlCreateTable().setOpContext(context);
+//    }
 
     @Override
     public void setOpContext(OpContext opContext) {
@@ -63,58 +60,76 @@ public abstract class AbstractCombinationOp implements CombinationOp {
 
 
     @Override
-    public void renameColumnName(String newColumnName) {
+    public String getAddColumnSegment(DDLFieldInfo fieldInfo) {
+        return callback(() ->
+                getOpDdlAlter().getAddColumnSegment(fieldInfo)
+        );
+    }
+
+    @Override
+    public String getRemoveColumnSegment(DDLFieldInfo fieldInfo) {
+        return callback(() -> getOpDdlAlter().getRemoveColumnSegment(fieldInfo));
+    }
+
+    @Override
+    public String getRenameColumnNameSegment(String newColumnName) {
+        return callback(() -> getOpDdlAlter().getRenameColumnNameSegment(newColumnName));
+    }
+
+    @Override
+    public String getRenameConstraintNameSegment(String newConstraintName) {
+        return callback(() -> getOpDdlAlter().getRenameConstraintNameSegment(newConstraintName));
+    }
+
+    @Override
+    public String getRenameTableNameSegment(String newTableName) {
+        return callback(() -> getOpDdlAlter().getRenameTableNameSegment(newTableName));
 
     }
 
     @Override
-    public void renameConstraintName(String newConstraintName) {
-
+    public String getSetSchemaNewNameSegment(String schemaNewName) {
+        return callback(() -> getOpDdlAlter().getSetSchemaNewNameSegment(schemaNewName));
     }
 
     @Override
-    public void renameTableName(String newTableName) {
-
+    public String getSetNewTableSpaceSegment(String newTableSpaceName) {
+        return callback(() -> getOpDdlAlter().getSetNewTableSpaceSegment(newTableSpaceName));
     }
-
-    @Override
-    public void setSchemaNewName(String schemaNewName) {
-
-    }
-
-    @Override
-    public void setNewTableSpace(String newTableSpaceName) {
-
-    }
-
-    @Override
-    public void addColumn(DDLFieldInfo fieldInfo) {
-
-    }
-
-    @Override
-    public void removeColumn(DDLFieldInfo fieldInfo) {
-
-    }
-
-    @Override
-    public void renameColumnName(DDLFieldInfo fieldInfo, String newColumnName) {
-
-    }
-
-
 
     @Override
     public String getCreateTableDDL() {
-        return getOpDdlCreateTable().getCreateTableDDL();
+        return callback(() -> getOpDdlCreateTable().getCreateTableDDL());
+    }
+
+    @Override
+    public List<String> getCreateTableComments() {
+        return callback(() -> getOpDdlCreateTable().getCreateTableComments());
+    }
+
+    @Override
+    public void exeDDLStr(String segment) {
+        getOpSqlCommands().exeDDLStr(segment);
+    }
+
+    @Override
+    public List<String> getIndexList() {
+        return callback(() -> getOpDdlCreateTable().getIndexList());
     }
 
     public <R> R callback(Supplier<R> consumer) {
+        OpContext context = this.getContext();
         try {
-            return consumer.get();
+            R r = consumer.get();
+            OpConfig opConfig = context.getOpConfig();
+            if (opConfig.isAutoExeDDL()) {
+                if (r instanceof CharSequence) {
+                    exeDDLStr(r.toString());
+                }
+            }
+            return r;
         } finally {
             // clear resource
-            OpContext context = this.getContext();
             Connection connection = context.getConnection();
             JdbcUtils.closeConnection(connection);
         }

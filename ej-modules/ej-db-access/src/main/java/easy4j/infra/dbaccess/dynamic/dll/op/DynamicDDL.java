@@ -57,6 +57,7 @@ public class DynamicDDL extends AbstractCombinationOp {
 
     private OpConfig opConfig;
 
+
     // parse from domainClass
     public DynamicDDL(@NotNull DataSource dataSource, String schema, @NotNull Class<?> domainClass) {
         CheckUtils.notNull(domainClass, "DynamicDDL domainClass");
@@ -64,7 +65,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.dataSource = dataSource;
         this.schema = schema;
         this.domainClass = domainClass;
-        super.init();
+//        super.init();
         JavaClassMetaInfoParse javaClassMetaInfoParse = new JavaClassMetaInfoParse(this.getOpContext());
         this.ddlTableInfo = javaClassMetaInfoParse.parse();
         this.opContext.setDdlTableInfo(this.ddlTableInfo);
@@ -78,7 +79,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.dataSource = dataSource;
         this.schema = schema;
         this.ddlTableInfo = ddlTableInfo;
-        super.init();
+//        super.init();
         this.ddlTableInfo = new ModelMetaInfoParse(ddlTableInfo, this.getOpContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
     }
@@ -88,7 +89,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         CheckUtils.notNull(dataSource, "DynamicDDL dataSource");
         CheckUtils.notNull(tableName, "DynamicDDL tableName");
         this.dataSource = dataSource;
-        super.init();
+//        super.init();
         this.ddlTableInfo = new DataSourceMetaInfoParse(this.dataSource, tableName, this.getOpContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
 
@@ -100,23 +101,13 @@ public class DynamicDDL extends AbstractCombinationOp {
     }
 
     @Override
-    public OpDdlAlterAction getOpDdlAlterAction() {
-        return null;
-    }
-
-    @Override
-    public OpDdlAlterRename getOpDdlAlterRename() {
-        return null;
-    }
-
-    @Override
     public OpSqlCommands getOpSqlCommands() {
-        return null;
+        return OpSelector.selectOpSqlCommands(getContext());
     }
 
     @Override
     public OpDdlCreateTable getOpDdlCreateTable() {
-        return null;
+        return OpSelector.selectOpCreateTable(this.getOpContext());
     }
 
 

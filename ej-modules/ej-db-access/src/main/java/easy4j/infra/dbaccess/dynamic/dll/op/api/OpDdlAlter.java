@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
+
+import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
+
 /**
  * OpDdlAlter
  * alter 从开始一直倒字段约束之间的部分
@@ -20,4 +23,19 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
  * @date 2025/8/23
  */
 public interface OpDdlAlter extends IOpContext {
+
+    String getAddColumnSegment(DDLFieldInfo fieldInfo);
+
+    String getRemoveColumnSegment(DDLFieldInfo fieldInfo);
+
+    String getRenameColumnNameSegment(String newColumnName);
+
+    String getRenameConstraintNameSegment(String newConstraintName);
+
+    String getRenameTableNameSegment(String newTableName);
+
+    String getSetSchemaNewNameSegment(String schemaNewName);
+
+    String getSetNewTableSpaceSegment(String newTableSpaceName);
+
 }

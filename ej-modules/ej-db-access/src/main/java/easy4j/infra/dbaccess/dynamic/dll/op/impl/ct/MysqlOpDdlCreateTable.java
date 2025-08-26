@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 
 /**
@@ -24,12 +25,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 public class MysqlOpDdlCreateTable extends AbstractOpDdlCreateTable{
 
     @Override
-    public String getCreateTableDDL() {
-        return null;
-    }
-
-    @Override
     public boolean match(OpContext opContext) {
-        return false;
+        return DbType.MYSQL.getDb().equals(opContext.getDbType());
     }
 }

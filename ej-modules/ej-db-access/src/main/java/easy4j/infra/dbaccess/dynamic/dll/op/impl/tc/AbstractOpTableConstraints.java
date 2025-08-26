@@ -39,17 +39,18 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        this.opContext = opContext;
+        if (this.opContext == null) {
+            this.opContext = opContext;
+        }
     }
 
     /**
      * CONSTRAINT [constraints_name] [PRIMARY KEY | UNIQUE | CHECK ]
      *
-     * @param opContext
      * @return
      */
     @Override
-    public List<String> getTableConstraints(OpContext opContext) {
+    public List<String> getTableConstraints() {
         CheckUtils.checkByLambda(opContext, OpContext::getDdlTableInfo);
         List<String> segments = ListTs.newList();
         handlerConstraint(opContext.getDdlTableInfo(), opContext.getOpConfig(), segments);
@@ -124,12 +125,21 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
         }
         if (hasExtraLine) {
             String remove = segments.remove(segments.size() - 1);
-            segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
+            if (remove.endsWith(SP.COMMA)) {
+                segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
+            }else{
+                segments.add(remove);
+            }
         }
     }
 
     @Override
-    public List<String> getTableAttrs(OpContext opContext) {
+    public List<String> getTableOptions() {
+        return null;
+    }
+
+    @Override
+    public List<String> getPartitionOptions() {
         return null;
     }
 }

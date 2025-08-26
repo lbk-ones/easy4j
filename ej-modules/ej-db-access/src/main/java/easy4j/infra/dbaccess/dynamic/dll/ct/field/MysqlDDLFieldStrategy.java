@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.ct.field;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -18,7 +19,7 @@ public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
     @Override
     public boolean match(DDLFieldInfo ddlFieldInfo) {
         String dbType = ddlFieldInfo.getDbType();
-        return StrUtil.equals("mysql", dbType);
+        return StrUtil.equals(DbType.MYSQL.getDb(), dbType);
     }
 
     @Override

@@ -14,6 +14,7 @@
 package easy4j.module.jaeger.opentracing.jdbc.parser;
 
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.module.jaeger.opentracing.jdbc.ConnectionInfo;
 
 /**
@@ -29,7 +30,7 @@ public class MysqlURLParser extends AbstractURLParser {
   private static final int DEFAULT_PORT = 3306;
 
   protected String dbType() {
-    return "mysql";
+    return DbType.MYSQL.getDb();
   }
 
   @Override

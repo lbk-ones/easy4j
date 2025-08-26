@@ -17,6 +17,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -96,6 +97,17 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
                     if (hasStart) gaai += gaaiTemp;
                     templateParams.put(GENERATED_ALWAYS_AS, gaai);
                 }
+            }
+        } else {
+            // generated always as (expr)
+            String generatedAlwaysAs = ddlFieldInfo.getGeneratedAlwaysAs();
+            if (StrUtil.isNotBlank(generatedAlwaysAs)) {
+                String generatedAlwaysAsModel = StrUtil.blankToDefault(ddlFieldInfo.getGeneratedAlwaysAsModel(), "");
+                generatedAlwaysAsModel = StrUtil.isNotBlank(generatedAlwaysAsModel) ? SP.SPACE + generatedAlwaysAsModel : generatedAlwaysAsModel;
+                if (ddlFieldInfo.isGeneratedAlwaysAsNotNull()) {
+                    generatedAlwaysAsModel += " not null";
+                }
+                templateParams.put(GENERATED_ALWAYS_AS, "generated always as (" + generatedAlwaysAs + ")" + generatedAlwaysAsModel);
             }
         }
     }

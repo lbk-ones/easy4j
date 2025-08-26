@@ -587,7 +587,7 @@ public class ListTs {
         return arrayList;
     }
 
-    public static String join(String s, List<Object> map) {
+    public static String join(String s, List<?> map) {
         if (isEmpty(map)) {
             return "";
         }

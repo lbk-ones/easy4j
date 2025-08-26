@@ -14,11 +14,14 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.MySQLFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
@@ -31,6 +34,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +54,11 @@ public class OpConfig {
     private boolean toLowCase = true;
 
     private boolean toUpperCase;
+
+
+    // 是否自动执行ddl语句 默认不执行 只返回语句
+    private boolean autoExeDDL;
+
 
     private CommonDBAccess commonDBAccess = new CommonDBAccess();
 
@@ -89,14 +98,12 @@ public class OpConfig {
      * @return
      */
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName, String dbType) {
-
-        switch (dbType) {
-            case "mysql":
-                return Optional.ofNullable(MySQLFieldType.getFromDataType(typeName)).map(MySQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
-            case "postgres":
-                return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
-            case "oracle":
-                return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+        if (StrUtil.equalsIgnoreCase(DbType.MYSQL.getDb(), dbType)) {
+            return Optional.ofNullable(MySQLFieldType.getFromDataType(typeName)).map(MySQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+        } else if (StrUtil.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb(), dbType)) {
+            return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+        } else if (StrUtil.equalsIgnoreCase(DbType.ORACLE.getDb(), dbType)) {
+            return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
         }
         return null;
     }
@@ -137,14 +144,11 @@ public class OpConfig {
      * @return
      */
     public boolean isJson(String typeName, String dbType) {
-        switch (dbType) {
-            case "mysql":
-                return MySQLFieldType.getFromDataType(typeName) == MySQLFieldType.JSON;
-            case "postgres":
-                PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(typeName);
-                return fromDataType == PgSQLFieldType.JSON || fromDataType == PgSQLFieldType.JSONB;
-            case "oracle":
-                break;
+        if (StrUtil.equalsIgnoreCase(DbType.MYSQL.getDb(), dbType)) {
+            return MySQLFieldType.getFromDataType(typeName) == MySQLFieldType.JSON;
+        } else if (StrUtil.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb(), dbType)) {
+            PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(typeName);
+            return fromDataType == PgSQLFieldType.JSON || fromDataType == PgSQLFieldType.JSONB;
         }
         return false;
     }
@@ -157,15 +161,15 @@ public class OpConfig {
      * @return
      */
     public boolean isLob(String typeName, String dbType) {
-        switch (dbType) {
-            case "mysql":
-                return MySQLFieldType.getFromDataType(typeName) == MySQLFieldType.LONGTEXT;
-            case "postgres":
-                PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(typeName);
-                return fromDataType == PgSQLFieldType.TEXT;
-            case "oracle":
-                OracleFieldType fromDataType1 = OracleFieldType.getFromDataType(typeName);
-                return fromDataType1 == OracleFieldType.CLOB;
+        if (StrUtil.equalsIgnoreCase(DbType.MYSQL.getDb(), dbType)) {
+            return MySQLFieldType.getFromDataType(typeName) == MySQLFieldType.LONGTEXT;
+
+        } else if (StrUtil.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb(), dbType)) {
+            PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(typeName);
+            return fromDataType == PgSQLFieldType.TEXT;
+        } else if (StrUtil.equalsIgnoreCase(DbType.ORACLE.getDb(), dbType)) {
+            OracleFieldType fromDataType1 = OracleFieldType.getFromDataType(typeName);
+            return fromDataType1 == OracleFieldType.CLOB;
         }
         return false;
     }
@@ -228,6 +232,10 @@ public class OpConfig {
                 fieldClass == Integer.class ||
                 fieldClass == long.class ||
                 fieldClass == Long.class ||
+                fieldClass == float.class ||
+                fieldClass == Float.class ||
+                fieldClass == double.class ||
+                fieldClass == Double.class ||
                 fieldClass == short.class ||
                 fieldClass == Short.class;
     }
@@ -247,6 +255,72 @@ public class OpConfig {
                 fieldClass == LocalTime.class ||
                 fieldClass == LocalDate.class ||
                 fieldClass == LocalDateTime.class;
+    }
+
+    public String getTableName(DDLTableInfo ddlTableInfo) {
+        String tableName = ddlTableInfo.getTableName();
+        String tableInfoSchema = ddlTableInfo.getSchema();
+        return StrUtil.isNotBlank(tableInfoSchema) ? tableInfoSchema + SP.DOT + tableName : tableName;
+    }
+
+
+    /**
+     * 模板填值 并清除未填值的
+     *
+     * @param ddlTableInfo 表格建模
+     * @param tempStr      模板字符串
+     * @param FIELD_MAP    字符串参数map
+     * @param extParamMap  字符串额外参数map
+     * @param function     获取参数值的函数
+     * @return
+     * @author bokun.li
+     */
+    public <T> String patchStrWithTemplate(T ddlTableInfo, String tempStr, Map<String, String> FIELD_MAP, Map<String, String> extParamMap, Function<T, Map<String, String>> function) {
+        Map<String, String> templateParams = function.apply(ddlTableInfo);
+        if (CollUtil.isNotEmpty(extParamMap)) {
+            templateParams.putAll(extParamMap);
+        }
+        // replace templateParams keys
+        for (String key : templateParams.keySet()) {
+            String s = templateParams.get(key);
+            String wrap = StrUtil.wrap(key, SP.LEFT_SQ_BRACKET, SP.RIGHT_SQ_BRACKET);
+            tempStr = tempStr.replace(wrap, s);
+        }
+        return clearTemplate(FIELD_MAP, tempStr);
+    }
+
+    /**
+     * 清除模板字符串中的空格 和最后一个空格
+     *
+     * @param FIELD_MAP 参数map
+     * @param template 替换之后的模板字符
+     * @return String
+     * @author bokun.li
+     */
+    public String clearTemplate(Map<String, String> FIELD_MAP, String template) {
+        // replace field map
+        for (String s : FIELD_MAP.keySet()) {
+            String wrap = StrUtil.wrap(s, SP.LEFT_SQ_BRACKET, SP.RIGHT_SQ_BRACKET);
+            template = template.replace(wrap, "");
+        }
+        template = template.replaceAll(" +", " ");
+        template = StrUtil.trim(template);
+        if (template.endsWith("\n")) {
+            template = StrUtil.replaceLast(template, "\n", "");
+        }
+        return StrUtil.trim(template) + ";";
+    }
+
+
+    /**
+     * 过滤特殊符号，然后转下划线
+     *
+     * @param wt
+     * @return
+     */
+    public String replaceSpecialSymbol(String wt) {
+        if (StrUtil.isBlank(wt)) return "";
+        return wt.replaceAll("[^a-zA-Z0-9_\u4e00-\u9fa5]", "_").replaceAll("_+", "_");
     }
 
 

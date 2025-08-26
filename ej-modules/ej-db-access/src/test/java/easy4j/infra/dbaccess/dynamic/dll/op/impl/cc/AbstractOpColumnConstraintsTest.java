@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
@@ -84,7 +85,7 @@ class AbstractOpColumnConstraintsTest {
     @Test
     void getColumnConstraintsTestMysql() {
         OpContext opContext = new OpContext();
-        opContext.setDbType("mysql");
+        opContext.setDbType(DbType.MYSQL.getDb());
         opContext.setOpConfig(new OpConfig());
         OpColumnConstraints opColumnConstraints = OpSelector.selectOpCC(opContext);
 
@@ -183,7 +184,7 @@ class AbstractOpColumnConstraintsTest {
     @Test
     void getColumnConstraintsTestPg() {
         OpContext opContext = new OpContext();
-        opContext.setDbType("postgres");
+        opContext.setDbType(DbType.POSTGRE_SQL.getDb());
         opContext.setOpConfig(new OpConfig());
         OpColumnConstraints opColumnConstraints = OpSelector.selectOpCC(opContext);
 

@@ -19,6 +19,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.DBAccess;
@@ -49,12 +50,12 @@ public class InformationSchema {
 
 
     static {
-        informationSchemaMap.put("h2", new H2DyInformationSchema());
-        informationSchemaMap.put("mysql", new MysqlDyInformationSchema());
-        informationSchemaMap.put("oracle", new OracleDyInformationSchema());
-        informationSchemaMap.put("postgres", new PgDyInformationSchema());
-        informationSchemaMap.put("mssql", new SqlServerDyInformationSchema());
-        informationSchemaMap.put("db2", new Db2DyInformationSchema());
+        informationSchemaMap.put(DbType.H2.getDb(), new H2DyInformationSchema());
+        informationSchemaMap.put(DbType.MYSQL.getDb(), new MysqlDyInformationSchema());
+        informationSchemaMap.put(DbType.ORACLE.getDb(), new OracleDyInformationSchema());
+        informationSchemaMap.put(DbType.POSTGRE_SQL.getDb(), new PgDyInformationSchema());
+        informationSchemaMap.put(DbType.SQL_SERVER.getDb(), new SqlServerDyInformationSchema());
+        informationSchemaMap.put(DbType.DB2.getDb(), new Db2DyInformationSchema());
     }
 
     public static void register(String name, DyInformationSchema dyInformationSchema) {

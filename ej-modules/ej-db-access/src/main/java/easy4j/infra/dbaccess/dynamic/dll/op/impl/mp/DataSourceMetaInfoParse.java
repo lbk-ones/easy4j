@@ -83,7 +83,9 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        this.opContext = opContext;
+        if(this.opContext == null){
+            this.opContext = opContext;
+        }
     }
 
     @Override

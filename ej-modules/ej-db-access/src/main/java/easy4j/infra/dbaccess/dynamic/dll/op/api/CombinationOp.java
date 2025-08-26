@@ -14,5 +14,14 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
-public interface CombinationOp extends OpDdlAlterAction,OpDdlAlterRename,OpDdlCreateTable,IOpContext {
+/**
+ * OpDdlAlter 修改表结构相关
+ * OpDdlCreateTable 建表相关
+ * OpSqlCommands sql命令相关
+ * IOpContext 上下文赋值
+ *
+ * @author bokun.li
+ * @date 2025/8/26
+ */
+public interface CombinationOp extends OpDdlAlter, OpDdlCreateTable, OpSqlCommands, IOpContext {
 }

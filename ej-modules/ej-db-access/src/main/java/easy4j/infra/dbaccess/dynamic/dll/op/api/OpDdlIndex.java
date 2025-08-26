@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
+
+import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+
+import java.util.List;
+
 /**
  * OpIndex
  * 索引操作
@@ -20,5 +26,12 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlIndex extends IOpContext {
+public interface OpDdlIndex extends IOpContext,IOpMatch {
+
+    /**
+     * 获取单个索引的建表语句
+     * @author bokun.li
+     * @date 2025/8/26
+     */
+    String getIndexes(DDLIndexInfo ddlFieldInfo);
 }

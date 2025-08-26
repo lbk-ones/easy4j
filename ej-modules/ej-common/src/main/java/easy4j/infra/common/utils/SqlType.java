@@ -27,7 +27,7 @@ import java.util.*;
  * @date 2023/11/18
  */
 public final class SqlType {
-    public static String datatype1 = "mysql";
+    public static String datatype1 = DbType.MYSQL.getDb();
     public static String datatype2 = "oracle";
     public static String datatype3 = "sqlserver";
     public static String datatype4 = "h2";

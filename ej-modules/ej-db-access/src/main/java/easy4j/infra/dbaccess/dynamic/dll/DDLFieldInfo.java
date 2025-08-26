@@ -62,6 +62,15 @@ public class DDLFieldInfo {
     @Desc("unique null是否也不能重复，默认是允许重复的")
     private boolean isUniqueNotNullDistinct;
 
+    @Desc("generated always as (expr) 语法")
+    private String generatedAlwaysAs;
+
+    @Desc("generated always as (expr) 模式 virtual 、store等，mysql两个都支持 pg只支持store")
+    private String generatedAlwaysAsModel;
+
+    @Desc("generated always as (expr) 不允许返回null值")
+    private boolean generatedAlwaysAsNotNull;
+
     @Desc("check约束，直接传入check括号里面的约束")
     private String check;
 

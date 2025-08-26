@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -40,7 +41,7 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return "mysql".equals(dbType);
+        return DbType.MYSQL.getDb().equals(dbType);
     }
 
     /**
@@ -56,7 +57,7 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
         Class<?> fieldClass = ddlFieldInfo.getFieldClass();
         CheckUtils.notNull(fieldClass, "fieldClass");
 
-        if (ddlFieldInfo.isAutoIncrement() && opConfig.isNumberDefaultType(fieldClass)) {
+        if (ddlFieldInfo.isAutoIncrement() && opConfig.isNumberDefaultType(fieldClass) && ddlFieldInfo.isPrimary()) {
             templateParams.put(AUTO_INCREMENT, "auto_increment");
         }
 
@@ -69,15 +70,34 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
             }
         }
 
-        if (opConfig.isDateDefaultType(fieldClass)) {
+        //  BLOB, TEXT, GEOMETRY or JSON  can't have a default value
+        //  POINT、LINESTRING、POLYGON
+        //  PRIMARY KEY always can't have a default value
+        MySQLFieldType oracleFieldType = getMysqlFieldType(fieldClass, ddlFieldInfo);
+        if (ListTs.asList(MySQLFieldType.BLOB, MySQLFieldType.TEXT, MySQLFieldType.LONGTEXT, MySQLFieldType.JSON).contains(oracleFieldType) || ddlFieldInfo.isPrimary()) {
+            templateParams.remove(DEFAULT);
+        } else if (opConfig.isDateDefaultType(fieldClass)) {
             if (ddlFieldInfo.isDefTime()) {
-                MySQLFieldType oracleFieldType = getMysqlFieldType(fieldClass, ddlFieldInfo);
                 String currentTimeFunc = getCurrentTimeFunctionName(oracleFieldType);
                 templateParams.put(DEFAULT, "default " + currentTimeFunc);
             } else {
                 templateParams.remove(DEFAULT);
             }
         }
+
+        // generated always as (expr)
+        // mysql default virtual model
+        String generatedAlwaysAs = ddlFieldInfo.getGeneratedAlwaysAs();
+        if (StrUtil.isNotBlank(generatedAlwaysAs)) {
+            String generatedAlwaysAsModel = StrUtil.blankToDefault(ddlFieldInfo.getGeneratedAlwaysAsModel(), "");
+            generatedAlwaysAsModel = StrUtil.isNotBlank(generatedAlwaysAsModel) ? SP.SPACE + generatedAlwaysAsModel : generatedAlwaysAsModel;
+            if (ddlFieldInfo.isGeneratedAlwaysAsNotNull()) {
+                generatedAlwaysAsModel += " not null";
+            }
+            templateParams.put(BEFORE, "generated always as (" + generatedAlwaysAs + ")" + generatedAlwaysAsModel);
+        }
+
+
         return templateParams;
     }
 

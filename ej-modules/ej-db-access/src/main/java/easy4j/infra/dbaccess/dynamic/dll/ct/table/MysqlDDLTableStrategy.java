@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll.ct.table;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -25,7 +26,7 @@ public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
     public boolean match(DDLTableInfo ddlTableInfo) {
         String dbType = ddlTableInfo.getDbType();
         CheckUtils.notNull(dbType, "dbType");
-        return StrUtil.equals("mysql", dbType);
+        return StrUtil.equals(DbType.MYSQL.getDb(), dbType);
     }
 
     @Override

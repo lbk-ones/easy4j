@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.tc;
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 /**
  * 
@@ -25,6 +26,6 @@ public class PgOpTableConstraints extends AbstractOpTableConstraints {
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return "postgres".equals(dbType);
+        return DbType.POSTGRE_SQL.getDb().equals(dbType);
     }
 }

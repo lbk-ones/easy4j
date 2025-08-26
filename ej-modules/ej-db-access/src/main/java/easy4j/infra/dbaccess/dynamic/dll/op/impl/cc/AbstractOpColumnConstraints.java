@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
@@ -123,38 +124,50 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
         }
         String def = ddlFieldInfo.getDef();
         int defNum = ddlFieldInfo.getDefNum();
-        // defTime 不处理
-        if (StrUtil.isNotBlank(def)) {
-            if (opConfig.isNumberDefaultType(fieldClass)) {
-                boolean isNum = true;
-                try {
-                    Integer.parseInt(def);
-                } catch (Exception e) {
-                    isNum = false;
+        if(!ddlFieldInfo.isPrimary()){
+            // defTime 不处理
+            if (StrUtil.isNotBlank(def)) {
+                if (opConfig.isNumberDefaultType(fieldClass)) {
+                    boolean isNum = true;
+                    try {
+                        Integer.parseInt(def);
+                    } catch (Exception e) {
+                        isNum = false;
+                    }
+                    if (isNum) pm.put(DEFAULT, "default " + def);
+                } else {
+                    pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
                 }
-                if (isNum) pm.put(DEFAULT, "default " + def);
-            } else {
-                pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
+            } else if (defNum != -1) {
+                pm.put(DEFAULT, "default " + defNum);
             }
-        } else if (defNum != -1) {
-            pm.put(DEFAULT, "default " + defNum);
+            // only valid json can be set
+            if (ddlFieldInfo.isJson() && StrUtil.isNotBlank(def)) {
+                if (!JacksonUtil.isValidJson(def)) {
+                    pm.remove(DEFAULT);
+                }
+            }
         }
-        String check = ddlFieldInfo.getCheck();
-        if (StrUtil.isNotBlank(check)) {
-            pm.put(CHECK, "check (" + check + ")");
-        }
-        if (ddlFieldInfo.isUnique()) {
-            pm.put(UNIQUE, "unique");
-        }
-        if (ddlFieldInfo.isPrimary()) {
-            pm.put(PRIMARY_KEY, "primary key");
+        if(ddlFieldInfo.isGenConstraint()){
+            String check = ddlFieldInfo.getCheck();
+            if (StrUtil.isNotBlank(check)) {
+                pm.put(CHECK, "check (" + check + ")");
+            }
+            if (ddlFieldInfo.isUnique()) {
+                pm.put(UNIQUE, "unique");
+            }
+            if (ddlFieldInfo.isPrimary()) {
+                pm.put(PRIMARY_KEY, "primary key");
+            }
         }
         return pm;
     }
 
     @Override
     public void setOpContext(OpContext opContext) {
-        this.opContext = opContext;
+        if(this.opContext == null){
+            this.opContext = opContext;
+        }
     }
 
     @Override
@@ -163,24 +176,8 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
         CheckUtils.notNull(this.opContext, "opContext");
         CheckUtils.checkByPath(ddlFieldInfo, "fieldClass");
         CheckUtils.checkByPath(this.opContext, "opConfig");
-        String template = StrUtil.blankToDefault(getTemplate(), "");
-        Map<String, String> templateParams = getTemplateParams(ddlFieldInfo);
-        if (CollUtil.isNotEmpty(extParamMap)) {
-            templateParams.putAll(extParamMap);
-        }
-        // replace templateParams keys
-        for (String key : templateParams.keySet()) {
-            String s = templateParams.get(key);
-            String wrap = StrUtil.wrap(key, SP.LEFT_SQ_BRACKET, SP.RIGHT_SQ_BRACKET);
-            template = template.replace(wrap, s);
-        }
-        // replace field map
-        for (String s : FIELD_MAP.keySet()) {
-            String wrap = StrUtil.wrap(s, SP.LEFT_SQ_BRACKET, SP.RIGHT_SQ_BRACKET);
-            template = template.replace(wrap, "");
-        }
-        template = template.replaceAll("\\s+", " ");
-        return StrUtil.trim(template);
+        OpConfig opConfig = this.opContext.getOpConfig();
+        return opConfig.patchStrWithTemplate(ddlFieldInfo, getTemplate(),FIELD_MAP, extParamMap, this::getTemplateParams);
     }
 
     @Override

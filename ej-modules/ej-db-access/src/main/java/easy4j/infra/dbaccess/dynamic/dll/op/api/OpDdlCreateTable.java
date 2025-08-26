@@ -16,6 +16,8 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 
+import java.util.List;
+
 /**
  * OpDdlCreateTable
  * 表创建
@@ -24,8 +26,23 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
  * @date 2025/8/23
  */
 public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
-
+    /**
+     * 获取建表语句
+     * @return
+     */
     String getCreateTableDDL();
+
+    /**
+     * 获取表注释
+     * @return
+     */
+    List<String> getCreateTableComments();
+
+    /**
+     * 获取表索引
+     * @return
+     */
+    List<String> getIndexList();
 
     @Override
     default boolean match(OpContext opContext) {

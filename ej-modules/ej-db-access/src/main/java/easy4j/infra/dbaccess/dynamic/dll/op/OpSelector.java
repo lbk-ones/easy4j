@@ -15,12 +15,10 @@
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.dbaccess.dynamic.dll.op.api.IOpContext;
-import easy4j.infra.dbaccess.dynamic.dll.op.api.OpColumnConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlCreateTable;
-import easy4j.infra.dbaccess.dynamic.dll.op.api.OpTableConstraints;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.MysqlOpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.OracleOpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.PgOpColumnConstraints;
@@ -29,6 +27,8 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.MysqlOpDdlCreateTable;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.OracleOpDdlCreateTable;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.PgOpDdlCreateTable;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.SqlServerOpDdlCreateTable;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.idx.CommonOpDdlIndexImpl;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.OpSqlCommandsImpl;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.MysqlOpTableConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.OracleOpTableConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.PgOpTableConstraints;
@@ -49,6 +49,8 @@ public class OpSelector {
     private static final List<OpColumnConstraints> columnConstraintsList = ListTs.newLinkedList();
     private static final List<OpTableConstraints> tableConstraintsList = ListTs.newLinkedList();
     private static final List<OpDdlCreateTable> createTableList = ListTs.newLinkedList();
+    private static final List<OpSqlCommands> opSqlCommandsList = ListTs.newLinkedList();
+    private static final List<OpDdlIndex> opDdlIndicesList = ListTs.newLinkedList();
 
     static {
         // column constraints
@@ -71,6 +73,13 @@ public class OpSelector {
         createTableList.add(new PgOpDdlCreateTable());
         createTableList.add(new SqlServerOpDdlCreateTable());
         createTableList.sort(Comparator.comparingInt(IOpContext::getSort));
+
+
+        opSqlCommandsList.add(new OpSqlCommandsImpl());
+        opSqlCommandsList.sort(Comparator.comparingInt(IOpContext::getSort));
+
+        opDdlIndicesList.add(new CommonOpDdlIndexImpl());
+        opDdlIndicesList.sort(Comparator.comparingInt(IOpContext::getSort));
     }
 
     /**
@@ -80,6 +89,7 @@ public class OpSelector {
      * @return
      */
     public static OpColumnConstraints selectOpCC(OpContext opContext) {
+        CheckUtils.notNull(opContext,"opContext");
         for (OpColumnConstraints opColumnConstraints : columnConstraintsList) {
             opColumnConstraints.setOpContext(opContext);
             if (opColumnConstraints.match(opContext)) {
@@ -96,7 +106,9 @@ public class OpSelector {
      * @return
      */
     public static OpTableConstraints selectOpCT(OpContext opContext) {
+        CheckUtils.notNull(opContext,"opContext");
         for (OpTableConstraints opColumnConstraints : tableConstraintsList) {
+            opColumnConstraints.setOpContext(opContext);
             if (opColumnConstraints.match(opContext)) {
                 return opColumnConstraints;
             }
@@ -111,9 +123,43 @@ public class OpSelector {
      * @return
      */
     public static OpDdlCreateTable selectOpCreateTable(OpContext opContext) {
-        for (OpDdlCreateTable opColumnConstraints : createTableList) {
-            if (opColumnConstraints.match(opContext)) {
-                return opColumnConstraints;
+        CheckUtils.notNull(opContext,"opContext");
+        for (OpDdlCreateTable opCreateTableRule : createTableList) {
+            opCreateTableRule.setOpContext(opContext);
+            if (opCreateTableRule.match(opContext)) {
+                return opCreateTableRule;
+            }
+        }
+        throw EasyException.wrap(BusCode.A00047, "opContext");
+    }
+
+    /**
+     * 获取sql命令执行器
+     * @param opContext
+     * @return
+     */
+    public static OpSqlCommands selectOpSqlCommands(OpContext opContext) {
+        CheckUtils.notNull(opContext,"opContext");
+        for (OpSqlCommands opCreateTableRule : opSqlCommandsList) {
+            opCreateTableRule.setOpContext(opContext);
+            if (opCreateTableRule.match(opContext)) {
+                return opCreateTableRule;
+            }
+        }
+        throw EasyException.wrap(BusCode.A00047, "opContext");
+    }
+
+    /**
+     * 获取索引实现
+     * @param opContext
+     * @return
+     */
+    public static OpDdlIndex selectOpIndex(OpContext opContext) {
+        CheckUtils.notNull(opContext,"opContext");
+        for (OpDdlIndex opCreateTableRule : opDdlIndicesList) {
+            opCreateTableRule.setOpContext(opContext);
+            if (opCreateTableRule.match(opContext)) {
+                return opCreateTableRule;
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");

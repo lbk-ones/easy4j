@@ -32,18 +32,22 @@ public interface OpTableConstraints extends IOpContext {
     /**
      * 获取表约束
      *
-     * @param opContext
      * @return
      */
-    List<String> getTableConstraints(OpContext opContext);
+    List<String> getTableConstraints();
 
     /**
      * 获取表的属性 通常来说 是在 create table xx() 右括号后面的属性
      *
-     * @param opContext
      * @return
      */
-    List<String> getTableAttrs(OpContext opContext);
+    List<String> getTableOptions();
+
+    /**
+     * 分区表相关
+     * @return
+     */
+    List<String> getPartitionOptions();
 
 
 }

@@ -19,8 +19,13 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpSqlCommands extends IOpContext {
+public interface OpSqlCommands extends IOpContext,IOpMatch {
 
 
+    /**
+     * 执行ddl语句
+     * @param segment
+     */
+    void exeDDLStr(String segment);
 
 }
