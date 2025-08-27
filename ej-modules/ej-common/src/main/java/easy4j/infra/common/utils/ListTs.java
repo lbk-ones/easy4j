@@ -156,7 +156,7 @@ public class ListTs {
     public static <T> Map<String, T> mapOne(List<T> w, Function<T, String> function) {
         Map<String, T> result = new HashMap<>();
         if (isNotEmpty(w) && null != function) {
-            Map<String, T> collect = asStream(w).filter(e-> StrUtil.isNotBlank(function.apply(e))).collect(Collectors.toMap(function, Function.identity(), (k1, k2) -> k1));
+            Map<String, T> collect = asStream(w).filter(e -> StrUtil.isNotBlank(function.apply(e))).collect(Collectors.toMap(function, Function.identity(), (k1, k2) -> k1));
             if (isNotEmpty(collect)) {
                 result.putAll(collect);
             }
@@ -296,6 +296,10 @@ public class ListTs {
         return !isEmpty(collection);
     }
 
+    public static <T> boolean isNotEmpty(T[] collection) {
+        return collection != null && collection.length > 0;
+    }
+
     public static boolean isNotEmpty(Map<?, ?> map) {
         return !isEmpty(map);
     }
@@ -417,9 +421,10 @@ public class ListTs {
         }
         return null;
     }
+
     public static <T> T get(T[] reqs, int i) {
         try {
-            if (reqs!=null) {
+            if (reqs != null) {
                 return reqs[i];
             }
         } catch (Exception ignored) {

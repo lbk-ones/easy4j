@@ -130,8 +130,8 @@ public abstract class AbstractCombinationOp implements CombinationOp {
             return r;
         } finally {
             // clear resource
-            Connection connection = context.getConnection();
-            JdbcUtils.closeConnection(connection);
+            //Connection connection = context.getConnection();
+            //JdbcUtils.closeConnection(connection);
         }
     }
 }

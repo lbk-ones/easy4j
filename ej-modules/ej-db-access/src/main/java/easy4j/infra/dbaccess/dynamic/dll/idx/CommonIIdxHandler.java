@@ -38,17 +38,7 @@ public class CommonIIdxHandler implements IIdxHandler {
         CheckUtils.checkTrue(keys == null || keys.length == 0, "keys not allow be empty");
         String indexTypeName = StrUtil.blankToDefault(ddlIndexInfo.getIndexTypeName(), "");
         if (StrUtil.isBlank(name)) {
-            if (keys != null && keys.length > 0) {
-                String lowerCase = StrUtil.blankToDefault(indexTypeName.toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
-                String collect = ListTs.asList(keys)
-                        .stream()
-                        .map(StrUtil::toUnderlineCase)
-                        .collect(Collectors.joining("_"));
-
-                collect = replaceSpecialSymbol(collect);
-                name = (StrUtil.isBlank(lowerCase) ? "" : (lowerCase + "_")) + "idx_" + ddlIndexInfo.getTableName().toLowerCase() + "_" + collect;
-                name = replaceSpecialSymbol(name);
-            }
+            name = compatibleGetIndexName(ddlIndexInfo, keys, indexTypeName, name);
         }
         List<String> objects = ListTs.newArrayList();
         objects.add("create");
@@ -75,5 +65,21 @@ public class CommonIIdxHandler implements IIdxHandler {
         objects.add(nameA);
         objects.add(")");
         return String.join(SP.SPACE, objects);
+    }
+
+    private String compatibleGetIndexName(DDLIndexInfo ddlIndexInfo, String[] keys, String indexTypeName, String name) {
+
+        if (keys != null && keys.length > 0) {
+            String lowerCase = StrUtil.blankToDefault(indexTypeName.toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
+            String collect = ListTs.asList(keys)
+                    .stream()
+                    .map(StrUtil::toUnderlineCase)
+                    .collect(Collectors.joining("_"));
+
+            collect = replaceSpecialSymbol(collect);
+            name = (StrUtil.isBlank(lowerCase) ? "" : (lowerCase + "_")) + "idx_" + ddlIndexInfo.getTableName().toLowerCase() + "_" + collect;
+            name = replaceSpecialSymbol(name);
+        }
+        return name;
     }
 }

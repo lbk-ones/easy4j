@@ -23,5 +23,5 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
  * @author bokun.li
  * @date 2025/8/26
  */
-public interface CombinationOp extends OpDdlAlter, OpDdlCreateTable, OpSqlCommands, IOpContext {
+public interface CombinationOp extends OpDdlAlter, OpDdlCreateTable, OpSqlCommands, IOpContext,AutoCloseable {
 }

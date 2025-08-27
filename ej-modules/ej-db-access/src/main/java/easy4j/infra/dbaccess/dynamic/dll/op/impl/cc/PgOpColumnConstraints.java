@@ -23,6 +23,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+import easy4j.infra.dbaccess.dynamic.dll.op.VersionChecker;
 
 import java.text.MessageFormat;
 import java.util.Map;
@@ -61,7 +62,12 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
         return templateParams;
     }
 
-    private static void oracleAutoIncrement(DDLFieldInfo ddlFieldInfo, Map<String, String> templateParams, OpConfig opConfig) {
+    private void oracleAutoIncrement(DDLFieldInfo ddlFieldInfo, Map<String, String> templateParams, OpConfig opConfig) {
+
+        // GENERATED ALWAYS AS      only support pg version great than 9.5
+        if (!VersionChecker.isGreaterOrEqual(this.getOpContext().getDbVersion(), "9.5")) {
+            return;
+        }
         if (ddlFieldInfo.isAutoIncrement() && ddlFieldInfo.isPrimary()) {
             Class<?> fieldClass = ddlFieldInfo.getFieldClass();
             int startWith = ddlFieldInfo.getStartWith();
@@ -129,7 +135,7 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
 
     }
 
-    private static PgSQLFieldType getPgSQLFieldType(DDLFieldInfo ddlFieldInfo) {
+    private PgSQLFieldType getPgSQLFieldType(DDLFieldInfo ddlFieldInfo) {
         String fieldType = ddlFieldInfo.getDataType();
         PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(fieldType);
         if (null == fromDataType) {
@@ -143,8 +149,9 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
                     fromDataType = PgSQLFieldType.getByClass(fieldClass);
                     int startWith = ddlFieldInfo.getStartWith();
                     int increment = ddlFieldInfo.getIncrement();
+                    boolean less95 = !VersionChecker.isGreaterOrEqual(this.getOpContext().getDbVersion(), "9.5");
                     // auto increment
-                    if (ddlFieldInfo.isAutoIncrement() && startWith == 0 && increment == 1) {
+                    if (ddlFieldInfo.isAutoIncrement() && (less95 || (startWith == 0 && increment == 1))) {
                         if (fieldClass == int.class || fieldClass == Integer.class) {
                             fromDataType = PgSQLFieldType.SERIAL;
                         } else if (fieldClass == long.class || fieldClass == Long.class) {

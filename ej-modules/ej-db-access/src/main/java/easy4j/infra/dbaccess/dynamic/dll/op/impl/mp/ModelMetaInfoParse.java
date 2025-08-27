@@ -52,9 +52,7 @@ public class ModelMetaInfoParse implements MetaInfoParse {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if(this.opContext == null){
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     @Override

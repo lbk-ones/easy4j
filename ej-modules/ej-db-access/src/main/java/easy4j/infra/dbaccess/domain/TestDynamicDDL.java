@@ -103,7 +103,7 @@ public class TestDynamicDDL {
     @DDLField(comment = "测试unique的字段",dataLength = 25,isUnique = true)
     private String testUnique;
 
-    @DDLField(comment = "测试unique的字段",dataLength = 25,constraint = {"check (test_check in (0,1))"})
+    @DDLField(comment = "测试unique的字段",dataLength = 25,check = "test_check in (0,1)")
     private byte testCheck;
 
     @DDLField(comment = "测试check的字段2",dataLength = 25,check = "test_check2 in (2,3)")

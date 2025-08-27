@@ -36,8 +36,17 @@ import java.sql.SQLException;
 
 /**
  * DynamicDDL
+ * <p>
  * 功能函数聚合类（入口类）
- *
+ * <p>
+ * 不能单例使用，每用一次new一次
+ * <p>
+ * 使用完close 或者
+ * <p>
+ * try (DynamicDDL sscElementTest = new DynamicDDL(xxx,xx,xx)) {
+ * <p>
+ * }
+ * <p>
  * @author bokun.li
  * @date 2025/8/23
  */
@@ -66,7 +75,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.schema = schema;
         this.domainClass = domainClass;
 //        super.init();
-        JavaClassMetaInfoParse javaClassMetaInfoParse = new JavaClassMetaInfoParse(this.getOpContext());
+        JavaClassMetaInfoParse javaClassMetaInfoParse = new JavaClassMetaInfoParse(this.getContext());
         this.ddlTableInfo = javaClassMetaInfoParse.parse();
         this.opContext.setDdlTableInfo(this.ddlTableInfo);
     }
@@ -80,7 +89,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.schema = schema;
         this.ddlTableInfo = ddlTableInfo;
 //        super.init();
-        this.ddlTableInfo = new ModelMetaInfoParse(ddlTableInfo, this.getOpContext()).parse();
+        this.ddlTableInfo = new ModelMetaInfoParse(ddlTableInfo, this.getContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
     }
 
@@ -90,7 +99,7 @@ public class DynamicDDL extends AbstractCombinationOp {
         CheckUtils.notNull(tableName, "DynamicDDL tableName");
         this.dataSource = dataSource;
 //        super.init();
-        this.ddlTableInfo = new DataSourceMetaInfoParse(this.dataSource, tableName, this.getOpContext()).parse();
+        this.ddlTableInfo = new DataSourceMetaInfoParse(this.dataSource, tableName, this.getContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
 
     }
@@ -107,7 +116,7 @@ public class DynamicDDL extends AbstractCombinationOp {
 
     @Override
     public OpDdlCreateTable getOpDdlCreateTable() {
-        return OpSelector.selectOpCreateTable(this.getOpContext());
+        return OpSelector.selectOpCreateTable(this.getContext());
     }
 
 
@@ -133,7 +142,7 @@ public class DynamicDDL extends AbstractCombinationOp {
             Dialect dialect = JdbcHelper.getDialect(connection);
             String dbType = InformationSchema.getDbType(dataSource, connection);
             IOpMeta opDbMeta = OpDbMeta.select(connection);
-            int dbVersion = opDbMeta.getMajorVersion();
+            String dbVersion = opDbMeta.getProductVersion();
             //String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
             // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 、 postgresql 、 oracle 、sqlserver 的 其他的试过才知道，如果取错了 只能从外部传进来了
             if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
@@ -145,7 +154,7 @@ public class DynamicDDL extends AbstractCombinationOp {
                     .setOpConfig(opConfig == null ? new OpConfig() : opConfig)
                     //.setTableName(ddlTableName) 表名放到后续去处理
                     .setDbType(dbType)
-                    .setDbVersion(String.valueOf(dbVersion))
+                    .setDbVersion(dbVersion)
                     //.setDbColumns(columns)  放到后面去处理
                     .setDialect(dialect)
                     .setDomainClass(this.domainClass);
@@ -162,5 +171,12 @@ public class DynamicDDL extends AbstractCombinationOp {
                 JdbcHelper.close(connection);
             }
         }
+    }
+
+    @Override
+    public void close()  {
+        OpContext context = getContext();
+        Connection connection = context.getConnection();
+        JdbcHelper.close(connection);
     }
 }

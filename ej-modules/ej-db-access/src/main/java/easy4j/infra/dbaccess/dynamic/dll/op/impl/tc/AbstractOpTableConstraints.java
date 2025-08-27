@@ -21,12 +21,16 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpTableConstraints;
 import lombok.Getter;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author bokun.li
@@ -39,9 +43,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if (this.opContext == null) {
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     /**
@@ -57,6 +59,13 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
         return segments;
     }
 
+    /**
+     * fix 一个索引 多个字段的情况
+     *
+     * @param ddlTableInfo
+     * @param opConfig
+     * @param segments
+     */
     private void handlerConstraint(DDLTableInfo ddlTableInfo, OpConfig opConfig, List<String> segments) {
         boolean hasExtraLine = false;
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
@@ -66,48 +75,88 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
             List<DDLFieldInfo> uniqueKey = ListTs.newList();
             List<DDLFieldInfo> checkKey = ListTs.newList();
             List<DDLFieldInfo> constraintKey = ListTs.newList();
-            for (DDLFieldInfo ddlFieldInfo : fieldInfoList) {
-                String[] constraint = ddlFieldInfo.getConstraint();
-                // primary key
-                if (ddlFieldInfo.isPrimary()) {
-                    primaryKey.add(ddlFieldInfo);
+            // merge fieldInfoList
+            Map<String, List<DDLFieldInfo>> fieldMergeMap = ListTs.groupBy(ListTs.filter(fieldInfoList, e ->
+                    e.isPrimary() || e.isUnique() || StrUtil.isNotBlank(e.getCheck()) || ListTs.isNotEmpty(e.getConstraint())
+            ), DDLFieldInfo::getIndexName);
+            // 如果没有索引 那么 indexName 为 none
+            for (String indeName : fieldMergeMap.keySet()) {
+                List<DDLFieldInfo> _ddlFieldInfos = fieldMergeMap.get(indeName);
+                List<DDLFieldInfo> ddlFieldInfos = null;
+
+                List<String> columns = ListTs.mapToList(_ddlFieldInfos, DDLFieldInfo::getName);
+                if("none".equals(indeName)){
+                    ddlFieldInfos = _ddlFieldInfos;
+                }else if(!columns.isEmpty()) {
+                    ddlFieldInfos = ListTs.asList(_ddlFieldInfos.get(0));
                 }
-                // unique
-                if (ddlFieldInfo.isUnique()) {
-                    uniqueKey.add(ddlFieldInfo);
+                assert ddlFieldInfos != null;
+                ddlFieldInfos.sort(Comparator.comparingInt(DDLFieldInfo::getIndexSort));
+
+                for (DDLFieldInfo ddlFieldInfo : ddlFieldInfos) {
+
+                    // merge
+                    if (columns.size() > 1 && !"none".equals(indeName)) {
+                        // set a temp value
+                        ddlFieldInfo.setTemp(String.join(SP.COMMA, columns));
+                    }
+
+                    String[] constraint = ddlFieldInfo.getConstraint();
+                    // primary key
+                    if (ddlFieldInfo.isPrimary()) {
+                        primaryKey.add(ddlFieldInfo);
+                    }
+                    // unique
+                    if (ddlFieldInfo.isUnique()) {
+                        uniqueKey.add(ddlFieldInfo);
+                    }
+                    // check
+                    if (StrUtil.isNotBlank(ddlFieldInfo.getCheck())) {
+                        checkKey.add(ddlFieldInfo);
+                    }
+                    // custom constraint
+                    if (constraint != null && constraint.length > 0) {
+                        constraintKey.add(ddlFieldInfo);
+                    }
                 }
-                // check
-                if (StrUtil.isNotBlank(ddlFieldInfo.getCheck())) {
-                    checkKey.add(ddlFieldInfo);
-                }
-                // custom constraint
-                if (constraint != null && constraint.length > 0) {
-                    constraintKey.add(ddlFieldInfo);
-                }
+
             }
+
             int idx = 0;
             for (DDLFieldInfo ddlFieldInfo : primaryKey) {
                 hasExtraLine = true;
-                String name = ddlFieldInfo.getName();
+                // first from temp value get
+                String name = StrUtil.blankToDefault(ddlFieldInfo.getTemp(), ddlFieldInfo.getName());
                 String columnName = opConfig.getColumnName(name);
-                String tem = "CONSTRAINT pk_" + tableName + "_" + columnName + "_" + idx + " PRIMARY KEY (" + columnName + ")";
+                String unionName = opConfig.replaceSpecialSymbol(columnName);
+                String cn = "pk_" + tableName + "_" + unionName + "_" + idx;
+                cn = opConfig.get63UnderLineName(cn);
+                String tem = "CONSTRAINT " + cn + " PRIMARY KEY (" + columnName + ")";
                 segments.add(tem);
                 idx++;
+                ddlFieldInfo.setTemp(null);
             }
             for (DDLFieldInfo ddlFieldInfo : uniqueKey) {
                 hasExtraLine = true;
-                String name = ddlFieldInfo.getName();
+                String name = StrUtil.blankToDefault(ddlFieldInfo.getTemp(), ddlFieldInfo.getName());
                 String columnName = opConfig.getColumnName(name);
-                String tem = "CONSTRAINT uk_" + tableName + "_" + columnName + "_" + idx + " UNIQUE (" + columnName + ")";
+                String unionName = opConfig.replaceSpecialSymbol(columnName);
+                String cn = "uk_" + tableName + "_" + unionName + "_" + idx;
+                cn = opConfig.get63UnderLineName(cn);
+                String tem = "CONSTRAINT " + cn + " UNIQUE (" + columnName + ")";
                 segments.add(tem);
                 idx++;
+                ddlFieldInfo.setTemp(null);
             }
             for (DDLFieldInfo ddlFieldInfo : checkKey) {
                 hasExtraLine = true;
                 String check = ddlFieldInfo.getCheck();
                 String name = ddlFieldInfo.getName();
                 String columnName = opConfig.getColumnName(name);
-                String tem = "CONSTRAINT check_" + tableName + "_" + columnName + "_" + idx + " CHECK (" + check + ")";
+                String unionName = opConfig.replaceSpecialSymbol(columnName);
+                String cn = "check_" + tableName + "_" + unionName + "_" + idx;
+                cn = opConfig.get63UnderLineName(cn);
+                String tem = "CONSTRAINT " + cn + " CHECK (" + check + ")";
                 segments.add(tem);
                 idx++;
             }
@@ -115,9 +164,12 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 hasExtraLine = true;
                 String name = ddlFieldInfo.getName();
                 String columnName = opConfig.getColumnName(name);
+                String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String[] constraint = ddlFieldInfo.getConstraint();
+                String cn = "ctk_" + tableName + "_" + unionName + "_" + idx;
+                cn = opConfig.get63UnderLineName(cn);
                 for (String s : constraint) {
-                    String tem = "CONSTRAINT ctk_" + tableName + "_" + columnName + "_" + idx + SP.SPACE + s;
+                    String tem = "CONSTRAINT" + cn + SP.SPACE + s;
                     segments.add(tem);
                     idx++;
                 }
@@ -127,7 +179,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
             String remove = segments.remove(segments.size() - 1);
             if (remove.endsWith(SP.COMMA)) {
                 segments.add(StrUtil.replaceLast(remove, SP.COMMA, ""));
-            }else{
+            } else {
                 segments.add(remove);
             }
         }

@@ -92,9 +92,7 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if (this.opContext == null) {
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     public Map<String, String> getTemplateParams(DDLTableInfo ddlTableInfo) {
@@ -153,7 +151,7 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         DDLTableInfo ddlTableInfo = opContext.getDdlTableInfo();
         CheckUtils.notNull(ddlTableInfo, "ddlTableInfo");
         OpConfig opConfig = this.getOpContext().getOpConfig();
-        return opConfig.patchStrWithTemplate(ddlTableInfo, getTemplate(),FIELD_MAP, extParamMap, this::getTemplateParams);
+        return StrUtil.addSuffixIfNot(opConfig.patchStrWithTemplate(ddlTableInfo, getTemplate(),FIELD_MAP, extParamMap, this::getTemplateParams),SP.SEMICOLON);
     }
 
     /**
@@ -210,6 +208,7 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
                 .map(DDLTableInfo::getDdlIndexInfoList)
                 .orElse(ListTs.newList());
         List<String> objects = ListTs.newList();
+        ddlIndexInfos = ListTs.distinct(ddlIndexInfos, DDLIndexInfo::getName);
         if(CollUtil.isNotEmpty(ddlIndexInfos)){
             for (DDLIndexInfo ddlIndexInfo : ddlIndexInfos) {
                 String indexes = opSqlCommands.getIndexes(ddlIndexInfo);

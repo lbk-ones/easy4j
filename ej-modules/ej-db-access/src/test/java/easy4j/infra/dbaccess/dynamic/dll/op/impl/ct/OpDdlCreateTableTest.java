@@ -2,6 +2,8 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.condition.Where;
+import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -149,7 +151,7 @@ class OpDdlCreateTableTest {
         objects.add(new DDLFieldInfo()
                 .setName("backField10")
                 .setFieldClass(String.class)
-                .setCheck("back_field10 in ('0','1')")
+                .setCheck(Where.get("backField10", "in" ,"('0','1')"))
                 .setDataLength(30)
                 .setAutoIncrement(true)
                 .setStartWith(1000)
@@ -171,7 +173,7 @@ class OpDdlCreateTableTest {
                 .setName("backField12")
                 .setFieldClass(int.class)
                 .setDataLength(30)
-                .setGeneratedAlwaysAs("back_field11 * 2")
+                .setGeneratedAlwaysAs(Where.get("backField11", "*", "2"))
                 .setGeneratedAlwaysAsNotNull(true)
                 .setAutoIncrement(true)
                 .setStartWith(1000)
@@ -183,7 +185,7 @@ class OpDdlCreateTableTest {
                 .setName("backField13")
                 .setFieldClass(int.class)
                 .setDataLength(30)
-                .setGeneratedAlwaysAs("back_field11 * 3")
+                .setGeneratedAlwaysAs(Where.get("backField11", "*", "3"))
                 .setGeneratedAlwaysAsNotNull(false)
                 .setAutoIncrement(true)
                 .setStartWith(1000)
@@ -252,5 +254,11 @@ class OpDdlCreateTableTest {
         System.out.println(createTableDDL);
         List<String> createTableComments = opColumnConstraints.getCreateTableComments();
         System.out.println(ListTs.join(";\n", createTableComments));
+    }
+
+    @Test
+    void test222(){
+        String build = new WhereBuild().inArray("backField10","'0'","'1'").build(ListTs.newList());
+        System.out.println(build);
     }
 }

@@ -42,9 +42,7 @@ public abstract class AbstractOpDdlIndex implements OpDdlIndex {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if (this.opContext == null) {
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     public String getTemplate(){
@@ -70,23 +68,13 @@ public abstract class AbstractOpDdlIndex implements OpDdlIndex {
         CheckUtils.checkTrue(keys == null || keys.length == 0, "keys not allow be empty");
         String indexTypeName = StrUtil.blankToDefault(ddlIndexInfo.getIndexTypeName(), "");
         if (StrUtil.isBlank(name)) {
-            if (keys != null && keys.length > 0) {
-                String lowerCase = StrUtil.blankToDefault(indexTypeName.toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
-                String collect = ListTs.asList(keys)
-                        .stream()
-                        .map(StrUtil::toUnderlineCase)
-                        .collect(Collectors.joining("_"));
-
-                collect = opConfig.replaceSpecialSymbol(collect);
-                name = (StrUtil.isBlank(lowerCase) ? "" : (lowerCase + "_")) + "idx_" + ddlIndexInfo.getTableName().toLowerCase() + "_" + collect;
-                name = opConfig.replaceSpecialSymbol(name);
-            }
+            name = opConfig.compatibleGetIdxName(ddlIndexInfo, keys, indexTypeName, opConfig, name);
         }
         if (StrUtil.isNotBlank(indexTypeName)) {
             res.put(INDEX_TYPE_NAME,indexTypeName);
         }
 
-        res.put(INDEX_NAME,name);
+        res.put(INDEX_NAME,opConfig.get63UnderLineName(name));
 
         String schema = StrUtil.blankToDefault(ddlIndexInfo.getSchema(), "");
         String tableName = ddlIndexInfo.getTableName();
@@ -105,6 +93,7 @@ public abstract class AbstractOpDdlIndex implements OpDdlIndex {
         res.put(COLUMNS,nameA);
         return res;
     }
+
 
 
 

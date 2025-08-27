@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.google.common.collect.Maps;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
@@ -37,6 +38,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
@@ -57,6 +59,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 /**
  * JavaClassMetaInfoParse
  * 从java类中解析表信息
@@ -78,9 +81,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if(this.opContext == null){
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     @Override
@@ -133,11 +134,32 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
         ddlTableInfo.setSchema(this.opContext.getSchema());
         ddlTableInfo.setDbType(this.opContext.getDbType());
-        List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(aclass);
-        ddlTableInfo.setFieldInfoList(ddlFieldInfos);
         List<DDLIndexInfo> ddlIndexInfos = getIndexInfoList(aclass);
+        Map<String, DDLIndexInfo> columnVsIndexMap = Maps.newHashMap();
+
+        // handler index info
+        handlerIndexInfo(ddlIndexInfos, ddlTableInfo, columnVsIndexMap);
+
         ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
+        List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(aclass, columnVsIndexMap);
+        ddlTableInfo.setFieldInfoList(ddlFieldInfos);
         return ddlTableInfo;
+    }
+
+    private void handlerIndexInfo(List<DDLIndexInfo> ddlIndexInfos, DDLTableInfo ddlTableInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
+        OpConfig opConfig = this.getOpContext().getOpConfig();
+        for (DDLIndexInfo ddlIndexInfo : ddlIndexInfos) {
+            ddlIndexInfo.setTableName(ddlTableInfo.getTableName());
+            String[] keys1 = ddlIndexInfo.getKeys();
+            String idname = opConfig.compatibleGetIdxName(ddlIndexInfo, keys1, ddlIndexInfo.getIndexTypeName(), opConfig, ddlIndexInfo.getName());
+            ddlIndexInfo.setName(idname);
+            String[] keys = ddlIndexInfo.getKeys();
+            if (ListTs.isNotEmpty(keys)) {
+                for (String key : keys) {
+                    columnVsIndexMap.put(key, ddlIndexInfo);
+                }
+            }
+        }
     }
 
     private String getTableName(Class<?> aclass) {
@@ -191,7 +213,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
 //        return null;
     }
 
-    private List<DDLFieldInfo> getDdlFieldInfoList(Class<?> aclass) {
+    private List<DDLFieldInfo> getDdlFieldInfoList(Class<?> aclass, Map<String, DDLIndexInfo> columnVsIndexMap) {
         Object newInstance = ReflectUtil.newInstance(aclass);
         List<DDLFieldInfo> objects = ListTs.newLinkedList();
         Field[] fields = ReflectUtil.getFields(aclass);
@@ -202,11 +224,11 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
                 if (null != annotation) {
                     Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
                     DDLFieldInfo ddlFieldInfo1 = BeanUtil.mapToBean(annotationAttributes, DDLFieldInfo.class, true, CopyOptions.create().ignoreError());
-                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo1);
+                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo1, columnVsIndexMap);
                     objects.add(ddlFieldInfo1);
                 } else {
                     DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
-                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo);
+                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo, columnVsIndexMap);
                     objects.add(ddlFieldInfo);
                 }
             }
@@ -222,7 +244,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
      * @author bokun.li
      * @date 2025/8/20
      */
-    public static void fieldMetaInfoExtraParse(Object newInstance, Field field, DDLFieldInfo ddlFieldInfo) {
+    public static void fieldMetaInfoExtraParse(Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
         Class<?> type = field.getType();
         ddlFieldInfo.setFieldClass(type);
         // comment
@@ -342,6 +364,22 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         }
         if (StrUtil.isBlank(ddlFieldInfo.getName())) {
             ddlFieldInfo.setName(field.getName());
+        }
+        // patch index name
+        String name = ddlFieldInfo.getName();
+        DDLIndexInfo ddlIndexInfo = columnVsIndexMap.get(name);
+        if (null != ddlIndexInfo) {
+            ddlFieldInfo.setIndexName(ddlIndexInfo.getName());
+            String[] keys = ddlIndexInfo.getKeys();
+            int i = ListTs.asList(keys).indexOf(name);
+            ddlFieldInfo.setIndexSort(i == -1 ? 0 : (short)i);
+        }else{
+            ddlFieldInfo.setIndexName("none");
+            ddlFieldInfo.setIndexSort((short)0);
+        }
+        // primary key no need add not null segment
+        if (ddlFieldInfo.isPrimary()) {
+            ddlFieldInfo.setNotNull(false);
         }
     }
 }

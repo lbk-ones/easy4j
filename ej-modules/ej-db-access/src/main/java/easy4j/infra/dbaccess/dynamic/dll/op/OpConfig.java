@@ -25,6 +25,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.MySQLFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -32,11 +33,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * OpConfig
@@ -187,38 +190,6 @@ public class OpConfig {
         return 4;
     }
 
-
-    /**
-     * 用正则提取字符串前面的数字
-     *
-     * @param str 待处理字符串
-     * @return 开头的数字（无则返回空字符串）
-     */
-    public String extractPrefixNumberByRegex(String str) {
-        if (str == null || str.isEmpty()) {
-            return "";
-        }
-        // 正则：^匹配开头，\\d+匹配1个及以上数字
-        Pattern pattern = Pattern.compile("^\\d+");
-        Matcher matcher = pattern.matcher(str);
-        // 找到匹配结果则返回，否则返回空
-        return matcher.find() ? matcher.group() : "";
-    }
-
-    public boolean checkSupportVersion(String dbVersion, int version) {
-        try {
-            if (StrUtil.isNotBlank(dbVersion)) {
-                String s = extractPrefixNumberByRegex(dbVersion);
-                if (StrUtil.isNotBlank(s)) {
-                    int version1 = Integer.parseInt(s);
-                    return version >= version1;
-                }
-            }
-        } catch (Exception e) {
-        }
-        return true;
-    }
-
     /**
      * 是否是数字类型的默认值
      *
@@ -323,5 +294,76 @@ public class OpConfig {
         return wt.replaceAll("[^a-zA-Z0-9_\u4e00-\u9fa5]", "_").replaceAll("_+", "_");
     }
 
+    /**
+     * 往字符串拼接前缀
+     *
+     * @param prefix
+     * @param text
+     * @return
+     */
+    public String concatPrefix(String prefix, String text) {
+        if (StrUtil.isNotBlank(text)) {
+            return StrUtil.blankToDefault(prefix, "") + text;
+        }
+        return text;
+    }
+    /**
+     * 往字符串拼接后缀
+     *
+     * @param suffix
+     * @param text
+     * @return
+     */
+    public String concatSuffix(String suffix, String text) {
+        if (StrUtil.isNotBlank(text)) {
+            return text + StrUtil.blankToDefault(suffix, "");
+        }
+        return text;
+    }
+
+    /**
+     * 简写下划线字符串
+     *
+     * @param underLineName
+     * @return
+     */
+    public String get63UnderLineName(String underLineName) {
+
+        if (StrUtil.isBlank(underLineName)) return underLineName;
+        String[] split = underLineName.split("_");
+        String var1 = ListTs.get(split, 0);
+        String var2 = ListTs.get(split, 1);
+        List<String> objects = ListTs.asList(var1, var2);
+        int length = split.length;
+        List<String> objects2 = ListTs.asList();
+        if (length > 2) {
+            for (int i = 2; i < length; i++) {
+                String s = split[i];
+                char c = s.charAt(0);
+                objects2.add(String.valueOf(c));
+            }
+        }
+        String s = String.join(SP.UNDERSCORE, objects) + concatPrefix(SP.UNDERSCORE, String.join("", objects2));
+        if(s.length()>63){
+            s = s.substring(0,63);
+        }
+        return s;
+    }
+
+
+    public String compatibleGetIdxName(DDLIndexInfo ddlIndexInfo, String[] keys, String indexTypeName, OpConfig opConfig, String name) {
+        if (keys != null && keys.length > 0) {
+            String lowerCase = StrUtil.blankToDefault(StrUtil.blankToDefault(indexTypeName,"").toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
+            String collect = ListTs.asList(keys)
+                    .stream()
+                    .map(StrUtil::toUnderlineCase)
+                    .collect(Collectors.joining("_"));
+
+            collect = opConfig.replaceSpecialSymbol(collect);
+            name = (StrUtil.isBlank(lowerCase) ? "" : (lowerCase + "_")) + "idx_" + ddlIndexInfo.getTableName().toLowerCase() + "_" + collect;
+            name = opConfig.replaceSpecialSymbol(name);
+        }
+        return name;
+    }
 
 }

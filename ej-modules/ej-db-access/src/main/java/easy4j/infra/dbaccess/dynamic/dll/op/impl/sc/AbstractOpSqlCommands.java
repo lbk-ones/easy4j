@@ -21,9 +21,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if(this.opContext == null){
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     @Override

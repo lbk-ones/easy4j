@@ -43,6 +43,7 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
 /**
  * DataSourceMetaInfoParse
  * 从数据源中解析表信息
@@ -73,7 +74,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
     public DataSourceMetaInfoParse() {
     }
 
-    public DataSourceMetaInfoParse(@NotNull DataSource dataSource,@NotNull String tableName,@NotNull OpContext opContext) {
+    public DataSourceMetaInfoParse(@NotNull DataSource dataSource, @NotNull String tableName, @NotNull OpContext opContext) {
         CheckUtils.notNull(dataSource, "dataSource");
         CheckUtils.notNull(tableName, "tableName");
         this.opContext = opContext;
@@ -83,9 +84,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
     @Override
     public void setOpContext(OpContext opContext) {
-        if(this.opContext == null){
-            this.opContext = opContext;
-        }
+        this.opContext = opContext;
     }
 
     @Override
@@ -122,11 +121,12 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
     private DDLTableInfo getDdlTableInfo() throws SQLException {
         CheckUtils.notNull(this.tableName);
-        CheckUtils.checkByLambda(this.opContext, OpContext::getDdlTableInfo);
+        //CheckUtils.checkByLambda(this.opContext, OpContext::getDdlTableInfo);
         IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);// 转换索引列信息
         List<IndexInfoMetaInfo> indexInfoMetaInfos = opDbMeta.getIndexInfos(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
+
         Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
         Map<String, IndexInfoMetaInfo> indexInfoMetaInfoMap = ListTs.toMap(indexInfoMetaInfos, IndexInfoMetaInfo::getColumnName);
         String dbType = this.opContext.getDbType();
@@ -138,7 +138,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
         Map<String, List<IndexInfoMetaInfo>> stringListMap = ListTs.groupBy(indexInfoMetaInfos, IndexInfoMetaInfo::getIndexName);
 
-        List<DDLIndexInfo> indexInfos = ListTs.map(indexInfoMetaInfos, e -> getDdlIndexInfoFromIndexMeta(e, stringListMap, schema));
+        List<DDLIndexInfo> indexInfos = ListTs.map(indexInfoMetaInfos, e -> getDdlIndexInfoFromIndexMeta(e, stringListMap, schema, primaryKeyMetadataMap));
 
         this.opContext.setDbColumns(columns);
         DDLTableInfo ddlTableInfo = new DDLTableInfo();
@@ -148,7 +148,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlTableInfo.setFieldInfoList(map);
         ddlTableInfo.setDdlIndexInfoList(indexInfos);
         ddlTableInfo.setSchema(this.opContext.getSchema());
-        ddlTableInfo.setDllConfig(new DDLConfig());
+        //ddlTableInfo.setDllConfig(new DDLConfig());
         ddlTableInfo.setOpConfig(this.opContext.getOpConfig());
         List<TableMetadata> tableInfos = opDbMeta.getTableInfos(tableName);
         TableMetadata tableMetadata = ListTs.get(tableInfos, 0);
@@ -160,13 +160,19 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
     /**
      * getDdlIndexInfoFromIndexMeta
+     * fix: primary key can't create index
      *
      * @param e             index info meta
      * @param stringListMap group byu indexInfoMetaInfo
      * @param schema        schema info
      * @return
      */
-    private DDLIndexInfo getDdlIndexInfoFromIndexMeta(IndexInfoMetaInfo e, Map<String, List<IndexInfoMetaInfo>> stringListMap, String schema) {
+    private DDLIndexInfo getDdlIndexInfoFromIndexMeta(IndexInfoMetaInfo e, Map<String, List<IndexInfoMetaInfo>> stringListMap, String schema, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap) {
+        String columnName = e.getColumnName();
+        PrimaryKeyMetadata primaryKeyMetadata = primaryKeyMetadataMap.get(columnName);
+        if (null != primaryKeyMetadata) {
+            return null;
+        }
         String indexName = e.getIndexName();
         List<IndexInfoMetaInfo> orDefault = stringListMap.getOrDefault(indexName, ListTs.newList());
         if (CollUtil.isNotEmpty(orDefault)) {
@@ -222,7 +228,9 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setDefTime(false);
         ddlFieldInfo.setNotNull(e.getNullable() == 0 || "NO".equals(e.getIsNullable()));
         IndexInfoMetaInfo matchMapIgnoreCase = opConfig.getMatchMapIgnoreCase(indexInfoMetaInfoMap, columnName);
-        ddlFieldInfo.setUnique(matchMapIgnoreCase != null && !matchMapIgnoreCase.isNonUnique());
+        if (!ddlFieldInfo.isPrimary()) {
+            ddlFieldInfo.setUnique(matchMapIgnoreCase != null && !matchMapIgnoreCase.isNonUnique());
+        }
         ddlFieldInfo.setCheck(null);
         ddlFieldInfo.setIndex(matchMapIgnoreCase != null);
         ddlFieldInfo.setConstraint(new String[0]);
@@ -231,6 +239,11 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setJson(opConfig.isJson(typeName, dbType));
         ddlFieldInfo.setGenConstraint(false);
         ddlFieldInfo.setDllConfig(new DDLConfig());
+        IndexInfoMetaInfo indexInfoMetaInfo = new IndexInfoMetaInfo();
+        indexInfoMetaInfo.setIndexName("none");
+        indexInfoMetaInfo.setOrdinalPosition((short)0);
+        ddlFieldInfo.setIndexName(indexInfoMetaInfoMap.getOrDefault(columnName, indexInfoMetaInfo).getIndexName());
+        ddlFieldInfo.setIndexSort(indexInfoMetaInfoMap.getOrDefault(columnName, indexInfoMetaInfo).getOrdinalPosition());
         return ddlFieldInfo;
     }
 }

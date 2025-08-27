@@ -78,7 +78,6 @@ public class DDLFieldInfo {
     private boolean isIndex;
 
     @Desc("自定义约束 比如 unique、not null、default")
-    @Deprecated
     private String[] constraint;
 
     @Desc("字段注释")
@@ -92,6 +91,15 @@ public class DDLFieldInfo {
 
     @Desc("生成字段列的约束")
     private boolean genConstraint;
+
+    @Desc("内部使用字段,改字段所在索引名称")
+    private String indexName;
+
+    @Desc("索引所在位置")
+    private short indexSort;
+
+    @Desc("临时字符串，使用之后销毁")
+    private String temp;
 
     @Desc("配置上下文信息")
     private DDLConfig dllConfig;
