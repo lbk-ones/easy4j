@@ -78,7 +78,14 @@ public class CommonDBAccess {
         ) {
             return true;
         }
-        return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class);
+        boolean skip = false;
+        if (field.isAnnotationPresent(TableField.class)) {
+            TableField annotation = field.getAnnotation(TableField.class);
+            if (!annotation.exist()) {
+                skip = true;
+            }
+        }
+        return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class) || skip;
     }
 
     public String where(String sql) {
