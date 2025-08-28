@@ -16,9 +16,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
-import org.springframework.jdbc.support.JdbcUtils;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -72,8 +70,8 @@ public abstract class AbstractCombinationOp implements CombinationOp {
     }
 
     @Override
-    public String getRenameColumnNameSegment(String newColumnName) {
-        return callback(() -> getOpDdlAlter().getRenameColumnNameSegment(newColumnName));
+    public String getRenameColumnNameSegment(String oldName, String newColumnName) {
+        return callback(() -> getOpDdlAlter().getRenameColumnNameSegment(oldName, newColumnName));
     }
 
     @Override

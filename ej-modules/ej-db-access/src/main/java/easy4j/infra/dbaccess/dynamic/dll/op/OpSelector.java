@@ -19,6 +19,10 @@ import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.MysqlOpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.OracleOpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.PgOpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.SqlServerOpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.MysqlOpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.OracleOpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.PgOpColumnConstraints;
@@ -51,6 +55,7 @@ public class OpSelector {
     private static final List<OpDdlCreateTable> createTableList = ListTs.newLinkedList();
     private static final List<OpSqlCommands> opSqlCommandsList = ListTs.newLinkedList();
     private static final List<OpDdlIndex> opDdlIndicesList = ListTs.newLinkedList();
+    private static final List<OpDdlAlter> opDdlAlterList = ListTs.newLinkedList();
 
     static {
         // column constraints
@@ -80,6 +85,13 @@ public class OpSelector {
 
         opDdlIndicesList.add(new CommonOpDdlIndexImpl());
         opDdlIndicesList.sort(Comparator.comparingInt(IOpContext::getSort));
+
+
+        opDdlAlterList.add(new MysqlOpDdlAlter());
+        opDdlAlterList.add(new OracleOpDdlAlter());
+        opDdlAlterList.add(new PgOpDdlAlter());
+        opDdlAlterList.add(new SqlServerOpDdlAlter());
+        opDdlAlterList.sort(Comparator.comparingInt(IOpContext::getSort));
     }
 
     /**
@@ -157,6 +169,21 @@ public class OpSelector {
     public static OpDdlIndex selectOpIndex(OpContext opContext) {
         CheckUtils.notNull(opContext,"opContext");
         for (OpDdlIndex opCreateTableRule : opDdlIndicesList) {
+            opCreateTableRule.setOpContext(opContext);
+            if (opCreateTableRule.match(opContext)) {
+                return opCreateTableRule;
+            }
+        }
+        throw EasyException.wrap(BusCode.A00047, "opContext");
+    }
+    /**
+     * 获取alter实现
+     * @param opContext
+     * @return
+     */
+    public static OpDdlAlter selectOpDdlAlter(OpContext opContext){
+        CheckUtils.notNull(opContext,"opContext");
+        for (OpDdlAlter opCreateTableRule : opDdlAlterList) {
             opCreateTableRule.setOpContext(opContext);
             if (opCreateTableRule.match(opContext)) {
                 return opCreateTableRule;

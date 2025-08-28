@@ -22,13 +22,13 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpDdlAlter extends IOpContext {
+public interface OpDdlAlter extends IOpContext,IOpMatch{
 
     String getAddColumnSegment(DDLFieldInfo fieldInfo);
 
     String getRemoveColumnSegment(DDLFieldInfo fieldInfo);
 
-    String getRenameColumnNameSegment(String newColumnName);
+    String getRenameColumnNameSegment(String oldName, String newColumnName);
 
     String getRenameConstraintNameSegment(String newConstraintName);
 

@@ -74,10 +74,9 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.dataSource = dataSource;
         this.schema = schema;
         this.domainClass = domainClass;
-//        super.init();
-        JavaClassMetaInfoParse javaClassMetaInfoParse = new JavaClassMetaInfoParse(this.getContext());
-        this.ddlTableInfo = javaClassMetaInfoParse.parse();
+        this.ddlTableInfo = new JavaClassMetaInfoParse(this.getContext()).parse();
         this.opContext.setDdlTableInfo(this.ddlTableInfo);
+        this.opContext.setTableName(this.ddlTableInfo.getTableName());
     }
 
     // parse from model
@@ -88,9 +87,9 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.dataSource = dataSource;
         this.schema = schema;
         this.ddlTableInfo = ddlTableInfo;
-//        super.init();
         this.ddlTableInfo = new ModelMetaInfoParse(ddlTableInfo, this.getContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
+        this.opContext.setTableName(this.ddlTableInfo.getTableName());
     }
 
     // parse from dataSource
@@ -98,15 +97,14 @@ public class DynamicDDL extends AbstractCombinationOp {
         CheckUtils.notNull(dataSource, "DynamicDDL dataSource");
         CheckUtils.notNull(tableName, "DynamicDDL tableName");
         this.dataSource = dataSource;
-//        super.init();
         this.ddlTableInfo = new DataSourceMetaInfoParse(this.dataSource, tableName, this.getContext()).parse();
         this.opContext.setDdlTableInfo(ddlTableInfo);
-
+        this.opContext.setTableName(this.ddlTableInfo.getTableName());
     }
 
     @Override
     public OpDdlAlter getOpDdlAlter() {
-        return null;
+        return OpSelector.selectOpDdlAlter(this.getContext());
     }
 
     @Override

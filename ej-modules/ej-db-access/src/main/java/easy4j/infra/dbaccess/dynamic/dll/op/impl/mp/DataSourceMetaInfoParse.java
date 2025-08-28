@@ -82,6 +82,13 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         this.tableName = tableName;
     }
 
+    public DataSourceMetaInfoParse(@NotNull String tableName, @NotNull OpContext opContext) {
+        CheckUtils.notNull(tableName, "tableName");
+        CheckUtils.checkByPath(opContext, "dataSource");
+        this.opContext = opContext;
+        this.tableName = tableName;
+    }
+
     @Override
     public void setOpContext(OpContext opContext) {
         this.opContext = opContext;

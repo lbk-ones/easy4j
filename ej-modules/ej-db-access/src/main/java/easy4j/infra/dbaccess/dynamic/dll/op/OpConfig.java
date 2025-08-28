@@ -21,10 +21,7 @@ import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
-import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
-import easy4j.infra.dbaccess.dynamic.dll.MySQLFieldType;
-import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
-import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
+import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -241,7 +238,7 @@ public class OpConfig {
      * @param ddlTableInfo 表格建模
      * @param tempStr      模板字符串
      * @param FIELD_MAP    字符串参数map
-     * @param extParamMap  字符串额外参数map
+     * @param extParamMap  额外的字符串额外参数map 和 FIELD_MAP 不一样 FIELD_MAP 只存参数名称 extParamMap是参数名称对应值
      * @param function     获取参数值的函数
      * @return
      * @author bokun.li
