@@ -36,6 +36,6 @@ public class PageDto implements Serializable,APage {
     @Schema(description = "如果一个输入的值可以查很多字段那么就用这个，比如就一个框然后啥都查")
     private String searchKey;
 
-    @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持 eq in like likeLeft likeRight,in的话第三个参数为json类型的字符串数组")
+    @Schema(description = "过滤的条件，格式为二维数组的集合 [[\"status\",\"eq\",\"xxx\"]] 支持 eq in like likeLeft likeRight,in的话第三个参数为字符串数组")
     private List<List<Object>> keys;
 }

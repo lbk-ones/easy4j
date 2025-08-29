@@ -1,0 +1,66 @@
+<sql id="where-builder">
+    <if test="req.eqMap != null">
+        <foreach collection="req.eqMap" index="key" item="value" open="and" separator="and">
+            ${key} = #{value}
+        </foreach>
+    </if>
+    <if test="req.neqMap != null">
+        <foreach collection="req.neqMap" index="key" item="value" open="and" separator="and">
+            ${key} != #{value}
+        </foreach>
+    </if>
+    <!--in-->
+    <if test="req.inMap != null">
+        <foreach collection="req.inMap" index="key" item="value" open="and" separator="and">
+            ${key} in
+            <foreach collection="value" item="value2" open="(" close=")" separator=",">
+                #{value2}
+            </foreach>
+        </foreach>
+    </if>
+    <!--like-->
+    <if test="req.likeMap != null">
+        <foreach collection="req.likeMap" index="key" item="value" open="and" separator="and">
+            ${key} like CONCAT('%', #{value}, '%')
+        </foreach>
+    </if>
+    <if test="req.likeLeftMap != null">
+        <foreach collection="req.likeLeftMap" index="key" item="value" open="and" separator="and">
+            ${key} like CONCAT( #{value}, '%')
+        </foreach>
+    </if>
+    <if test="req.likeRightMap != null">
+        <foreach collection="req.likeRightMap" index="key" item="value" open="and" separator="and">
+            ${key} like CONCAT('%', #{value})
+        </foreach>
+    </if>
+    <!--betwwen-->
+    <if test="req.betweenMap != null">
+        <foreach collection="req.betweenMap" index="key" item="value" open="and" separator="and">
+            ${key} between
+            <foreach collection="value" item="value2" separator="and">
+                #{value2}
+            </foreach>
+        </foreach>
+    </if>
+    <if test="req.ltMap != null">
+        <foreach collection="req.ltMap" index="key" item="value" open="and" separator="and">
+            ${key} &lt; #{value}
+        </foreach>
+    </if>
+    <if test="req.lteMap != null">
+        <foreach collection="req.lteMap" index="key" item="value" open="and" separator="and">
+            ${key} &lt;= #{value}
+        </foreach>
+    </if>
+    <if test="req.gtMap != null">
+        <foreach collection="req.gtMap" index="key" item="value" open="and" separator="and">
+            ${key} &gt; #{value}
+        </foreach>
+    </if>
+    <if test="req.gteMap != null">
+        <foreach collection="req.gteMap" index="key" item="value" open="and" separator="and">
+            ${key} &gt;= #{value}
+        </foreach>
+    </if>
+</sql>

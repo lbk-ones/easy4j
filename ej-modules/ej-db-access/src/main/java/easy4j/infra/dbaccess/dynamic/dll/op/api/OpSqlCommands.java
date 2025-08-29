@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
+
+import java.util.Map;
+
 /**
  * OpSqlCommands
  * 杂项 不知道放在哪个模块就放这里来
@@ -27,5 +30,12 @@ public interface OpSqlCommands extends IOpContext,IOpMatch {
      * @param segment
      */
     void exeDDLStr(String segment);
+
+    /**
+     * 动态写入表
+     *
+     * @param dict
+     */
+    Map<String,Object> dynamicSave(Map<String,Object> dict);
 
 }

@@ -15,12 +15,11 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.mp;
 
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,6 +74,12 @@ public class ModelMetaInfoParse implements MetaInfoParse {
         this.ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
         this.ddlTableInfo.setSchema(this.opContext.getSchema());
         this.ddlTableInfo.setDbType(this.opContext.getDbType());
+
+        List<TableMetadata> tableInfos1 = opDbMeta.getTableInfos(ddlTableInfo.getTableName());
+        this.opContext.setTableMetadata(ListTs.get(tableInfos1,0));
+
+        List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
+        this.opContext.setPrimaryKes(primaryKes);
         return ddlTableInfo;
     }
 }

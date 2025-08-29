@@ -92,7 +92,7 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         if (!authenticationCore.checkUser(ctx)) {
             ctx.checkError(BusCode.A00036);
         }
-        // if query session is null,then gen session and save
+        // if query session is null,then gen session and dynamicSave
         ISecurityEasy4jSession dbReqSession = ctx.getDbSession();
         if (null == dbReqSession) {
             SecuritySession init = new SecuritySession().init(securityUser);

@@ -18,6 +18,8 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -50,6 +52,10 @@ public class OpContext {
 
     // 数据库中已有的列信息
     private List<DatabaseColumnMetadata> dbColumns;
+    // 表信息
+    private TableMetadata tableMetadata;
+    // 主键信息
+    private List<PrimaryKeyMetadata> primaryKes;
 
     // 数据库中已有的列信息
     @Desc("需要新增的列")

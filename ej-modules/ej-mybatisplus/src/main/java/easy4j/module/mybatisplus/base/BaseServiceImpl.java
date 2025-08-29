@@ -18,6 +18,8 @@ package easy4j.module.mybatisplus.base;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateException;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
@@ -27,14 +29,14 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.sql.SqlInjectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
@@ -133,19 +135,20 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                 if (toUnderLine) {
                     s = StrUtil.toUnderlineCase(s);
                 }
+                if (SqlInjectionUtils.check(s)) {
+                    throw new EasyException(BusCode.A00058);
+                }
                 switch (s2) {
                     case "eq":
                         queryWrapper.eq(s, s3);
                         break;
+                    case "ne":
+                        queryWrapper.ne(s, s3);
+                        break;
                     case "in":
-                        try {
-                            ArrayList<String> object = JacksonUtil.toObject(s3.toString(), new TypeReference<ArrayList<String>>() {
-                            });
-                            if (CollUtil.isNotEmpty(object)) {
-                                queryWrapper.in(s, object);
-                            }
-                        } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031, "query in values is error!");
+                        if (s3 instanceof Collection) {
+                            Collection<?> s31 = (Collection<?>) s3;
+                            queryWrapper.in(s, s31);
                         }
                         break;
                     case "like":
@@ -183,8 +186,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         break;
                     case "between":
                         try {
-                            String v1 = StrUtil.trim(key.get(3).toString());
-                            String v2 = StrUtil.trim(key.get(4).toString());
+                            String v1 = StrUtil.trim(key.get(2).toString());
+                            String v2 = StrUtil.trim(key.get(3).toString());
                             if (!StrUtil.hasBlank(v1, v2)) {
                                 queryWrapper.between(false, s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
@@ -215,6 +218,115 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             }
 
         }
+    }
+
+    /**
+     * 将 keys 转为 Map套Map 给 mybatis xml使用
+     *
+     * @param keys
+     * @return
+     * @see src/main/resources/example.xml
+     */
+    public Map<String, Map<String, Object>> parseKeysToMap(List<List<Object>> keys) {
+        Map<String, Map<String, Object>> map = Maps.newHashMap();
+        Map<String, Object> eqMap = Maps.newHashMap();
+        Map<String, Object> neqMap = Maps.newHashMap();
+        Map<String, Object> likeMap = Maps.newHashMap();
+        Map<String, Object> likeLeftMap = Maps.newHashMap();
+        Map<String, Object> likeRightMap = Maps.newHashMap();
+        Map<String, Object> ltMap = Maps.newHashMap();
+        Map<String, Object> lteMap = Maps.newHashMap();
+        Map<String, Object> gtMap = Maps.newHashMap();
+        Map<String, Object> gteMap = Maps.newHashMap();
+        Map<String, Object> betweenMap = Maps.newHashMap();
+        Map<String, Object> inMap = Maps.newHashMap();
+        if (CollUtil.isNotEmpty(keys)) {
+            try{
+                for (List<Object> key : keys) {
+                    Object name = ListTs.get(key, 0);
+                    Object symbol = ListTs.get(key, 1);
+                    Object value = ListTs.get(key, 2);
+                    if (name != null && symbol != null && value != null) {
+                        String columnName = name.toString();
+                        columnName = StrUtil.toUnderlineCase(columnName);
+                        if (SqlInjectionUtils.check(columnName)) {
+                            throw new EasyException(BusCode.A00058);
+                        }
+                        String s2 = symbol.toString();
+                        switch (s2) {
+                            case "eq":
+                                eqMap.put(columnName, value);
+                                break;
+                            case "ne":
+                                neqMap.put(columnName, value);
+                                break;
+                            case "in":
+                                inMap.put(columnName, value);
+                                break;
+                            case "like":
+                                likeMap.put(columnName, value);
+                                break;
+                            case "likeLeft":
+                                likeLeftMap.put(columnName, value);
+                                break;
+                            case "likeRight":
+                                likeRightMap.put(columnName, value);
+                                break;
+                            case "lt":
+                                ltMap.put(columnName, value);
+                                break;
+                            case "lte":
+                                lteMap.put(columnName, value);
+                                break;
+                            case "gt":
+                                gtMap.put(columnName, value);
+                                break;
+                            case "gte":
+                                gteMap.put(columnName, value);
+                                break;
+                            case "tgt":
+                                gtMap.put(columnName, DateUtil.parse(value.toString()));
+                                break;
+                            case "tgte":
+                                gteMap.put(columnName, DateUtil.parse(value.toString()));
+                                break;
+                            case "tlt":
+                                ltMap.put(columnName, DateUtil.parse(value.toString()));
+                                break;
+                            case "tlte":
+                                lteMap.put(columnName, DateUtil.parse(value.toString()));
+                                break;
+                            case "between":
+                                String v1 = StrUtil.trim(key.get(2).toString());
+                                String v2 = StrUtil.trim(key.get(3).toString());
+                                List<DateTime> list = ListTs.asList(DateUtil.parse(v1), DateUtil.parse(v2));
+                                betweenMap.put(columnName, list);
+                                break;
+                            default:
+                                throw EasyException.wrap(BusCode.A00047, s2);
+                        }
+                    }
+                }
+            }catch (DateException dateException){
+                throw EasyException.wrap(BusCode.A00057, dateException.getMessage());
+            }
+
+        } else {
+            return map;
+        }
+        map.put("eqMap", eqMap);
+        map.put("neqMap", neqMap);
+        map.put("likeMap", likeMap);
+        map.put("likeLeftMap", likeLeftMap);
+        map.put("likeRightMap", likeRightMap);
+        map.put("ltMap", ltMap);
+        map.put("lteMap", lteMap);
+        map.put("gtMap", gtMap);
+        map.put("gteMap", gteMap);
+        map.put("betweenMap", betweenMap);
+        map.put("inMap", inMap);
+
+        return map;
     }
 
     public void copyObjIgnoreAudit(Object source, Object target) {

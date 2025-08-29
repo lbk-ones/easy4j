@@ -148,6 +148,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         List<DDLIndexInfo> indexInfos = ListTs.map(indexInfoMetaInfos, e -> getDdlIndexInfoFromIndexMeta(e, stringListMap, schema, primaryKeyMetadataMap));
 
         this.opContext.setDbColumns(columns);
+        this.opContext.setPrimaryKes(primaryKes);
         DDLTableInfo ddlTableInfo = new DDLTableInfo();
         ddlTableInfo.setDbType(dbType);
         ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
@@ -162,6 +163,10 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         if (null != tableMetadata) {
             ddlTableInfo.setComment(tableMetadata.getRemarks());
         }
+        List<TableMetadata> tableInfos1 = opDbMeta.getTableInfos(ddlTableInfo.getTableName());
+        this.opContext.setTableMetadata(ListTs.get(tableInfos1,0));
+
+
         return ddlTableInfo;
     }
 

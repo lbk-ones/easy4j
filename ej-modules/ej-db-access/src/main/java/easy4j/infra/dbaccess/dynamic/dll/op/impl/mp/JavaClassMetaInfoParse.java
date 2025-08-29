@@ -41,9 +41,7 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -129,6 +127,8 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setDbColumns(columns);
+        List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
+        this.opContext.setPrimaryKes(primaryKes);
         ddlTableInfo.setDomainClass(aclass);
 
         ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
@@ -143,6 +143,9 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
         List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(aclass, columnVsIndexMap);
         ddlTableInfo.setFieldInfoList(ddlFieldInfos);
+
+        List<TableMetadata> tableInfos1 = opDbMeta.getTableInfos(ddlTableInfo.getTableName());
+        this.opContext.setTableMetadata(ListTs.get(tableInfos1,0));
         return ddlTableInfo;
     }
 

@@ -177,4 +177,16 @@ public class BusCode {
     @Desc("【检查失败】-此参数【{0}】为必填项；它不能为空")
     public static final String A00056 = "A00056";
 
+    @Desc("时间格式错误{0}")
+    public static final String A00057 = "A00057";
+
+    @Desc("危险语句{0}")
+    public static final String A00058 = "A00058";
+
+    @Desc("{0}字段不存在{1}")
+    public static final String A00059 = "A00059";
+
+    @Desc("{0}不存在")
+    public static final String A00060 = "A00060";
+
 }

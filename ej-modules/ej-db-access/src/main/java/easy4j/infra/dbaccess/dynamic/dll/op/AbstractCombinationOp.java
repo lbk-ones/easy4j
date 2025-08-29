@@ -18,6 +18,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -108,6 +109,11 @@ public abstract class AbstractCombinationOp implements CombinationOp {
     @Override
     public void exeDDLStr(String segment) {
         getOpSqlCommands().exeDDLStr(segment);
+    }
+
+    @Override
+    public Map<String,Object> dynamicSave(Map<String, Object> dict) {
+        return getOpSqlCommands().dynamicSave(dict);
     }
 
     @Override

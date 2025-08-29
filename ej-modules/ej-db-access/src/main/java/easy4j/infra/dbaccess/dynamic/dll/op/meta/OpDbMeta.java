@@ -52,12 +52,12 @@ public class OpDbMeta implements IOpMeta {
     private static final List<IOpMeta> iOpMetas = ListTs.newLinkedList();
 
 
-    // cache 10 minutes
-    private static final WeakCache<Object, Object> dynamicColumnCache = new WeakCache<>(20 * 60 * 1000L);
+    // cache 30 minutes
+    private static final WeakCache<Object, Object> dynamicColumnCache = new WeakCache<>(30 * 60 * 1000L);
 
 
     static {
-        dynamicColumnCache.schedulePrune(20 * 60 * 1000L);
+        dynamicColumnCache.schedulePrune(30 * 60 * 1000L);
         iOpMetas.add(new OpDbMeta());
     }
 

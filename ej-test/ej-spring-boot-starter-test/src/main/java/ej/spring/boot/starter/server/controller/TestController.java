@@ -74,7 +74,7 @@ public class TestController {
         sysLogRecord.setCreateDate(new Date());
         int i = dbAccess.saveOne(sysLogRecord, SysLogRecord.class);
 
-        log.info("save success effect rows:" + i);
+        log.info("dynamicSave success effect rows:" + i);
         SysLogRecord sysLogRecord1 = dbAccess.selectByPrimaryKey(sysLogRecord, SysLogRecord.class);
 
 
