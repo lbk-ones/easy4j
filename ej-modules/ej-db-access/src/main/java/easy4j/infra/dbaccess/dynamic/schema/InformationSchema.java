@@ -24,6 +24,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.JdbcDbAccess;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 
 import javax.sql.DataSource;
@@ -34,10 +35,13 @@ import java.util.Map;
 
 /**
  * InformationSchema
- *
+ * the InformationSchema is deprecated
+ * please use easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta
  * @author bokun.li
  * @date 2025-07-31 21:30:34
+ * @see OpDbMeta
  */
+@Deprecated
 public class InformationSchema {
 
     private static final Map<DataSource, String> dbTypeMap = Maps.newConcurrentMap();

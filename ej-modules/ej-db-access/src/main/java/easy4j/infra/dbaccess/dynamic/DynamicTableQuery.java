@@ -431,7 +431,7 @@ public class DynamicTableQuery extends CommonDBAccess {
         if (this.whereBuild == null) {
             this.whereBuild = WhereBuild.get();
         }
-        connection = this.dataSource.getConnection();
+        connection = DataSourceUtils.getConnection(this.dataSource);
         List<Object> args = ListTs.newArrayList();
         dialect = JdbcHelper.getDialect(connection);
         this.whereBuild.setToUnderLine(this.toUnderLine);

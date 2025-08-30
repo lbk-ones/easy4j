@@ -295,6 +295,8 @@ public interface DBAccess {
     // Condition
     long countByCondition(WhereBuild whereBuilder, Class<?> aClass);
 
+    long countByCondition(WhereBuild whereBuilder, String tableName);
+
     <T> int deleteByCondition(WhereBuild whereBuilder, Class<T> tClass);
 
     /**

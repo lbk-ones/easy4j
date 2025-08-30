@@ -29,8 +29,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.condition.LogicOperator;
@@ -816,7 +820,24 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
         Dialect dialect = JdbcHelper.getDialect(connection);
         String tableName = getTableName(aClass, dialect);
         String sql = whereBuilder.build(objects);
-        sql = DDlLine(SELECT, tableName, where(sql), "count(1)");
+        sql = DDlLine(SELECT, tableName, where(sql), "count(*)");
+        Map<String, Object> map = buildMap(connection, sql, QUERY_COUNT, objects.toArray(new Object[]{}));
+        return ((long) queryCount(map));
+    }
+
+    @Override
+    public long countByCondition(WhereBuild whereBuilder, String tableName) {
+        CheckUtils.notNull(tableName,"tableName");
+        Connection connection = getConnection();
+        IOpMeta select = OpDbMeta.select(connection);
+        List<TableMetadata> tableInfos = select.getTableInfos(tableName);
+        if(CollUtil.isEmpty(tableInfos)){
+            throw EasyException.wrap(BusCode.A00060,tableName);
+        }
+        whereBuilder.bind(connection);
+        List<Object> objects = new ArrayList<>();
+        String sql = whereBuilder.build(objects);
+        sql = DDlLine(SELECT, tableName, where(sql), "count(*)");
         Map<String, Object> map = buildMap(connection, sql, QUERY_COUNT, objects.toArray(new Object[]{}));
         return ((long) queryCount(map));
     }
