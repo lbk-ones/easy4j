@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
+import cn.hutool.core.util.ReflectUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
@@ -101,11 +102,10 @@ public class OpSelector {
      * @return
      */
     public static OpColumnConstraints selectOpCC(OpContext opContext) {
-        CheckUtils.notNull(opContext,"opContext");
+        CheckUtils.notNull(opContext, "opContext");
         for (OpColumnConstraints opColumnConstraints : columnConstraintsList) {
-            opColumnConstraints.setOpContext(opContext);
             if (opColumnConstraints.match(opContext)) {
-                return opColumnConstraints;
+                return newInstance(opColumnConstraints.getClass(), opContext);
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");
@@ -118,14 +118,19 @@ public class OpSelector {
      * @return
      */
     public static OpTableConstraints selectOpCT(OpContext opContext) {
-        CheckUtils.notNull(opContext,"opContext");
+        CheckUtils.notNull(opContext, "opContext");
         for (OpTableConstraints opColumnConstraints : tableConstraintsList) {
-            opColumnConstraints.setOpContext(opContext);
             if (opColumnConstraints.match(opContext)) {
-                return opColumnConstraints;
+                return newInstance(opColumnConstraints.getClass(), opContext);
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");
+    }
+
+    private static <T extends IOpContext> T newInstance(Class<T> o, OpContext opContext) {
+        T t = ReflectUtil.newInstance(o);
+        t.setOpContext(opContext);
+        return t;
     }
 
     /**
@@ -135,11 +140,10 @@ public class OpSelector {
      * @return
      */
     public static OpDdlCreateTable selectOpCreateTable(OpContext opContext) {
-        CheckUtils.notNull(opContext,"opContext");
+        CheckUtils.notNull(opContext, "opContext");
         for (OpDdlCreateTable opCreateTableRule : createTableList) {
-            opCreateTableRule.setOpContext(opContext);
             if (opCreateTableRule.match(opContext)) {
-                return opCreateTableRule;
+                return newInstance(opCreateTableRule.getClass(), opContext);
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");
@@ -147,15 +151,15 @@ public class OpSelector {
 
     /**
      * 获取sql命令执行器
+     *
      * @param opContext
      * @return
      */
     public static OpSqlCommands selectOpSqlCommands(OpContext opContext) {
-        CheckUtils.notNull(opContext,"opContext");
+        CheckUtils.notNull(opContext, "opContext");
         for (OpSqlCommands opCreateTableRule : opSqlCommandsList) {
-            opCreateTableRule.setOpContext(opContext);
             if (opCreateTableRule.match(opContext)) {
-                return opCreateTableRule;
+                return newInstance(opCreateTableRule.getClass(), opContext);
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");
@@ -163,30 +167,32 @@ public class OpSelector {
 
     /**
      * 获取索引实现
+     *
      * @param opContext
      * @return
      */
     public static OpDdlIndex selectOpIndex(OpContext opContext) {
-        CheckUtils.notNull(opContext,"opContext");
+        CheckUtils.notNull(opContext, "opContext");
         for (OpDdlIndex opCreateTableRule : opDdlIndicesList) {
-            opCreateTableRule.setOpContext(opContext);
             if (opCreateTableRule.match(opContext)) {
-                return opCreateTableRule;
+                return newInstance(opCreateTableRule.getClass(), opContext);
+
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");
     }
+
     /**
      * 获取alter实现
+     *
      * @param opContext
      * @return
      */
-    public static OpDdlAlter selectOpDdlAlter(OpContext opContext){
-        CheckUtils.notNull(opContext,"opContext");
+    public static OpDdlAlter selectOpDdlAlter(OpContext opContext) {
+        CheckUtils.notNull(opContext, "opContext");
         for (OpDdlAlter opCreateTableRule : opDdlAlterList) {
-            opCreateTableRule.setOpContext(opContext);
             if (opCreateTableRule.match(opContext)) {
-                return opCreateTableRule;
+                return newInstance(opCreateTableRule.getClass(), opContext);
             }
         }
         throw EasyException.wrap(BusCode.A00047, "opContext");

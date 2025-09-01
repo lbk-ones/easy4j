@@ -7,6 +7,11 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class DDLFieldInfo {
+    @Desc("表名")
+    private String tableName;
+
+    @Desc("schema名")
+    private String schema;
 
     @Desc("数据库类型")
     private String dbType;

@@ -141,7 +141,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         handlerIndexInfo(ddlIndexInfos, ddlTableInfo, columnVsIndexMap);
 
         ddlTableInfo.setDdlIndexInfoList(ddlIndexInfos);
-        List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(aclass, columnVsIndexMap);
+        List<DDLFieldInfo> ddlFieldInfos = getDdlFieldInfoList(ddlTableInfo,aclass, columnVsIndexMap);
         ddlTableInfo.setFieldInfoList(ddlFieldInfos);
 
         List<TableMetadata> tableInfos1 = opDbMeta.getTableInfos(ddlTableInfo.getTableName());
@@ -216,7 +216,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
 //        return null;
     }
 
-    private List<DDLFieldInfo> getDdlFieldInfoList(Class<?> aclass, Map<String, DDLIndexInfo> columnVsIndexMap) {
+    private List<DDLFieldInfo> getDdlFieldInfoList(DDLTableInfo ddlTableInfo,Class<?> aclass, Map<String, DDLIndexInfo> columnVsIndexMap) {
         Object newInstance = ReflectUtil.newInstance(aclass);
         List<DDLFieldInfo> objects = ListTs.newLinkedList();
         Field[] fields = ReflectUtil.getFields(aclass);
@@ -227,11 +227,11 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
                 if (null != annotation) {
                     Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
                     DDLFieldInfo ddlFieldInfo1 = BeanUtil.mapToBean(annotationAttributes, DDLFieldInfo.class, true, CopyOptions.create().ignoreError());
-                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo1, columnVsIndexMap);
+                    fieldMetaInfoExtraParse(ddlTableInfo,newInstance, field, ddlFieldInfo1, columnVsIndexMap);
                     objects.add(ddlFieldInfo1);
                 } else {
                     DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
-                    fieldMetaInfoExtraParse(newInstance, field, ddlFieldInfo, columnVsIndexMap);
+                    fieldMetaInfoExtraParse(ddlTableInfo,newInstance, field, ddlFieldInfo, columnVsIndexMap);
                     objects.add(ddlFieldInfo);
                 }
             }
@@ -247,7 +247,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
      * @author bokun.li
      * @date 2025/8/20
      */
-    public static void fieldMetaInfoExtraParse(Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
+    public static void fieldMetaInfoExtraParse(DDLTableInfo ddlTableInfo,Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
         Class<?> type = field.getType();
         ddlFieldInfo.setFieldClass(type);
         // comment
@@ -384,5 +384,8 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         if (ddlFieldInfo.isPrimary()) {
             ddlFieldInfo.setNotNull(false);
         }
+        // patch tableName schema
+        ddlFieldInfo.setTableName(ddlTableInfo.getTableName());
+        ddlFieldInfo.setSchema(ddlTableInfo.getSchema());
     }
 }

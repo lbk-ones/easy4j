@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
+import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 
 import java.util.List;
@@ -37,6 +38,12 @@ public interface OpDdlCreateTable  extends IOpContext,IOpMatch  {
      * @return
      */
     List<String> getCreateTableComments();
+
+    /**
+     * 获取单个字段得注释
+     * @return
+     */
+    String getFieldComment(DDLFieldInfo ddlFieldInfo);
 
     /**
      * 获取表索引

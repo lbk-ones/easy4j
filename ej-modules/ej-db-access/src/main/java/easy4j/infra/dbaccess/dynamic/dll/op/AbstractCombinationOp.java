@@ -121,6 +121,16 @@ public abstract class AbstractCombinationOp implements CombinationOp {
         return callback(() -> getOpDdlCreateTable().getIndexList());
     }
 
+    @Override
+    public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
+        return getOpDdlCreateTable().getFieldComment(ddlFieldInfo);
+    }
+
+    @Override
+    public String autoDDLByJavaClass(boolean isExe) {
+        return getOpSqlCommands().autoDDLByJavaClass(isExe);
+    }
+
     public <R> R callback(Supplier<R> consumer) {
         OpContext context = this.getContext();
         try {

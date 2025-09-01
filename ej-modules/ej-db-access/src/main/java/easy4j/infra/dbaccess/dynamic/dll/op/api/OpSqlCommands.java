@@ -32,10 +32,18 @@ public interface OpSqlCommands extends IOpContext,IOpMatch {
     void exeDDLStr(String segment);
 
     /**
-     * 动态写入表
+     * 指定表名称，然后将传入得dict中得键值对组装好，写入表并返回自增字段
      *
      * @param dict
      */
     Map<String,Object> dynamicSave(Map<String,Object> dict);
+
+    /**
+     * 通过java Class 自动执行ddl语句 没有就建表，有就检测要新增得字段，只新增不修改
+     * @param isExe 是否执行
+     * @author bokun.li
+     * @date 2025/9/1
+     */
+    String autoDDLByJavaClass(boolean isExe);
 
 }

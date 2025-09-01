@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.annotations.Desc;
@@ -36,6 +37,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author bokun.li
@@ -182,22 +184,35 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         }
         if (CollUtil.isNotEmpty(fieldInfoList)) {
             for (DDLFieldInfo fieldInfo : fieldInfoList) {
-                Class<?> fieldClass = fieldInfo.getFieldClass();
-                String comment = fieldInfo.getComment();
-                if (null != fieldClass) {
-                    if (StrUtil.isBlank(comment) && fieldClass.isAnnotationPresent(Desc.class)) {
-                        comment = fieldClass.getAnnotation(Desc.class).value();
-                    }
-                    if (StrUtil.isBlank(comment) && fieldClass.isAnnotationPresent(Schema.class)) {
-                        comment = fieldClass.getAnnotation(Schema.class).description();
-                    }
-                }
-                if (StrUtil.isNotBlank(comment)) {
-                    comments.add(String.format("COMMENT ON COLUMN %s IS '%s'", opConfig.getTableName(ddlTableInfo) + SP.DOT + opConfig.getColumnName(fieldInfo.getName()), comment));
+                String fieldComment = getFieldComment(fieldInfo);
+                if(StrUtil.isNotBlank(fieldComment)){
+                    comments.add(fieldComment);
                 }
             }
         }
         return comments;
+    }
+
+    @Override
+    public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
+        String dbType = this.opContext.getDbType();
+        if (ListTs.asList(DbType.MYSQL.getDb(), DbType.SQL_SERVER.getDb()).contains(dbType)) return null;
+        OpConfig opConfig = this.opContext.getOpConfig();
+        String tableNameCompatible = ListTs.asList(ddlFieldInfo.getSchema(), ddlFieldInfo.getTableName()).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.joining(SP.DOT));
+        Class<?> fieldClass = ddlFieldInfo.getFieldClass();
+        String comment = ddlFieldInfo.getComment();
+        if (null != fieldClass) {
+            if (StrUtil.isBlank(comment) && fieldClass.isAnnotationPresent(Desc.class)) {
+                comment = fieldClass.getAnnotation(Desc.class).value();
+            }
+            if (StrUtil.isBlank(comment) && fieldClass.isAnnotationPresent(Schema.class)) {
+                comment = fieldClass.getAnnotation(Schema.class).description();
+            }
+        }
+        if (StrUtil.isNotBlank(comment)) {
+            return String.format("COMMENT ON COLUMN %s IS '%s'", tableNameCompatible + SP.DOT + opConfig.getColumnName(ddlFieldInfo.getName()), comment);
+        }
+        return "";
     }
 
     @Override

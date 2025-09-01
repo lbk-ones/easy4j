@@ -153,9 +153,13 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlTableInfo.setDbType(dbType);
         ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
         ddlTableInfo.setTableName(tableName);
-        ddlTableInfo.setFieldInfoList(map);
         ddlTableInfo.setDdlIndexInfoList(indexInfos);
         ddlTableInfo.setSchema(this.opContext.getSchema());
+        map.forEach(e->{
+            e.setTableName(ddlTableInfo.getTableName());
+            e.setSchema(ddlTableInfo.getSchema());
+        });
+        ddlTableInfo.setFieldInfoList(map);
         //ddlTableInfo.setDllConfig(new DDLConfig());
         ddlTableInfo.setOpConfig(this.opContext.getOpConfig());
         List<TableMetadata> tableInfos = opDbMeta.getTableInfos(tableName);

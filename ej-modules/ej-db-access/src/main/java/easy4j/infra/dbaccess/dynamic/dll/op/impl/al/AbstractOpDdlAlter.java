@@ -58,7 +58,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
         Map<@Nullable String, @Nullable String> resMap = Maps.newHashMap();
         resMap.put(TABLE_NAME, obtainTableName());
         OpColumnConstraints opColumnConstraints = OpSelector.selectOpCC(opContext1);
-        String columnConstraints = opColumnConstraints.getColumnConstraints(fieldInfo);
+        String columnConstraints = opColumnConstraints.getCreateColumnSql(fieldInfo);
         resMap.put(COLUMN_CONSTRAINT, columnConstraints);
         return resMap;
     }
@@ -118,7 +118,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
             String name = ddlFieldInfo.getName();
             if (StrUtil.equals(columnName, name)) {
                 exist = true;
-                columnConstraints = opColumnConstraints.getColumnConstraints(ddlFieldInfo);
+                columnConstraints = opColumnConstraints.getCreateColumnSql(ddlFieldInfo);
                 break;
             }
         }

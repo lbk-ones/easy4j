@@ -24,10 +24,11 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.JavaClassMetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.ModelMetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
-import easy4j.infra.dbaccess.dynamic.schema.InformationSchema;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
@@ -51,10 +52,10 @@ import java.sql.SQLException;
  * @date 2025/8/23
  */
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
 public class DynamicDDL extends AbstractCombinationOp {
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     private String schema;
 
@@ -64,6 +65,7 @@ public class DynamicDDL extends AbstractCombinationOp {
 
     private OpContext opContext;
 
+    @Setter
     private OpConfig opConfig;
 
 
@@ -132,16 +134,17 @@ public class DynamicDDL extends AbstractCombinationOp {
         boolean hasException = false;
         try {
             OpContext opContext = new OpContext();
-            connection = dataSource.getConnection();
+            connection = DataSourceUtils.getConnection(this.getDataSource());
             String catalog = connection.getCatalog();
             String schema1 = connection.getSchema();
             opContext.setConnectionCatalog(catalog);
             opContext.setConnectionSchema(schema1);
             Dialect dialect = JdbcHelper.getDialect(connection);
-            String dbType = InformationSchema.getDbType(dataSource, connection);
+            // String dbType = InformationSchema.getDbType(dataSource, connection);
             IOpMeta opDbMeta = OpDbMeta.select(connection);
             String dbVersion = opDbMeta.getProductVersion();
-            //String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
+            String dbType = opDbMeta.getDbType(connection);
+            // String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
             // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 、 postgresql 、 oracle 、sqlserver 的 其他的试过才知道，如果取错了 只能从外部传进来了
             if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
             //List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(catalog,schema,"");
@@ -175,6 +178,6 @@ public class DynamicDDL extends AbstractCombinationOp {
     public void close()  {
         OpContext context = getContext();
         Connection connection = context.getConnection();
-        JdbcHelper.close(connection);
+        DataSourceUtils.releaseConnection(connection,this.getDataSource());
     }
 }

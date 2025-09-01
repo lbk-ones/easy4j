@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.sc;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Pair;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
 import com.google.common.collect.Maps;
@@ -11,8 +12,13 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
+import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlCreateTable;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.DDlHelper;
@@ -44,12 +50,10 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     public void exeDDLStr(String segment) {
         String ddl = StrUtil.trim(segment);
         if (StrUtil.isBlank(segment)) return;
-        if (!ddl.endsWith(SP.SEMICOLON)) {
-            ddl = ddl + SP.SEMICOLON;
-        }
+        ddl = StrUtil.addSuffixIfNot(ddl, SP.SEMICOLON);
         if (StrUtil.isNotBlank(ddl)) {
             try {
-                DDlHelper.execDDL(getOpContext().getConnection(), ddl, null, true);
+                DDlHelper.execDDL(getOpContext().getConnection(), ddl, null, false);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -57,13 +61,15 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     }
 
     @Override
-    public Map<String,Object> dynamicSave(Map<String, Object> dict) {
+    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
         if (CollUtil.isEmpty(dict)) return dict;
         OpContext opContext1 = this.getOpContext();
+        // table is if exist？
         TableMetadata tableMetadata = opContext1.getTableMetadata();
         if (null == tableMetadata) {
             throw EasyException.wrap(BusCode.A00060, opContext1.getTableName());
         }
+        // only table can insert!
         String tableType = tableMetadata.getTableType();
         if (!StrUtil.equalsIgnoreCase(tableType, "TABLE")) {
             throw EasyException.wrap(BusCode.A00047, tableType);
@@ -73,6 +79,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         commonDBAccess.setPrintLog(true);
         commonDBAccess.setToUnderline(opConfig.isToUnderLine());
         List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
+        CheckUtils.notNull(dbColumns, "dbColumns");
         List<DatabaseColumnMetadata> noAuto = dbColumns.stream().filter(e -> !"YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
         List<DatabaseColumnMetadata> AutoKey = dbColumns.stream().filter(e -> "YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
         List<String> dbColumnNmes = ListTs.map(noAuto, DatabaseColumnMetadata::getColumnName);
@@ -82,8 +89,52 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         // ignore case
         List<Object> objects = ListTs.newList();
         List<String> zwf = ListTs.newList();
-        Set<String> keys = dict.keySet();
         List<String> fieldNames = ListTs.newLinkedList();
+
+        prepare(dict, dbColumnNmes, objects, fieldNames, zwf);
+
+        String tableName = opContext1.getTableName();
+        CheckUtils.notNull(tableName, "tableName");
+        String schema = opContext1.getSchema();
+        String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining("."));
+        String finalSql = commonDBAccess.DDlLine(
+                CommonDBAccess.INSERT,
+                tableName2,
+                "values " + SP.LEFT_BRACKET + String.join(SP.COMMA, zwf) + SP.RIGHT_BRACKET,
+                fieldNames.toArray(new String[]{}));
+        Pair<String, Date> stringDatePair = null;
+        int effectRows = 0;
+        PreparedStatement preparedStatement = null;
+        ResultSet generatedKeys = null;
+        try {
+            Connection connection = opContext1.getConnection();
+            stringDatePair = commonDBAccess.recordSql(finalSql, connection, objects);
+            preparedStatement = connection.prepareStatement(finalSql, Statement.RETURN_GENERATED_KEYS);
+            StatementUtil.fillParams(preparedStatement, objects);
+            effectRows = preparedStatement.executeUpdate();
+
+            generatedKeys = preparedStatement.getGeneratedKeys();
+            Map<String, Object> map = Maps.newHashMap();
+            map.putAll(dict);
+            while (generatedKeys.next()) {
+                for (DatabaseColumnMetadata primaryKe : AutoKey) {
+                    String columnName = primaryKe.getColumnName();
+                    Long id = generatedKeys.getLong(columnName);
+                    map.put(columnName, id);
+                }
+            }
+            return map;
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("dynamicSave", finalSql, e);
+        } finally {
+            commonDBAccess.printSql(stringDatePair, effectRows);
+            JdbcHelper.close(preparedStatement);
+            JdbcHelper.close(generatedKeys);
+        }
+    }
+
+    private static void prepare(Map<String, Object> dict, List<String> dbColumnNmes, List<Object> objects, List<String> fieldNames, List<String> zwf) {
+        Set<String> keys = dict.keySet();
         for (String key : keys) {
             String key2 = StrUtil.toUnderlineCase(key);
             if (!dbColumnNmes.contains(key2)) {
@@ -104,41 +155,59 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             fieldNames.add(key2);
             zwf.add(SP.QUESTION_MARK);
         }
-        String tableName = opContext1.getTableName();
-        CheckUtils.notNull(tableName, "tableName");
-        String schema = opContext1.getSchema();
-        String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining("."));
-        String finalSql = commonDBAccess.DDlLine(
-                CommonDBAccess.INSERT,
-                tableName2,
-                "values "+SP.LEFT_BRACKET + String.join(SP.COMMA, zwf) + SP.RIGHT_BRACKET,
-                fieldNames.toArray(new String[]{}));
-        Pair<String, Date> stringDatePair = null;
-        int effectRows = 0;
-        PreparedStatement preparedStatement = null;
-        try {
-            Connection connection = opContext1.getConnection();
-            stringDatePair = commonDBAccess.recordSql(finalSql, connection, objects);
-            preparedStatement = connection.prepareStatement(finalSql, Statement.RETURN_GENERATED_KEYS);
-            StatementUtil.fillParams(preparedStatement, objects);
-            effectRows = preparedStatement.executeUpdate();
+    }
 
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            Map<String,Object> map = Maps.newHashMap();
-            map.putAll(dict);
-            while (generatedKeys.next()) {
-                for (DatabaseColumnMetadata primaryKe : AutoKey) {
-                    String columnName = primaryKe.getColumnName();
-                    Long id = generatedKeys.getLong(columnName);
-                    map.put(columnName,id);
-                }
+    /**
+     * 通过 java Class对象 自动执行ddl语句 没有就建表，有就检测要新增得字段，只新增不修改
+     *
+     * @return
+     */
+    @Override
+    public String autoDDLByJavaClass(boolean isExe) {
+        OpContext opContext1 = this.getOpContext();
+        // the parameter domainClass must be passed into the dynamic ddl
+        CheckUtils.checkByPath(opContext1, "domainClass", "ddlTableInfo");
+        DDLTableInfo ddlTableInfo = opContext1.getDdlTableInfo();
+        CheckUtils.notNull(ddlTableInfo, "ddlTableInfo");
+        List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
+        if (CollUtil.isEmpty(fieldInfoList)) return "";
+        OpConfig opConfig = opContext1.getOpConfig();
+        CheckUtils.notNull(opConfig, "opConfig");
+        List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
+        String sqlSegment = null;
+        OpDdlCreateTable opDdlCreateTable = OpSelector.selectOpCreateTable(opContext1);
+
+        if (CollUtil.isNotEmpty(dbColumns)) {
+            // pick need add columns
+            OpDdlAlter opDdlAlter = OpSelector.selectOpDdlAlter(opContext1);
+            List<DDLFieldInfo> collect = fieldInfoList.stream().filter(e -> dbColumns
+                    .stream()
+                    .noneMatch(e2 -> {
+                        String name = e.getName();
+                        String columnName = opConfig.getColumnName(name);
+                        return StrUtil.equalsIgnoreCase(e2.getColumnName(), columnName);
+                    })).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(collect)) {
+                List<String> map = ListTs.map(collect, opDdlAlter::getAddColumnSegment);
+                List<String> map2 = ListTs.map(collect, opDdlCreateTable::getFieldComment).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(map2)) map.addAll(map2);
+                sqlSegment = String.join(SP.SEMICOLON + SP.NEWLINE, map);
             }
-            return map;
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("dynamicSave", finalSql, e);
-        } finally {
-            commonDBAccess.printSql(stringDatePair, effectRows);
-            JdbcHelper.close(preparedStatement);
+        } else {
+            String createTableDDL = opDdlCreateTable.getCreateTableDDL();
+            List<String> createTableComments = opDdlCreateTable.getCreateTableComments();
+            List<String> createTableIndexList = opDdlCreateTable.getIndexList();
+            sqlSegment = ListTs.asList(
+                            StrUtil.removeSuffix(createTableDDL, SP.SEMICOLON),
+                            ListTs.join(SP.SEMICOLON + SP.NEWLINE, createTableComments),
+                            ListTs.join(SP.SEMICOLON + SP.NEWLINE, createTableIndexList))
+                    .stream()
+                    .filter(ObjectUtil::isNotEmpty)
+                    .collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE));
         }
+        sqlSegment = StrUtil.addSuffixIfNot(sqlSegment, SP.SEMICOLON);
+        // exe
+        if (isExe) exeDDLStr(sqlSegment);
+        return sqlSegment;
     }
 }

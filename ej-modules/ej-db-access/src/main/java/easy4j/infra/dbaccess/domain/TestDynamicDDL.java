@@ -119,6 +119,9 @@ public class TestDynamicDDL {
     @DDLField(dataType = "jsonb",comment = "测试json")
     private String json;
 
+    @DDLField(dataType = "jsonb",comment = "测试json2")
+    private String json2;
+
     @DDLField(dataType = "enum",dataTypeAttr = {"0","1","2","3"},comment = "测试enum")
     private String testEnum;
 
