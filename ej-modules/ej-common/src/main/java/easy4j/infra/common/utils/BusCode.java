@@ -189,4 +189,7 @@ public class BusCode {
     @Desc("{0}不存在")
     public static final String A00060 = "A00060";
 
+    @Desc("网关异常:{0}")
+    public static final String A00061 = "A00061";
+
 }

@@ -165,6 +165,18 @@ public class EasyResult<T> implements Serializable {
         easyResult.setData(null);
         return easyResult;
     }
+    @JsonIgnore
+    public static <T> EasyResult<T> errorGateway(Throwable e) {
+        EasyResult<T> easyResult = new EasyResult<T>();
+        easyResult.setCode(BusCode.A00061);
+        //easyResult.setError(SysConstant.ERRORCODE);
+        easyResult.setMessage(e.getMessage());
+        if (!(e instanceof EasyException)) {
+            easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
+        }
+        easyResult.setData(null);
+        return easyResult;
+    }
 
     /**
      * 接收rpc的报错异常

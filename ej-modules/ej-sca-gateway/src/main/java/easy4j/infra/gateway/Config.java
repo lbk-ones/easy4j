@@ -24,6 +24,8 @@ import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysLog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
  * @date 2025-06-15
  */
 @Configuration
+@AutoConfigureBefore(value = ErrorWebFluxAutoConfiguration.class)
 public class Config {
 
     @Autowired
@@ -154,7 +157,8 @@ public class Config {
     }
 
     @Bean
-    public GlobalWebFluxExceptionHandler globalWebFluxExceptionHandler(){
-        return new GlobalWebFluxExceptionHandler();
+    @Order(-2)
+    public GlobalFluxExceptionHandler globalFluxExceptionHandler(){
+        return new GlobalFluxExceptionHandler();
     }
 }
