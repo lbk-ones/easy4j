@@ -152,4 +152,9 @@ public class Config {
         source.registerCorsConfiguration("/**", config);
         return new CorsWebFilter(source);
     }
+
+    @Bean
+    public GlobalWebFluxExceptionHandler globalWebFluxExceptionHandler(){
+        return new GlobalWebFluxExceptionHandler();
+    }
 }
