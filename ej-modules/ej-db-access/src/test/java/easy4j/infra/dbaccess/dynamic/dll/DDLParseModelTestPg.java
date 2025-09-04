@@ -3,12 +3,17 @@ package easy4j.infra.dbaccess.dynamic.dll;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.VersionChecker;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,5 +82,13 @@ class DDLParseModelTestPg {
         String ddlFragment = ddlParseModel.getDDLFragment();
         System.out.println(ddlFragment);
 
+    }
+
+    @Test
+    public void test() throws SQLException {
+        Connection connection = dataSource.getConnection();
+        IOpMeta select = OpDbMeta.select(connection);
+        String productVersion = select.getProductVersion();
+        System.out.println(VersionChecker.isGreaterOrEqual(productVersion, "12"));
     }
 }

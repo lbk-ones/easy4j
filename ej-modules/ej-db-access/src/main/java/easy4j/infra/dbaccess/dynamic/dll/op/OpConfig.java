@@ -31,6 +31,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -96,6 +97,15 @@ public class OpConfig {
     public String escapeCn(String name, Connection connection) {
 
         Dialect dialect = JdbcHelper.getDialect(connection);
+        try {
+            String databaseType = JdbcHelper.getDatabaseType(connection);
+            // oracle 比较特殊 不转义
+            if (DbType.ORACLE.getDb().equals(databaseType)) {
+                return name;
+            }
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("escapeCn", null, e);
+        }
         Wrapper wrapper = dialect.getWrapper();
 
         return wrapper.wrap(name);
@@ -108,7 +118,7 @@ public class OpConfig {
      * @date 2025/9/4
      */
     public String splitStrAndEscape(String str, String comma, Connection connection) {
-        if(StrUtil.isBlank(str) || StrUtil.isBlank(comma)) return str;
+        if (StrUtil.isBlank(str) || StrUtil.isBlank(comma)) return str;
         String s = RegexEscapeUtils.escapeRegex(comma);
         String[] split = str.split(s);
         List<String> list = ListTs.asList(split);

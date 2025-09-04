@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 /**
  * 版本号比较
  * x.y.z 比较 如果不合法先提取数字加点的版本号 如果格式不满足 x.y.z 以.0填充
@@ -58,7 +59,7 @@ public class VersionChecker {
         // ? 0次或者1次
         // * 0次或者多次
         // \\d 数字匹配
-        Pattern pattern = Pattern.compile("^(\\d+\\.?\\d*\\.?\\d*)");
+        Pattern pattern = Pattern.compile("(\\d+\\.?\\d*\\.?\\d*)");
         Matcher matcher = pattern.matcher(version);
         if (matcher.find()) {
             return matcher.group(1);

@@ -1,8 +1,10 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
 import easy4j.infra.base.starter.Easy4JStarter;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Easy4JStarter(
         serverName = "test-db-access",
@@ -69,4 +72,14 @@ class DDLParseJavaClassTestOracle {
 
         }
     }
+
+    @Test
+    void OpMetaTest3() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource, null, TestDynamicDDL.class)) {
+            System.out.println(sscElementTest.getCreateTableDDL());
+            System.out.println(sscElementTest.getCreateTableComments().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
+            System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
+        }
+    }
+
 }
