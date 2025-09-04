@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.tc;
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 /**
  * 
@@ -25,6 +26,6 @@ public class OracleOpTableConstraints extends AbstractOpTableConstraints {
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return "oracle".equals(dbType);
+        return DbType.ORACLE.getDb().equals(dbType);
     }
 }

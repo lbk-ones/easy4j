@@ -189,7 +189,7 @@ public class ListTs {
     public static <R, T> List<R> map(List<T> w, Function<T, R> function) {
         List<R> list = newList();
         if (isNotEmpty(w) && null != function) {
-            List<R> collect = asStream(w).map(function).filter(Objects::nonNull).collect(Collectors.toList());
+            List<R> collect = asStream(w).filter(Objects::nonNull).map(function).filter(Objects::nonNull).collect(Collectors.toList());
             if (isNotEmpty(collect)) {
                 return collect;
             }

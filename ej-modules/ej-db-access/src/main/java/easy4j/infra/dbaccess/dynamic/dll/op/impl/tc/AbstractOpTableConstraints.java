@@ -21,16 +21,15 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
-import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpTableConstraints;
 import lombok.Getter;
 
+import java.sql.Connection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author bokun.li
@@ -121,6 +120,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 }
 
             }
+            Connection connection = this.opContext.getConnection();
 
             int idx = 0;
             for (DDLFieldInfo ddlFieldInfo : primaryKey) {
@@ -131,6 +131,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "pk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
+                columnName = opConfig.splitStrAndEscape(columnName,SP.COMMA,connection);
                 String tem = "CONSTRAINT " + cn + " PRIMARY KEY (" + columnName + ")";
                 segments.add(tem);
                 idx++;
@@ -143,6 +144,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "uk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
+                columnName = opConfig.splitStrAndEscape(columnName,SP.COMMA,connection);
                 String tem = "CONSTRAINT " + cn + " UNIQUE (" + columnName + ")";
                 segments.add(tem);
                 idx++;

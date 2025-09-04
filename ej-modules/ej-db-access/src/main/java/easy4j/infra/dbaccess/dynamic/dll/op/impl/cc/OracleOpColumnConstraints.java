@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.SP;
@@ -38,7 +39,7 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return "oracle".equals(dbType);
+        return DbType.ORACLE.getDb().equals(dbType);
     }
 
     /**

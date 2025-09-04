@@ -182,7 +182,7 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
     public String getFieldName(DDLFieldInfo ddlFieldInfo) {
         String name = ddlFieldInfo.getName();
         CheckUtils.notNull(name, "name");
-        return this.getOpContext().getOpConfig().getColumnName(name);
+        return this.getOpContext().getOpConfig().getColumnNameAndEscape(name,this.getOpContext().getConnection());
     }
 
     @Override

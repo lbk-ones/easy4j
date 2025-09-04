@@ -17,15 +17,20 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.RegexEscapeUtils;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +74,45 @@ public class OpConfig {
         }
 
         return columnName;
+    }
+
+    public String getColumnNameAndEscape(String columnName, Connection connection) {
+        if (toUnderLine) {
+            columnName = StrUtil.toUnderlineCase(columnName);
+        }
+        if (toLowCase || toUpperCase) {
+            columnName = toLowCase ? columnName.toLowerCase() : columnName.toUpperCase();
+        }
+
+        return escapeCn(columnName, connection);
+    }
+
+    /**
+     * 转义
+     *
+     * @author bokun.li
+     * @date 2025/9/4
+     */
+    public String escapeCn(String name, Connection connection) {
+
+        Dialect dialect = JdbcHelper.getDialect(connection);
+        Wrapper wrapper = dialect.getWrapper();
+
+        return wrapper.wrap(name);
+    }
+
+    /**
+     * 拆分并转义
+     *
+     * @author bokun.li
+     * @date 2025/9/4
+     */
+    public String splitStrAndEscape(String str, String comma, Connection connection) {
+        if(StrUtil.isBlank(str) || StrUtil.isBlank(comma)) return str;
+        String s = RegexEscapeUtils.escapeRegex(comma);
+        String[] split = str.split(s);
+        List<String> list = ListTs.asList(split);
+        return list.stream().map(e -> escapeCn(e, connection)).collect(Collectors.joining(comma));
     }
 
     public String getTxt(String txt) {
@@ -304,6 +346,7 @@ public class OpConfig {
         }
         return text;
     }
+
     /**
      * 往字符串拼接后缀
      *
@@ -341,8 +384,8 @@ public class OpConfig {
             }
         }
         String s = String.join(SP.UNDERSCORE, objects) + concatPrefix(SP.UNDERSCORE, String.join("", objects2));
-        if(s.length()>63){
-            s = s.substring(0,63);
+        if (s.length() > 63) {
+            s = s.substring(0, 63);
         }
         return s;
     }
@@ -350,7 +393,7 @@ public class OpConfig {
 
     public String compatibleGetIdxName(DDLIndexInfo ddlIndexInfo, String[] keys, String indexTypeName, OpConfig opConfig, String name) {
         if (keys != null && keys.length > 0) {
-            String lowerCase = StrUtil.blankToDefault(StrUtil.blankToDefault(indexTypeName,"").toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
+            String lowerCase = StrUtil.blankToDefault(StrUtil.blankToDefault(indexTypeName, "").toLowerCase(), ddlIndexInfo.getIndexNamePrefix());
             String collect = ListTs.asList(keys)
                     .stream()
                     .map(StrUtil::toUnderlineCase)
@@ -362,5 +405,6 @@ public class OpConfig {
         }
         return name;
     }
+
 
 }

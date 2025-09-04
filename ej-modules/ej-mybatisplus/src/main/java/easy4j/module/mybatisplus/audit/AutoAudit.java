@@ -16,6 +16,7 @@ package easy4j.module.mybatisplus.audit;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -32,9 +33,11 @@ import java.util.Date;
 public class AutoAudit implements Serializable {
 
     // 创建人
+    @DDLField(dataLength = 20)
     @TableField(value="create_by",fill = FieldFill.INSERT)
     private String createBy;
 
+    @DDLField(dataLength = 150)
     @TableField(value="create_name",fill = FieldFill.INSERT)
     private String createName;
 
@@ -43,9 +46,11 @@ public class AutoAudit implements Serializable {
     private Date createTime;
 
     // 更新人
+    @DDLField(dataLength = 20)
     @TableField(value="update_by",fill = FieldFill.INSERT_UPDATE)
     private String updateBy;
 
+    @DDLField(dataLength = 150)
     @TableField(value="update_name",fill = FieldFill.INSERT_UPDATE)
     private String updateName;
 

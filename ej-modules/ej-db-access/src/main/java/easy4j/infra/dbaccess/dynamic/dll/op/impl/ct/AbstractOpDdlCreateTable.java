@@ -122,7 +122,9 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         String schema = ddlTableInfo.getSchema();
         String tableName1 = ddlTableInfo.getTableName();
         String tableName = StrUtil.isNotBlank(schema) ? schema + SP.DOT + tableName1 : tableName1;
-        res.put(TABLE_NAME, tableName);
+        OpContext opContext1 = this.getOpContext();
+        OpConfig opConfig = opContext1.getOpConfig();
+        res.put(TABLE_NAME, opConfig.escapeCn(tableName, opContext1.getConnection()));
         // a most of db support
         if (ddlTableInfo.isTemporary())
             res.put(TEMPORARY, "temporary");
@@ -153,7 +155,7 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         DDLTableInfo ddlTableInfo = opContext.getDdlTableInfo();
         CheckUtils.notNull(ddlTableInfo, "ddlTableInfo");
         OpConfig opConfig = this.getOpContext().getOpConfig();
-        return StrUtil.addSuffixIfNot(opConfig.patchStrWithTemplate(ddlTableInfo, getTemplate(),FIELD_MAP, extParamMap, this::getTemplateParams),SP.SEMICOLON);
+        return StrUtil.addSuffixIfNot(opConfig.patchStrWithTemplate(ddlTableInfo, getTemplate(), FIELD_MAP, extParamMap, this::getTemplateParams), SP.SEMICOLON);
     }
 
     /**
@@ -180,12 +182,14 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
             }
         }
         if (StrUtil.isNotBlank(tableComments)) {
-            comments.add(String.format("COMMENT ON TABLE %s IS '%s'", opConfig.getTableName(ddlTableInfo), tableComments));
+            comments.add(String.format("COMMENT ON TABLE %s IS '%s'",
+                    opConfig.splitStrAndEscape(opConfig.getTableName(ddlTableInfo), SP.DOT, this.opContext.getConnection())
+                    , tableComments));
         }
         if (CollUtil.isNotEmpty(fieldInfoList)) {
             for (DDLFieldInfo fieldInfo : fieldInfoList) {
                 String fieldComment = getFieldComment(fieldInfo);
-                if(StrUtil.isNotBlank(fieldComment)){
+                if (StrUtil.isNotBlank(fieldComment)) {
                     comments.add(fieldComment);
                 }
             }
@@ -210,7 +214,11 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
             }
         }
         if (StrUtil.isNotBlank(comment)) {
-            return String.format("COMMENT ON COLUMN %s IS '%s'", tableNameCompatible + SP.DOT + opConfig.getColumnName(ddlFieldInfo.getName()), comment);
+            return String.format("COMMENT ON COLUMN %s IS '%s'",
+                    opConfig.splitStrAndEscape(tableNameCompatible, SP.DOT, this.opContext.getConnection())
+                            + SP.DOT
+                            + opConfig.getColumnNameAndEscape(ddlFieldInfo.getName(), this.opContext.getConnection())
+                    , comment);
         }
         return "";
     }
@@ -224,10 +232,10 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
                 .orElse(ListTs.newList());
         List<String> objects = ListTs.newList();
         ddlIndexInfos = ListTs.distinct(ddlIndexInfos, DDLIndexInfo::getName);
-        if(CollUtil.isNotEmpty(ddlIndexInfos)){
+        if (CollUtil.isNotEmpty(ddlIndexInfos)) {
             for (DDLIndexInfo ddlIndexInfo : ddlIndexInfos) {
                 String indexes = opSqlCommands.getIndexes(ddlIndexInfo);
-                if(StrUtil.isNotBlank(indexes)){
+                if (StrUtil.isNotBlank(indexes)) {
                     objects.add(indexes);
                 }
             }

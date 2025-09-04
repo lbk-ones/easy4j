@@ -14,6 +14,7 @@
  */
 package easy4j.module.mybatisplus.audit;
 
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -31,12 +32,14 @@ public class BaseAudit implements Serializable {
     /**
      * 创建人编码
      */
+    @DDLField(dataLength = 20)
     @Schema(description = "创建人编码")
     private String createBy;
 
     /**
      * 创建人名称
      */
+    @DDLField(dataLength = 150)
     @Schema(description = "创建人名称")
     private String createName;
 
@@ -49,12 +52,14 @@ public class BaseAudit implements Serializable {
     /**
      * 更新人编码
      */
+    @DDLField(dataLength = 20)
     @Schema(description = "更新人编码")
     private String updateBy;
 
     /**
      * 更新人姓名
      */
+    @DDLField(dataLength = 150)
     @Schema(description = "更新人姓名")
     private String updateName;
 

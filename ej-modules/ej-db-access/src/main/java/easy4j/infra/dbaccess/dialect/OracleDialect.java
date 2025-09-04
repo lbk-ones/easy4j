@@ -35,6 +35,12 @@ import java.util.Map;
  * Oracle数据库方言实现
  */
 public class OracleDialect extends AbstractDialect {
+
+    @Override
+    public Wrapper getWrapper() {
+        return new Wrapper('"','"');
+    }
+
     /**
      * oracle分页通过rownum实现
      */

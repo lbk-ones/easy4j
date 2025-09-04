@@ -16,12 +16,19 @@ package easy4j.infra.dbaccess.dialect;
 
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.dbaccess.Page;
 
 /**
  * Postgresql数据库方言实现
  */
 public class PostgresqlDialect extends AbstractDialect {
+
+    @Override
+    public Wrapper getWrapper() {
+        return new Wrapper('"','"');
+    }
+
     /**
      * Postgresql分页通过limit实现
      */
