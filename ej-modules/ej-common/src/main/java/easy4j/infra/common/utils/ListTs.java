@@ -618,4 +618,28 @@ public class ListTs {
         }
         return objects;
     }
+
+    @Desc("字符串拆分,根据sep来拆分")
+    public static String[] split(String str, String sep) {
+        if (StrUtil.isEmpty(str)) return new String[]{};
+
+        if (StrUtil.isEmpty(sep)) {
+            return new String[]{str};
+        }
+
+        String s = RegexEscapeUtils.escapeRegex(sep);
+        return str.split(s);
+    }
+
+    public static List<String> splitToList(String str, String sep) {
+        if (StrUtil.isEmpty(str)) return newList();
+
+        if (StrUtil.isEmpty(sep)) {
+            return asList(str);
+        }
+
+        String s = RegexEscapeUtils.escapeRegex(sep);
+        String[] split = str.split(s);
+        return ListTs.asList(split);
+    }
 }

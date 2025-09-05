@@ -28,8 +28,10 @@ import easy4j.infra.base.properties.SpringVs;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.Easy4JStarterTest;
+import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
@@ -74,7 +76,7 @@ public class Easy4j implements ApplicationContextAware {
 
     public static DbType dbType;
 
-    public  static String[] inputArgs;
+    public static String[] inputArgs;
 
     public static String mainClassPath = "";
     public static Class<?> mainClass;
@@ -84,14 +86,14 @@ public class Easy4j implements ApplicationContextAware {
         Map<@Nullable String, @Nullable String> rm = Maps.newHashMap();
         if (inputArgs != null) {
             for (String inputArg : inputArgs) {
-                try{
+                try {
                     if (inputArg.startsWith("--")) {
                         String[] split = inputArg.substring(2).split("=");
                         String key = split[0];
                         String value = split[1];
-                        rm.put(key,value);
+                        rm.put(key, value);
                     }
-                }catch (Exception ignored){
+                } catch (Exception ignored) {
                 }
             }
         }
@@ -481,5 +483,53 @@ public class Easy4j implements ApplicationContextAware {
         return DbType.getDbType(dataTypeByUrl);
     }
 
+
+    /**
+     * 实时控制状态拦截
+     * 从环境中拿取规则，根据规则检查状态是否合法
+     * ps: releaseStatus-发布状态不允许操作:1,2,3;
+     *
+     * @param key 配置的key
+     * @param obj 要检查的对象
+     */
+    @Desc("从环境中拿取规则，根据规则检查状态是否合法,key的规则 [状态参数]-[状态解释]:拒绝的值逗号分割;  status-该项目状态不允许操作:1-已提交,2-已核对,3-已发送;")
+    public static void checkStatusFromProperty(String key, Object obj) {
+        if (StrUtil.isBlank(key) || obj == null) return;
+        String property = getProperty(key, "");
+        try {
+            if (StrUtil.isBlank(property)) return;
+            String[] split = ListTs.split(property, ";");
+            for (String s : split) {
+                String[] split1 = ListTs.split(s, ":");
+                String[] split2 = ListTs.split(ListTs.get(split1, 0), "-");
+                String name = ListTs.get(split2, 0);
+                if(StrUtil.isBlank(name)) continue;
+                String nameDesc = ListTs.get(split2, 1);
+                String[] valueArray = ListTs.split(ListTs.get(split1, 1), ",");
+                Object fieldValue = ReflectUtil.getFieldValue(obj, name);
+                for (String value : valueArray) {
+                    // null值也会匹配
+                    if (StrUtil.equals(value, Convert.toStr(fieldValue))) {
+                        String[] split3 = ListTs.split(value, "-");
+                        String s1 = ListTs.get(split3, 1);
+                        if (StrUtil.isNotBlank(nameDesc)) {
+                            if (StrUtil.isNotBlank(s1)) {
+                                nameDesc = nameDesc + "【" + s1 + "】";
+                            }
+                        } else {
+                            if (StrUtil.isNotBlank(s1)) {
+                                nameDesc = name + "状态不合法【" + s1 + "】";
+                            } else {
+                                nameDesc = name + "状态不合法【" + fieldValue + "】";
+                            }
+                        }
+                        throw new EasyException(nameDesc);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+
+        }
+    }
 
 }
