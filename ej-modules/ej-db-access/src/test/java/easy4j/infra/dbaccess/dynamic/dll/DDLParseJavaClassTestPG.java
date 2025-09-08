@@ -101,4 +101,14 @@ class DDLParseJavaClassTestPG {
             System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
         }
     }
+    @Test
+    void OpMetaTest4() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"});
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
 }

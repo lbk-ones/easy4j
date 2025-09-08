@@ -104,6 +104,14 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.opContext.setTableName(this.ddlTableInfo.getTableName());
     }
 
+    // only parse DataSource
+    public DynamicDDL(@NotNull DataSource dataSource) {
+        CheckUtils.notNull(dataSource, "DynamicDDL dataSource");
+        this.dataSource = dataSource;
+        this.ddlTableInfo = null;
+        getContext();
+    }
+
     @Override
     public OpDdlAlter getOpDdlAlter() {
         return OpSelector.selectOpDdlAlter(this.getContext());

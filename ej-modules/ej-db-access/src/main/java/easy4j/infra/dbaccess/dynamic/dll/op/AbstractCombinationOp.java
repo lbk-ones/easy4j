@@ -131,6 +131,11 @@ public abstract class AbstractCombinationOp implements CombinationOp {
         return getOpSqlCommands().autoDDLByJavaClass(isExe);
     }
 
+    @Override
+    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType) {
+        return getOpSqlCommands().copyDataSourceDDL(tablePrefix,tableType);
+    }
+
     public <R> R callback(Supplier<R> consumer) {
         OpContext context = this.getContext();
         try {

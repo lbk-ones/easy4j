@@ -155,7 +155,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlTableInfo.setTableName(tableName);
         ddlTableInfo.setDdlIndexInfoList(indexInfos);
         ddlTableInfo.setSchema(this.opContext.getSchema());
-        map.forEach(e->{
+        map.forEach(e -> {
             e.setTableName(ddlTableInfo.getTableName());
             e.setSchema(ddlTableInfo.getSchema());
         });
@@ -168,7 +168,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
             ddlTableInfo.setComment(tableMetadata.getRemarks());
         }
         List<TableMetadata> tableInfos1 = opDbMeta.getTableInfos(ddlTableInfo.getTableName());
-        this.opContext.setTableMetadata(ListTs.get(tableInfos1,0));
+        this.opContext.setTableMetadata(ListTs.get(tableInfos1, 0));
 
 
         return ddlTableInfo;
@@ -234,7 +234,9 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setAutoIncrement("YES".equals(e.getIsAutoincrement()));
         ddlFieldInfo.setDataType(typeName);
         ddlFieldInfo.setDataLength(columnSize);
-        ddlFieldInfo.setDataDecimal(decimalDigits);
+        if (null != decimalDigits) {
+            ddlFieldInfo.setDataDecimal(decimalDigits);
+        }
         ddlFieldInfo.setDataTypeAttr(new String[0]);
         if (StrUtil.isNotBlank(columnDef) && StrUtil.containsIgnoreCase(columnDef, "nextval")) {
             columnDef = "";
@@ -257,7 +259,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setDllConfig(new DDLConfig());
         IndexInfoMetaInfo indexInfoMetaInfo = new IndexInfoMetaInfo();
         indexInfoMetaInfo.setIndexName("none");
-        indexInfoMetaInfo.setOrdinalPosition((short)0);
+        indexInfoMetaInfo.setOrdinalPosition((short) 0);
         ddlFieldInfo.setIndexName(indexInfoMetaInfoMap.getOrDefault(columnName, indexInfoMetaInfo).getIndexName());
         ddlFieldInfo.setIndexSort(indexInfoMetaInfoMap.getOrDefault(columnName, indexInfoMetaInfo).getOrdinalPosition());
         return ddlFieldInfo;

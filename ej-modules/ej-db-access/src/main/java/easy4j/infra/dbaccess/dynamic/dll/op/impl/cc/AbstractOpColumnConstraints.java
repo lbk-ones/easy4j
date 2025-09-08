@@ -136,7 +136,13 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                     }
                     if (isNum) pm.put(DEFAULT, "default " + def);
                 } else {
-                    pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
+                    String source = ddlFieldInfo.getSource();
+                    if(!StrUtil.equals("1",source)){
+                        pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
+                    }else{
+                        // from meta not wrapper single quote
+                        pm.put(DEFAULT, "default " + def);
+                    }
                 }
             } else if (defNum != -1) {
                 pm.put(DEFAULT, "default " + defNum);

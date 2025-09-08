@@ -36,6 +36,8 @@ public enum PgSQLFieldType {
     DECIMAL("DECIMAL", "DECIMAL({0},{1})", "", "NUMERIC 的别名，高精度定点数", BigDecimal.class),
     NUMERIC("NUMERIC", "NUMERIC({0},{1})", "", "高精度定点数，M为总位数（1~1000），D为小数位数（0~M），适合财务数据（同 MySQL DECIMAL）", BigDecimal.class),
     REAL("REAL", "", "", "4字节单精度浮点数，精度约6~7位有效数字（同 MySQL FLOAT）", float.class, Float.class),
+    FLOAT8("FLOAT8", "", "", "8字节单精度浮点数", float.class, Float.class),
+    FLOAT4("FLOAT4", "", "", "4字节单精度浮点数", float.class, Float.class),
     DOUBLE_PRECISION("DOUBLE PRECISION", "", "", "8字节双精度浮点数，精度约15~17位有效数字（同 MySQL DOUBLE）", double.class, Double.class),
 
     // 字符串类型

@@ -16,9 +16,9 @@ package easy4j.infra.dbaccess.dynamic.dll.op.meta;
 
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * IOpMeta
@@ -79,6 +79,15 @@ public interface IOpMeta {
      * @return
      */
     List<TableMetadata> getAllTableInfo();
+
+    /**
+     * 根据tableType来查询表 TABLE/VIEW
+     *
+     * @param tableNamePattern 可以为空
+     * @param tableType 表类型 说明：典型的类型包括"TABLE"（表）、"VIEW"（视图）、"SYSTEM TABLE"（系统表）、 "GLOBAL TEMPORARY"（全局临时表）、"LOCAL TEMPORARY"（本地临时表）、 "ALIAS"（别名）、"SYNONYM"（同义词）等
+     * @return
+     */
+    List<TableMetadata> getAllTableInfoByTableType(@Nullable String tableNamePattern, String[] tableType);
 
     /**
      * 根据表名称获取 表/视图 信息

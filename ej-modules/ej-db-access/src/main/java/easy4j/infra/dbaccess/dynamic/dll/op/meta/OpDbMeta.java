@@ -17,7 +17,6 @@ package easy4j.infra.dbaccess.dynamic.dll.op.meta;
 import cn.hutool.cache.impl.WeakCache;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -33,6 +32,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -171,6 +171,25 @@ public class OpDbMeta implements IOpMeta {
             String catalog = this.connection.getCatalog();
             String schema = this.connection.getSchema();
             ResultSet tables = metaData.getTables(catalog, schema, null, new String[]{"TABLE", "VIEW"});
+            try {
+                MapListHandler mapListHandler = new MapListHandler();
+                List<Map<String, Object>> handle = mapListHandler.handle(tables);
+                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+            } finally {
+                JdbcHelper.close(tables);
+            }
+        }, cacheKey, TableMetadata.class);
+    }
+
+    @Override
+    public List<TableMetadata> getAllTableInfoByTableType(String tableNamePattern, String[] tableType) {
+        if(ListTs.isEmpty(tableType)) return ListTs.newList();
+        String cacheKey = getCacheKeyFromConnection(connection, "getAllTableInfoByTableType-"+tableNamePattern+Arrays.toString(tableType));
+        return callbackList(() -> {
+            DatabaseMetaData metaData = this.connection.getMetaData();
+            String catalog = this.connection.getCatalog();
+            String schema = this.connection.getSchema();
+            ResultSet tables = metaData.getTables(catalog, schema, tableNamePattern, tableType);
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);

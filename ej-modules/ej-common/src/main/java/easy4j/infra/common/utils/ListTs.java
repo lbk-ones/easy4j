@@ -22,7 +22,9 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.annotations.Desc;
+import lombok.var;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -290,6 +292,25 @@ public class ListTs {
 
     public static boolean isEmpty(Map<?, ?> map) {
         return null == map || map.isEmpty();
+    }
+
+    public static boolean isEmpty(Object[] map) {
+        return null == map || map.length == 0;
+    }
+
+    // 判断int数组是否为空
+    public static boolean isEmpty(int[] array) {
+        return array == null || array.length == 0;
+    }
+
+    // 判断char数组是否为空
+    public static boolean isEmpty(char[] array) {
+        return array == null || array.length == 0;
+    }
+
+    // 判断double数组是否为空
+    public static boolean isEmpty(double[] array) {
+        return array == null || array.length == 0;
     }
 
     public static <T> boolean isNotEmpty(Collection<T> collection) {
@@ -641,5 +662,20 @@ public class ListTs {
         String s = RegexEscapeUtils.escapeRegex(sep);
         String[] split = str.split(s);
         return ListTs.asList(split);
+    }
+
+    public static <T> void add(List<T> res, T obj) {
+
+        if(ObjectUtil.isNotEmpty(obj)){
+            res.add(obj);
+        }
+
+    }
+
+    public static <T> void addAll(List<T> res, Collection<T> objs) {
+        if(ObjectUtil.isNotEmpty(objs)){
+            List<T> collect = objs.stream().filter(Objects::nonNull).collect(Collectors.toList());
+            if(isNotEmpty(collect)) res.addAll(collect);
+        }
     }
 }

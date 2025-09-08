@@ -20,6 +20,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlCreateTable;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.DataSourceMetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -209,5 +210,59 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         // exe
         if (isExe) exeDDLStr(sqlSegment);
         return sqlSegment;
+    }
+
+    /**
+     * 批量copy表结构，传进来的dataSource是源,只是copy并不能转换
+     *
+     * @param tablePrefix 表得前缀
+     * @param tableType TABLE / VIEW
+     * @return
+     */
+    @Override
+    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType) {
+        CheckUtils.checkByLambda(this.opContext,OpContext::getDataSource,OpContext::getConnection);
+        if(ListTs.isEmpty(tableType)) tableType =  new String[]{"TABLE"};
+        Connection connection = this.opContext.getConnection();
+        IOpMeta select = OpDbMeta.select(connection);
+        List<TableMetadata> allTableList = ListTs.newList();
+        if(ListTs.isEmpty(tablePrefix)){
+            List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(null,tableType);
+            allTableList.addAll(allTableInfo);
+        }else{
+            for (String prefix : tablePrefix) {
+                List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(prefix,tableType);
+                allTableList.addAll(allTableInfo);
+            }
+        }
+        List<List<String>> objects = ListTs.newList();
+        for (TableMetadata tableMetadata : allTableList) {
+            DataSourceMetaInfoParse dataSourceMetaInfoParse = new DataSourceMetaInfoParse(this.opContext.getDataSource(), tableMetadata.getTableName(), this.opContext);
+            DDLTableInfo parse = dataSourceMetaInfoParse.parse();
+            List<DDLFieldInfo> fieldInfoList = parse.getFieldInfoList();
+            ListTs.foreach(fieldInfoList,e-> e.setSource("1"));
+            this.opContext.setDdlTableInfo(parse);
+            this.opContext.setTableName(tableMetadata.getTableName());
+            OpDdlCreateTable opDdlCreateTable = OpSelector.selectOpCreateTable(this.opContext);
+            List<String> res = ListTs.newList();
+            // create table
+            String createTableDDL = opDdlCreateTable.getCreateTableDDL();
+            ListTs.add(res,createTableDDL);
+            // comments
+            List<String> createTableComments = opDdlCreateTable.getCreateTableComments();
+            ListTs.addAll(res,createTableComments);
+            // index
+            List<String> indexList = opDdlCreateTable.getIndexList();
+            ListTs.addAll(res,indexList);
+            objects.add(res);
+        }
+        List<String> joinRes = ListTs.newList();
+        for (List<String> object : objects) {
+            List<String> collect = object.stream().map(e -> StrUtil.addSuffixIfNot(e, SP.SEMICOLON)).collect(Collectors.toList());
+            String join = ListTs.join("\n", collect);
+            join = StrUtil.addSuffixIfNot(join,SP.SEMICOLON);
+            joinRes.add(join);
+        }
+        return joinRes;
     }
 }

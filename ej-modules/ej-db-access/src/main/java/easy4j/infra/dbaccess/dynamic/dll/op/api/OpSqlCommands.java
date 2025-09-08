@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,5 +46,15 @@ public interface OpSqlCommands extends IOpContext,IOpMatch {
      * @date 2025/9/1
      */
     String autoDDLByJavaClass(boolean isExe);
+
+
+    /**
+     * 批量解析整个数据源得ddl语句，根据条件来
+     *
+     * @param tablePrefix 表得前缀
+     * @param tableType TABLE / VIEW
+     * @return
+     */
+    List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType);
 
 }
