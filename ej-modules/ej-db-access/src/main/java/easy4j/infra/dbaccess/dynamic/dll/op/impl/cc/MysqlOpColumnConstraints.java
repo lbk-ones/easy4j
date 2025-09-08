@@ -27,6 +27,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,14 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
                 templateParams.put(DEFAULT, "default " + currentTimeFunc);
             } else {
                 templateParams.remove(DEFAULT);
+            }
+        } else {
+            String defValue = templateParams.get(DEFAULT);
+            // pg is special so substr "::"
+            if (StrUtil.isNotBlank(defValue) && "1".equals(ddlFieldInfo.getSource())) {
+                String[] split = ListTs.split(defValue, "::");
+                defValue = ListTs.get(split, 0);
+                templateParams.put(DEFAULT, defValue);
             }
         }
 
@@ -144,6 +153,9 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
             if (mysqlFieldType == MySQLFieldType.DECIMAL) {
                 dataLength = dataLength <= 0 ? opConfig.getNumLengthDefaultLength() : dataLength;
                 dataDecimal = dataDecimal <= 0 ? opConfig.getNumDecimalDefaultLength() : dataDecimal;
+                if (dataLength < dataDecimal) {
+                    dataDecimal = 0;
+                }
             }
             if (mysqlFieldType == MySQLFieldType.BIT) {
                 dataLength = dataLength <= 0 ? 1 : dataLength;
@@ -152,7 +164,12 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
                     StrUtil.isNotBlank(mysqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + mysqlFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, dataLength, dataDecimal);
+            if (dataLength == Integer.MAX_VALUE) {
+                dataTypeFormat = MySQLFieldType.LONGTEXT.getFieldType();
+            } else {
+                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength), String.valueOf(dataDecimal));
+            }
+
         }
         return dataTypeFormat;
     }

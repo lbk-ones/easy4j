@@ -12,8 +12,10 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
@@ -25,7 +27,10 @@ import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -34,6 +39,8 @@ import java.util.stream.Collectors;
 
 @Getter
 public abstract class AbstractOpSqlCommands implements OpSqlCommands {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     OpContext opContext;
 
@@ -134,6 +141,21 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         }
     }
 
+    @Override
+    public void exeDDLStr(Connection newConnection, String segment, boolean isCloseConnection) {
+        if(newConnection == null) return;
+        String ddl = StrUtil.trim(segment);
+        if (StrUtil.isBlank(segment)) return;
+        ddl = StrUtil.addSuffixIfNot(ddl, SP.SEMICOLON);
+        if (StrUtil.isNotBlank(ddl)) {
+            try {
+                DDlHelper.execDDL(newConnection, ddl, null, isCloseConnection);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private static void prepare(Map<String, Object> dict, List<String> dbColumnNmes, List<Object> objects, List<String> fieldNames, List<String> zwf) {
         Set<String> keys = dict.keySet();
         for (String key : keys) {
@@ -213,56 +235,188 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     }
 
     /**
-     * 批量copy表结构，传进来的dataSource是源,只是copy并不能转换
+     * 改变上下文
      *
-     * @param tablePrefix 表得前缀
-     * @param tableType TABLE / VIEW
-     * @return
+     * @param copyDbConfig
      */
-    @Override
-    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType) {
-        CheckUtils.checkByLambda(this.opContext,OpContext::getDataSource,OpContext::getConnection);
-        if(ListTs.isEmpty(tableType)) tableType =  new String[]{"TABLE"};
-        Connection connection = this.opContext.getConnection();
-        IOpMeta select = OpDbMeta.select(connection);
-        List<TableMetadata> allTableList = ListTs.newList();
-        if(ListTs.isEmpty(tablePrefix)){
-            List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(null,tableType);
-            allTableList.addAll(allTableInfo);
-        }else{
-            for (String prefix : tablePrefix) {
-                List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(prefix,tableType);
-                allTableList.addAll(allTableInfo);
+    public boolean changeContext(CopyDbConfig copyDbConfig) {
+        String ToDbType;
+        Connection toConnection = null;
+        IOpMeta opDbMeta = null;
+        DataSource toDataSource = null;
+        String catalog = null;
+        String schema1 = null;
+        Dialect toDialect = null;
+        if (copyDbConfig != null) {
+            CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
+            toDataSource = copyDbConfig.getDataSource();
+            if (toDataSource == this.opContext.getDataSource()) {
+                return false;
+            }
+            try {
+                toConnection = toDataSource.getConnection();
+                ToDbType = JdbcHelper.getDatabaseType(toConnection);
+                if (StrUtil.isBlank(ToDbType)) {
+                    throw new IllegalArgumentException(" !! not support database " + copyDbConfig);
+                }
+                opDbMeta = OpDbMeta.select(toConnection);
+                catalog = toConnection.getCatalog();
+                schema1 = toConnection.getSchema();
+                toDialect = JdbcHelper.getDialect(toConnection);
+            } catch (SQLException e) {
+                throw JdbcHelper.translateSqlException("copyDataSourceDDL get source connection", null, e);
             }
         }
-        List<List<String>> objects = ListTs.newList();
-        for (TableMetadata tableMetadata : allTableList) {
-            DataSourceMetaInfoParse dataSourceMetaInfoParse = new DataSourceMetaInfoParse(this.opContext.getDataSource(), tableMetadata.getTableName(), this.opContext);
-            DDLTableInfo parse = dataSourceMetaInfoParse.parse();
-            List<DDLFieldInfo> fieldInfoList = parse.getFieldInfoList();
-            ListTs.foreach(fieldInfoList,e-> e.setSource("1"));
-            this.opContext.setDdlTableInfo(parse);
-            this.opContext.setTableName(tableMetadata.getTableName());
-            OpDdlCreateTable opDdlCreateTable = OpSelector.selectOpCreateTable(this.opContext);
-            List<String> res = ListTs.newList();
-            // create table
-            String createTableDDL = opDdlCreateTable.getCreateTableDDL();
-            ListTs.add(res,createTableDDL);
-            // comments
-            List<String> createTableComments = opDdlCreateTable.getCreateTableComments();
-            ListTs.addAll(res,createTableComments);
-            // index
-            List<String> indexList = opDdlCreateTable.getIndexList();
-            ListTs.addAll(res,indexList);
-            objects.add(res);
+        assert opDbMeta != null;
+        String dbType = opDbMeta.getDbType(toConnection);
+        String productVersion = opDbMeta.getProductVersion();
+        this.opContext.setDbType(dbType);
+        this.opContext.setDbVersion(productVersion);
+        this.opContext.setSchema(StrUtil.blankToDefault(schema1, catalog));
+        this.opContext.setConnectionCatalog(catalog);
+        this.opContext.setConnectionSchema(schema1);
+        this.opContext.setDialect(toDialect);
+        this.opContext.setDataSource(toDataSource);
+        this.opContext.setConnection(toConnection);
+        return true;
+    }
+
+    @Override
+    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType, CopyDbConfig copyDbConfig) {
+        CheckUtils.checkByLambda(this.opContext, OpContext::getDataSource, OpContext::getConnection);
+        if (ListTs.isEmpty(tableType)) tableType = new String[]{"TABLE"};
+        Connection oldConnection = this.opContext.getConnection();
+        IOpMeta select = OpDbMeta.select(oldConnection);
+        List<TableMetadata> allTableList = ListTs.newList();
+        // get all or custom tableInfo
+        if (ListTs.isEmpty(tablePrefix)) {
+            List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(null, tableType);
+            ListTs.addAll(allTableList, allTableInfo);
+        } else {
+            for (String prefix : tablePrefix) {
+                List<TableMetadata> allTableInfo = select.getAllTableInfoByTableType(prefix, tableType);
+                ListTs.addAll(allTableList, allTableInfo);
+            }
         }
+        DataSource oldDataSource = this.opContext.getDataSource();
+        String oldDbType = this.opContext.getDbType();
+        String oldDbVersion = this.opContext.getDbVersion();
+        String oldSchema = this.opContext.getSchema();
+        String oldConnectionCatalog = this.opContext.getConnectionCatalog();
+        String oldConnectionSchema = this.opContext.getConnectionSchema();
+        Dialect oldDialect = this.opContext.getDialect();
+        DDLTableInfo oldDdlTableInfo = this.opContext.getDdlTableInfo();
+        String oldTableName = this.opContext.getTableName();
+        TableMetadata oldTableMetadata = this.opContext.getTableMetadata();
         List<String> joinRes = ListTs.newList();
-        for (List<String> object : objects) {
-            List<String> collect = object.stream().map(e -> StrUtil.addSuffixIfNot(e, SP.SEMICOLON)).collect(Collectors.toList());
-            String join = ListTs.join("\n", collect);
-            join = StrUtil.addSuffixIfNot(join,SP.SEMICOLON);
-            joinRes.add(join);
+        boolean isChangeContext = false;
+        boolean isExe = false;
+        try {
+            List<List<String>> objects = ListTs.newList();
+            List<DDLTableInfo> ddlTableInfos = ListTs.newList();
+            // parse to DDLTableInfo
+            for (TableMetadata tableMetadata : allTableList) {
+                DataSourceMetaInfoParse dataSourceMetaInfoParse = new DataSourceMetaInfoParse(oldDataSource, tableMetadata.getTableName(), this.opContext);
+                DDLTableInfo parse = dataSourceMetaInfoParse.parse();
+                List<DDLFieldInfo> fieldInfoList = parse.getFieldInfoList();
+                if(CollUtil.isEmpty(fieldInfoList)){
+                    log.info("the table's fields is empty "+tableMetadata.getTableName());
+                    continue;
+                }
+                parse.setTableMetadata(tableMetadata);
+                ddlTableInfos.add(parse);
+            }
+            String newTablePrefix = null;
+            String newTableSuffix = null;
+            // prepare transfer db context
+            if (null != copyDbConfig) {
+                newTablePrefix = copyDbConfig.getTablePrefix();
+                newTableSuffix = copyDbConfig.getTableSuffix();
+                isChangeContext = changeContext(copyDbConfig);
+                isExe = copyDbConfig.isExe();
+            }
+            for (DDLTableInfo ddlTableInfo : ddlTableInfos) {
+                String tableName = ddlTableInfo.getTableName();
+                TableMetadata tableMetadata = ddlTableInfo.getTableMetadata();
+                if(isChangeContext){
+                    String schema = this.opContext.getSchema();
+                    String dbType = this.opContext.getDbType();
+                    String dbVersion = this.opContext.getDbVersion();
+                    if (StrUtil.isNotBlank(newTablePrefix)) tableName = newTablePrefix += tableName;
+                    if (StrUtil.isNotBlank(newTableSuffix)) tableName = tableName + newTableSuffix;
+                    List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
+                    String finalTableName = tableName;
+                    ListTs.foreach(fieldInfoList, e -> {
+                        e.setSource("1");
+                        e.setTableName(finalTableName);
+                        e.setSchema(schema);
+                        e.setDbType(dbType);
+                        e.setDbVersion(dbVersion);
+                    });
+                    List<DDLIndexInfo> ddlIndexInfoList = ddlTableInfo.getDdlIndexInfoList();
+                    ListTs.foreach(ddlIndexInfoList, e -> {
+                        e.setSchema(schema);
+                        e.setTableName(finalTableName);
+                    });
+
+                    tableMetadata.setTableName(finalTableName);
+                    tableMetadata.setTableSchem(schema);
+
+                    ddlTableInfo.setTableName(finalTableName);
+                    ddlTableInfo.setSchema(schema);
+                    ddlTableInfo.setDbType(dbType);
+                    ddlTableInfo.setDbVersion(dbVersion);
+                }
+                // force enable if not exists
+                ddlTableInfo.setIfNotExists(true);
+                this.opContext.setDdlTableInfo(ddlTableInfo);
+                this.opContext.setTableName(tableName);
+                this.opContext.setTableMetadata(tableMetadata);
+                OpDdlCreateTable opDdlCreateTable = OpSelector.selectOpCreateTable(this.opContext);
+                List<String> res = ListTs.newList();
+                // create table
+                String createTableDDL = opDdlCreateTable.getCreateTableDDL();
+                ListTs.add(res, createTableDDL);
+                // comments
+                List<String> createTableComments = opDdlCreateTable.getCreateTableComments();
+                ListTs.addAll(res, createTableComments);
+                // index
+                List<String> indexList = opDdlCreateTable.getIndexList();
+                ListTs.addAll(res, indexList);
+                objects.add(res);
+            }
+            for (List<String> object : objects) {
+                List<String> collect = object.stream().map(e -> StrUtil.addSuffixIfNot(e, SP.SEMICOLON)).collect(Collectors.toList());
+                String join = ListTs.join("\n", collect);
+                join = StrUtil.addSuffixIfNot(join, SP.SEMICOLON);
+                joinRes.add(join);
+            }
+        } finally {
+            if (isChangeContext) {
+                Connection newConnection = this.opContext.getConnection();
+                if (isExe && ListTs.isNotEmpty(joinRes)) {
+                    exeDDLStr(newConnection,ListTs.join("\n",joinRes), true);
+                }else{
+                    // Directly close third-party connections
+                    JdbcHelper.close(newConnection);
+                }
+                // Put the original newConnection back in place for external calls to automatically close
+                this.opContext.setDataSource(oldDataSource);
+                this.opContext.setConnection(oldConnection);
+                this.opContext.setDbType(oldDbType);
+                this.opContext.setDbVersion(oldDbVersion);
+                this.opContext.setSchema(oldSchema);
+                this.opContext.setConnectionCatalog(oldConnectionCatalog);
+                this.opContext.setConnectionSchema(oldConnectionSchema);
+                this.opContext.setDialect(oldDialect);
+                this.opContext.setDataSource(oldDataSource);
+                this.opContext.setConnection(oldConnection);
+                this.opContext.setDdlTableInfo(oldDdlTableInfo);
+                this.opContext.setTableName(oldTableName);
+                this.opContext.setTableMetadata(oldTableMetadata);
+            }
         }
+
         return joinRes;
     }
 }

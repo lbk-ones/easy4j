@@ -180,6 +180,9 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
             if (pgsqlFieldType == PgSQLFieldType.DECIMAL || pgsqlFieldType == PgSQLFieldType.NUMERIC) {
                 dataLength = dataLength <= 0 ? opConfig.getNumLengthDefaultLength() : dataLength;
                 dataDecimal = dataDecimal <= 0 ? opConfig.getNumDecimalDefaultLength() : dataDecimal;
+                if (dataLength < dataDecimal) {
+                    dataDecimal = 0;
+                }
             }
             if (
                     pgsqlFieldType == PgSQLFieldType.BIT ||
@@ -192,8 +195,7 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
                     StrUtil.isNotBlank(pgsqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + pgsqlFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, dataLength, dataDecimal);
-        }
+            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));        }
         return dataTypeFormat;
     }
 }

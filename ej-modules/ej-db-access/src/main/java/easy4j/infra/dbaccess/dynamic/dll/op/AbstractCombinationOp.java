@@ -16,7 +16,9 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -112,7 +114,12 @@ public abstract class AbstractCombinationOp implements CombinationOp {
     }
 
     @Override
-    public Map<String,Object> dynamicSave(Map<String, Object> dict) {
+    public void exeDDLStr(Connection connection, String segment, boolean isCloseConnection) {
+        getOpSqlCommands().exeDDLStr(connection, segment, isCloseConnection);
+    }
+
+    @Override
+    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
         return getOpSqlCommands().dynamicSave(dict);
     }
 
@@ -132,8 +139,8 @@ public abstract class AbstractCombinationOp implements CombinationOp {
     }
 
     @Override
-    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType) {
-        return getOpSqlCommands().copyDataSourceDDL(tablePrefix,tableType);
+    public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType, CopyDbConfig copyDbConfig) {
+        return getOpSqlCommands().copyDataSourceDDL(tablePrefix, tableType, copyDbConfig);
     }
 
     public <R> R callback(Supplier<R> consumer) {

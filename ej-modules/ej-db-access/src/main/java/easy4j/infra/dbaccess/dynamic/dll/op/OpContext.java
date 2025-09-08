@@ -14,9 +14,11 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
-import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.JavaClassMetaInfoParse;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.AbstractOpSqlCommands;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -26,6 +28,7 @@ import lombok.experimental.Accessors;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OpContext
@@ -53,13 +56,12 @@ public class OpContext {
     // 数据库中已有的列信息
     private List<DatabaseColumnMetadata> dbColumns;
     // 表信息
+    /**
+     * @see AbstractOpSqlCommands#dynamicSave(Map)
+     */
     private TableMetadata tableMetadata;
     // 主键信息
     private List<PrimaryKeyMetadata> primaryKes;
-
-    // 数据库中已有的列信息
-    @Desc("需要新增的列")
-    private List<DatabaseColumnMetadata> adColumns;
 
     // 传入的schema信息
     private String schema;
@@ -76,10 +78,18 @@ public class OpContext {
     // 解析出来的数据库方言
     private Dialect dialect;
 
-    // 解析出来的表元数据
+    /**
+     * 解析出来的表元数据
+     * 单表操作这个值不会变化
+     * 如果是多表操作这个值会切换 ↓
+     * @see OpSqlCommands#copyDataSourceDDL(String[], String[], CopyDbConfig)
+     */
     private DDLTableInfo ddlTableInfo;
 
     // parse java 才有这个字段
+    /**
+     * @see JavaClassMetaInfoParse#getDdlTableInfo()
+     */
     private Class<?> domainClass;
 
     // 全局配置

@@ -14,33 +14,50 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
+
+import javax.annotation.Nullable;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
 /**
  * OpSqlCommands
  * 杂项 不知道放在哪个模块就放这里来
+ *
  * @author bokun.li
  * @date 2025/8/23
  */
-public interface OpSqlCommands extends IOpContext,IOpMatch {
+public interface OpSqlCommands extends IOpContext, IOpMatch {
 
 
     /**
      * 执行ddl语句
+     *
      * @param segment
      */
     void exeDDLStr(String segment);
+
+    /**
+     * 指定数据源执行ddl语句
+     * 不会自动关闭连接
+     *
+     * @param connection        指定的连接
+     * @param segment           sql语句
+     * @param isCloseConnection 是否关闭连接
+     */
+    void exeDDLStr(Connection connection, String segment, boolean isCloseConnection);
 
     /**
      * 指定表名称，然后将传入得dict中得键值对组装好，写入表并返回自增字段
      *
      * @param dict
      */
-    Map<String,Object> dynamicSave(Map<String,Object> dict);
+    Map<String, Object> dynamicSave(Map<String, Object> dict);
 
     /**
      * 通过java Class 自动执行ddl语句 没有就建表，有就检测要新增得字段，只新增不修改
+     *
      * @param isExe 是否执行
      * @author bokun.li
      * @date 2025/9/1
@@ -51,10 +68,11 @@ public interface OpSqlCommands extends IOpContext,IOpMatch {
     /**
      * 批量解析整个数据源得ddl语句，根据条件来
      *
-     * @param tablePrefix 表得前缀
-     * @param tableType TABLE / VIEW
+     * @param tablePrefix  表得前缀或者全名前缀一般是 xxx_%（前缀为xxx_）
+     * @param tableType    TABLE / VIEW null默认TABLE
+     * @param copyDbConfig 要生成的数据库类型如果为null 那么代表是当前数据库类型，（当前数据库就是构造方法传入的那个dataSource所代表的数据库类型）
      * @return
      */
-    List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType);
+    List<String> copyDataSourceDDL(String[] tablePrefix, @Nullable String[] tableType, @Nullable CopyDbConfig copyDbConfig);
 
 }

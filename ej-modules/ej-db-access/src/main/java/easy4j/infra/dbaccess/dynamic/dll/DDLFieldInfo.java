@@ -1,6 +1,8 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
 import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.AbstractOpSqlCommands;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -100,6 +102,10 @@ public class DDLFieldInfo {
     @Desc("内部使用字段,改字段所在索引名称")
     private String indexName;
 
+    /**
+     * 内部使用字段,字段信息解析自哪里 0 是默认 1是解析自数据库Meta信息
+     * @see AbstractOpSqlCommands#copyDataSourceDDL(String[], String[], CopyDbConfig)
+     */
     @Desc("内部使用字段,字段信息解析自哪里 0 是默认 1是解析自数据库Meta信息")
     private String source = "0";
 

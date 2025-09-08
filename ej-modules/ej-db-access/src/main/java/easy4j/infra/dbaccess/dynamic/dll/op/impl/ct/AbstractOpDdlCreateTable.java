@@ -129,7 +129,7 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         if (ddlTableInfo.isTemporary())
             res.put(TEMPORARY, "temporary");
         // oracle not support
-        if (ddlTableInfo.isIfNotExists() && !DbType.ORACLE.getDb().equals(dbType))
+        if (ddlTableInfo.isIfNotExists() && !ListTs.asList(DbType.ORACLE.getDb(),DbType.SQL_SERVER.getDb(),DbType.DB2.getDb()).contains(dbType))
             res.put(IF_NOT_EXIST, "if not exists");
         // only pg support
         if (ddlTableInfo.isPgUnlogged() && DbType.POSTGRE_SQL.getDb().equals(dbType))

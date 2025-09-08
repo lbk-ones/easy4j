@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.mp;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.idx.IndexType;
 import easy4j.infra.dbaccess.dynamic.dll.DDLConfig;
 
@@ -43,6 +44,7 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * DataSourceMetaInfoParse
@@ -238,9 +240,12 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
             ddlFieldInfo.setDataDecimal(decimalDigits);
         }
         ddlFieldInfo.setDataTypeAttr(new String[0]);
-        if (StrUtil.isNotBlank(columnDef) && StrUtil.containsIgnoreCase(columnDef, "nextval")) {
-            columnDef = "";
+        if (StrUtil.isNotBlank(columnDef)) {
+            if (StrUtil.containsIgnoreCase(columnDef, "nextval")) {
+                columnDef = "";
+            }
         }
+
         ddlFieldInfo.setDef(columnDef);
         ddlFieldInfo.setDefNum(-1);
         ddlFieldInfo.setDefTime(false);

@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -48,6 +49,9 @@ public class DDLTableInfo {
 
     @Desc("表名注释")
     private String comment;
+
+    @Desc("内部使用，从数据库informationSchema中查出的表元信息")
+    private TableMetadata tableMetadata;
 
     @Desc("domain class对象")
     private Class<?> domainClass;

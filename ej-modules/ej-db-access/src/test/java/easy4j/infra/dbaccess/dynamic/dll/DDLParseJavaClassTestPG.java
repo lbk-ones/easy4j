@@ -1,13 +1,19 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
+import cn.hutool.db.DbUtil;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import easy4j.infra.base.starter.Easy4JStarter;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.dbaccess.domain.SysDdlHistory;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,10 +107,29 @@ class DDLParseJavaClassTestPG {
             System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
         }
     }
+    public DataSource getMysqlDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/student");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("root");
+        hikariConfig.setPassword("123456");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
     @Test
     void OpMetaTest4() {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"});
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getMysqlDataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(new String[]{"ssc_%"}, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {
                 System.out.println(string);
                 System.out.println("-----------------------------");

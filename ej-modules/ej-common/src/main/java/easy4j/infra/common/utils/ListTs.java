@@ -666,16 +666,16 @@ public class ListTs {
 
     public static <T> void add(List<T> res, T obj) {
 
-        if(ObjectUtil.isNotEmpty(obj)){
+        if (ObjectUtil.isNotEmpty(obj) && res != null) {
             res.add(obj);
         }
 
     }
 
     public static <T> void addAll(List<T> res, Collection<T> objs) {
-        if(ObjectUtil.isNotEmpty(objs)){
+        if (ObjectUtil.isNotEmpty(objs) && res != null) {
             List<T> collect = objs.stream().filter(Objects::nonNull).collect(Collectors.toList());
-            if(isNotEmpty(collect)) res.addAll(collect);
+            if (isNotEmpty(collect)) res.addAll(collect);
         }
     }
 }

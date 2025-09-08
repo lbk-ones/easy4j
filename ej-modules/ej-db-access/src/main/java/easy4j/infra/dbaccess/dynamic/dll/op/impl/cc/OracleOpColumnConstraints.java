@@ -171,12 +171,15 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
             if (oracleFieldType == OracleFieldType.DECIMAL || oracleFieldType == OracleFieldType.NUMERIC || oracleFieldType == OracleFieldType.NUMBER_DECIMAL) {
                 dataLength = dataLength <= 0 ? opConfig.getNumLengthDefaultLength() : dataLength;
                 dataDecimal = dataDecimal <= 0 ? opConfig.getNumDecimalDefaultLength() : dataDecimal;
+                if (dataLength < dataDecimal) {
+                    dataDecimal = 0;
+                }
             }
             CheckUtils.checkTrue(
                     StrUtil.isNotBlank(oracleFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + oracleFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, dataLength, dataDecimal);
+            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));
         }
         return dataTypeFormat;
     }

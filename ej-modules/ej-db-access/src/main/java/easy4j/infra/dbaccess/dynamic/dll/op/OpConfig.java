@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.common.enums.DbType;
@@ -394,6 +395,8 @@ public class OpConfig {
             }
         }
         String s = String.join(SP.UNDERSCORE, objects) + concatPrefix(SP.UNDERSCORE, String.join("", objects2));
+        String s1 = RandomUtil.randomString(4);
+        s += s1;
         if (s.length() > 63) {
             s = s.substring(0, 63);
         }

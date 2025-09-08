@@ -56,7 +56,7 @@ public enum MySQLFieldType {
     YEAR("YEAR", "", "", "年份类型，格式YYYY，范围1901~2155（MySQL 5+支持4位年份）", int.class, Integer.class),
 
     // 特殊类型
-    BIT("BIT", "BIT({0})", "5.0.3", "位字段类型，M范围1~64，存储位序列", byte[].class, Boolean.class),
+    BIT("BIT", "BIT({0})", "5.0.3", "位字段类型，M范围1~64，存储位序列", byte[].class,boolean.class, Boolean.class),
     ENUM("ENUM", "ENUM({0})", "", "枚举类型，只能取预定义值之一,ENUM('val1','val2',...)", String.class),
     SET("SET", "SET({0})", "", "集合类型，可选取多个预定义值（最多64个）SET('val1','val2',...)", String.class),
     JSON("JSON", "", "5.7.8", "存储JSON格式数据，支持验证和索引", String.class);

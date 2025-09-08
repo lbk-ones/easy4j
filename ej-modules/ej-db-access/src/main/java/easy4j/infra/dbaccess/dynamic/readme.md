@@ -5,6 +5,9 @@
 1、根据java类来生成ddl语句
 2、根据模型来生成ddl语句
 3、执行自动建表逻辑，如果没有建过表执行，有如果有新增字段则执行新增字段逻辑（只新增不修改）
+4、将数据库中的指定表结构集合copy出来
+5、数据库ddl转换,将mysql,oracle,sqlserver,pg等数据库互转
+6、数据库的schema信息查询（表信息，字段信息，索引信息）
 
 - 动态表查询
 传入schema、tableName、whereBuild(条件构造器)、dataSource，可进行表的动态查询
