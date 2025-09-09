@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.mp;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dynamic.dll.idx.IndexType;
 import easy4j.infra.dbaccess.dynamic.dll.DDLConfig;
@@ -41,10 +42,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.sql.SQLException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * DataSourceMetaInfoParse
@@ -147,7 +145,17 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
         Map<String, List<IndexInfoMetaInfo>> stringListMap = ListTs.groupBy(indexInfoMetaInfos, IndexInfoMetaInfo::getIndexName);
 
-        List<DDLIndexInfo> indexInfos = ListTs.map(indexInfoMetaInfos, e -> getDdlIndexInfoFromIndexMeta(e, stringListMap, schema, primaryKeyMetadataMap));
+        Map<String, List<IndexInfoMetaInfo>> indexMap = ListTs.groupBy(indexInfoMetaInfos, IndexInfoMetaInfo::getColumnName);
+
+        Map<String, Boolean> existMap = Maps.newHashMap();
+
+        List<DDLIndexInfo> indexInfos = ListTs.map(indexInfoMetaInfos, e -> getDdlIndexInfoFromIndexMeta(e, stringListMap, schema, primaryKeyMetadataMap, indexMap, existMap));
+
+        existMap.clear();
+        indexMap.clear();
+        stringListMap.clear();
+        primaryKeyMetadataMap.clear();
+        indexInfoMetaInfoMap.clear();
 
         this.opContext.setDbColumns(columns);
         this.opContext.setPrimaryKes(primaryKes);
@@ -185,11 +193,29 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
      * @param schema        schema info
      * @return
      */
-    private DDLIndexInfo getDdlIndexInfoFromIndexMeta(IndexInfoMetaInfo e, Map<String, List<IndexInfoMetaInfo>> stringListMap, String schema, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap) {
+    private DDLIndexInfo getDdlIndexInfoFromIndexMeta(IndexInfoMetaInfo e, Map<String, List<IndexInfoMetaInfo>> stringListMap, String schema, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap, Map<String, List<IndexInfoMetaInfo>> indexMap, Map<String, Boolean> existMap) {
         String columnName = e.getColumnName();
         PrimaryKeyMetadata primaryKeyMetadata = primaryKeyMetadataMap.get(columnName);
         if (null != primaryKeyMetadata) {
             return null;
+        }
+        // unique index 交给表约束实现
+        if (!e.isNonUnique()) {
+            return null;
+        } else {
+            // 如果普通索引被唯一索引索引过那么这里也跳过
+            List<IndexInfoMetaInfo> indexInfoMetaInfos = indexMap.get(columnName);
+            if (CollUtil.isNotEmpty(indexInfoMetaInfos)) {
+                if (indexInfoMetaInfos.stream().anyMatch(e2 -> !e2.isNonUnique())) {
+                    return null;
+                }
+            }
+            // 当然 也不能重复
+            Boolean b = existMap.get(columnName);
+            if (b != null && b) {
+                return null;
+            }
+            existMap.put(columnName, true);
         }
         String indexName = e.getIndexName();
         List<IndexInfoMetaInfo> orDefault = stringListMap.getOrDefault(indexName, ListTs.newList());

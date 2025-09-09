@@ -195,7 +195,11 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
                     StrUtil.isNotBlank(pgsqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + pgsqlFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));        }
+            if (dataLength == Integer.MAX_VALUE) {
+                dataTypeFormat = PgSQLFieldType.TEXT.getFieldType();
+            }else{
+                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));        }
+            }
         return dataTypeFormat;
     }
 }

@@ -16,11 +16,13 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.tc;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpTableConstraints;
@@ -68,6 +70,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
     private void handlerConstraint(DDLTableInfo ddlTableInfo, OpConfig opConfig, List<String> segments) {
         boolean hasExtraLine = false;
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
+        Map<String, DDLFieldInfo> fieldNameMap = ListTs.mapOne(fieldInfoList, DDLFieldInfo::getName);
         String tableName = ddlTableInfo.getTableName();
         if (CollUtil.isNotEmpty(fieldInfoList)) {
             List<DDLFieldInfo> primaryKey = ListTs.newList();
@@ -84,9 +87,9 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 List<DDLFieldInfo> ddlFieldInfos = null;
 
                 List<String> columns = ListTs.mapToList(_ddlFieldInfos, DDLFieldInfo::getName);
-                if("none".equals(indeName)){
+                if ("none".equals(indeName)) {
                     ddlFieldInfos = _ddlFieldInfos;
-                }else if(!columns.isEmpty()) {
+                } else if (!columns.isEmpty()) {
                     ddlFieldInfos = ListTs.asList(_ddlFieldInfos.get(0));
                 }
                 assert ddlFieldInfos != null;
@@ -96,8 +99,12 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
 
                     // merge
                     if (columns.size() > 1 && !"none".equals(indeName)) {
+                        List<String> columns1 = getColumns(ddlFieldInfo, columns, fieldNameMap);
+                        if (ListTs.isEmpty(columns1)) {
+                            continue;
+                        }
                         // set a temp value
-                        ddlFieldInfo.setTemp(String.join(SP.COMMA, columns));
+                        ddlFieldInfo.setTemp(String.join(SP.COMMA, columns1));
                     }
 
                     String[] constraint = ddlFieldInfo.getConstraint();
@@ -131,7 +138,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "pk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
-                columnName = opConfig.splitStrAndEscape(columnName,SP.COMMA,connection);
+                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection);
                 String tem = "CONSTRAINT " + cn + " PRIMARY KEY (" + columnName + ")";
                 segments.add(tem);
                 idx++;
@@ -144,7 +151,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "uk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
-                columnName = opConfig.splitStrAndEscape(columnName,SP.COMMA,connection);
+                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection);
                 String tem = "CONSTRAINT " + cn + " UNIQUE (" + columnName + ")";
                 segments.add(tem);
                 idx++;
@@ -185,6 +192,36 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 segments.add(remove);
             }
         }
+    }
+
+    /**
+     * fix oracle clob cannot unique
+     *
+     * @param ddlFieldInfo 字段信息
+     * @param columns 列
+     * @param fieldNameMap 列名map
+     * @return List<String>
+     */
+    private List<String> getColumns(DDLFieldInfo ddlFieldInfo, List<String> columns, Map<String, DDLFieldInfo> fieldNameMap) {
+        List<String> tempList = ListTs.newList();
+        if (ddlFieldInfo.isUnique()) {
+            if (DbType.ORACLE.getDb().equalsIgnoreCase(this.opContext.getDbType())) {
+                for (String column : columns) {
+                    DDLFieldInfo ddlFieldInfo1 = fieldNameMap.get(column);
+                    if (null != ddlFieldInfo1) {
+                        String dataType = ddlFieldInfo1.getDataType();
+                        if (!OracleFieldType.CLOB.getFieldType().equalsIgnoreCase(dataType)) {
+                            tempList.add(column);
+                        }
+                    }
+                }
+            } else {
+                tempList.addAll(columns);
+            }
+        } else {
+            tempList.addAll(columns);
+        }
+        return tempList;
     }
 
     @Override

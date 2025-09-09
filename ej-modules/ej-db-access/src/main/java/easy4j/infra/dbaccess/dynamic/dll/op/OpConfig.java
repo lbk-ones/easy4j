@@ -54,6 +54,9 @@ import java.util.stream.Collectors;
 @Accessors(chain = true)
 public class OpConfig {
 
+    // 不用怀疑这些保留字符的完整与否
+    private static final List<String> ORACLE_ESCAPE = ListTs.asList("or", "decimal", "create", "from", "public", "union", "nowait", "raw", "to", "pctfree", "values", "default", "grant", "with", "table", "alter", "<", "select", "varchar", "any", "|", "-", "group", "identified", "/", "^", "null", "connect", "view", "distinct", "set", "by", "order", "minus", "prior", "asc", "varchar2", "all", "+", "drop", "and", "lock", "intersect", "having", "on", "update", "between", "exists", ":", "integer", "insert", "for", "char", "smallint", "=", "mode", "revoke", "else", ">", "in", "rename", "trigger", "number", "synonym", ".", "cluster", "start", "share", "of", "option", "into", "compress", "where", "*", "check", "then", "as", "[", "unique", "]", "@", ",", "long", "size", "(", "delete", "not", ")", "desc", "date", "resource", "float", "is", "like", "exclusive", "&", "!", "nocompress", "index", "null");
+
     private boolean toUnderLine = true;
 
     private boolean toLowCase = true;
@@ -100,9 +103,11 @@ public class OpConfig {
         Dialect dialect = JdbcHelper.getDialect(connection);
         try {
             String databaseType = JdbcHelper.getDatabaseType(connection);
-            // oracle 比较特殊 不转义
+            // oracle 比较特殊 只转义该转义的
             if (DbType.ORACLE.getDb().equals(databaseType)) {
-                return name;
+                if (!ListTs.equalIgnoreCase(ORACLE_ESCAPE, name)) {
+                    return name;
+                }
             }
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("escapeCn", null, e);

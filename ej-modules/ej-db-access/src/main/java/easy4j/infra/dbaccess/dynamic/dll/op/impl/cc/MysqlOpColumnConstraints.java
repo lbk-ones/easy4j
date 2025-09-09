@@ -84,14 +84,6 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
             } else {
                 templateParams.remove(DEFAULT);
             }
-        } else {
-            String defValue = templateParams.get(DEFAULT);
-            // pg is special so substr "::"
-            if (StrUtil.isNotBlank(defValue) && "1".equals(ddlFieldInfo.getSource())) {
-                String[] split = ListTs.split(defValue, "::");
-                defValue = ListTs.get(split, 0);
-                templateParams.put(DEFAULT, defValue);
-            }
         }
 
         // generated always as (expr)

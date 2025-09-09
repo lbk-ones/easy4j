@@ -179,7 +179,19 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
                     StrUtil.isNotBlank(oracleFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + oracleFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));
+
+            if (oracleFieldType == OracleFieldType.VARCHAR2 && dataLength == Integer.MAX_VALUE) {
+                dataTypeFormat = OracleFieldType.CLOB.getFieldType();
+                // 回写
+                ddlFieldInfo.setDataType(dataTypeFormat);
+            }else{
+                // oracle 最多4000
+                if (oracleFieldType == OracleFieldType.VARCHAR2) {
+                    dataLength = Math.min(dataLength,4000);
+                }
+
+                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));
+            }
         }
         return dataTypeFormat;
     }

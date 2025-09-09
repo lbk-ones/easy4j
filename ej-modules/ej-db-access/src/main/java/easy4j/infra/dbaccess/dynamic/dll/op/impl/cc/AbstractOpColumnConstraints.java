@@ -14,9 +14,9 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.cc;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -124,7 +124,7 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
         }
         String def = ddlFieldInfo.getDef();
         int defNum = ddlFieldInfo.getDefNum();
-        if(!ddlFieldInfo.isPrimary()){
+        if (!ddlFieldInfo.isPrimary()) {
             // defTime 不处理
             if (StrUtil.isNotBlank(def)) {
                 if (opConfig.isNumberDefaultType(fieldClass)) {
@@ -137,11 +137,36 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                     if (isNum) pm.put(DEFAULT, "default " + def);
                 } else {
                     String source = ddlFieldInfo.getSource();
-                    if(!StrUtil.equals("1",source)){
+                    if (!StrUtil.equals("1", source)) {
                         pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
-                    }else{
+                    } else {
+                        String dbType = this.opContext.getDbType();
                         // from meta not wrapper single quote
                         pm.put(DEFAULT, "default " + def);
+                        // pg is special so substr "::"
+                        if (!DbType.POSTGRE_SQL.getDb().equalsIgnoreCase(dbType)) {
+                            if (StrUtil.isNotBlank(def) && !def.endsWith("'")) {
+                                String[] split = ListTs.split(def, "::");
+                                def = ListTs.get(split, 0);
+                            }
+                            // compatible not wrap single quote
+                            if(StrUtil.isNotBlank(def) && !StrUtil.isWrap(def,"'","'")){
+                                def = StrUtil.wrap(def,"'","'");
+                            }
+                            pm.put(DEFAULT, "default " + def);
+                        }
+                        // oracle not support boolean
+                        if (DbType.ORACLE.getDb().equalsIgnoreCase(dbType)){
+                            if(ListTs.equalIgnoreCase(ListTs.asList("false","true"),def)){
+                                if("false".equalsIgnoreCase(def)){
+                                    def = "0";
+                                }else if("true".equalsIgnoreCase(def)){
+                                    def = "1";
+                                }
+                                pm.put(DEFAULT, "default " + def);
+                            }
+                        }
+
                     }
                 }
             } else if (defNum != -1) {
@@ -154,7 +179,7 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                 }
             }
         }
-        if(ddlFieldInfo.isGenConstraint()){
+        if (ddlFieldInfo.isGenConstraint()) {
             String check = ddlFieldInfo.getCheck();
             if (StrUtil.isNotBlank(check)) {
                 pm.put(CHECK, "check (" + check + ")");
@@ -181,14 +206,14 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
         CheckUtils.checkByPath(ddlFieldInfo, "fieldClass");
         CheckUtils.checkByPath(this.opContext, "opConfig");
         OpConfig opConfig = this.opContext.getOpConfig();
-        return opConfig.patchStrWithTemplate(ddlFieldInfo, getTemplate(),FIELD_MAP, extParamMap, this::getTemplateParams);
+        return opConfig.patchStrWithTemplate(ddlFieldInfo, getTemplate(), FIELD_MAP, extParamMap, this::getTemplateParams);
     }
 
     @Override
     public String getFieldName(DDLFieldInfo ddlFieldInfo) {
         String name = ddlFieldInfo.getName();
         CheckUtils.notNull(name, "name");
-        return this.getOpContext().getOpConfig().getColumnNameAndEscape(name,this.getOpContext().getConnection());
+        return this.getOpContext().getOpConfig().getColumnNameAndEscape(name, this.getOpContext().getConnection());
     }
 
     @Override

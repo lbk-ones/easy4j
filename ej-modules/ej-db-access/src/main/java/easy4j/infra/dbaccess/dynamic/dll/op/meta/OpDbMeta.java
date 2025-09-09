@@ -20,6 +20,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
@@ -174,7 +175,9 @@ public class OpDbMeta implements IOpMeta {
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map = ListTs.distinct(map, TableMetadata::getTableName);
+                return map;
             } finally {
                 JdbcHelper.close(tables);
             }
@@ -193,7 +196,9 @@ public class OpDbMeta implements IOpMeta {
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map = ListTs.distinct(map, TableMetadata::getTableName);
+                return map;
             } finally {
                 JdbcHelper.close(tables);
             }
@@ -216,7 +221,9 @@ public class OpDbMeta implements IOpMeta {
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map = ListTs.distinct(map, TableMetadata::getTableName);
+                return map;
             } finally {
                 JdbcHelper.close(tables);
             }
@@ -235,7 +242,9 @@ public class OpDbMeta implements IOpMeta {
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                List<DatabaseColumnMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map = ListTs.distinct(map, DatabaseColumnMetadata::getColumnName);
+                return map;
             } finally {
                 JdbcHelper.close(tables);
             }
@@ -253,7 +262,9 @@ public class OpDbMeta implements IOpMeta {
             try {
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                return ListTs.map(handle, e -> BeanUtil.mapToBean(e, PrimaryKeyMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                List<PrimaryKeyMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, PrimaryKeyMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map = ListTs.distinct(map, PrimaryKeyMetadata::getColumnName);
+                return map;
             } finally {
                 JdbcHelper.close(tables);
             }

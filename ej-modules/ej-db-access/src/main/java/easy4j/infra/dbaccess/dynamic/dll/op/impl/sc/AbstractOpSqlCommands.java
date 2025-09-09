@@ -143,7 +143,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
 
     @Override
     public void exeDDLStr(Connection newConnection, String segment, boolean isCloseConnection) {
-        if(newConnection == null) return;
+        if (newConnection == null) return;
         String ddl = StrUtil.trim(segment);
         if (StrUtil.isBlank(segment)) return;
         ddl = StrUtil.addSuffixIfNot(ddl, SP.SEMICOLON);
@@ -312,15 +312,35 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         boolean isChangeContext = false;
         boolean isExe = false;
         try {
+            // load target dataSource all table
+            Map<String, TableMetadata> map = Maps.newHashMap();
+            if (null != copyDbConfig) {
+                CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
+                DataSource dataSource = copyDbConfig.getDataSource();
+                try (Connection connection = dataSource.getConnection()) {
+                    IOpMeta select1 = OpDbMeta.select(connection);
+                    List<TableMetadata> allTableInfoByTableType = select1.getAllTableInfoByTableType(null, new String[]{"TABLE"});
+                    map = ListTs.toMap(allTableInfoByTableType, TableMetadata::getTableName);
+                } catch (SQLException e) {
+                    throw JdbcHelper.translateSqlException("newDataSourceGetConnection", null, e);
+                }
+            }
             List<List<String>> objects = ListTs.newList();
             List<DDLTableInfo> ddlTableInfos = ListTs.newList();
+            OpConfig opConfig = opContext.getOpConfig();
             // parse to DDLTableInfo
             for (TableMetadata tableMetadata : allTableList) {
+                String tableName = tableMetadata.getTableName();
+                TableMetadata matchMapIgnoreCase = opConfig.getMatchMapIgnoreCase(map, tableName);
+                if (null != matchMapIgnoreCase) {
+                    log.info("skip table " + tableName);
+                    continue;
+                }
                 DataSourceMetaInfoParse dataSourceMetaInfoParse = new DataSourceMetaInfoParse(oldDataSource, tableMetadata.getTableName(), this.opContext);
                 DDLTableInfo parse = dataSourceMetaInfoParse.parse();
                 List<DDLFieldInfo> fieldInfoList = parse.getFieldInfoList();
-                if(CollUtil.isEmpty(fieldInfoList)){
-                    log.info("the table's fields is empty "+tableMetadata.getTableName());
+                if (CollUtil.isEmpty(fieldInfoList)) {
+                    log.info("the table's fields is empty " + tableMetadata.getTableName());
                     continue;
                 }
                 parse.setTableMetadata(tableMetadata);
@@ -338,7 +358,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             for (DDLTableInfo ddlTableInfo : ddlTableInfos) {
                 String tableName = ddlTableInfo.getTableName();
                 TableMetadata tableMetadata = ddlTableInfo.getTableMetadata();
-                if(isChangeContext){
+                if (isChangeContext) {
                     String schema = this.opContext.getSchema();
                     String dbType = this.opContext.getDbType();
                     String dbVersion = this.opContext.getDbVersion();
@@ -361,7 +381,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
 
                     tableMetadata.setTableName(finalTableName);
                     tableMetadata.setTableSchem(schema);
-
                     ddlTableInfo.setTableName(finalTableName);
                     ddlTableInfo.setSchema(schema);
                     ddlTableInfo.setDbType(dbType);
@@ -395,8 +414,8 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             if (isChangeContext) {
                 Connection newConnection = this.opContext.getConnection();
                 if (isExe && ListTs.isNotEmpty(joinRes)) {
-                    exeDDLStr(newConnection,ListTs.join("\n",joinRes), true);
-                }else{
+                    exeDDLStr(newConnection, ListTs.join("\n", joinRes), true);
+                } else {
                     // Directly close third-party connections
                     JdbcHelper.close(newConnection);
                 }

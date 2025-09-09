@@ -11,6 +11,7 @@ import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.DbUtils;
@@ -123,13 +124,72 @@ class DDLParseJavaClassTestPG {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
+
+    public DataSource getOracle19cDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("SSC");
+        hikariConfig.setPassword("SSC@hainan123");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+    @Test
+    void testOracle() throws SQLException {
+        DataSource oracle19cDataSource = getOracle19cDataSource();
+        try(Connection connection = oracle19cDataSource.getConnection()){
+            IOpMeta select = OpDbMeta.select(connection);
+            String productVersion = select.getProductVersion();
+            System.out.println("===================================");
+            System.out.println(productVersion);
+            System.out.println(connection.getSchema());
+            System.out.println(connection.getCatalog());
+            System.out.println("===================================");
+        }
+
+    }
     @Test
     void OpMetaTest4() {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+    // 从 oracle 到 mysql
+    @Test
+    void OpMetaTest5() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getOracle19cDataSource())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
             copyDbConfig.setDataSource(getMysqlDataSource()).setExe(true);
 
-            List<String> strings = sscElementTest.copyDataSourceDDL(new String[]{"ssc_%"}, new String[]{"TABLE"}, copyDbConfig);
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+    // 从 mysql 到 oracle
+    @Test
+    void OpMetaTest6() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getMysqlDataSource())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(false);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {
                 System.out.println(string);
                 System.out.println("-----------------------------");

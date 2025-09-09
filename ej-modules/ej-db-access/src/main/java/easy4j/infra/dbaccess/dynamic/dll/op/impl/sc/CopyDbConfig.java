@@ -4,11 +4,13 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 
 @Accessors(chain = true)
 @Data
 public class CopyDbConfig {
 
+    @NotNull
     private DataSource dataSource;
 
     private String schema;
