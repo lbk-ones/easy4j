@@ -20,28 +20,28 @@ import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
-import easy4j.infra.dbaccess.dynamic.dll.MySQLFieldType;
+import easy4j.infra.dbaccess.dynamic.dll.H2SqlFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
- * 解析mysql特有的列约束，以及字段类型和字段属性
+ * 解析H2特有的列约束，以及字段类型和字段属性
  *
  * @author bokun.li
- * @date 2025/8/23
+ * @date 2025/9/10
  */
-public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
+@Slf4j
+public class H2OpColumnConstraints extends AbstractOpColumnConstraints {
 
     @Override
     public boolean match(OpContext opContext) {
         String dbType = opContext.getDbType();
-        return DbType.MYSQL.getDb().equals(dbType);
+        return DbType.H2.getDb().equals(dbType);
     }
 
     /**
@@ -60,21 +60,21 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
         if (ddlFieldInfo.isAutoIncrement() && opConfig.isNumberDefaultType(fieldClass) && ddlFieldInfo.isPrimary()) {
             templateParams.put(AUTO_INCREMENT, "auto_increment");
         }
-
-        String comment = ddlFieldInfo.getComment();
-        if (StrUtil.isNotBlank(comment)) {
-            if (!StrUtil.isWrap(comment, SP.SINGLE_QUOTE)) {
-                templateParams.put(COMMENTS, "comment " + StrUtil.wrap(comment, SP.SINGLE_QUOTE, SP.SINGLE_QUOTE));
-            } else {
-                templateParams.put(COMMENTS, "comment " + comment);
-            }
-        }
+        // h2 也支持 comment 语法 但是同时它也支持 pg和 oracle那种形式 所以不用comment这种 这种无法加表注释
+//        String comment = ddlFieldInfo.getComment();
+//        if (StrUtil.isNotBlank(comment)) {
+//            if (!StrUtil.isWrap(comment, SP.SINGLE_QUOTE)) {
+//                templateParams.put(COMMENTS, "comment " + StrUtil.wrap(comment, SP.SINGLE_QUOTE, SP.SINGLE_QUOTE));
+//            } else {
+//                templateParams.put(COMMENTS, "comment " + comment);
+//            }
+//        }
 
         //  BLOB, TEXT, GEOMETRY or JSON  can't have a default value
         //  POINT、LINESTRING、POLYGON
         //  PRIMARY KEY always can't have a default value
-        MySQLFieldType oracleFieldType = getMysqlFieldType(fieldClass, ddlFieldInfo);
-        if (ListTs.asList(MySQLFieldType.BLOB, MySQLFieldType.TEXT, MySQLFieldType.LONGTEXT, MySQLFieldType.JSON).contains(oracleFieldType) || ddlFieldInfo.isPrimary()) {
+        H2SqlFieldType oracleFieldType = getH2FieldType(fieldClass, ddlFieldInfo);
+        if (ListTs.asList(H2SqlFieldType.BLOB).contains(oracleFieldType) || ddlFieldInfo.isPrimary()) {
             templateParams.remove(DEFAULT);
         } else if (opConfig.isDateDefaultType(fieldClass)) {
             if (ddlFieldInfo.isDefTime()) {
@@ -101,14 +101,16 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
         return templateParams;
     }
 
-    public String getCurrentTimeFunctionName(MySQLFieldType mysqlFieldType) {
-        MySQLFieldType datetime = MySQLFieldType.DATETIME;
-        MySQLFieldType timestamp = MySQLFieldType.TIMESTAMP;
-        if (datetime == mysqlFieldType || timestamp == mysqlFieldType) return "current_timestamp";
-        MySQLFieldType date = MySQLFieldType.DATE;
-        if (date == mysqlFieldType) return "current_date";
-        MySQLFieldType time = MySQLFieldType.TIME;
-        if (time == mysqlFieldType) return "current_time";
+    public String getCurrentTimeFunctionName(H2SqlFieldType h2SqlFieldType) {
+        H2SqlFieldType datetime = H2SqlFieldType.DATETIME;
+        H2SqlFieldType timestamp = H2SqlFieldType.TIMESTAMP;
+        H2SqlFieldType timestampWithTimeZone = H2SqlFieldType.TIMESTAMP_WITH_TIME_ZONE;
+        if (datetime == h2SqlFieldType || timestamp == h2SqlFieldType || timestampWithTimeZone == h2SqlFieldType)
+            return "current_timestamp";
+        H2SqlFieldType date = H2SqlFieldType.DATE;
+        if (date == h2SqlFieldType) return "current_date";
+        H2SqlFieldType time = H2SqlFieldType.TIME;
+        if (time == h2SqlFieldType) return "current_time";
         return null;
     }
 
@@ -116,48 +118,47 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
     @Override
     public String getDataType(DDLFieldInfo ddlFieldInfo) {
         Class<?> fieldClass = ddlFieldInfo.getFieldClass();
-        MySQLFieldType mysqlFieldType = getMysqlFieldType(fieldClass, ddlFieldInfo);
-        CheckUtils.notNullMsg(mysqlFieldType, fieldClass.getName() + "【" + ddlFieldInfo.getDataType() + "】" + ":can not select db field type!");
-        return getDataTypeByMySQLFieldType(mysqlFieldType, ddlFieldInfo);
+        if (null == fieldClass) {
+            String s = ddlFieldInfo.getSchema() + SP.DOT + ddlFieldInfo.getTableName() + SP.DOT + ddlFieldInfo.getName() + SP.DOT + ddlFieldInfo.getDataType();
+            throw new IllegalArgumentException(s);
+        }
+        H2SqlFieldType h2SqlFieldType = getH2FieldType(fieldClass, ddlFieldInfo);
+        CheckUtils.notNullMsg(h2SqlFieldType, fieldClass.getName() + "【" + ddlFieldInfo.getDataType() + "】" + ":can not select db field type!");
+        return getDataTypeByH2SqlFieldType(h2SqlFieldType, ddlFieldInfo);
     }
 
-    public String getDataTypeByMySQLFieldType(MySQLFieldType mysqlFieldType, DDLFieldInfo ddlFieldInfo) {
+    public String getDataTypeByH2SqlFieldType(H2SqlFieldType h2SqlFieldType, DDLFieldInfo ddlFieldInfo) {
         OpConfig opConfig = this.getOpContext().getOpConfig();
-        String fieldTypeTemplate = StrUtil.blankToDefault(mysqlFieldType.getFieldTypeTemplate(), mysqlFieldType.getFieldType());
+        String fieldTypeTemplate = StrUtil.blankToDefault(h2SqlFieldType.getFieldTypeTemplate(), h2SqlFieldType.getFieldType());
         int dataLength = ddlFieldInfo.getDataLength();
         int dataDecimal = ddlFieldInfo.getDataDecimal();
-        String[] dataTypeAttr = ddlFieldInfo.getDataTypeAttr();
+        //String[] dataTypeAttr = ddlFieldInfo.getDataTypeAttr();
         String dataTypeFormat;
-        boolean isArray = MySQLFieldType.ENUM == mysqlFieldType || MySQLFieldType.SET == mysqlFieldType;
-        if (null != dataTypeAttr && dataTypeAttr.length > 0) {
-            if (isArray) {
-                String collect = Arrays.stream(dataTypeAttr).map(e -> StrUtil.wrap(e, "'", "'")).collect(Collectors.joining(SP.COMMA));
-                CheckUtils.checkTrue(StrUtil.isBlank(collect), "the type " + mysqlFieldType.getFieldType() + " need set dataTypeAttr，please check!");
-                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, collect);
-            } else {
-                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, ListTs.objectToListObject(dataTypeAttr, Function.identity()).toArray(new Object[]{}));
-            }
-        } else {
-            if ((mysqlFieldType == MySQLFieldType.VARCHAR || mysqlFieldType == MySQLFieldType.CHAR) && dataLength <= 0) {
+        {
+            boolean isStr = h2SqlFieldType == H2SqlFieldType.VARCHAR || h2SqlFieldType == H2SqlFieldType.CHAR || h2SqlFieldType == H2SqlFieldType.CHARACTER_VARYING || h2SqlFieldType == H2SqlFieldType.CHARACTER;
+            if (isStr && dataLength <= 0) {
                 dataLength = opConfig.getStrDefaultLength();
             }
-            if (mysqlFieldType == MySQLFieldType.DECIMAL) {
+            if (h2SqlFieldType == H2SqlFieldType.DECIMAL) {
                 dataLength = dataLength <= 0 ? opConfig.getNumLengthDefaultLength() : dataLength;
                 dataDecimal = dataDecimal <= 0 ? opConfig.getNumDecimalDefaultLength() : dataDecimal;
                 if (dataLength < dataDecimal) {
                     dataDecimal = 0;
                 }
             }
-            if (mysqlFieldType == MySQLFieldType.BIT) {
+            if (h2SqlFieldType == H2SqlFieldType.BIT) {
                 dataLength = dataLength <= 0 ? 1 : dataLength;
             }
             CheckUtils.checkTrue(
-                    StrUtil.isNotBlank(mysqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
-                    "the type " + mysqlFieldType.getFieldType() + " need set dataLength，please check!"
+                    StrUtil.isNotBlank(h2SqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
+                    "the type " + h2SqlFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            if (dataLength >= 65535) {
-                dataTypeFormat = MySQLFieldType.LONGTEXT.getFieldType();
+            if (isStr && dataLength == Integer.MAX_VALUE) {
+                dataTypeFormat = H2SqlFieldType.CLOB.getFieldType();
                 ddlFieldInfo.setDataType(dataTypeFormat);
+            }else if(dataLength == Integer.MAX_VALUE && (h2SqlFieldType== H2SqlFieldType.BINARY || h2SqlFieldType== H2SqlFieldType.VARBINARY )){
+                String fieldTypeTemplate1 = H2SqlFieldType.VARBINARY.getFieldTypeTemplate();
+                return MessageFormat.format(fieldTypeTemplate1, String.valueOf(1000000000));
             } else {
                 dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength), String.valueOf(dataDecimal));
             }
@@ -167,23 +168,23 @@ public class MysqlOpColumnConstraints extends AbstractOpColumnConstraints {
     }
 
 
-    public MySQLFieldType getMysqlFieldType(Class<?> fieldClass, DDLFieldInfo ddlFieldInfo) {
+    public H2SqlFieldType getH2FieldType(Class<?> fieldClass, DDLFieldInfo ddlFieldInfo) {
         String dataType = ddlFieldInfo.getDataType();
         if (ddlFieldInfo.isJson()) {
-            return MySQLFieldType.JSON;
+            return H2SqlFieldType.JSON;
         }
         if (ddlFieldInfo.isLob()) {
-            return MySQLFieldType.LONGTEXT;
+            return H2SqlFieldType.CLOB;
         }
-        MySQLFieldType mySQLFieldType;
+        H2SqlFieldType h2SqlFieldType;
         if (dataType != null) {
-            mySQLFieldType = MySQLFieldType.getFromDataType(dataType);
-            if (null == mySQLFieldType) {
-                mySQLFieldType = MySQLFieldType.getByClass(fieldClass);
+            h2SqlFieldType = H2SqlFieldType.getFromDataType(dataType);
+            if (null == h2SqlFieldType) {
+                h2SqlFieldType = H2SqlFieldType.getByClass(fieldClass);
             }
         } else {
-            mySQLFieldType = MySQLFieldType.getByClass(fieldClass);
+            h2SqlFieldType = H2SqlFieldType.getByClass(fieldClass);
         }
-        return mySQLFieldType;
+        return h2SqlFieldType;
     }
 }

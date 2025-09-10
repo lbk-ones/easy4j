@@ -123,6 +123,8 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
             pm.put(NOT_NULL, "not null");
         }
         String def = ddlFieldInfo.getDef();
+        // fix h2 def has blank
+        def = StrUtil.trim(def);
         int defNum = ddlFieldInfo.getDefNum();
         if (!ddlFieldInfo.isPrimary()) {
             // defTime 不处理

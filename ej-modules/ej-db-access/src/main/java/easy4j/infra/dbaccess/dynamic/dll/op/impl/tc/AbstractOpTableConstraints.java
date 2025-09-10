@@ -22,6 +22,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.H2SqlFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
@@ -198,7 +199,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
      * fix oracle clob cannot unique
      *
      * @param ddlFieldInfo 字段信息
-     * @param columns 列
+     * @param columns      列
      * @param fieldNameMap 列名map
      * @return List<String>
      */
@@ -212,6 +213,18 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                         String dataType = ddlFieldInfo1.getDataType();
                         if (!OracleFieldType.CLOB.getFieldType().equalsIgnoreCase(dataType)) {
                             tempList.add(column);
+                        }
+                    }
+                }
+            } else if (DbType.H2.getDb().equalsIgnoreCase(this.opContext.getDbType())) {
+                for (String column : columns) {
+                    DDLFieldInfo ddlFieldInfo1 = fieldNameMap.get(column);
+                    if (null != ddlFieldInfo1) {
+                        String dataType = ddlFieldInfo1.getDataType();
+                        if (!ListTs.equalIgnoreCase(ListTs.asList(H2SqlFieldType.CLOB.getFieldType(), H2SqlFieldType.UUID.getFieldType()), dataType)) {
+                            tempList.add(column);
+                        } else {
+                            System.out.println(dataType);
                         }
                     }
                 }

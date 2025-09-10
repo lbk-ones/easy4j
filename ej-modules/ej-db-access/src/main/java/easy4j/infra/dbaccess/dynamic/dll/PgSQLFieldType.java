@@ -52,6 +52,7 @@ public enum PgSQLFieldType {
     // 日期时间类型
     TIMESTAMP("TIMESTAMP", "", "", "日期时间类型，格式'YYYY-MM-DD HH:MM:SS'，范围4713 BC~294276 AD（无时区）", Date.class, java.sql.Date.class, java.sql.Timestamp.class, LocalDateTime.class),
     TIMESTAMPTZ("TIMESTAMP WITH TIME ZONE", "", "", "带时区的日期时间类型，自动转换为数据库时区存储（PostgreSQL 特色）", Date.class, java.sql.Timestamp.class, LocalDateTime.class),
+    TIMESTAMPTZ2("TIMESTAMPTZ", "", "", "带时区的日期时间类型，自动转换为数据库时区存储（PostgreSQL 特色）", Date.class, java.sql.Timestamp.class, LocalDateTime.class),
     DATE("DATE", "", "", "日期类型，格式'YYYY-MM-DD'，范围4713 BC~294276 AD（同 MySQL DATE）", java.sql.Date.class, LocalDate.class),
     TIME("TIME", "", "", "时间类型，格式'HH:MM:SS'，范围00:00:00~23:59:59.999999（无时区）", java.sql.Time.class, LocalTime.class),
     TIMETZ("TIME WITH TIME ZONE", "", "", "带时区的时间类型（PostgreSQL 特色）", java.sql.Time.class, LocalTime.class),

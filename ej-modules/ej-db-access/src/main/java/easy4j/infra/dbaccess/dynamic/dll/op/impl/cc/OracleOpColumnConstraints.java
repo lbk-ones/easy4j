@@ -134,7 +134,7 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
         if (null != fromDataType) {
             return getDataTypeByPGFieldType(fromDataType, ddlFieldInfo);
         } else {
-            throw new EasyException(ddlFieldInfo.getName() + " not select pgsql datatype please check!");
+            throw new EasyException(ddlFieldInfo.getName() + "【" + ddlFieldInfo.getDataType() + "】" + " not select pgsql datatype please check!");
         }
 
     }
@@ -184,13 +184,13 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
                 dataTypeFormat = OracleFieldType.CLOB.getFieldType();
                 // 回写
                 ddlFieldInfo.setDataType(dataTypeFormat);
-            }else{
+            } else {
                 // oracle 最多4000
                 if (oracleFieldType == OracleFieldType.VARCHAR2) {
-                    dataLength = Math.min(dataLength,4000);
+                    dataLength = Math.min(dataLength, 4000);
                 }
 
-                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));
+                dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength), String.valueOf(dataDecimal));
             }
         }
         return dataTypeFormat;

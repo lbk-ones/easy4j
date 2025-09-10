@@ -58,6 +58,7 @@ public class OpConfig {
     private static final List<String> ORACLE_ESCAPE = ListTs.asList("or", "decimal", "create", "from", "public", "union", "nowait", "raw", "to", "pctfree", "values", "default", "grant", "with", "table", "alter", "<", "select", "varchar", "any", "|", "-", "group", "identified", "/", "^", "null", "connect", "view", "distinct", "set", "by", "order", "minus", "prior", "asc", "varchar2", "all", "+", "drop", "and", "lock", "intersect", "having", "on", "update", "between", "exists", ":", "integer", "insert", "for", "char", "smallint", "=", "mode", "revoke", "else", ">", "in", "rename", "trigger", "number", "synonym", ".", "cluster", "start", "share", "of", "option", "into", "compress", "where", "*", "check", "then", "as", "[", "unique", "]", "@", ",", "long", "size", "(", "delete", "not", ")", "desc", "date", "resource", "float", "is", "like", "exclusive", "&", "!", "nocompress", "index", "null");
     private static final List<String> PG_ESCAPE = ListTs.asList("all", "analyse", "analyze", "and", "any", "array", "as", "asc", "asymmetric", "both", "case", "cast", "check", "collate", "column", "constraint", "create", "current_catalog", "current_date", "current_role", "current_time", "current_timestamp", "current_user", "default", "deferrable", "desc", "distinct", "do", "else", "end", "except", "false", "fetch", "for", "foreign", "from", "grant", "group", "having", "in", "initially", "intersect", "into", "lateral", "leading", "limit", "localtime", "localtimestamp", "not", "null", "offset", "on", "only", "or", "order", "placing", "primary", "references", "returning", "select", "session_user", "some", "symmetric", "table", "then", "to", "trailing", "true", "union", "unique", "user", "using", "variadic", "when", "where", "window", "with");
     private static final List<String> MYSQL_ESCAPE = ListTs.asList("accessible", "add", "all", "alter", "analyze", "and", "as", "asc", "asensitive", "before", "between", "bigint", "binary", "blob", "both", "by", "call", "cascade", "case", "change", "char", "character", "check", "collate", "column", "condition", "constraint", "continue", "convert", "create", "cross", "cube", "cume_dist", "current_date", "current_time", "current_timestamp", "current_user", "cursor", "database", "databases", "day_hour", "day_microsecond", "day_minute", "day_second", "dec", "decimal", "declare", "default", "delayed", "delete", "dense_rank", "desc", "describe", "deterministic", "distinct", "distinctrow", "div", "double", "drop", "dual", "each", "else", "elseif", "empty", "enclosed", "escaped", "except", "exists", "exit", "explain", "false", "fetch", "first_value", "float", "float4", "float8", "for", "force", "foreign", "from", "fulltext", "function", "generated", "get", "grant", "group", "grouping", "groups", "having", "high_priority", "hour_microsecond", "hour_minute", "hour_second", "if", "ignore", "in", "index", "infile", "inner", "inout", "insensitive", "insert", "int", "int1", "int2", "int3", "int4", "int8", "integer", "intersect", "interval", "into", "io_after_gtids", "io_before_gtids", "is", "iterate", "join", "json_table", "key", "keys", "kill", "lag", "last_value", "lateral", "lead", "leading", "leave", "left", "like", "limit", "linear", "lines", "load", "localtime", "localtimestamp", "lock", "long", "longblob", "longtext", "loop", "low_priority", "master_bind", "master_ssl_verify_server_cert", "match", "maxvalue", "mediumblob", "mediumint", "mediumtext", "middleint", "minute_microsecond", "minute_second", "mod", "modifies", "natural", "not", "no_write_to_binlog", "nth_value", "ntile", "null", "numeric", "of", "on", "optimize", "optimizer_costs", "option", "optionally", "or", "order", "out", "outer", "outfile", "over", "partition", "percent_rank", "precision", "primary", "procedure", "purge", "range", "rank", "read", "reads", "read_write", "real", "recursive", "references", "regexp", "release", "rename", "repeat", "replace", "require", "resignal", "restrict", "return", "revoke", "right", "rlike", "row", "rows", "row_number", "schema", "schemas", "second_microsecond", "select", "sensitive", "separator", "set", "show", "signal", "smallint", "spatial", "specific", "sql", "sqlexception", "sqlstate", "sqlwarning", "sql_big_result", "sql_calc_found_rows", "sql_small_result", "ssl", "starting", "stored", "straight_join", "system", "table", "terminated", "then", "tinyblob", "tinyint", "tinytext", "to", "trailing", "trigger", "true", "undo", "union", "unique", "unlock", "unsigned", "update", "usage", "use", "using", "utc_date", "utc_time", "utc_timestamp", "values", "varbinary", "varchar", "varcharacter", "varying", "virtual", "when", "where", "while", "window", "with", "write", "xor", "year_month", "zerofill");
+    private static final List<String> H2_ESCAPE = ListTs.asList("all", "and", "any", "array", "as", "asymmetric", "authorization", "between", "both", "case", "cast", "check", "constraint", "cross", "current_catalog", "current_date", "current_path", "current_role", "current_schema", "current_time", "current_timestamp", "current_user", "day", "default", "distinct", "else", "end", "except", "exists", "false", "fetch", "for", "foreign", "from", "full", "group", "groups", "having", "hour", "if", "ilike", "in", "inner", "intersect", "interval", "is", "join", "key", "leading", "left", "like", "limit", "localtime", "localtimestamp", "minus", "minute", "month", "natural", "not", "null", "offset", "on", "or", "order", "over", "partition", "primary", "qualify", "range", "regexp", "right", "row", "rownum", "rows", "second", "select", "session_user", "set", "some", "symmetric", "system_user", "table", "to", "top", "ms", "cs", "trailing", "true", "uescape", "union", "unique", "unknown", "user", "using", "value", "values", "when", "where", "window", "with", "year", "_rowid_");
 
     private boolean toUnderLine = true;
 
@@ -110,12 +111,16 @@ public class OpConfig {
                 if (!ListTs.equalIgnoreCase(ORACLE_ESCAPE, name)) {
                     return name;
                 }
-            }else if (DbType.POSTGRE_SQL.getDb().equals(databaseType)) {
+            } else if (DbType.POSTGRE_SQL.getDb().equals(databaseType)) {
                 if (!ListTs.equalIgnoreCase(PG_ESCAPE, name)) {
                     return name;
                 }
-            }else if (DbType.MYSQL.getDb().equals(databaseType)) {
+            } else if (DbType.MYSQL.getDb().equals(databaseType)) {
                 if (!ListTs.equalIgnoreCase(MYSQL_ESCAPE, name)) {
+                    return name;
+                }
+            } else if (DbType.H2.getDb().equals(databaseType)) {
+                if (!ListTs.equalIgnoreCase(H2_ESCAPE, name)) {
                     return name;
                 }
             }
@@ -172,6 +177,8 @@ public class OpConfig {
             return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
         } else if (StrUtil.equalsIgnoreCase(DbType.ORACLE.getDb(), dbType)) {
             return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+        } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
+            return Optional.ofNullable(H2SqlFieldType.getFromDataType(typeName)).map(H2SqlFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
         }
         return null;
     }
@@ -217,6 +224,9 @@ public class OpConfig {
         } else if (StrUtil.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb(), dbType)) {
             PgSQLFieldType fromDataType = PgSQLFieldType.getFromDataType(typeName);
             return fromDataType == PgSQLFieldType.JSON || fromDataType == PgSQLFieldType.JSONB;
+        } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
+            H2SqlFieldType fromDataType = H2SqlFieldType.getFromDataType(typeName);
+            return fromDataType == H2SqlFieldType.JSON;
         }
         return false;
     }
@@ -238,6 +248,9 @@ public class OpConfig {
         } else if (StrUtil.equalsIgnoreCase(DbType.ORACLE.getDb(), dbType)) {
             OracleFieldType fromDataType1 = OracleFieldType.getFromDataType(typeName);
             return fromDataType1 == OracleFieldType.CLOB;
+        } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
+            H2SqlFieldType fromDataType1 = H2SqlFieldType.getFromDataType(typeName);
+            return fromDataType1 == H2SqlFieldType.CLOB || fromDataType1 == H2SqlFieldType.TEXT;
         }
         return false;
     }

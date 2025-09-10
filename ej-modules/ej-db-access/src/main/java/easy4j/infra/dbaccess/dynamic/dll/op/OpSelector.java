@@ -24,20 +24,11 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.MysqlOpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.OracleOpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.PgOpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.SqlServerOpDdlAlter;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.MysqlOpColumnConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.OracleOpColumnConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.PgOpColumnConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.SqlServerOpColumnConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.MysqlOpDdlCreateTable;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.OracleOpDdlCreateTable;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.PgOpDdlCreateTable;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.SqlServerOpDdlCreateTable;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.*;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.idx.CommonOpDdlIndexImpl;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.OpSqlCommandsImpl;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.MysqlOpTableConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.OracleOpTableConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.PgOpTableConstraints;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.SqlServerOpTableConstraints;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.tc.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -61,12 +52,14 @@ public class OpSelector {
     static {
         // column constraints
         columnConstraintsList.add(new MysqlOpColumnConstraints());
+        columnConstraintsList.add(new H2OpColumnConstraints());
         columnConstraintsList.add(new OracleOpColumnConstraints());
         columnConstraintsList.add(new PgOpColumnConstraints());
         columnConstraintsList.add(new SqlServerOpColumnConstraints());
         columnConstraintsList.sort(Comparator.comparingInt(IOpContext::getSort));
 
         // table constraints
+        tableConstraintsList.add(new H2OpTableConstraints());
         tableConstraintsList.add(new MysqlOpTableConstraints());
         tableConstraintsList.add(new OracleOpTableConstraints());
         tableConstraintsList.add(new PgOpTableConstraints());
@@ -74,6 +67,7 @@ public class OpSelector {
         tableConstraintsList.sort(Comparator.comparingInt(IOpContext::getSort));
 
         // create table
+        createTableList.add(new H2OpDdlCreateTable());
         createTableList.add(new MysqlOpDdlCreateTable());
         createTableList.add(new OracleOpDdlCreateTable());
         createTableList.add(new PgOpDdlCreateTable());

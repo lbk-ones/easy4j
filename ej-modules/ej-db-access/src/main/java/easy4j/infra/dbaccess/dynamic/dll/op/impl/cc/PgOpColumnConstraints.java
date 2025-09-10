@@ -130,7 +130,7 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
         if (null != fromDataType) {
             return getDataTypeByPGFieldType(fromDataType, ddlFieldInfo);
         } else {
-            throw new EasyException(ddlFieldInfo.getName() + " not select pgsql datatype please check!");
+            throw new EasyException(ddlFieldInfo.getName() + "【" + ddlFieldInfo.getDataType() + "】" + " not select pgsql datatype please check!");
         }
 
     }
@@ -195,8 +195,9 @@ public class PgOpColumnConstraints extends AbstractOpColumnConstraints {
                     StrUtil.isNotBlank(pgsqlFieldType.getFieldTypeTemplate()) && dataLength <= 0,
                     "the type " + pgsqlFieldType.getFieldType() + " need set dataLength，please check!"
             );
-            if (dataLength == Integer.MAX_VALUE) {
+            if (dataLength>=10485760) {
                 dataTypeFormat = PgSQLFieldType.TEXT.getFieldType();
+                ddlFieldInfo.setDataType(dataTypeFormat);
             }else{
                 dataTypeFormat = MessageFormat.format(fieldTypeTemplate, String.valueOf(dataLength),String.valueOf(dataDecimal));        }
             }

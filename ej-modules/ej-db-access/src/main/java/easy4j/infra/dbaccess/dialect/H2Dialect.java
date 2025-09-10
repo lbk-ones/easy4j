@@ -16,12 +16,19 @@ package easy4j.infra.dbaccess.dialect;
 
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.dbaccess.Page;
 
 /**
  * H2数据库方言实现
  */
 public class H2Dialect extends AbstractDialect {
+
+    @Override
+    public Wrapper getWrapper() {
+        return new Wrapper('"','"');
+    }
+
     /**
      * mysql分页通过limit实现
      */

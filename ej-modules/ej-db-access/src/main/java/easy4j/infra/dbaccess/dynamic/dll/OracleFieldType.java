@@ -29,7 +29,7 @@ public enum OracleFieldType {
     INTEGER("INTEGER", "", "", "Oracle 整数别名，等价于 NUMBER(38)（兼容语法，建议用 NUMBER 指定精度）", int.class, Integer.class, long.class, Long.class),
     INT("INT", "", "", "INTEGER 的别名，等价于 NUMBER(38)（兼容语法）", int.class, Integer.class),
     SMALLINT("SMALLINT", "", "", "Oracle 小整数别名，等价于 NUMBER(38)（兼容语法，建议用 NUMBER(5) 精准匹配 short）", short.class, Short.class),
-    BIGINT("BIGINT", "", "12c+", "Oracle 12c+ 新增大整数别名，等价于 NUMBER(38)（建议用 NUMBER(19) 精准匹配 long）", long.class, Long.class),
+    //BIGINT("BIGINT", "", "12c+", "Oracle 12c+ 新增大整数别名，等价于 NUMBER(38)（建议用 NUMBER(19) 精准匹配 long）", long.class, Long.class),
     IDENTITY_INT("NUMBER(10) GENERATED ALWAYS AS IDENTITY", "", "12c+", "12c+ 自增10位整数（对应 Java int/Integer，替代序列+触发器）", int.class, Integer.class),
     IDENTITY_LONG("NUMBER(19) GENERATED ALWAYS AS IDENTITY", "", "12c+", "12c+ 自增19位整数（对应 Java long/Long）", long.class, Long.class),
 
