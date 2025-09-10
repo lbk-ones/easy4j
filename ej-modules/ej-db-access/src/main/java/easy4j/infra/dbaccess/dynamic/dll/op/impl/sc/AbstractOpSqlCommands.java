@@ -277,6 +277,8 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         this.opContext.setConnectionSchema(schema1);
         this.opContext.setDialect(toDialect);
         this.opContext.setDataSource(toDataSource);
+        // 反写回去
+        copyDbConfig.setConnection(toConnection);
         this.opContext.setConnection(toConnection);
         return true;
     }

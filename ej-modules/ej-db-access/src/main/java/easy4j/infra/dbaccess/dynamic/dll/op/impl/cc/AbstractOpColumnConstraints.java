@@ -141,19 +141,16 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                         pm.put(DEFAULT, "default " + opConfig.wrapSingleQuote(def));
                     } else {
                         String dbType = this.opContext.getDbType();
-                        // from meta not wrapper single quote
-                        pm.put(DEFAULT, "default " + def);
                         // pg is special so substr "::"
                         if (!DbType.POSTGRE_SQL.getDb().equalsIgnoreCase(dbType)) {
                             if (StrUtil.isNotBlank(def) && !def.endsWith("'")) {
                                 String[] split = ListTs.split(def, "::");
                                 def = ListTs.get(split, 0);
                             }
-                            // compatible not wrap single quote
-                            if(StrUtil.isNotBlank(def) && !StrUtil.isWrap(def,"'","'")){
-                                def = StrUtil.wrap(def,"'","'");
-                            }
-                            pm.put(DEFAULT, "default " + def);
+                        }
+                        // compatible not wrap single quote
+                        if(StrUtil.isNotBlank(def) && !StrUtil.isWrap(def,"'","'")){
+                            def = StrUtil.wrap(def,"'","'");
                         }
                         // oracle not support boolean
                         if (DbType.ORACLE.getDb().equalsIgnoreCase(dbType)){
@@ -163,9 +160,9 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                                 }else if("true".equalsIgnoreCase(def)){
                                     def = "1";
                                 }
-                                pm.put(DEFAULT, "default " + def);
                             }
                         }
+                        pm.put(DEFAULT, "default " + def);
 
                     }
                 }

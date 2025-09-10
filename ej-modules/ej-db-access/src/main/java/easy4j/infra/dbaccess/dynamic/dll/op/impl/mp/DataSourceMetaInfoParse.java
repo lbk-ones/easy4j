@@ -143,6 +143,13 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         // 转换字段列信息
         List<DDLFieldInfo> map = ListTs.map(columns, e -> getDdlFieldInfoFromColumnMeta(e, dbType, dbVersion, opConfig, primaryKeyMetadataMap, indexInfoMetaInfoMap));
 
+        // 主键排在前面
+        map.sort((o1, o2) -> {
+            Integer primary = o1.isPrimary()?1:0;
+            Integer primary2 = o2.isPrimary()?1:0;
+            return primary2.compareTo(primary);
+        });
+
         Map<String, List<IndexInfoMetaInfo>> stringListMap = ListTs.groupBy(indexInfoMetaInfos, IndexInfoMetaInfo::getIndexName);
 
         Map<String, List<IndexInfoMetaInfo>> indexMap = ListTs.groupBy(indexInfoMetaInfos, IndexInfoMetaInfo::getColumnName);

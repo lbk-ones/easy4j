@@ -1,10 +1,8 @@
 package easy4j.infra.dbaccess.dynamic.dll;
 
-import cn.hutool.db.DbUtil;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import easy4j.infra.base.starter.Easy4JStarter;
-import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
@@ -14,7 +12,6 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +105,7 @@ class DDLParseJavaClassTestPG {
             System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
         }
     }
-    public DataSource getMysqlDataSource(){
+    public DataSource getMysql5DataSource(){
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/student");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -116,6 +113,70 @@ class DDLParseJavaClassTestPG {
         hikariConfig.setDriverClassName(driverClassNameByUrl);
         hikariConfig.setUsername("root");
         hikariConfig.setPassword("123456");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+    public DataSource getMysql5TestCopyDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/test_copy");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("root");
+        hikariConfig.setPassword("123456");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+    public DataSource getMysql8Test2DataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:mysql://10.0.71.38:36180/test2");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("root");
+        hikariConfig.setPassword("SSC@hainan123");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+    public DataSource getTestPg(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/test");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("drhi_user");
+        hikariConfig.setPassword("drhi_password");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+    public DataSource getTest2Pg(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/test2");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("drhi_user");
+        hikariConfig.setPassword("drhi_password");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
         hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
@@ -141,6 +202,22 @@ class DDLParseJavaClassTestPG {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
+    public DataSource getOracle19cTestCopyDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("TEST_COPY");
+        hikariConfig.setPassword("SSC@hainan123");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
     @Test
     void testOracle() throws SQLException {
         DataSource oracle19cDataSource = getOracle19cDataSource();
@@ -155,6 +232,7 @@ class DDLParseJavaClassTestPG {
         }
 
     }
+    // pg 到 oracle
     @Test
     void OpMetaTest4() {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
@@ -168,12 +246,38 @@ class DDLParseJavaClassTestPG {
             }
         }
     }
+    // pg 到 pg
+    @Test
+    void PgToPg() {
+        DataSource test2Pg = getTest2Pg();
+        DataSource testPg = getTestPg();
+        try (DynamicDDL dynamicDDL = new DynamicDDL(testPg)) {
+            List<String> strings = dynamicDDL.copyDataSourceDDL(null, null, new CopyDbConfig().setDataSource(test2Pg).setExe(true));
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-------------------------------------");
+            }
+        }
+    }
+
+    // Oracle 到 pg
+    @Test
+    void OracleToPg() throws SQLException {
+        try (DynamicDDL dynamicDDL = new DynamicDDL(getOracle19cDataSource())) {
+            DataSource testPg = getTestPg();
+            List<String> strings = dynamicDDL.copyDataSourceDDL(null, null, new CopyDbConfig().setDataSource(testPg).setExe(true));
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-------------------------------------");
+            }
+        }
+    }
     // 从 oracle 到 mysql
     @Test
     void OpMetaTest5() {
         try (DynamicDDL sscElementTest = new DynamicDDL(getOracle19cDataSource())) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getMysqlDataSource()).setExe(true);
+            copyDbConfig.setDataSource(getMysql5DataSource()).setExe(true);
 
             List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {
@@ -185,9 +289,81 @@ class DDLParseJavaClassTestPG {
     // 从 mysql 到 oracle
     @Test
     void OpMetaTest6() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getMysqlDataSource())) {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql5DataSource())) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(false);
+            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+
+    // mysql5 到 mysql8
+    @Test
+    void Mysql5ToMysql8() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql5DataSource())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getMysql8Test2DataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+    // mysql8 到 PG
+    @Test
+    void Mysql8ToPg() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql8Test2DataSource())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getTest2Pg()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+    // PG 到 mysql8
+    @Test
+    void PgToMysql8() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getMysql8Test2DataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+    // PG 到 mysql5
+    @Test
+    void PgToMysql5() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getTest2Pg())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getMysql5TestCopyDataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+
+    // mysql 到 oracle
+    @Test
+    void Mysql8ToOracle() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql8Test2DataSource())) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getOracle19cTestCopyDataSource()).setExe(true);
 
             List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {

@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.sql.Connection;
 
 @Accessors(chain = true)
 @Data
@@ -15,7 +16,7 @@ public class CopyDbConfig {
 
     private String schema;
 
-    private String connection;
+    private Connection connection;
 
     // 表前缀
     private String tablePrefix;
