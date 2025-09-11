@@ -70,6 +70,11 @@ public class OracleOpColumnConstraints extends AbstractOpColumnConstraints {
             }
         }
         oracleAutoIncrement(ddlFieldInfo, templateParams, opConfig);
+
+        // 主键不能为clob
+        if (ddlFieldInfo.isPrimary() && ddlFieldInfo.isLob()) {
+            templateParams.remove(PRIMARY_KEY);
+        }
         return templateParams;
     }
 

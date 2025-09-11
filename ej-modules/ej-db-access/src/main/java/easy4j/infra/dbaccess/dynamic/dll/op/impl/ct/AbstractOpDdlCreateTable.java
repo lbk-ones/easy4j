@@ -124,12 +124,12 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         String tableName = StrUtil.isNotBlank(schema) ? schema + SP.DOT + tableName1 : tableName1;
         OpContext opContext1 = this.getOpContext();
         OpConfig opConfig = opContext1.getOpConfig();
-        res.put(TABLE_NAME, opConfig.escapeCn(tableName, opContext1.getConnection()));
+        res.put(TABLE_NAME, opConfig.splitStrAndEscape(tableName,SP.DOT, opContext1.getConnection(), ddlTableInfo.isEscapeTableName()));
         // a most of db support
-        if (ddlTableInfo.isTemporary())
+        if (ddlTableInfo.isTemporary() && !ListTs.asList(DbType.SQL_SERVER.getDb()).contains(dbType))
             res.put(TEMPORARY, "temporary");
         // oracle not support
-        if (ddlTableInfo.isIfNotExists() && !ListTs.asList(DbType.ORACLE.getDb(),DbType.SQL_SERVER.getDb(),DbType.DB2.getDb()).contains(dbType))
+        if (ddlTableInfo.isIfNotExists() && !ListTs.asList(DbType.ORACLE.getDb(), DbType.SQL_SERVER.getDb(), DbType.DB2.getDb()).contains(dbType))
             res.put(IF_NOT_EXIST, "if not exists");
         // only pg support
         if (ddlTableInfo.isPgUnlogged() && DbType.POSTGRE_SQL.getDb().equals(dbType))
@@ -159,6 +159,31 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
     }
 
     /**
+     * 获取表注释
+     *
+     * @author bokun.li
+     * @date 2025/9/11
+     */
+    public String getTableComments() {
+        DDLTableInfo ddlTableInfo = this.opContext.getDdlTableInfo();
+        CheckUtils.notNull(ddlTableInfo,"ddlTableInfo");
+        String tableComments = ddlTableInfo.getComment();
+        Class<?> domainClass = ddlTableInfo.getDomainClass();
+        if (null != domainClass && StrUtil.isBlank(tableComments)) {
+            if (StrUtil.isBlank(tableComments) && domainClass.isAnnotationPresent(Schema.class)) {
+                tableComments = domainClass.getAnnotation(Schema.class).description();
+            }
+            if (StrUtil.isBlank(tableComments) && domainClass.isAnnotationPresent(Desc.class)) {
+                tableComments = domainClass.getAnnotation(Desc.class).value();
+            }
+            if (StrUtil.isBlank(tableComments)) {
+                tableComments = domainClass.getSimpleName();
+            }
+        }
+        return tableComments;
+    }
+
+    /**
      * 获取注释语句 有些数据库可能没有 比如mysql就没有,没有的要重载这个方法返回null,mysql和sqlserver我就直接再这里处理了
      *
      * @return
@@ -169,21 +194,12 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         if (ListTs.asList(DbType.MYSQL.getDb(), DbType.SQL_SERVER.getDb()).contains(dbType)) return null;
         OpConfig opConfig = this.opContext.getOpConfig();
         List<String> comments = ListTs.newList();
+        String tableComments = getTableComments();
         DDLTableInfo ddlTableInfo = this.opContext.getDdlTableInfo();
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
-        String tableComments = ddlTableInfo.getComment();
-        Class<?> domainClass = ddlTableInfo.getDomainClass();
-        if (null != domainClass && StrUtil.isBlank(tableComments)) {
-            if (StrUtil.isBlank(tableComments) && domainClass.isAnnotationPresent(Schema.class)) {
-                tableComments = domainClass.getAnnotation(Schema.class).description();
-            }
-            if (StrUtil.isBlank(tableComments) && domainClass.isAnnotationPresent(Desc.class)) {
-                tableComments = domainClass.getAnnotation(Desc.class).value();
-            }
-        }
         if (StrUtil.isNotBlank(tableComments)) {
             comments.add(String.format("COMMENT ON TABLE %s IS '%s'",
-                    opConfig.splitStrAndEscape(opConfig.getTableName(ddlTableInfo), SP.DOT, this.opContext.getConnection())
+                    opConfig.splitStrAndEscape(opConfig.getTableName(ddlTableInfo), SP.DOT, this.opContext.getConnection(), false)
                     , tableComments));
         }
         if (CollUtil.isNotEmpty(fieldInfoList)) {
@@ -197,14 +213,9 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
         return comments;
     }
 
-    @Override
-    public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
-        String dbType = this.opContext.getDbType();
-        if (ListTs.asList(DbType.MYSQL.getDb(), DbType.SQL_SERVER.getDb()).contains(dbType)) return null;
-        OpConfig opConfig = this.opContext.getOpConfig();
-        String tableNameCompatible = ListTs.asList(ddlFieldInfo.getSchema(), ddlFieldInfo.getTableName()).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.joining(SP.DOT));
-        Class<?> fieldClass = ddlFieldInfo.getFieldClass();
+    public String getFieldComments(DDLFieldInfo ddlFieldInfo){
         String comment = ddlFieldInfo.getComment();
+        Class<?> fieldClass = ddlFieldInfo.getFieldClass();
         if (null != fieldClass) {
             if (StrUtil.isBlank(comment) && fieldClass.isAnnotationPresent(Desc.class)) {
                 comment = fieldClass.getAnnotation(Desc.class).value();
@@ -213,11 +224,20 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
                 comment = fieldClass.getAnnotation(Schema.class).description();
             }
         }
+        return comment;
+    }
+    @Override
+    public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
+        String dbType = this.opContext.getDbType();
+        if (ListTs.asList(DbType.MYSQL.getDb(), DbType.SQL_SERVER.getDb()).contains(dbType)) return null;
+        OpConfig opConfig = this.opContext.getOpConfig();
+        String tableNameCompatible = ListTs.asList(ddlFieldInfo.getSchema(), ddlFieldInfo.getTableName()).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.joining(SP.DOT));
+        String comment = getFieldComments(ddlFieldInfo);
         if (StrUtil.isNotBlank(comment)) {
             return String.format("COMMENT ON COLUMN %s IS '%s'",
-                    opConfig.splitStrAndEscape(tableNameCompatible, SP.DOT, this.opContext.getConnection())
+                    opConfig.splitStrAndEscape(tableNameCompatible, SP.DOT, this.opContext.getConnection(), false)
                             + SP.DOT
-                            + opConfig.getColumnNameAndEscape(ddlFieldInfo.getName(), this.opContext.getConnection())
+                            + opConfig.getColumnNameAndEscape(ddlFieldInfo.getName(), this.opContext.getConnection(), false)
                     , comment);
         }
         return "";

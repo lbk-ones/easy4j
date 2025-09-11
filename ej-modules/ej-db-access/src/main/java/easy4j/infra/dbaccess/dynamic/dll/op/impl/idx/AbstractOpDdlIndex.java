@@ -79,7 +79,7 @@ public abstract class AbstractOpDdlIndex implements OpDdlIndex {
         String schema = StrUtil.blankToDefault(ddlIndexInfo.getSchema(), "");
         String tableName = ddlIndexInfo.getTableName();
         String join = (StrUtil.isBlank(schema) ? "" : schema + SP.DOT) + tableName;
-        res.put(TABLE_NAME,opConfig.splitStrAndEscape(join,SP.DOT,this.opContext.getConnection()));
+        res.put(TABLE_NAME,opConfig.splitStrAndEscape(join,SP.DOT,this.opContext.getConnection(), false));
 
 
         String using = ddlIndexInfo.getUsing();
@@ -89,7 +89,7 @@ public abstract class AbstractOpDdlIndex implements OpDdlIndex {
 
         String nameA = ListTs.asList(keys)
                 .stream()
-                .map(e-> opConfig.getColumnNameAndEscape(e,this.opContext.getConnection()))
+                .map(e-> opConfig.getColumnNameAndEscape(e,this.opContext.getConnection(), false))
                 .collect(Collectors.joining(","));
         res.put(COLUMNS,nameA);
         return res;

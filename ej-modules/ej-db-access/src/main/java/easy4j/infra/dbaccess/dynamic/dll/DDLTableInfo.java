@@ -53,6 +53,9 @@ public class DDLTableInfo {
     @Desc("内部使用，从数据库informationSchema中查出的表元信息")
     private TableMetadata tableMetadata;
 
+    @Desc("内部使用，是否转义表名称")
+    private boolean escapeTableName;
+
     @Desc("domain class对象")
     private Class<?> domainClass;
 

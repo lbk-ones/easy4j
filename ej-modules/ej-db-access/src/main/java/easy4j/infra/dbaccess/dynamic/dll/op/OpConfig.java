@@ -59,6 +59,7 @@ public class OpConfig {
     private static final List<String> PG_ESCAPE = ListTs.asList("all", "analyse", "analyze", "and", "any", "array", "as", "asc", "asymmetric", "both", "case", "cast", "check", "collate", "column", "constraint", "create", "current_catalog", "current_date", "current_role", "current_time", "current_timestamp", "current_user", "default", "deferrable", "desc", "distinct", "do", "else", "end", "except", "false", "fetch", "for", "foreign", "from", "grant", "group", "having", "in", "initially", "intersect", "into", "lateral", "leading", "limit", "localtime", "localtimestamp", "not", "null", "offset", "on", "only", "or", "order", "placing", "primary", "references", "returning", "select", "session_user", "some", "symmetric", "table", "then", "to", "trailing", "true", "union", "unique", "user", "using", "variadic", "when", "where", "window", "with");
     private static final List<String> MYSQL_ESCAPE = ListTs.asList("accessible", "add", "all", "alter", "analyze", "and", "as", "asc", "asensitive", "before", "between", "bigint", "binary", "blob", "both", "by", "call", "cascade", "case", "change", "char", "character", "check", "collate", "column", "condition", "constraint", "continue", "convert", "create", "cross", "cube", "cume_dist", "current_date", "current_time", "current_timestamp", "current_user", "cursor", "database", "databases", "day_hour", "day_microsecond", "day_minute", "day_second", "dec", "decimal", "declare", "default", "delayed", "delete", "dense_rank", "desc", "describe", "deterministic", "distinct", "distinctrow", "div", "double", "drop", "dual", "each", "else", "elseif", "empty", "enclosed", "escaped", "except", "exists", "exit", "explain", "false", "fetch", "first_value", "float", "float4", "float8", "for", "force", "foreign", "from", "fulltext", "function", "generated", "get", "grant", "group", "grouping", "groups", "having", "high_priority", "hour_microsecond", "hour_minute", "hour_second", "if", "ignore", "in", "index", "infile", "inner", "inout", "insensitive", "insert", "int", "int1", "int2", "int3", "int4", "int8", "integer", "intersect", "interval", "into", "io_after_gtids", "io_before_gtids", "is", "iterate", "join", "json_table", "key", "keys", "kill", "lag", "last_value", "lateral", "lead", "leading", "leave", "left", "like", "limit", "linear", "lines", "load", "localtime", "localtimestamp", "lock", "long", "longblob", "longtext", "loop", "low_priority", "master_bind", "master_ssl_verify_server_cert", "match", "maxvalue", "mediumblob", "mediumint", "mediumtext", "middleint", "minute_microsecond", "minute_second", "mod", "modifies", "natural", "not", "no_write_to_binlog", "nth_value", "ntile", "null", "numeric", "of", "on", "optimize", "optimizer_costs", "option", "optionally", "or", "order", "out", "outer", "outfile", "over", "partition", "percent_rank", "precision", "primary", "procedure", "purge", "range", "rank", "read", "reads", "read_write", "real", "recursive", "references", "regexp", "release", "rename", "repeat", "replace", "require", "resignal", "restrict", "return", "revoke", "right", "rlike", "row", "rows", "row_number", "schema", "schemas", "second_microsecond", "select", "sensitive", "separator", "set", "show", "signal", "smallint", "spatial", "specific", "sql", "sqlexception", "sqlstate", "sqlwarning", "sql_big_result", "sql_calc_found_rows", "sql_small_result", "ssl", "starting", "stored", "straight_join", "system", "table", "terminated", "then", "tinyblob", "tinyint", "tinytext", "to", "trailing", "trigger", "true", "undo", "union", "unique", "unlock", "unsigned", "update", "usage", "use", "using", "utc_date", "utc_time", "utc_timestamp", "values", "varbinary", "varchar", "varcharacter", "varying", "virtual", "when", "where", "while", "window", "with", "write", "xor", "year_month", "zerofill");
     private static final List<String> H2_ESCAPE = ListTs.asList("all", "and", "any", "array", "as", "asymmetric", "authorization", "between", "both", "case", "cast", "check", "constraint", "cross", "current_catalog", "current_date", "current_path", "current_role", "current_schema", "current_time", "current_timestamp", "current_user", "day", "default", "distinct", "else", "end", "except", "exists", "false", "fetch", "for", "foreign", "from", "full", "group", "groups", "having", "hour", "if", "ilike", "in", "inner", "intersect", "interval", "is", "join", "key", "leading", "left", "like", "limit", "localtime", "localtimestamp", "minus", "minute", "month", "natural", "not", "null", "offset", "on", "or", "order", "over", "partition", "primary", "qualify", "range", "regexp", "right", "row", "rownum", "rows", "second", "select", "session_user", "set", "some", "symmetric", "system_user", "table", "to", "top", "ms", "cs", "trailing", "true", "uescape", "union", "unique", "unknown", "user", "using", "value", "values", "when", "where", "window", "with", "year", "_rowid_");
+    private static final List<String> MSSQL_ESCAPE = ListTs.asList("add","external","procedure","all","fetch","public","alter","file","raiserror","and","fillfactor","read","any","for","readtext","as","foreign","reconfigure","asc","freetext","references","authorization","freetexttable","replication","backup","from","restore","begin","full","restrict","between","function","return","break","goto","revert","browse","grant","revoke","bulk","group","right","by","having","rollback","cascade","holdlock","rowcount","case","identity","rowguidcol","check","identity_insert","rule","checkpoint","identitycol","save","close","if","schema","clustered","in","securityaudit","coalesce","index","select","collate","inner","semantickeyphrasetable","column","insert","semanticsimilaritydetailstable","commit","intersect","semanticsimilaritytable","compute","into","session_user","constraint","is","set","contains","join","setuser","containstable","key","shutdown","continue","kill","some","convert","left","statistics","create","like","system_user","cross","lineno","table","current","load","tablesample","current_date","merge","textsize","current_time","national","then","current_timestamp","nocheck","to","current_user","nonclustered","top","cursor","not","tran","database","null","transaction","dbcc","nullif","trigger","deallocate","of","truncate","declare","off","try_convert","default","offsets","tsequal","delete","on","union","deny","open","unique","desc","opendatasource","unpivot","disk","openquery","update","distinct","openrowset","updatetext","distributed","openxml","use","double","option","user","drop","or","values","dump","order","varying","else","outer","view","end","over","waitfor","errlvl","percent","when","escape","pivot","where","except","plan","while","exec","precision","with","execute","primary","within group","exists","print","writetext","exit","proc");
 
     private boolean toUnderLine = true;
 
@@ -84,7 +85,7 @@ public class OpConfig {
         return columnName;
     }
 
-    public String getColumnNameAndEscape(String columnName, Connection connection) {
+    public String getColumnNameAndEscape(String columnName, Connection connection, boolean forceEscape) {
         if (toUnderLine) {
             columnName = StrUtil.toUnderlineCase(columnName);
         }
@@ -92,7 +93,7 @@ public class OpConfig {
             columnName = toLowCase ? columnName.toLowerCase() : columnName.toUpperCase();
         }
 
-        return escapeCn(columnName, connection);
+        return escapeCn(columnName, connection, forceEscape);
     }
 
     /**
@@ -101,10 +102,16 @@ public class OpConfig {
      * @author bokun.li
      * @date 2025/9/4
      */
-    public String escapeCn(String name, Connection connection) {
+    public String escapeCn(String name, Connection connection, boolean forceEscape) {
 
         Dialect dialect = JdbcHelper.getDialect(connection);
+        lbk:
         try {
+            // 先大概检查一下肯定需要转义的名称 不考虑数据库保留字
+            // 如果强制转义那么也跳过
+            if (DBFieldEscapeChecker.needEscape(name) || forceEscape) {
+                break lbk;
+            }
             String databaseType = JdbcHelper.getDatabaseType(connection);
             // 这些数据库 只转义该转义的 其他不转义
             if (DbType.ORACLE.getDb().equals(databaseType)) {
@@ -123,6 +130,10 @@ public class OpConfig {
                 if (!ListTs.equalIgnoreCase(H2_ESCAPE, name)) {
                     return name;
                 }
+            }else if (DbType.SQL_SERVER.getDb().equals(databaseType)) {
+                if (!ListTs.equalIgnoreCase(MSSQL_ESCAPE, name)) {
+                    return name;
+                }
             }
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("escapeCn", null, e);
@@ -138,12 +149,12 @@ public class OpConfig {
      * @author bokun.li
      * @date 2025/9/4
      */
-    public String splitStrAndEscape(String str, String comma, Connection connection) {
+    public String splitStrAndEscape(String str, String comma, Connection connection, boolean forceEscape) {
         if (StrUtil.isBlank(str) || StrUtil.isBlank(comma)) return str;
         String s = RegexEscapeUtils.escapeRegex(comma);
         String[] split = str.split(s);
         List<String> list = ListTs.asList(split);
-        return list.stream().map(e -> escapeCn(e, connection)).collect(Collectors.joining(comma));
+        return list.stream().map(e -> escapeCn(e, connection, forceEscape)).collect(Collectors.joining(comma));
     }
 
     public String getTxt(String txt) {
@@ -179,6 +190,8 @@ public class OpConfig {
             return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
         } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
             return Optional.ofNullable(H2SqlFieldType.getFromDataType(typeName)).map(H2SqlFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+        }else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
+            return Optional.ofNullable(SqlServerFieldType.getFromDataType(typeName)).map(SqlServerFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
         }
         return null;
     }
@@ -227,7 +240,10 @@ public class OpConfig {
         } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
             H2SqlFieldType fromDataType = H2SqlFieldType.getFromDataType(typeName);
             return fromDataType == H2SqlFieldType.JSON;
-        }
+        } /*else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
+            SqlServerFieldType fromDataType = SqlServerFieldType.getFromDataType(typeName);
+            return fromDataType == SqlServerFieldType.JSON;
+        }*/
         return false;
     }
 
@@ -251,6 +267,9 @@ public class OpConfig {
         } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
             H2SqlFieldType fromDataType1 = H2SqlFieldType.getFromDataType(typeName);
             return fromDataType1 == H2SqlFieldType.CLOB || fromDataType1 == H2SqlFieldType.TEXT;
+        }else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
+            SqlServerFieldType fromDataType1 = SqlServerFieldType.getFromDataType(typeName);
+            return fromDataType1 == SqlServerFieldType.VARCHAR_MAX || fromDataType1 == SqlServerFieldType.NVARCHAR_MAX || fromDataType1 == SqlServerFieldType.TEXT || fromDataType1 == SqlServerFieldType.NTEXT;
         }
         return false;
     }

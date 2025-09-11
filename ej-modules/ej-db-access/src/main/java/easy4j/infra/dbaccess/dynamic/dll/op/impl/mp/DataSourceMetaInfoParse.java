@@ -18,21 +18,20 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.IndexType;
-import easy4j.infra.dbaccess.dynamic.dll.DDLConfig;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
-import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
-import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.AbstractOpSqlCommands;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Getter;
@@ -70,6 +69,20 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
      */
     @Setter
     String tableName;
+
+
+    /**
+     * 在copy数据源的时候会用到这个字段
+     * @see AbstractOpSqlCommands#copyDataSourceDDL(String[], String[], CopyDbConfig)
+     */
+    @Setter
+    String copyTargetDbType;
+
+    /**
+     * 是否转义表名
+     */
+    @Setter
+    boolean escapeTableName;
 
     public DataSourceMetaInfoParse() {
     }
@@ -167,6 +180,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         this.opContext.setDbColumns(columns);
         this.opContext.setPrimaryKes(primaryKes);
         DDLTableInfo ddlTableInfo = new DDLTableInfo();
+        ddlTableInfo.setEscapeTableName(this.escapeTableName);
         ddlTableInfo.setDbType(dbType);
         ddlTableInfo.setDbVersion(this.opContext.getDbVersion());
         ddlTableInfo.setTableName(tableName);
@@ -254,7 +268,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
      * @param indexInfoMetaInfoMap  indexinfo meta info map
      * @return
      */
-    private static DDLFieldInfo getDdlFieldInfoFromColumnMeta(DatabaseColumnMetadata e, String dbType, String dbVersion, OpConfig opConfig, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap, Map<String, IndexInfoMetaInfo> indexInfoMetaInfoMap) {
+    private  DDLFieldInfo getDdlFieldInfoFromColumnMeta(DatabaseColumnMetadata e, String dbType, String dbVersion, OpConfig opConfig, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap, Map<String, IndexInfoMetaInfo> indexInfoMetaInfoMap) {
         String typeName = e.getTypeName();
         String columnName = e.getColumnName();
         int columnSize = e.getColumnSize();
@@ -291,7 +305,21 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setIndex(matchMapIgnoreCase != null);
         ddlFieldInfo.setConstraint(new String[0]);
         ddlFieldInfo.setComment(e.getRemarks());
-        ddlFieldInfo.setLob(opConfig.isLob(typeName, dbType));
+        boolean lob = opConfig.isLob(typeName, dbType);
+        // 如果copy的目标库是oracle 那么主键是不能是clob大字段类型
+        if(lob && DbType.ORACLE.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+            ddlFieldInfo.setLob(false);
+            ddlFieldInfo.setFieldClass(String.class);
+            ddlFieldInfo.setDataType(OracleFieldType.VARCHAR2.getFieldType());
+            ddlFieldInfo.setDataLength(255);
+        }else if(lob && DbType.SQL_SERVER.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+            ddlFieldInfo.setLob(false);
+            ddlFieldInfo.setFieldClass(String.class);
+            ddlFieldInfo.setDataType(SqlServerFieldType.NVARCHAR.getFieldType());
+            ddlFieldInfo.setDataLength(255);
+        }else{
+            ddlFieldInfo.setLob(lob);
+        }
         ddlFieldInfo.setJson(opConfig.isJson(typeName, dbType));
         ddlFieldInfo.setGenConstraint(false);
         ddlFieldInfo.setDllConfig(new DDLConfig());

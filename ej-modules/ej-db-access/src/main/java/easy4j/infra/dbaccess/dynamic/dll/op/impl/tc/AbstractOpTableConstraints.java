@@ -139,7 +139,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "pk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
-                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection);
+                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection, false);
                 String tem = "CONSTRAINT " + cn + " PRIMARY KEY (" + columnName + ")";
                 segments.add(tem);
                 idx++;
@@ -152,7 +152,7 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                 String unionName = opConfig.replaceSpecialSymbol(columnName);
                 String cn = "uk_" + tableName + "_" + unionName + "_" + idx;
                 cn = opConfig.get63UnderLineName(cn);
-                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection);
+                columnName = opConfig.splitStrAndEscape(columnName, SP.COMMA, connection, false);
                 String tem = "CONSTRAINT " + cn + " UNIQUE (" + columnName + ")";
                 segments.add(tem);
                 idx++;

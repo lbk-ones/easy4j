@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.sc;
 
+import easy4j.infra.common.annotations.Desc;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -26,5 +27,9 @@ public class CopyDbConfig {
 
     // 是否执行
     private boolean isExe;
+
+    // 是否表名强制转义
+    private boolean escapeTableName;
+
 
 }

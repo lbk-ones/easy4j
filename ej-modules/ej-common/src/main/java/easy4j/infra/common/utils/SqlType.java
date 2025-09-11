@@ -39,7 +39,7 @@ public final class SqlType {
     static {
         DATASOURCECLASS.put(datatype1, "com.mysql.cj.jdbc.Driver");
         DATASOURCECLASS.put(datatype2, "oracle.jdbc.driver.OracleDriver");
-        DATASOURCECLASS.put(datatype3, "com.microsoft.jdbc.sqlserver.SQLServerDriver");
+        DATASOURCECLASS.put(datatype3, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
         DATASOURCECLASS.put(datatype4, "org.h2.Driver");
         DATASOURCECLASS.put(datatype5, "org.postgresql.Driver");
         DATASOURCECLASS.put(datatype6, "com.ibm.db2.jcc.DB2Driver");

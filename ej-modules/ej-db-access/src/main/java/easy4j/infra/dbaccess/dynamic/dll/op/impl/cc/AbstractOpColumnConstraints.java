@@ -144,18 +144,12 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                     } else {
                         String dbType = this.opContext.getDbType();
                         // pg is special so substr "::"
-                        if (!DbType.POSTGRE_SQL.getDb().equalsIgnoreCase(dbType)) {
-                            if (StrUtil.isNotBlank(def) && !def.endsWith("'")) {
-                                String[] split = ListTs.split(def, "::");
-                                def = ListTs.get(split, 0);
-                            }
-                        }
-                        // compatible not wrap single quote
-                        if(StrUtil.isNotBlank(def) && !StrUtil.isWrap(def,"'","'")){
-                            def = StrUtil.wrap(def,"'","'");
+                        if (StrUtil.isNotBlank(def) && !def.endsWith("'")) {
+                            String[] split = ListTs.split(def, "::");
+                            def = ListTs.get(split, 0);
                         }
                         // oracle not support boolean
-                        if (DbType.ORACLE.getDb().equalsIgnoreCase(dbType)){
+                        if (DbType.ORACLE.getDb().equalsIgnoreCase(dbType) || DbType.SQL_SERVER.getDb().equalsIgnoreCase(dbType)){
                             if(ListTs.equalIgnoreCase(ListTs.asList("false","true"),def)){
                                 if("false".equalsIgnoreCase(def)){
                                     def = "0";
@@ -163,6 +157,12 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
                                     def = "1";
                                 }
                             }
+                        }
+                        // 走到这里的布尔值 不加单引号
+                        boolean isBool = fieldClass == boolean.class || fieldClass == Boolean.class;
+                        // compatible not wrap single quote
+                        if(!isBool && StrUtil.isNotBlank(def) && !StrUtil.isWrap(def,"'","'")){
+                            def = StrUtil.wrap(def,"'","'");
                         }
                         pm.put(DEFAULT, "default " + def);
 
@@ -212,7 +212,7 @@ public abstract class AbstractOpColumnConstraints implements OpColumnConstraints
     public String getFieldName(DDLFieldInfo ddlFieldInfo) {
         String name = ddlFieldInfo.getName();
         CheckUtils.notNull(name, "name");
-        return this.getOpContext().getOpConfig().getColumnNameAndEscape(name, this.getOpContext().getConnection());
+        return this.getOpContext().getOpConfig().getColumnNameAndEscape(name, this.getOpContext().getConnection(), false);
     }
 
     @Override

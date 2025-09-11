@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.StatementUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
@@ -283,6 +284,36 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         return true;
     }
 
+    /**
+     * 数据库存储时候自动转换
+     * 比如oracle、h2、db2 会自动转成大写等
+     * mysql默认大小写不敏感，如果mysql开启了全部小写那么就敏感了 所以这里很难去抉择
+     * sqlserver的大小写也不敏感
+     * 如果返回 unknown 那么代表大小写不敏感 TestTable 和 TestTABLE 是两个不同的表
+     * 如果返回 upper或者lower那么代表 TestTable 和 TestTABLE 从逻辑上说是一个表
+     *
+     * @param dbType
+     * @return
+     */
+    public String getTableNameUpperOrLower(String dbType) {
+        String caseStr = "";
+        if (StrUtil.equals(dbType, DbType.ORACLE.getDb())) {
+            caseStr = "upper";
+        } else if (StrUtil.equals(dbType, DbType.MYSQL.getDb())) {
+            caseStr = "unknown";
+        } else if (StrUtil.equals(dbType, DbType.H2.getDb())) {
+            caseStr = "upper";
+        } else if (StrUtil.equals(dbType, DbType.DB2.getDb())) {
+            caseStr = "upper";
+        } else if (StrUtil.equals(dbType, DbType.POSTGRE_SQL.getDb())) {
+            caseStr = "lower";
+        } else if (StrUtil.equals(dbType, DbType.SQL_SERVER.getDb())) {
+            // sqlserver会统一大小写之后在检查是否存在所以它也是区分大小写的
+            caseStr = "unknown2";
+        }
+        return caseStr;
+    }
+
     @Override
     public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType, CopyDbConfig copyDbConfig) {
         CheckUtils.checkByLambda(this.opContext, OpContext::getDataSource, OpContext::getConnection);
@@ -316,11 +347,13 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         try {
             // load target dataSource all table
             Map<String, TableMetadata> map = Maps.newHashMap();
+            String copyTargetDbType = null;
             if (null != copyDbConfig) {
                 CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
                 DataSource dataSource = copyDbConfig.getDataSource();
                 try (Connection connection = dataSource.getConnection()) {
                     IOpMeta select1 = OpDbMeta.select(connection);
+                    copyTargetDbType = select.getDbType(connection);
                     List<TableMetadata> allTableInfoByTableType = select1.getAllTableInfoByTableType(null, new String[]{"TABLE"});
                     map = ListTs.toMap(allTableInfoByTableType, TableMetadata::getTableName);
                 } catch (SQLException e) {
@@ -330,15 +363,27 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             List<List<String>> objects = ListTs.newList();
             List<DDLTableInfo> ddlTableInfos = ListTs.newList();
             OpConfig opConfig = opContext.getOpConfig();
+            Set<String> distinct = new HashSet<>();
             // parse to DDLTableInfo
             for (TableMetadata tableMetadata : allTableList) {
                 String tableName = tableMetadata.getTableName();
+                String lowerCase = tableName.toLowerCase();
+                String tableNameUpperOrLower = getTableNameUpperOrLower(copyTargetDbType);
+                if (distinct.contains(lowerCase) && !StrUtil.equals("unknown",tableNameUpperOrLower)) {
+                    log.info("table name repeat so skip the table "+tableName);
+                    continue;
+                }else{
+                    distinct.add(lowerCase);
+                }
                 TableMetadata matchMapIgnoreCase = opConfig.getMatchMapIgnoreCase(map, tableName);
                 if (null != matchMapIgnoreCase) {
                     log.info("skip table " + tableName);
                     continue;
                 }
                 DataSourceMetaInfoParse dataSourceMetaInfoParse = new DataSourceMetaInfoParse(oldDataSource, tableMetadata.getTableName(), this.opContext);
+                dataSourceMetaInfoParse.setCopyTargetDbType(copyTargetDbType);
+                dataSourceMetaInfoParse.setEscapeTableName(copyDbConfig != null && copyDbConfig.isEscapeTableName());
+
                 DDLTableInfo parse = dataSourceMetaInfoParse.parse();
                 List<DDLFieldInfo> fieldInfoList = parse.getFieldInfoList();
                 if (CollUtil.isEmpty(fieldInfoList)) {

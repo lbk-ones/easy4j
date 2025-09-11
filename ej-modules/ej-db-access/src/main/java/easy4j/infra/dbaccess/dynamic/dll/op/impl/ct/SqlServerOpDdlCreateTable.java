@@ -14,19 +14,72 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
+import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
+
+import java.sql.Connection;
+import java.util.List;
 
 /**
  *
  * @author bokun.li
  * @date 2025/8/23
  */
-public class SqlServerOpDdlCreateTable extends AbstractOpDdlCreateTable{
+public class SqlServerOpDdlCreateTable extends AbstractOpDdlCreateTable {
 
     @Override
     public boolean match(OpContext opContext) {
         return DbType.SQL_SERVER.getDb().equals(opContext.getDbType());
+    }
 
+    @Override
+    public List<String> getCreateTableComments() {
+        OpContext opContext = this.getOpContext();
+        String tableComments = getTableComments();
+        List<String> commentsList = ListTs.newList();
+        if(StrUtil.isBlank(tableComments)) return commentsList;
+        DDLTableInfo ddlTableInfo = opContext.getDdlTableInfo();
+        String tableName = ddlTableInfo.getTableName();
+        String schema = StrUtil.blankToDefault(ddlTableInfo.getSchema(), "dbo");
+        String tableCc = "EXEC sp_addextendedproperty\n" +
+                "@name = N'MS_Description'," +
+                "@value = N'" + tableComments + "',\n" +
+                "@level0type = N'SCHEMA',\n" +
+                "@level0name = N'" + schema + "',\n" +
+                "@level1type = N'TABLE',\n" +
+                "@level1name = N'" + tableName + "'";
+        commentsList.add(tableCc);
+        List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
+        for (DDLFieldInfo ddlFieldInfo : fieldInfoList) {
+            String fieldComment = this.getFieldComment(ddlFieldInfo);
+            if (StrUtil.isNotBlank(fieldComment)) {
+                commentsList.add(fieldComment);
+            }
+        }
+        return commentsList;
+    }
+
+    @Override
+    public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
+
+        // 这里不转义
+        String fieldComments = getFieldComments(ddlFieldInfo);
+        String schema = StrUtil.blankToDefault(ddlFieldInfo.getSchema(), "dbo");
+        String tableName = ddlFieldInfo.getTableName();
+        String name = ddlFieldInfo.getName();
+        return "EXEC sp_addextendedproperty \n" +
+                "@name = N'MS_Description',\n" +
+                "@value = N'" + fieldComments + "',\n" +
+                "@level0type = N'SCHEMA',\n" +
+                "@level0name = N'" + schema + "',\n" +
+                "@level1type = N'TABLE',\n" +
+                "@level1name = N'" + tableName + "',\n" +
+                "@level2type = N'COLUMN',\n" +
+                "@level2name = N'" + name + "'";
     }
 }

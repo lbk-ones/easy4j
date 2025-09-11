@@ -9,7 +9,6 @@ import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.MapListHandler;
@@ -26,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 数据库重新从ds中刷新，其他数据库搞坏了就重新来跑一下这个
+ */
 @Easy4JStarter(
         serverName = "test-db-access",
         serverPort = 9090,
         enableH2 = true
 )
-@SpringBootTest(classes = DDLParseJavaClassTestPG.class, properties = {
+@SpringBootTest(classes = OpDDLTestComment.class, properties = {
         "spring.datasource.type=com.zaxxer.hikari.HikariDataSource",
         "spring.datasource.username=drhi_user",
         "spring.datasource.password=drhi_password",
@@ -39,7 +41,7 @@ import java.util.stream.Collectors;
         "spring.datasource.driver-class-name=org.postgresql.Driver",
         "spring.datasource.hikari.maximum-pool-size=50"
 })
-class DDLParseJavaClassTestPG {
+class OpDDLTestComment {
 
     @Autowired
     DataSource dataSource;
@@ -53,6 +55,7 @@ class DDLParseJavaClassTestPG {
 
     @Test
     void dbDatabaseMetaInfo() throws SQLException {
+        // byte.class,byte[].class,Byte.class,short.class,Short.class,int.class,Integer.class,float.class,Float.class,double.class,Double.class,long.class,Long.class,boolean.class,Boolean.class,char.class,Character.class,java.util.Date.class,java.sql.Date.class,java.sql.Timestamp.class,java.sql.Time.class,LocalDate.class, LocalDateTime.class, LocalTime.class
         try(Connection connection = dataSource.getConnection()){
             DatabaseMetaData metaData = connection.getMetaData();
             int databaseMajorVersion = metaData.getDatabaseMajorVersion();
@@ -71,7 +74,7 @@ class DDLParseJavaClassTestPG {
             System.out.println(JacksonUtil.toJson(handle));
             JdbcHelper.close(tables);
 
-            ResultSet sscProduct = metaData.getColumns(catalog, schema, "ssc_product", null);
+            ResultSet sscProduct = metaData.getColumns(catalog, schema, "SqlServerAllTypesDemo", null);
             List<Map<String, Object>> handle1 = new MapListHandler().handle(sscProduct);
 
             System.out.println(JacksonUtil.toJson(handle1));
@@ -90,10 +93,10 @@ class DDLParseJavaClassTestPG {
         System.out.println(opDbMeta.getMajorVersion());
         System.out.println(opDbMeta.getMinorVersion());
         System.out.println(opDbMeta.getProductVersion());
-        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos( "test_create_table")));
-        System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "test_create_table")));
-        System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "test_create_table")));
-        System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "test_create_table")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos( "SqlServerAllTypesDemo")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "SqlServerAllTypesDemo")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "SqlServerAllTypesDemo")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "SqlServerAllTypesDemo")));
 
     }
 
@@ -218,107 +221,28 @@ class DDLParseJavaClassTestPG {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    @Test
-    void testOracle() throws SQLException {
-        DataSource oracle19cDataSource = getOracle19cDataSource();
-        try(Connection connection = oracle19cDataSource.getConnection()){
-            IOpMeta select = OpDbMeta.select(connection);
-            String productVersion = select.getProductVersion();
-            System.out.println("===================================");
-            System.out.println(productVersion);
-            System.out.println(connection.getSchema());
-            System.out.println(connection.getCatalog());
-            System.out.println("===================================");
-        }
 
+    public DataSource getMssqlDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost:1433;database=test;encrypt=false");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("sa");
+        hikariConfig.setPassword("123456");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
     }
-    // pg 到 oracle
+
+    // ds pg 到 pg test2
     @Test
-    void OpMetaTest4() {
+    void dsPgToTest2Pg() {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(true);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-    // pg 到 pg
-    @Test
-    void PgToPg() {
-        DataSource test2Pg = getTest2Pg();
-        DataSource testPg = getTestPg();
-        try (DynamicDDL dynamicDDL = new DynamicDDL(testPg)) {
-            List<String> strings = dynamicDDL.copyDataSourceDDL(null, null, new CopyDbConfig().setDataSource(test2Pg).setExe(true));
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-------------------------------------");
-            }
-        }
-    }
-
-    // Oracle 到 pg
-    @Test
-    void OracleToPg() throws SQLException {
-        try (DynamicDDL dynamicDDL = new DynamicDDL(getOracle19cDataSource())) {
-            DataSource testPg = getTestPg();
-            List<String> strings = dynamicDDL.copyDataSourceDDL(null, null, new CopyDbConfig().setDataSource(testPg).setExe(true));
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-------------------------------------");
-            }
-        }
-    }
-    // 从 oracle 到 mysql
-    @Test
-    void OpMetaTest5() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getOracle19cDataSource())) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getMysql5DataSource()).setExe(true);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-    // 从 mysql 到 oracle
-    @Test
-    void OpMetaTest6() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql5DataSource())) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getOracle19cDataSource()).setExe(true);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-
-    // mysql5 到 mysql8
-    @Test
-    void Mysql5ToMysql8() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql5DataSource())) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getMysql8Test2DataSource()).setExe(true);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-    // mysql8 到 PG
-    @Test
-    void Mysql8ToPg() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql8Test2DataSource())) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
             copyDbConfig.setDataSource(getTest2Pg()).setExe(true);
 
@@ -329,26 +253,25 @@ class DDLParseJavaClassTestPG {
             }
         }
     }
-    // PG 到 mysql8
+    //  ds pg 到 pg oracle19c test_copy
     @Test
-    void PgToMysql8() {
+    void dspgToOracle19cTestCopy() {
+        try (DynamicDDL dynamicDDL = new DynamicDDL(dataSource)) {
+            DataSource testPg = getOracle19cTestCopyDataSource();
+            List<String> strings = dynamicDDL.copyDataSourceDDL(null, null, new CopyDbConfig().setDataSource(testPg).setExe(true));
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-------------------------------------");
+            }
+        }
+    }
+
+    //  ds pg 到 mssql
+    @Test
+    void dspgToMssql() {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getMysql8Test2DataSource()).setExe(false);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
-    // PG 到 mysql5
-    @Test
-    void PgToMysql5() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getTest2Pg())) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getMysql5TestCopyDataSource()).setExe(true);
+            copyDbConfig.setDataSource(getMssqlDataSource()).setExe(true);
 
             List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {
@@ -358,18 +281,4 @@ class DDLParseJavaClassTestPG {
         }
     }
 
-    // mysql 到 oracle
-    @Test
-    void Mysql8ToOracle() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(getMysql8Test2DataSource())) {
-            CopyDbConfig copyDbConfig = new CopyDbConfig();
-            copyDbConfig.setDataSource(getOracle19cTestCopyDataSource()).setExe(true);
-
-            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
-            for (String string : strings) {
-                System.out.println(string);
-                System.out.println("-----------------------------");
-            }
-        }
-    }
 }
