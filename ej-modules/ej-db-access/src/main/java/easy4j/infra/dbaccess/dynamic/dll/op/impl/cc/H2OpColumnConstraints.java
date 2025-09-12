@@ -139,7 +139,7 @@ public class H2OpColumnConstraints extends AbstractOpColumnConstraints {
             if (isStr && dataLength <= 0) {
                 dataLength = opConfig.getStrDefaultLength();
             }
-            if (h2SqlFieldType == H2SqlFieldType.DECIMAL) {
+            if (h2SqlFieldType == H2SqlFieldType.DECIMAL || h2SqlFieldType == H2SqlFieldType.NUMERIC) {
                 dataLength = dataLength <= 0 ? opConfig.getNumLengthDefaultLength() : dataLength;
                 dataDecimal = dataDecimal <= 0 ? opConfig.getNumDecimalDefaultLength() : dataDecimal;
                 if (dataLength < dataDecimal) {

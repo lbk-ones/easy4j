@@ -317,6 +317,11 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
             ddlFieldInfo.setFieldClass(String.class);
             ddlFieldInfo.setDataType(SqlServerFieldType.NVARCHAR.getFieldType());
             ddlFieldInfo.setDataLength(255);
+        }else if(lob && DbType.H2.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+            ddlFieldInfo.setLob(false);
+            ddlFieldInfo.setFieldClass(String.class);
+            ddlFieldInfo.setDataType(H2SqlFieldType.VARCHAR.getFieldType());
+            ddlFieldInfo.setDataLength(255);
         }else{
             ddlFieldInfo.setLob(lob);
         }

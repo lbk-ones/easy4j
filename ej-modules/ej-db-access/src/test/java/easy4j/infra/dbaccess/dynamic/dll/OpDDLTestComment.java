@@ -238,6 +238,22 @@ class OpDDLTestComment {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
+    public DataSource getH2DataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:h2:tcp://10.100.128.93:9092/~/test");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("sa");
+        hikariConfig.setPassword("password");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
 
     // ds pg 到 pg test2
     @Test
@@ -272,6 +288,21 @@ class OpDDLTestComment {
         try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
             CopyDbConfig copyDbConfig = new CopyDbConfig();
             copyDbConfig.setDataSource(getMssqlDataSource()).setExe(true);
+
+            List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
+            for (String string : strings) {
+                System.out.println(string);
+                System.out.println("-----------------------------");
+            }
+        }
+    }
+
+    //  ds pg 到 H2
+    @Test
+    void dspgToH2() {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource)) {
+            CopyDbConfig copyDbConfig = new CopyDbConfig();
+            copyDbConfig.setDataSource(getH2DataSource()).setExe(true);
 
             List<String> strings = sscElementTest.copyDataSourceDDL(null, new String[]{"TABLE"}, copyDbConfig);
             for (String string : strings) {

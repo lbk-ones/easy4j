@@ -223,8 +223,6 @@ public abstract class AbstractOpTableConstraints implements OpTableConstraints {
                         String dataType = ddlFieldInfo1.getDataType();
                         if (!ListTs.equalIgnoreCase(ListTs.asList(H2SqlFieldType.CLOB.getFieldType(), H2SqlFieldType.UUID.getFieldType()), dataType)) {
                             tempList.add(column);
-                        } else {
-                            System.out.println(dataType);
                         }
                     }
                 }
