@@ -11,4 +11,9 @@ public class OracleOpDdlAlter extends AbstractOpDdlAlter {
         String dbType = opContext.getDbType();
         return DbType.ORACLE.getDb().equals(dbType);
     }
+
+    @Override
+    public String getDropTableTemplate() {
+        return "drop table [" + TABLE_NAME + "]";
+    }
 }

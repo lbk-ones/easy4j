@@ -61,41 +61,41 @@ public abstract class AbstractCombinationOp implements CombinationOp {
 
 
     @Override
-    public String getAddColumnSegment(DDLFieldInfo fieldInfo) {
+    public String addColumn(DDLFieldInfo fieldInfo) {
         return callback(() ->
-                getOpDdlAlter().getAddColumnSegment(fieldInfo)
+                getOpDdlAlter().addColumn(fieldInfo)
         );
     }
 
     @Override
-    public String getRemoveColumnSegment(DDLFieldInfo fieldInfo) {
-        return callback(() -> getOpDdlAlter().getRemoveColumnSegment(fieldInfo));
+    public String removeColumn(DDLFieldInfo fieldInfo) {
+        return callback(() -> getOpDdlAlter().removeColumn(fieldInfo));
     }
 
     @Override
-    public String getRenameColumnNameSegment(String oldName, String newColumnName) {
-        return callback(() -> getOpDdlAlter().getRenameColumnNameSegment(oldName, newColumnName));
+    public String renameColumnName(String oldName, String newColumnName) {
+        return callback(() -> getOpDdlAlter().renameColumnName(oldName, newColumnName));
     }
 
     @Override
-    public String getRenameConstraintNameSegment(String newConstraintName) {
-        return callback(() -> getOpDdlAlter().getRenameConstraintNameSegment(newConstraintName));
+    public String renameConstraintName(String newConstraintName) {
+        return callback(() -> getOpDdlAlter().renameConstraintName(newConstraintName));
     }
 
     @Override
-    public String getRenameTableNameSegment(String newTableName) {
-        return callback(() -> getOpDdlAlter().getRenameTableNameSegment(newTableName));
+    public String renameTableName(String newTableName) {
+        return callback(() -> getOpDdlAlter().renameTableName(newTableName));
 
     }
 
     @Override
-    public String getSetSchemaNewNameSegment(String schemaNewName) {
-        return callback(() -> getOpDdlAlter().getSetSchemaNewNameSegment(schemaNewName));
+    public String setSchemaNewName(String schemaNewName) {
+        return callback(() -> getOpDdlAlter().setSchemaNewName(schemaNewName));
     }
 
     @Override
-    public String getSetNewTableSpaceSegment(String newTableSpaceName) {
-        return callback(() -> getOpDdlAlter().getSetNewTableSpaceSegment(newTableSpaceName));
+    public String setNewTableSpace(String newTableSpaceName) {
+        return callback(() -> getOpDdlAlter().setNewTableSpace(newTableSpaceName));
     }
 
     @Override
@@ -141,6 +141,17 @@ public abstract class AbstractCombinationOp implements CombinationOp {
     @Override
     public List<String> copyDataSourceDDL(String[] tablePrefix, String[] tableType, CopyDbConfig copyDbConfig) {
         return getOpSqlCommands().copyDataSourceDDL(tablePrefix, tableType, copyDbConfig);
+    }
+
+    @Override
+    public String dropTableIfExists(String tableName, boolean isExe) {
+        return getOpDdlAlter().dropTableIfExists(tableName,isExe);
+    }
+
+    @Override
+    public List<String> dropALlTableIfExists(boolean isExe) {
+        return getOpDdlAlter().dropALlTableIfExists(isExe);
+
     }
 
     public <R> R callback(Supplier<R> consumer) {

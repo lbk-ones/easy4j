@@ -212,7 +212,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                         return StrUtil.equalsIgnoreCase(e2.getColumnName(), columnName);
                     })).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(collect)) {
-                List<String> map = ListTs.map(collect, opDdlAlter::getAddColumnSegment);
+                List<String> map = ListTs.map(collect, opDdlAlter::addColumn);
                 List<String> map2 = ListTs.map(collect, opDdlCreateTable::getFieldComment).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.toList());
                 if (CollUtil.isNotEmpty(map2)) map.addAll(map2);
                 sqlSegment = String.join(SP.SEMICOLON + SP.NEWLINE, map);

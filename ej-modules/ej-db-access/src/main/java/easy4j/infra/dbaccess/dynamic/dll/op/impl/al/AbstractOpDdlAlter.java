@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -12,11 +14,18 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import lombok.Getter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * AbstractOpDdlAlter
@@ -36,7 +45,8 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
 
     public final String addColumnTemplate = "alter table [" + TABLE_NAME + "] add column [" + COLUMN_CONSTRAINT + "]";
     public final String dropColumnTemplate = "alter table [" + TABLE_NAME + "] drop column [" + COLUMN_CONSTRAINT + "]";
-    public final String renameColumnTemplate = "alter table [" + TABLE_NAME + "] rename column ["+COLUMN_NAME+"] TO ["+NEW_COLUMN_NAME+"]";
+    public final String renameColumnTemplate = "alter table [" + TABLE_NAME + "] rename column [" + COLUMN_NAME + "] TO [" + NEW_COLUMN_NAME + "]";
+    public final String dropTableTemplate = "drop table if exists [" + TABLE_NAME + "]";
 
     public static final Map<String, String> COLUMN_MAP = Maps.newHashMap();
     public final Map<String, String> EXT_MAP = Maps.newHashMap();
@@ -64,7 +74,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     }
 
     @Override
-    public String getAddColumnSegment(DDLFieldInfo fieldInfo) {
+    public String addColumn(DDLFieldInfo fieldInfo) {
         String addColumnTemplate1 = getAddColumnTemplate();
         return this.getOpContext().getOpConfig().patchStrWithTemplate(fieldInfo, addColumnTemplate1, COLUMN_MAP, EXT_MAP, this::getAddColumnSegmentMap);
     }
@@ -88,7 +98,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     }
 
     @Override
-    public String getRemoveColumnSegment(DDLFieldInfo fieldInfo) {
+    public String removeColumn(DDLFieldInfo fieldInfo) {
         String dropColumnTemplate1 = getDropColumnTemplate();
         return this.getOpContext().getOpConfig().patchStrWithTemplate(fieldInfo, dropColumnTemplate1, COLUMN_MAP, EXT_MAP, this::getRemoveColumnSegmentMap);
     }
@@ -109,7 +119,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
         OpConfig opConfig = opContext1.getOpConfig();
         DDLTableInfo ddlTableInfo = opContext1.getDdlTableInfo();
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
-        CheckUtils.notNull(fieldInfoList,"the fieldInfoList is should not empty!");
+        CheckUtils.notNull(fieldInfoList, "the fieldInfoList is should not empty!");
         OpColumnConstraints opColumnConstraints = OpSelector.selectOpCC(opContext1);
         String columnName = opConfig.getColumnName(oldName);
         String columnConstraints = "";
@@ -123,7 +133,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
             }
         }
         if (!exist) {
-            throw new EasyException(String.format("the field %s is not exists in %s",oldName, s));
+            throw new EasyException(String.format("the field %s is not exists in %s", oldName, s));
         }
         String trim = StrUtil.trim(columnConstraints.replaceFirst(oldName, ""));
         resMap.put(COLUMN_CONSTRAINT, trim);
@@ -131,29 +141,79 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     }
 
     @Override
-    public String getRenameColumnNameSegment(String oldName, String newColumnName) {
+    public String renameColumnName(String oldName, String newColumnName) {
         return this.getOpContext()
                 .getOpConfig()
                 .patchStrWithTemplate(new Pair<>(oldName, newColumnName), getRenameColumnTemplate(), COLUMN_MAP, EXT_MAP, this::getRenameColumnNameSegmentMap);
     }
 
     @Override
-    public String getRenameConstraintNameSegment(String newConstraintName) {
+    public String renameConstraintName(String newConstraintName) {
         return null;
     }
 
     @Override
-    public String getRenameTableNameSegment(String newTableName) {
+    public String renameTableName(String newTableName) {
         return null;
     }
 
     @Override
-    public String getSetSchemaNewNameSegment(String schemaNewName) {
+    public String setSchemaNewName(String schemaNewName) {
         return null;
     }
 
     @Override
-    public String getSetNewTableSpaceSegment(String newTableSpaceName) {
+    public String setNewTableSpace(String newTableSpaceName) {
         return null;
+    }
+
+    public Map<String,String> getDropTableMap(String tableName){
+        Map<@Nullable String, @Nullable String> res = Maps.newHashMap();
+        String schema = this.getOpContext().getSchema();
+        String joinStr = ListTs.asList(schema, tableName).stream().filter(StrUtil::isNotBlank).collect(Collectors.joining(SP.DOT));
+        res.put(TABLE_NAME,joinStr);
+        return res;
+    }
+    @Override
+    public String dropTableIfExists(String tableName, boolean isExe) {
+        OpContext opContext1 = this.getOpContext();
+        Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
+        IOpMeta select = OpDbMeta.select(connection);
+        List<TableMetadata> tableInfos = select.getAllTableInfoByTableType(tableName, new String[]{"TABLE"});
+        String s = this.getOpContext().getOpConfig().patchStrWithTemplate(tableName, this.getDropTableTemplate(), COLUMN_MAP, EXT_MAP, this::getDropTableMap);
+        if (ListTs.isEmpty(tableInfos)) {
+            return s;
+        }
+        if(isExe){
+            OpSqlCommands opSqlCommands = OpSelector.selectOpSqlCommands(this.getOpContext());
+            opSqlCommands.exeDDLStr(connection,s,false);
+        }
+        return s;
+    }
+
+    @Override
+    public List<String> dropALlTableIfExists(boolean isExe) {
+        OpContext opContext1 = this.getOpContext();
+        Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
+        IOpMeta select = OpDbMeta.select(connection);
+        List<TableMetadata> allTableInfoByTableType = select.getAllTableInfoByTableType(null, new String[]{"TABLE"});
+        List<String> res = ListTs.newList();
+        if(ListTs.isNotEmpty(allTableInfoByTableType)){
+            for (TableMetadata tableMetadata : allTableInfoByTableType) {
+                String s = this.getOpContext()
+                        .getOpConfig()
+                        .patchStrWithTemplate(tableMetadata.getTableName(), this.getDropTableTemplate(), COLUMN_MAP, EXT_MAP, this::getDropTableMap);
+                res.add(s);
+            }
+            OpSqlCommands opSqlCommands = OpSelector.selectOpSqlCommands(this.getOpContext());
+            if(isExe){
+                for (String re : res) {
+                    if(StrUtil.isNotBlank(re)){
+                        opSqlCommands.exeDDLStr(connection,re,false);
+                    }
+                }
+            }
+        }
+        return res;
     }
 }

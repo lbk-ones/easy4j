@@ -16,6 +16,8 @@ package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 
+import java.util.List;
+
 /**
  * OpDdlAlter
  * alter 从开始一直倒字段约束之间的部分
@@ -24,18 +26,35 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
  */
 public interface OpDdlAlter extends IOpContext,IOpMatch{
 
-    String getAddColumnSegment(DDLFieldInfo fieldInfo);
+    String addColumn(DDLFieldInfo fieldInfo);
 
-    String getRemoveColumnSegment(DDLFieldInfo fieldInfo);
+    String removeColumn(DDLFieldInfo fieldInfo);
 
-    String getRenameColumnNameSegment(String oldName, String newColumnName);
+    String renameColumnName(String oldName, String newColumnName);
 
-    String getRenameConstraintNameSegment(String newConstraintName);
+    String renameConstraintName(String newConstraintName);
 
-    String getRenameTableNameSegment(String newTableName);
+    String renameTableName(String newTableName);
 
-    String getSetSchemaNewNameSegment(String schemaNewName);
+    String setSchemaNewName(String schemaNewName);
 
-    String getSetNewTableSpaceSegment(String newTableSpaceName);
+    String setNewTableSpace(String newTableSpaceName);
+
+    /**
+     * 删除存在的表
+     * @param tableName 表名称，不能夹杂其他名称
+     * @param isExe 是否立即执行，false则代表只返回语句，true既执行语句也返回语句
+     * @author bokun.li
+     * @date 2025/9/12
+     */
+    String dropTableIfExists(String tableName, boolean isExe);
+
+    /**
+     * 清除所有的表，慎用
+     *
+     * @author bokun.li
+     * @date 2025/9/12
+     */
+    List<String> dropALlTableIfExists(boolean isExe);
 
 }
