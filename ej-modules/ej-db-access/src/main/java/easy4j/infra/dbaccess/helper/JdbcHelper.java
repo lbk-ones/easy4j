@@ -328,21 +328,23 @@ public abstract class JdbcHelper {
      * @throws Exception
      */
     public static Dialect getDialect(Connection conn) {
+        Dialect resDialect;
         try {
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             String databaseProductName = databaseMetaData.getDatabaseProductName();
             String dbType = databaseTypeMappings.getProperty(databaseProductName);
             if (StrUtil.isEmpty(dbType)) return new AbstractDialect();
-            if (dbType.equalsIgnoreCase(DbType.MYSQL.getDb())) return new MySqlDialect();
-            else if (dbType.equalsIgnoreCase(DbType.ORACLE.getDb())) return new OracleDialect();
-            else if (dbType.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb())) return new PostgresqlDialect();
-            else if (dbType.equalsIgnoreCase(DbType.SQL_SERVER.getDb())) return new SQLServerDialect();
-            else if (dbType.equalsIgnoreCase(DbType.DB2.getDb())) return new Db2Dialect();
-            else if (dbType.equalsIgnoreCase(DbType.H2.getDb())) return new H2Dialect();
-            else return new AbstractDialect();
+            if (dbType.equalsIgnoreCase(DbType.MYSQL.getDb())) resDialect = new MySqlDialect();
+            else if (dbType.equalsIgnoreCase(DbType.ORACLE.getDb())) resDialect = new OracleDialect();
+            else if (dbType.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb())) resDialect = new PostgresqlDialect();
+            else if (dbType.equalsIgnoreCase(DbType.SQL_SERVER.getDb())) resDialect = new SQLServerDialect();
+            else if (dbType.equalsIgnoreCase(DbType.DB2.getDb())) resDialect = new Db2Dialect();
+            else if (dbType.equalsIgnoreCase(DbType.H2.getDb())) resDialect = new H2Dialect();
+            else resDialect = new AbstractDialect();
         } catch (SQLException e) {
             throw translateSqlException("getDialect", null, e);
         }
+        return resDialect;
     }
 
     // 这个方法最好不用 数据库方言最好从connection中拿取 不然可能会乱套

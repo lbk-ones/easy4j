@@ -8,6 +8,8 @@ import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
@@ -16,6 +18,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

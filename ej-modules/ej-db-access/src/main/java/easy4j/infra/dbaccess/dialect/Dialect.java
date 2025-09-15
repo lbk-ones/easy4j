@@ -31,6 +31,7 @@ import java.util.Map;
  * 数据库差异的方言接口
  */
 public interface Dialect {
+
     /**
      * 根据分页对象获取分页sql语句
      *

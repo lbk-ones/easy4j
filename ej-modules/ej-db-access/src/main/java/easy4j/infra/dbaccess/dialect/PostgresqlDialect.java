@@ -24,10 +24,10 @@ import easy4j.infra.dbaccess.Page;
  */
 public class PostgresqlDialect extends AbstractDialect {
 
-    @Override
+    /*@Override
     public Wrapper getWrapper() {
         return new Wrapper('"','"');
-    }
+    }*/
 
     /**
      * Postgresql分页通过limit实现

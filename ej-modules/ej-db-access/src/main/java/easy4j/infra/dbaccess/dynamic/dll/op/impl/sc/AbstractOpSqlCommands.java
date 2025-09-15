@@ -13,6 +13,7 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
+import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
@@ -37,6 +38,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 import java.util.stream.Collectors;
+
+import static easy4j.infra.dbaccess.CommonDBAccess.UPDATE;
 
 @Getter
 public abstract class AbstractOpSqlCommands implements OpSqlCommands {
@@ -69,16 +72,14 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         }
     }
 
-    @Override
-    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
-        if (CollUtil.isEmpty(dict)) return dict;
+    public List<DatabaseColumnMetadata> checkDynamic(Map<String, Object> dict) {
         OpContext opContext1 = this.getOpContext();
         // table is if exist？
         TableMetadata tableMetadata = opContext1.getTableMetadata();
         if (null == tableMetadata) {
             throw EasyException.wrap(BusCode.A00060, opContext1.getTableName());
         }
-        // only table can insert!
+        // only table can insert or update!
         String tableType = tableMetadata.getTableType();
         if (!StrUtil.equalsIgnoreCase(tableType, "TABLE")) {
             throw EasyException.wrap(BusCode.A00047, tableType);
@@ -89,6 +90,20 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         commonDBAccess.setToUnderline(opConfig.isToUnderLine());
         List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
         CheckUtils.notNull(dbColumns, "dbColumns");
+
+        String tableName = opContext1.getTableName();
+        CheckUtils.notNull(tableName, "tableName");
+
+        return dbColumns;
+    }
+
+    @Override
+    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
+        if (CollUtil.isEmpty(dict)) return dict;
+        List<DatabaseColumnMetadata> dbColumns = checkDynamic(dict);
+        OpContext opContext1 = this.getOpContext();
+        OpConfig opConfig = opContext1.getOpConfig();
+        CommonDBAccess commonDBAccess = opConfig.getCommonDBAccess();
         List<DatabaseColumnMetadata> noAuto = dbColumns.stream().filter(e -> !"YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
         List<DatabaseColumnMetadata> AutoKey = dbColumns.stream().filter(e -> "YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
         List<String> dbColumnNmes = ListTs.map(noAuto, DatabaseColumnMetadata::getColumnName);
@@ -103,7 +118,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         prepare(dict, dbColumnNmes, objects, fieldNames, zwf);
 
         String tableName = opContext1.getTableName();
-        CheckUtils.notNull(tableName, "tableName");
         String schema = opContext1.getSchema();
         String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining("."));
         String finalSql = commonDBAccess.DDlLine(
@@ -140,6 +154,61 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             JdbcHelper.close(preparedStatement);
             JdbcHelper.close(generatedKeys);
         }
+    }
+
+    @Override
+    public int dynamicUpdate(Map<String, Object> dict, boolean updateNull, WhereBuild whereBuild) {
+        if (CollUtil.isEmpty(dict)) return 0;
+
+        // check
+        checkDynamic(dict);
+
+        List<Object> args = ListTs.newList();
+        OpContext opContext1 = this.getOpContext();
+        OpConfig opConfig = opContext1.getOpConfig();
+        Connection connection = opContext1.getConnection();
+        CommonDBAccess commonDBAccess = opConfig.getCommonDBAccess();
+        String tableName = opContext1.getTableName();
+        String schema = opContext1.getSchema();
+        String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining(SP.DOT));
+        List<String> nameList = ListTs.newList();
+        for (String s : dict.keySet()) {
+            Object o = dict.get(s);
+            if(!updateNull && null == o){
+                continue;
+            }
+            s = opConfig.escapeCn(s, connection, false);
+            nameList.add(opConfig.getColumnName(s) + " = ? ");
+            args.add(o);
+        }
+        if(ListTs.isEmpty(nameList)){
+            log.info("The field to be updated is empty ！！！！");
+            return 0;
+        }
+        // build where
+        String whereBuildStr = commonDBAccess.where(whereBuild.build(args));
+
+        String escapeTableName = opConfig.splitStrAndEscape(tableName2, SP.DOT, connection, false);
+
+        // get final sql
+        String finalSql = commonDBAccess.DDlLine(UPDATE, escapeTableName, whereBuildStr, nameList.toArray(new String[]{}));
+        Pair<String, Date> stringDatePair = null;
+        int effectRows = 0;
+        PreparedStatement preparedStatement = null;
+        ResultSet generatedKeys = null;
+        try {
+            stringDatePair = commonDBAccess.recordSql(finalSql, connection, args);
+            preparedStatement = connection.prepareStatement(finalSql);
+            StatementUtil.fillParams(preparedStatement, args);
+            effectRows = preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("dynamicSave", finalSql, e);
+        } finally {
+            commonDBAccess.printSql(stringDatePair, effectRows);
+            JdbcHelper.close(preparedStatement);
+            JdbcHelper.close(generatedKeys);
+        }
+        return effectRows;
     }
 
     @Override
@@ -369,10 +438,10 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 String tableName = tableMetadata.getTableName();
                 String lowerCase = tableName.toLowerCase();
                 String tableNameUpperOrLower = getTableNameUpperOrLower(copyTargetDbType);
-                if (distinct.contains(lowerCase) && !StrUtil.equals("unknown",tableNameUpperOrLower)) {
-                    log.info("table name repeat so skip the table "+tableName);
+                if (distinct.contains(lowerCase) && !StrUtil.equals("unknown", tableNameUpperOrLower)) {
+                    log.info("table name repeat so skip the table " + tableName);
                     continue;
-                }else{
+                } else {
                     distinct.add(lowerCase);
                 }
                 TableMetadata matchMapIgnoreCase = opConfig.getMatchMapIgnoreCase(map, tableName);

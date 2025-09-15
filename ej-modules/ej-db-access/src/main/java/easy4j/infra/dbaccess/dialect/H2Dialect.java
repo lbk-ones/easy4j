@@ -16,7 +16,6 @@ package easy4j.infra.dbaccess.dialect;
 
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.dbaccess.Page;
 
 /**
@@ -24,10 +23,10 @@ import easy4j.infra.dbaccess.Page;
  */
 public class H2Dialect extends AbstractDialect {
 
-    @Override
+    /*@Override
     public Wrapper getWrapper() {
         return new Wrapper('"','"');
-    }
+    }*/
 
     /**
      * mysql分页通过limit实现

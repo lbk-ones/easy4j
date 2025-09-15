@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.header.CheckUtils;
+import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
@@ -110,6 +111,14 @@ public class DynamicDDL extends AbstractCombinationOp {
         this.dataSource = dataSource;
         this.ddlTableInfo = null;
         getContext();
+    }
+
+    // parse from other db connection info
+    public DynamicDDL(String driverClassName,String url,String user,String password,String tableName) {
+        this.dataSource = new TempDataSource(driverClassName,url,user,password);
+        this.ddlTableInfo = null;
+        OpContext context = getContext();
+        context.setTableName(tableName);
     }
 
     @Override

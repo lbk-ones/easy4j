@@ -20,9 +20,11 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dialect.PostgresqlDialect;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,8 +73,8 @@ public class Condition {
     }
 
 
-    public String getSqlSegment(List<Object> argsList, Dialect dialect) {
-        String column2 = dialect.getWrapper().wrap(getColumn());
+    public String getSqlSegment(List<Object> argsList, Dialect dialect, OpConfig opConfig, Connection connection) {
+        String column2 =opConfig.escapeCn(getColumn(),connection,false);
         // only str and equal and pg
         if (value != null && value instanceof CharSequence && ((operator != null && operator != CompareOperator.EQUAL) || !(dialect instanceof PostgresqlDialect))) {
             value = StrUtil.replace(String.valueOf(value), PG_TYPE, SP.EMPTY);

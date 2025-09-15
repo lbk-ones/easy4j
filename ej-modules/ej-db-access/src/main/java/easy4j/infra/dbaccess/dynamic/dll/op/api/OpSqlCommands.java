@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
+import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 
 import javax.annotation.Nullable;
@@ -54,6 +55,15 @@ public interface OpSqlCommands extends IOpContext, IOpMatch {
      * @param dict
      */
     Map<String, Object> dynamicSave(Map<String, Object> dict);
+
+    /**
+     * 动态字段更新
+     * 指定表名称，然后将传入得dict中得键值对组装好，根据传入的条件更新表
+     *
+     * @param dict
+     */
+    int dynamicUpdate(Map<String, Object> dict, boolean updateNull, WhereBuild whereBuild);
+
 
     /**
      * 通过java Class 自动执行ddl语句 没有就建表，有就检测要新增得字段，只新增不修改

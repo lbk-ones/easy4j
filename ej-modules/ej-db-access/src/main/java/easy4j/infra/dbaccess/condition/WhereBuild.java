@@ -24,6 +24,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.common.exception.EasyException;
 import jodd.util.StringPool;
@@ -108,6 +109,8 @@ public class WhereBuild implements Serializable {
     @JsonIgnore
     public Dialect dialect;
 
+    private final OpConfig opConfig = new OpConfig();
+
 
     @Getter
     public boolean toUnderLine = true;
@@ -131,10 +134,9 @@ public class WhereBuild implements Serializable {
 
     @JsonIgnore
     public List<String> getSelectFieldsStr() {
-        Wrapper wrapper = getDialect().getWrapper();
         return selectFields.stream()
                 .peek(e -> e.setToUnderLine(this.toUnderLine))
-                .map(e -> wrapper.wrap(e.getColumn()))
+                .map(e -> opConfig.escapeCn(e.getColumn(),this.connection,false))
                 .filter(StrUtil::isNotBlank)
                 .collect(Collectors.toList());
     }
@@ -408,14 +410,13 @@ public class WhereBuild implements Serializable {
             throw new EasyException("condition is not bind connection please bind a connection");
         }
         Dialect sqlDialect = getDialect();
-        Wrapper wrapper = sqlDialect.getWrapper();
 
 
         List<String> parts = new ArrayList<>();
         // 添加基本条件
         for (Condition condition : conditions) {
             condition.setToUnderLine(this.toUnderLine);
-            parts.add(condition.getSqlSegment(argsList, sqlDialect));
+            parts.add(condition.getSqlSegment(argsList, sqlDialect,this.opConfig,this.connection));
         }
         // 添加子条件
         for (WhereBuild subBuilder : subBuilders) {
@@ -439,7 +440,7 @@ public class WhereBuild implements Serializable {
         String groupBySegment = groupBy.stream().map(e -> {
             e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
-            return wrapper.wrap(column);
+            return opConfig.escapeCn(column,this.connection,false);
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(groupBySegment)) {
@@ -449,7 +450,7 @@ public class WhereBuild implements Serializable {
         if (CollUtil.isNotEmpty(havingList)) {
             StringBuilder builder = new StringBuilder();
             for (Condition condition : havingList) {
-                builder.append(SP.SPACE).append(condition.getSqlSegment(argsList, dialect));
+                builder.append(SP.SPACE).append(condition.getSqlSegment(argsList, dialect,this.opConfig,this.connection));
             }
             if (!builder.toString().isEmpty()) {
                 join += " HAVING" + builder;
@@ -460,7 +461,7 @@ public class WhereBuild implements Serializable {
             e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
             String value = Convert.toStr(e.getValue());
-            return wrapper.wrap(column) + StringPool.SPACE + value;
+            return opConfig.escapeCn(column,this.connection,false) + StringPool.SPACE + value;
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(orderBySegment)) {
