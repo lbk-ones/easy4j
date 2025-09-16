@@ -72,7 +72,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
             // TODO  api key
         } else {
             // take session
-            String token = request.getHeader(SysConstant.X_ACCESS_TOKEN);
+            String token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN),request.getParameter(SysConstant.X_ACCESS_TOKEN));
             if (!authorizationStrategy1.isNeedLogin(handler, request, response)) {
                 return true;
             }
