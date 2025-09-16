@@ -1,6 +1,7 @@
 package easy4j.infra.common.utils;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
@@ -159,15 +160,8 @@ public class EasyExcelUtils {
                 inputStream = classLoader.getResourceAsStream(templateClassPath);
             }
             ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            byte[] bytes = new byte[1024];
-            int len;
-            while ((len = bufferedInputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, len);
-            }
-            bufferedInputStream.close();
-            outputStream.flush();
-            outputStream.close();
+            IoUtil.copy(inputStream,outputStream,8092);
+
         } catch (Exception e) {
             logger.error("导出错误", e);
         }
