@@ -52,7 +52,7 @@ public class EasyMinio {
     /**
      * 初始化MinIO客户端
      */
-    private MinioClient getMinioClient() {
+    public MinioClient getMinioClient() {
         if (minioClient == null) {
             synchronized (EasyMinio.class) {
                 if (minioClient == null) {
@@ -85,7 +85,10 @@ public class EasyMinio {
      * 允许匿名用户读取桶内所有对象，但禁止修改和删除
      * @param bucketName 桶名称
      */
-    private void setBucketPublicReadPolicy(String bucketName) {
+    public void setBucketPublicReadPolicy(String bucketName) throws Exception {
+        if (!bucketExists(bucketName)) {
+            return;
+        }
         // 定义公开读的访问策略JSON
         String publicReadPolicy = "{\n" +
                 "  \"Version\": \"2012-10-17\",\n" +
@@ -121,11 +124,12 @@ public class EasyMinio {
     public void createBucket(String bucketName) throws Exception {
         if (!bucketExists(bucketName)) {
             getMinioClient().makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            setBucketPublicReadPolicy(bucketName);
         }
     }
 
     /**
-     * 上传文件
+     * 上传文件,检查存储桶是否存在，不存在则创建公开桶
      * @param bucketName 存储桶名称
      * @param file 文件
      * @param objectName 存储在MinIO中的文件名
@@ -149,7 +153,7 @@ public class EasyMinio {
     }
 
     /**
-     * 上传文件
+     * 上传文件,检查存储桶是否存在，不存在则创建公开桶
      * @param bucketName 存储桶名称
      * @param file 文件
      * @param objectName 存储在MinIO中的文件名
@@ -172,7 +176,7 @@ public class EasyMinio {
     }
 
     /**
-     * 上传文件（ InputStream 方式）
+     * 上传文件（ InputStream 方式）,检查存储桶是否存在，不存在则创建
      * @param bucketName 存储桶名称
      * @param inputStream 输入流
      * @param objectName 存储在MinIO中的文件名
