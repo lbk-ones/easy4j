@@ -228,10 +228,14 @@ public abstract class AbstractOpDdlCreateTable implements OpDdlCreateTable {
     }
     @Override
     public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
+        String schema = ddlFieldInfo.getSchema();
+        String tableName = ddlFieldInfo.getTableName();
+        tableName = StrUtil.isBlankIfStr(tableName)?this.getOpContext().getTableName():tableName;
+        schema = StrUtil.isBlankIfStr(schema)?this.getOpContext().getSchema():schema;
         String dbType = this.opContext.getDbType();
         if (ListTs.asList(DbType.MYSQL.getDb(), DbType.SQL_SERVER.getDb()).contains(dbType)) return null;
         OpConfig opConfig = this.opContext.getOpConfig();
-        String tableNameCompatible = ListTs.asList(ddlFieldInfo.getSchema(), ddlFieldInfo.getTableName()).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.joining(SP.DOT));
+        String tableNameCompatible = ListTs.asList(schema, tableName).stream().filter(ObjectUtil::isNotEmpty).collect(Collectors.joining(SP.DOT));
         String comment = getFieldComments(ddlFieldInfo);
         if (StrUtil.isNotBlank(comment)) {
             return String.format("COMMENT ON COLUMN %s IS '%s'",

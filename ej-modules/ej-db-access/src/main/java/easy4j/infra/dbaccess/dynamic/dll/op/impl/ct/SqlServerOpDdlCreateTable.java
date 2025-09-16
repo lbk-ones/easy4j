@@ -71,6 +71,10 @@ public class SqlServerOpDdlCreateTable extends AbstractOpDdlCreateTable {
         String fieldComments = getFieldComments(ddlFieldInfo);
         String schema = StrUtil.blankToDefault(ddlFieldInfo.getSchema(), "dbo");
         String tableName = ddlFieldInfo.getTableName();
+
+        tableName = StrUtil.isBlankIfStr(tableName)?this.getOpContext().getTableName():tableName;
+        schema = StrUtil.isBlankIfStr(schema)?this.getOpContext().getSchema():schema;
+
         String name = ddlFieldInfo.getName();
         return "EXEC sp_addextendedproperty \n" +
                 "@name = N'MS_Description',\n" +

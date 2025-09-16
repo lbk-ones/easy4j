@@ -136,7 +136,7 @@ public abstract class AbstractCombinationOp implements CombinationOp {
 
     @Override
     public String getFieldComment(DDLFieldInfo ddlFieldInfo) {
-        return getOpDdlCreateTable().getFieldComment(ddlFieldInfo);
+        return callback(()->getOpDdlCreateTable().getFieldComment(ddlFieldInfo));
     }
 
     @Override
