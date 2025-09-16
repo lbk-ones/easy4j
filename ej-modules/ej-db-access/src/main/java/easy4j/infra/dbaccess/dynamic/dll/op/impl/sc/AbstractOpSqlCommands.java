@@ -174,14 +174,14 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         List<String> nameList = ListTs.newList();
         for (String s : dict.keySet()) {
             Object o = dict.get(s);
-            if(!updateNull && null == o){
+            if (!updateNull && null == o) {
                 continue;
             }
             s = opConfig.escapeCn(s, connection, false);
             nameList.add(opConfig.getColumnName(s) + " = ? ");
             args.add(o);
         }
-        if(ListTs.isEmpty(nameList)){
+        if (ListTs.isEmpty(nameList)) {
             log.info("The field to be updated is empty ！！！！");
             return 0;
         }
@@ -553,5 +553,17 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         }
 
         return joinRes;
+    }
+
+    @Override
+    public boolean theColumnIsExists(DDLFieldInfo ddlFieldInfo) {
+        OpContext opContext1 = this.getOpContext();
+        List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
+        if (ListTs.isEmpty(dbColumns)) {
+            log.error("need in construct input table name! or the tableName need has var：" + opContext1.getTableName());
+            return false;
+        }
+        String name = ddlFieldInfo.getName();
+        return dbColumns.stream().anyMatch(e -> StrUtil.equalsIgnoreCase(e.getColumnName(), name));
     }
 }

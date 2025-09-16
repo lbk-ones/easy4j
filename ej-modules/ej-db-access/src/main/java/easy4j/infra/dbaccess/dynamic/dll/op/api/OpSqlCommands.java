@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
 import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 
 import javax.annotation.Nullable;
@@ -31,6 +32,12 @@ import java.util.Map;
  */
 public interface OpSqlCommands extends IOpContext, IOpMatch {
 
+    /**
+     * 判断这个字段是否存在
+     * @param ddlFieldInfo
+     * @return
+     */
+    boolean theColumnIsExists(DDLFieldInfo ddlFieldInfo);
 
     /**
      * 执行ddl语句

@@ -160,6 +160,12 @@ public abstract class AbstractCombinationOp implements CombinationOp {
 
     }
 
+    @Override
+    public boolean theColumnIsExists(DDLFieldInfo ddlFieldInfo) {
+        return getOpSqlCommands().theColumnIsExists(ddlFieldInfo);
+
+    }
+
     public <R> R callback(Supplier<R> consumer) {
         OpContext context = this.getContext();
         try {

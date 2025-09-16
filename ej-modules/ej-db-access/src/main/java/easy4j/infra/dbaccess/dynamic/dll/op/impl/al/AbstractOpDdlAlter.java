@@ -78,7 +78,6 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
         String addColumnTemplate1 = getAddColumnTemplate();
         return this.getOpContext().getOpConfig().patchStrWithTemplate(fieldInfo, addColumnTemplate1, COLUMN_MAP, EXT_MAP, this::getAddColumnSegmentMap);
     }
-
     public Map<String, String> getRemoveColumnSegmentMap(DDLFieldInfo fieldInfo) {
         Map<@Nullable String, @Nullable String> resMap = Maps.newHashMap();
         resMap.put(TABLE_NAME, obtainTableName());
