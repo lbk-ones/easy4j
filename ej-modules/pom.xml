@@ -84,6 +84,7 @@
         <oshi-core.version>6.1.1</oshi-core.version>
         <pinyin4j.version>2.5.1</pinyin4j.version>
         <easyexcel.version>4.0.3</easyexcel.version>
+        <minio.version>8.5.2</minio.version>
 
         <!-- SpringCloud -->
         <spring-cloud.version>2021.0.8</spring-cloud.version>

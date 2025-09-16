@@ -378,3 +378,6 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.default-i18n**: 默认i18n，默认中文
 - **easy4j.db-access-not-cache-schema**: 是否不缓存动态表查询的schema信息，默认false也就是要缓存
 - **easy4j.log-path**: 日志所在目录,默认程序运行当前目录logs文件夹下面
+- **easy4j.minio-url**: minio地址
+- **easy4j.minio-access-key**: minio访问key
+- **easy4j.minio-secret-key**: minio访问密钥

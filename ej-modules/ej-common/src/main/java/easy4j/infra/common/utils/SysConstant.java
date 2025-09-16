@@ -174,6 +174,9 @@ public class SysConstant {
     public static final String EASY4J_DB_ACCESS_NOT_CACHE_SCHEMA = PARAM_PREFIX + SP.DOT + "db-access-not-cache-schema";
 
     public static final String EASY4J_LOG_PATH = PARAM_PREFIX + SP.DOT + "log-path";
+    public static final String EASY4J_MINIO_URL = PARAM_PREFIX + SP.DOT + "minio-url";
+    public static final String EASY4J_MINIO_ACCESS_KEY = PARAM_PREFIX + SP.DOT + "minio-access-key";
+    public static final String EASY4J_MINIO_SECRET_KEY = PARAM_PREFIX + SP.DOT + "minio-secret-key";
 
 
 

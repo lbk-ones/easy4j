@@ -15,11 +15,16 @@
 package easy4j.infra.base.properties;
 
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.minio.EasyMinio;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 
 
 /**
@@ -37,5 +42,16 @@ public class Config implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
+    }
+
+    @Bean
+    public EasyMinio easyMinio(){
+        String property = Easy4j.getProperty(SysConstant.EASY4J_MINIO_URL);
+        String accessKey = Easy4j.getProperty(SysConstant.EASY4J_MINIO_ACCESS_KEY);
+        String secretKey = Easy4j.getProperty(SysConstant.EASY4J_MINIO_SECRET_KEY);
+        if(StrUtil.isNotBlank(property) && StrUtil.isNotBlank(accessKey) && StrUtil.isNotBlank(secretKey)){
+            return new EasyMinio(property,accessKey,secretKey);
+        }
+        return null;
     }
 }

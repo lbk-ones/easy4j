@@ -625,6 +625,24 @@ public class EjSysProperties {
     @SpringVs(desc = "日志所在目录,默认程序运行当前目录logs文件夹下面")
     private String logPath="logs";
 
+    /**
+     * minio地址
+     */
+    @SpringVs(desc = "minio地址")
+    private String minioUrl="minioUrl";
+
+    /**
+     * minio访问key
+     */
+    @SpringVs(desc = "minio访问key")
+    private String minioAccessKey="minioAccessKey";
+
+    /**
+     * minio访问密钥
+     */
+    @SpringVs(desc = "minio访问密钥")
+    private String minioSecretKey="minioSecretKey";
+
 
     /**
      * 根据常量获取 对应的springboot变量
