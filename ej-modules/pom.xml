@@ -43,6 +43,7 @@
         <module>ej-sca-gateway</module>
         <module>ej-sca-seata</module>
         <module>ej-xxl-job</module>
+        <module>ej-quartz</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
