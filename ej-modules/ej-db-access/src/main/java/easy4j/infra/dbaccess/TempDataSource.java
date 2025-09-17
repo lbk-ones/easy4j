@@ -1,5 +1,8 @@
 package easy4j.infra.dbaccess;
 
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import lombok.Getter;
+
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Properties;
@@ -12,11 +15,16 @@ import javax.sql.DataSource;
  * @author bokun.li
  * @date 2025-09-13
  */
+
 public class TempDataSource implements DataSource {
 
+    @Getter
     private final String driverClass;
+    @Getter
     private final String url;
+    @Getter
     private final String username;
+    @Getter
     private final String password;
     private final Properties connectionProperties;
 
@@ -139,16 +147,17 @@ public class TempDataSource implements DataSource {
         return iface.isInstance(this);
     }
 
-    // getter方法
-    public String getDriverClass() {
-        return driverClass;
+    /**
+     * 安静的获取连接 不申明异常
+     * @return Connection
+     */
+    public Connection getQuietConnection() {
+        try {
+            return getConnection();
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getQuietConnection", null, e);
+        }
     }
 
-    public String getUrl() {
-        return url;
-    }
 
-    public String getUsername() {
-        return username;
-    }
 }

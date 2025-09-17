@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.dynamic;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.JdbcDbAccess;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.CatalogMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.schema.DynamicColumn;
 import easy4j.infra.dbaccess.dynamic.schema.MysqlDyInformationSchema;
@@ -61,6 +62,11 @@ class MysqlDyInformationSchemaTest {
         System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "tb_sys_api_error")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "tb_sys_api_error")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "tb_sys_api_error")));
+        List<CatalogMetadata> cataLogs = opDbMeta.getCataLogs();
+        System.out.println(JacksonUtil.toJson(cataLogs));
+        for (CatalogMetadata cataLog : cataLogs) {
+            System.out.println(JacksonUtil.toJson(opDbMeta.getSchemas(cataLog.getTableCat())));
+        }
 
     }
 }

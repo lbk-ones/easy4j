@@ -25,17 +25,14 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 /**
  * OpMeta
@@ -47,10 +44,13 @@ import java.util.Map;
  * @author bokun.li
  * @date 2025-08-23
  */
+@Slf4j
 public class OpDbMeta implements IOpMeta {
 
     public static final List<String> excludeDbType = ListTs.asList();
     private static final List<IOpMeta> iOpMetas = ListTs.newLinkedList();
+
+    private final OpConfig opConfig = new OpConfig();
 
 
     // cache 30 minutes
@@ -186,8 +186,8 @@ public class OpDbMeta implements IOpMeta {
 
     @Override
     public List<TableMetadata> getAllTableInfoByTableType(String tableNamePattern, String[] tableType) {
-        if(ListTs.isEmpty(tableType)) return ListTs.newList();
-        String cacheKey = getCacheKeyFromConnection(connection, "getAllTableInfoByTableType-"+tableNamePattern+Arrays.toString(tableType));
+        if (ListTs.isEmpty(tableType)) return ListTs.newList();
+        String cacheKey = getCacheKeyFromConnection(connection, "getAllTableInfoByTableType-" + tableNamePattern + Arrays.toString(tableType));
         return callbackList(() -> {
             DatabaseMetaData metaData = this.connection.getMetaData();
             String catalog = this.connection.getCatalog();
@@ -288,6 +288,175 @@ public class OpDbMeta implements IOpMeta {
                 JdbcHelper.close(tables);
             }
         }, cacheKey, IndexInfoMetaInfo.class);
+    }
+
+    @Override
+    public List<CatalogMetadata> getCataLogs() {
+        var cacheKeyPrefix = "getCataLogs";
+        String cacheKey = getCacheKeyFromConnection(connection, cacheKeyPrefix);
+        return callbackList(() -> {
+            String dbType = this.getDbType(connection);
+            String sql = null;
+            String sql2 = null;
+            if (StrUtil.equalsIgnoreCase(dbType, DbType.H2.getDb())) {
+                sql = "SELECT CATALOG_NAME FROM INFORMATION_SCHEMA.INFORMATION_SCHEMA_CATALOG_NAME ORDER BY CATALOG_NAME";
+            } else if (StrUtil.equalsIgnoreCase(dbType, DbType.MYSQL.getDb())) {
+                sql = "show databases where `database` not in ('information_schema','performance_schema','mysql','sys')";
+            } else if (StrUtil.equalsIgnoreCase(dbType, DbType.ORACLE.getDb())) {
+                sql = "SELECT USERNAME FROM DBA_USERS ORDER BY USERNAME";
+                sql2 = "SELECT USERNAME FROM ALL_USERS ORDER BY USERNAME";
+            } else if (StrUtil.equalsIgnoreCase(dbType, DbType.POSTGRE_SQL.getDb())) {
+                sql = "SELECT datname FROM pg_database WHERE datistemplate = false and datname not in ('postgres')";
+            } else if (StrUtil.equalsIgnoreCase(dbType, DbType.SQL_SERVER.getDb())) {
+                sql = "SELECT name FROM sys.databases where name not in ('master','tempdb','model','msdb')";
+            } else if (StrUtil.equalsIgnoreCase(dbType, DbType.DB2.getDb())) {
+                sql = "SELECT NAME FROM SYSCAT.DATABASES ORDER BY NAME";
+            }
+            List<Map<String, Object>> handle = null;
+            try {
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                MapListHandler mapListHandler = new MapListHandler();
+                try {
+                    handle = mapListHandler.handle(resultSet);
+                } finally {
+                    JdbcHelper.close(resultSet);
+                }
+            } catch (Exception e) {
+                log.error("query appear exception " + e.getMessage());
+            }
+            if (ListTs.isEmpty(handle) && StrUtil.isNotBlank(sql2)) {
+                ResultSet resultSet1 = connection.prepareStatement(sql2).executeQuery();
+                try {
+                    handle = new MapListHandler().handle(resultSet1);
+                } finally {
+                    JdbcHelper.close(resultSet1);
+                }
+            }
+            List<CatalogMetadata> objects = ListTs.newList();
+            for (Map<String, Object> stringObjectMap : handle) {
+                Set<String> strings = stringObjectMap.keySet();
+                Iterator<String> iterator = strings.iterator();
+                String key = null;
+                if (iterator.hasNext()) {
+                    key = iterator.next();
+                }
+                if (null != key) {
+                    CatalogMetadata catalogMetadata = new CatalogMetadata();
+                    Object o = stringObjectMap.get(key);
+                    String s = String.valueOf(o);
+                    catalogMetadata.setTableCat(s);
+                    objects.add(catalogMetadata);
+                }
+            }
+            return objects;
+        }, cacheKey, CatalogMetadata.class);
+    }
+
+    @Override
+    public List<SchemaMetadata> getSchemas(String catLog) {
+        boolean catLogIsNotEmpty = catLog != null && !catLog.isEmpty();
+        var cacheKeyPrefix = "getSchemasBy" + catLog;
+        String cacheKey = getCacheKeyFromConnection(connection, cacheKeyPrefix);
+        return callbackList(() -> {
+            List<SchemaMetadata> objects = ListTs.newList();
+            String dbType = this.getDbType(connection);
+            String sql;
+            String escapeCn = opConfig.escapeCn(catLog, connection, false);
+            String schemaName;
+            String catlogName = null;
+            // 根据数据库类型和指定的catalog构建查询SQL
+            if (StrUtil.equals(dbType, DbType.MYSQL.getDb())) {
+                // MySQL中catalog与database概念一致
+                if (catLogIsNotEmpty) {
+                    sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" + escapeCn + "' ORDER BY SCHEMA_NAME";
+                } else {
+                    sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys') ORDER BY SCHEMA_NAME";
+                }
+                schemaName = "SCHEMA_NAME";
+
+            } else if (StrUtil.equals(dbType, DbType.H2.getDb())) {
+                if (catLogIsNotEmpty) {
+                    sql = "SELECT SCHEMA_NAME,CATALOG_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE CATALOG_NAME = '" + escapeCn + "' AND SCHEMA_NAME NOT IN ('INFORMATION_SCHEMA', 'SYSTEM') ORDER BY SCHEMA_NAME";
+                } else {
+                    sql = "SELECT SCHEMA_NAME,CATALOG_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('INFORMATION_SCHEMA', 'SYSTEM') ORDER BY SCHEMA_NAME";
+                }
+                schemaName = "SCHEMA_NAME";
+                catlogName = "CATALOG_NAME";
+            } else if (StrUtil.equals(dbType, DbType.ORACLE.getDb())) {
+                // Oracle中没有catalog概念，直接查询所有schema
+                if (catLogIsNotEmpty) {
+                    try {
+                        connection.createStatement().executeQuery("SELECT 1 FROM DBA_USERS");
+                        sql = "SELECT USERNAME FROM DBA_USERS WHERE USERNAME NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'SYSMAN', 'DBSNMP', 'APPQOSSYS') and USERNAME = '" + escapeCn + "' ORDER BY USERNAME";
+                    } catch (SQLException e) {
+                        sql = "SELECT USERNAME FROM ALL_USERS WHERE USERNAME NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'SYSMAN', 'DBSNMP', 'APPQOSSYS') and USERNAME = '" + escapeCn + "' ORDER BY USERNAME";
+                    }
+                } else {
+                    try {
+                        connection.createStatement().executeQuery("SELECT 1 FROM DBA_USERS");
+                        sql = "SELECT USERNAME FROM DBA_USERS WHERE USERNAME NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'SYSMAN', 'DBSNMP', 'APPQOSSYS') ORDER BY USERNAME";
+                    } catch (SQLException e) {
+                        sql = "SELECT USERNAME FROM ALL_USERS WHERE USERNAME NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'SYSMAN', 'DBSNMP', 'APPQOSSYS') ORDER BY USERNAME";
+                    }
+                }
+                schemaName = "USERNAME";
+            } else if (StrUtil.equals(dbType, DbType.POSTGRE_SQL.getDb())) {
+                if (catLogIsNotEmpty) {
+                    sql = "SELECT SCHEMA_NAME,CATALOG_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE CATALOG_NAME = '" + escapeCn + "' AND SCHEMA_NAME NOT IN ('information_schema', 'pg_catalog', 'pg_toast') AND SCHEMA_NAME NOT LIKE 'pg_temp_%' AND SCHEMA_NAME NOT LIKE 'pg_toast_temp_%' ORDER BY SCHEMA_NAME";
+                } else {
+                    sql = "SELECT SCHEMA_NAME,CATALOG_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'pg_catalog', 'pg_toast') AND SCHEMA_NAME NOT LIKE 'pg_temp_%' AND SCHEMA_NAME NOT LIKE 'pg_toast_temp_%' ORDER BY SCHEMA_NAME";
+                }
+                schemaName = "SCHEMA_NAME";
+                catlogName = "CATALOG_NAME";
+            } else if (StrUtil.equals(dbType, DbType.SQL_SERVER.getDb())) {
+                if (catLogIsNotEmpty) {
+                    sql = "SELECT name FROM " + escapeCn + ".sys.schemas WHERE name NOT IN ('sys', 'INFORMATION_SCHEMA') ORDER BY name";
+                } else {
+                    sql = "SELECT name FROM sys.schemas WHERE name NOT IN ('sys', 'INFORMATION_SCHEMA') ORDER BY name";
+                }
+                schemaName = "name";
+            } else if (StrUtil.equals(dbType, DbType.DB2.getDb())) {
+                if (catLogIsNotEmpty) {
+                    sql = "SELECT SCHEMANAME,CATALOGNAME FROM SYSCAT.SCHEMAS WHERE CATALOGNAME = '" + escapeCn + "' AND SCHEMANAME NOT LIKE 'SYS%' AND SCHEMANAME NOT IN ('INFORMATION_SCHEMA') ORDER BY SCHEMANAME";
+                } else {
+                    sql = "SELECT SCHEMANAME,CATALOGNAME FROM SYSCAT.SCHEMAS WHERE SCHEMANAME NOT LIKE 'SYS%' AND SCHEMANAME NOT IN ('INFORMATION_SCHEMA') ORDER BY SCHEMANAME";
+                }
+                schemaName = "SCHEMANAME";
+                catlogName = "CATALOGNAME";
+            } else {
+                throw new SQLException("不支持的数据库类型: " + dbType);
+            }
+
+            // 执行查询并处理结果
+            try (PreparedStatement stmt = connection.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+                MapListHandler mapListHandler = new MapListHandler();
+                List<Map<String, Object>> handle = mapListHandler.handle(rs);
+                for (Map<String, Object> stringObjectMap : handle) {
+                    SchemaMetadata schemaMetadata = new SchemaMetadata();
+                    if (StrUtil.isNotBlank(schemaName)) {
+                        Object o = opConfig.getMatchMapIgnoreCase(stringObjectMap, schemaName);
+                        if (o != null) {
+                            String s = String.valueOf(o);
+                            schemaMetadata.setSchema(s);
+                        }
+                    }
+                    if (StrUtil.isNotBlank(catlogName)) {
+                        Object o = opConfig.getMatchMapIgnoreCase(stringObjectMap, catlogName);
+                        if (o != null) {
+                            String s = String.valueOf(o);
+                            schemaMetadata.setTableCat(s);
+                        }
+                    } else {
+                        schemaMetadata.setTableCat(catLog);
+                    }
+                    objects.add(schemaMetadata);
+                }
+
+
+            }
+            return objects;
+        }, cacheKey, SchemaMetadata.class);
     }
 
     private <R> List<R> callbackList(OpCallBackList<R> consumer, Object cacheKey, Class<R> zclass) {

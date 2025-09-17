@@ -11,6 +11,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.CatalogMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -97,6 +98,14 @@ class DDLParseJavaClassTestPG {
         System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "test_create_table")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "test_create_table")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "test_create_table")));
+        List<CatalogMetadata> cataLogs = opDbMeta.getCataLogs();
+        System.out.println("getCataLogs--->"+cataLogs);
+
+
+        System.out.println(JacksonUtil.toJson(cataLogs));
+        for (CatalogMetadata cataLog : cataLogs) {
+            System.out.println(JacksonUtil.toJson(opDbMeta.getSchemas(cataLog.getTableCat())));
+        }
 
     }
 

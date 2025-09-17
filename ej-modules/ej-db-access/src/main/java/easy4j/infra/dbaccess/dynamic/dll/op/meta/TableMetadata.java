@@ -14,6 +14,7 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.meta;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -21,24 +22,28 @@ import lombok.Data;
  * 存储数据库表的基本信息，包括表名、类型、注释等
  */
 @Data
+@Schema(description = "表信息")
 public class TableMetadata {
 
     /**
      * 表目录（可能为null）
      * 说明：数据库表所在的目录，不同数据库对目录的定义可能不同
      */
+    @Schema(description = "表目录（可能为null）")
     private String tableCat;
 
     /**
      * 表模式（可能为null）
      * 说明：数据库表所在的模式（schema），用于表的逻辑分组管理
      */
+    @Schema(description = "表模式（可能为null）")
     private String tableSchem;
 
     /**
      * 表名
      * 说明：数据库中表的名称
      */
+    @Schema(description = "表名")
     private String tableName;
 
     /**
@@ -47,36 +52,42 @@ public class TableMetadata {
      * "GLOBAL TEMPORARY"（全局临时表）、"LOCAL TEMPORARY"（本地临时表）、
      * "ALIAS"（别名）、"SYNONYM"（同义词）等
      */
+    @Schema(description = "表类型 TABLE（表）VIEW（视图）。。。")
     private String tableType;
 
     /**
      * 表的解释性注释（可能为null）
      * 说明：对表的业务含义或用途的描述说明
      */
+    @Schema(description = "表的解释性注释（可能为null）")
     private String remarks;
 
     /**
      * 类型目录（可能为null）
      * 说明：表关联的类型所在的目录
      */
+    @Schema(description = "库（可能为null）")
     private String typeCat;
 
     /**
      * 类型模式（可能为null）
      * 说明：表关联的类型所在的模式（schema）
      */
+    @Schema(description = "类型模式（可能为null）")
     private String typeSchem;
 
     /**
      * 类型名称（可能为null）
      * 说明：表关联的类型的名称
      */
+    @Schema(description = "类型名称（可能为null）")
     private String typeName;
 
     /**
      * 自引用列名（可能为null）
      * 说明：类型化表中指定的"标识符"列的名称，用于表的自关联
      */
+    @Schema(description = "自引用列名（可能为null）")
     private String selfReferencingColName;
 
     /**
@@ -84,6 +95,7 @@ public class TableMetadata {
      * 说明：指定SELF_REFERENCING_COL_NAME列中的值如何生成，
      * 可能的值为"SYSTEM"（系统生成）、"USER"（用户生成）、"DERIVED"（派生生成）
      */
+    @Schema(description = "引用生成方式（可能为null）")
     private String refGeneration;
 }
     

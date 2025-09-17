@@ -122,4 +122,16 @@ public interface IOpMeta {
      */
     List<IndexInfoMetaInfo> getIndexInfos(String catLog, String schema, String tableName);
 
+    /**
+     * 获取所有的数据库，有些数据库能否完全获取所有数据库，取决于获取连接的用户权限
+     * @return
+     */
+    List<CatalogMetadata> getCataLogs();
+
+    /**
+     * 获取当前数据库的schema信息，如果catlog为空代表查询所有的
+     * @return
+     */
+    List<SchemaMetadata> getSchemas(String catLog);
+
 }
