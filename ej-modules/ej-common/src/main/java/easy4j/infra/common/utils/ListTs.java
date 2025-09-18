@@ -662,6 +662,12 @@ public class ListTs {
         return ListTs.asList(split);
     }
 
+
+    public static String splitToStr(String s, String oldSep,String newSep) {
+        List<String> strings = splitToList(s, oldSep);
+        return ListTs.join(newSep,strings);
+    }
+
     public static <T> void add(List<T> res, T obj) {
 
         if (ObjectUtil.isNotEmpty(obj) && res != null) {
@@ -680,4 +686,5 @@ public class ListTs {
     public static boolean equalIgnoreCase(List<String> oracleEscape, String name) {
         return oracleEscape.stream().anyMatch(e -> StrUtil.equalsAnyIgnoreCase(e, name));
     }
+
 }

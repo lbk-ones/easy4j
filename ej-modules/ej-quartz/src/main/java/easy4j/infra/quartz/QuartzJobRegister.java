@@ -3,9 +3,11 @@ package easy4j.infra.quartz;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.BeansException;
@@ -52,15 +54,18 @@ public class QuartzJobRegister implements ApplicationContextAware, ApplicationLi
         ApplicationContext applicationContext = event.getApplicationContext();
         if (!isInit && applicationContext.getParent() == null) {
             isInit = true;
-
             try {
                 if (scheduler != null) {
                     Boolean property = Easy4j.getProperty("spring.quartz.auto-startup", boolean.class);
                     if (!property) {
+                        log.info(SysLog.compact("starting quartz job ....."));
+                        long begin = System.currentTimeMillis();
                         scheduler.start();
+                        log.info(SysLog.compact("starting quartz job cost.....{}ms", String.valueOf(System.currentTimeMillis() - begin)));
                     }
-
                     if (scheduler.isStarted()) {
+                        log.info(SysLog.compact("begin scan quartz job class..."));
+                        int registerCount = 0;
                         Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(Easy4jQuartzJob.class);
                         for (Object value : beansWithAnnotation.values()) {
                             Class<?> aClass1 = value.getClass();
@@ -68,6 +73,11 @@ public class QuartzJobRegister implements ApplicationContextAware, ApplicationLi
                             String s = annotation.cronTab();
                             String name = annotation.name();
                             String group = annotation.group();
+                            boolean printLog = annotation.printLog();
+                            String metricCountName = annotation.metricCountName();
+                            String metricTimeName = annotation.metricTimeName();
+                            String metricCountDesc = annotation.metricCountDesc();
+                            String metricTimeDesc = annotation.metricTimeDesc();
                             if (StrUtil.isBlank(s)) continue;
                             if (aClass1.getSuperclass() == AbstractEasyQzJob.class) {
                                 Job value1 = (Job) value;
@@ -79,10 +89,19 @@ public class QuartzJobRegister implements ApplicationContextAware, ApplicationLi
                                 jobInfo.setJobGroup(group);
                                 jobInfo.setCronTab(s);
                                 jobInfo.setJobClass(aClass);
+                                JobDataMap jobDataMap = new JobDataMap();
+                                jobDataMap.put(QzConstant.PRINT_LOG, printLog);
+                                jobDataMap.put(QzConstant.METRIC_COUNT_NAME, metricCountName);
+                                jobDataMap.put(QzConstant.METRIC_TIME_NAME, metricTimeName);
+                                jobDataMap.put(QzConstant.METRIC_COUNT_DESC, metricCountDesc);
+                                jobDataMap.put(QzConstant.METRIC_TIME_DESC, metricTimeDesc);
+                                jobInfo.setJobDataMap(jobDataMap);
                                 // schedule
                                 this.easy4jQuartzScheduler.scheduleJob(jobInfo);
+                                registerCount++;
                             }
                         }
+                        log.info(SysLog.compact("success scan {} quartz job class",String.valueOf(registerCount)));
                     }
                 }
 

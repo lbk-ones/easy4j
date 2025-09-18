@@ -20,10 +20,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
-import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.*;
 import jodd.util.StringPool;
 import org.springframework.boot.context.properties.bind.Binder;
 
@@ -221,7 +218,7 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
      * @author bokun.li
      * @date 2025/6/10
      */
-    public String getNormalDbUrl() {
+    public static String getNormalDbUrl() {
         String url1 = Easy4j.getProperty(SysConstant.DB_URL_STR);
         String username = Easy4j.getProperty(SysConstant.DB_USER_NAME);
         String password = Easy4j.getProperty(SysConstant.DB_USER_PASSWORD);

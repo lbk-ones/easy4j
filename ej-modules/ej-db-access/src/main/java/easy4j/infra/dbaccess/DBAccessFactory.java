@@ -15,10 +15,14 @@
 package easy4j.infra.dbaccess;
 
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Getter;
@@ -39,7 +43,7 @@ import java.util.Set;
 @Setter
 @Getter
 @Slf4j
-public class DBAccessFactory {
+public class DBAccessFactory extends StandAbstractEasy4jResolve {
     public static final Set<String> INIT_DB_FILE_TYPE = new HashSet<>();
     public static final Set<String> INIT_DB_FILE_PATH = new HashSet<>();
 
@@ -117,5 +121,34 @@ public class DBAccessFactory {
             }
         }
 
+    }
+
+    public static TempDataSource getTempDataSource(){
+        String normalDbUrl = getNormalDbUrl();
+        String url = getUrl(normalDbUrl);
+        String username = getUsername(normalDbUrl);
+        String password = getPassword(normalDbUrl);
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(url);
+        return new TempDataSource(driverClassNameByUrl, url, username, password);
+    }
+
+    /**
+     * auto DDL
+     * @author bokun.li
+     * @date 2025/9/18
+     */
+    public static void autoDDL(Class<?> aclass) {
+        try {
+            long begin = System.currentTimeMillis();
+            DataSource tempDataSource = getTempDataSource();
+            String s = null;
+            try (DynamicDDL dynamicDDL = new DynamicDDL(tempDataSource, null, aclass)) {
+                s = dynamicDDL.autoDDLByJavaClass(true);
+            }
+            long end = System.currentTimeMillis();
+            log.info("autoDDL {} total cost {} ms,segment is {}", aclass.getName(), (end - begin), ListTs.splitToStr(s, SP.NEWLINE, SP.SPACE));
+        } catch (Exception e) {
+            log.error("autoDDL appear error" + e.getMessage());
+        }
     }
 }

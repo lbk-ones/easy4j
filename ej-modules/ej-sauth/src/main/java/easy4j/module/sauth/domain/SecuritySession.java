@@ -24,6 +24,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.module.seed.CommonKey;
 import lombok.Data;
 
@@ -116,6 +117,30 @@ public class SecuritySession implements ISecurityEasy4jSession {
      */
     private String deptName;
 
+    /**
+     * 机构代码
+     */
+    @DDLField(dataLength = 60)
+    private String orgCode;
+
+    /**
+     * 机构名称
+     */
+    @DDLField(dataLength = 300)
+    private String orgName;
+
+    /**
+     * 租户ID
+     */
+    @DDLField(dataLength = 60)
+    private String tenantId;
+
+    /**
+     * 租户名称
+     */
+    @DDLField(dataLength = 300)
+    private String tenantName;
+
 
     /**
      * 额外信息 存入 长文本 json 字符串
@@ -195,6 +220,10 @@ public class SecuritySession implements ISecurityEasy4jSession {
         this.deptName = reqUser.getDeptName();
         this.deviceInfo = reqUser.getDeviceInfo();
         this.ip = reqUser.getIp();
+        this.orgCode = reqUser.getOrgCode();
+        this.orgCode = reqUser.getOrgName();
+        this.tenantId = reqUser.getTenantId();
+        this.tenantName = reqUser.getTenantName();
         return this;
     }
 

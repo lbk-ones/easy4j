@@ -16,14 +16,18 @@ package easy4j.module.sauth.config;
 
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.EventPublisher;
 import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.TempDataSource;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.Easy4jSecurityContext;
@@ -35,6 +39,7 @@ import easy4j.module.sauth.core.loadauthority.LoadAuthorityBy;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityByRpc;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityByRpcDefault;
 import easy4j.module.sauth.core.loaduser.*;
+import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.encryption.PwdEncryptionService;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.enums.SecuritySessionType;
@@ -59,7 +64,7 @@ import javax.sql.DataSource;
  */
 @Slf4j
 @Configuration
-public class Config implements CommandLineRunner {
+public class Config extends StandAbstractEasy4jResolve implements CommandLineRunner {
 
     public static final String AUTH_SERVER_NAME = "easy4j-ns-server";
 
@@ -85,9 +90,8 @@ public class Config implements CommandLineRunner {
             if (StrUtil.equals(type, SP.DEFAULT)) {
                 DBAccessFactory.initDb("db/auth-user");
             }
-
             DBAccessFactory.initDb("db/auth");
-
+            DBAccessFactory.autoDDL(SecuritySession.class);
         }
     }
 
@@ -208,7 +212,7 @@ public class Config implements CommandLineRunner {
 
     @Bean(LoadAuthorityApi.rpcBeanName)
     @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)
-    public LoadAuthorityByRpc loadAuthorityByRpc(){
+    public LoadAuthorityByRpc loadAuthorityByRpc() {
         return new LoadAuthorityByRpcDefault();
     }
 }

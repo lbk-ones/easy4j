@@ -643,6 +643,12 @@ public class EjSysProperties {
     @SpringVs(desc = "minio访问密钥")
     private String minioSecretKey="minioSecretKey";
 
+    /**
+     * quartz全局日志打印
+     */
+    @SpringVs(desc = "quartz全局日志打印")
+    private boolean globalQuartzJobPrintLog = true;
+
 
     /**
      * 根据常量获取 对应的springboot变量
