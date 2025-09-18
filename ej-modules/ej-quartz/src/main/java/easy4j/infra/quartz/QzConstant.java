@@ -11,4 +11,6 @@ public class QzConstant {
     public static final String DEFAULT_METRIC_QUARTZ_TIME_NAME = "easy4j.quartz.job.exe.time";
     public static final String DEFAULT_METRIC_QUARTZ_EXCEPTION_COUNT_NAME = "easy4j.quartz.job.exe.error.count";
 
+    public static final String JDBC = "jdbc";
+
 }

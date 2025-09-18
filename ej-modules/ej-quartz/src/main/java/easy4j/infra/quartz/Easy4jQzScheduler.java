@@ -2,13 +2,19 @@ package easy4j.infra.quartz;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Sets;
+import easy4j.infra.common.utils.SysLog;
 import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.impl.triggers.CronTriggerImpl;
+import org.springframework.beans.factory.DisposableBean;
 
-import java.util.Date;
+import java.text.ParseException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 操作quartz的工具类
@@ -18,7 +24,7 @@ import java.util.Date;
  */
 @Getter
 @Slf4j
-public class Easy4jQzScheduler {
+public final class Easy4jQzScheduler implements DisposableBean {
 
     private final Scheduler scheduler;
 
@@ -89,7 +95,7 @@ public class Easy4jQzScheduler {
      * @param jobKey
      * @throws SchedulerException
      */
-    public void startJob(JobKey jobKey) throws SchedulerException {
+    public void startJobNow(JobKey jobKey) throws SchedulerException {
         this.scheduler.triggerJob(jobKey);
     }
 
@@ -156,8 +162,156 @@ public class Easy4jQzScheduler {
      * @throws SchedulerException
      */
     public void resumeJob(String name, String group) throws SchedulerException {
-        this.scheduler.pauseJob(new JobKey(name, group));
+        this.scheduler.resumeJob(new JobKey(name, group));
     }
 
 
+    /**
+     * 验证cron表达式是否有效
+     * @param cronExpression cron表达式
+     * @return 是否有效
+     */
+    public boolean isValidCronExpression(String cronExpression) {
+        try {
+            new CronTriggerImpl().setCronExpression(cronExpression);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+
+    /**
+     * 停止并移除指定任务
+     * @param jobName 任务名称
+     * @param jobGroup 任务组
+     * @return 是否成功移除
+     * @throws SchedulerException 调度器异常
+     */
+    public boolean stopAndRemoveJob(String jobName, String jobGroup) throws SchedulerException {
+
+        JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
+
+        if (!scheduler.checkExists(jobKey)) {
+            return false;
+        }
+
+        // 暂停触发器
+        TriggerKey triggerKey = TriggerKey.triggerKey(jobName, jobGroup);
+        scheduler.pauseTrigger(triggerKey);
+
+        // 移除触发器
+        scheduler.unscheduleJob(triggerKey);
+
+        // 删除任务
+        scheduler.deleteJob(jobKey);
+        return true;
+    }
+
+    /**
+     * 获取当前正在调度的任务列表
+     * @return 任务信息列表
+     * @throws SchedulerException 调度器异常
+     */
+    public List<JobInfo> getRunningJobs() throws SchedulerException {
+        List<JobExecutionContext> runningJobs = scheduler.getCurrentlyExecutingJobs();
+        return runningJobs.stream().map(context -> {
+            JobInfo info = new JobInfo();
+            JobKey jobKey = context.getJobDetail().getKey();
+            info.setJobName(jobKey.getName());
+            info.setJobGroup(jobKey.getGroup());
+            info.setJobClass(context.getJobDetail().getJobClass());
+            info.setStatus(JobStatus.RUNNING);
+            info.setStartDate(context.getFireTime());
+            info.setNextState(context.getNextFireTime());
+            info.setLastState(context.getPreviousFireTime());
+
+            Trigger trigger = context.getTrigger();
+            if (trigger instanceof CronTrigger) {
+                info.setCronTab(((CronTrigger) trigger).getCronExpression());
+            }
+            return info;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取所有任务列表（包括暂停的）
+     * @return 所有任务信息
+     * @throws SchedulerException 调度器异常
+     */
+    public  List<JobInfo> getAllJobs() throws SchedulerException {
+        List<JobInfo> jobInfos = new ArrayList<>();
+
+        // 获取所有任务组
+        List<String> jobGroups = scheduler.getJobGroupNames();
+
+        for (String group : jobGroups) {
+            // 获取组内所有任务
+            Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(group));
+
+            for (JobKey jobKey : jobKeys) {
+                JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+                List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+
+                for (Trigger trigger : triggers) {
+                    JobInfo info = new JobInfo();
+                    info.setJobName(jobKey.getName());
+                    info.setJobGroup(jobKey.getGroup());
+                    TriggerKey key = trigger.getKey();
+                    Trigger.TriggerState triggerState = scheduler.getTriggerState(key);
+                    info.setJobClass(jobDetail.getJobClass());
+                    info.setStatus(getTriggerStatus(triggerState));
+                    info.setStartDate(trigger.getStartTime());
+                    info.setNextState(trigger.getNextFireTime());
+                    info.setLastState(trigger.getPreviousFireTime());
+                    if (trigger instanceof CronTrigger) {
+                        info.setCronTab(((CronTrigger) trigger).getCronExpression());
+                    }
+                    jobInfos.add(info);
+                }
+            }
+        }
+
+        return jobInfos;
+    }
+
+
+    /**
+     * 关闭调度器
+     * @throws SchedulerException 调度器异常
+     */
+    private void shutdown() throws SchedulerException {
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown(true);
+            log.info(SysLog.compact("the quartz schedule is shutdown !"));
+        }
+    }
+
+
+    /**
+     * 转换触发器状态为自定义状态枚举
+     */
+    private static JobStatus getTriggerStatus(Trigger.TriggerState state) {
+        switch (state) {
+            case NORMAL: return JobStatus.NORMAL;
+            case PAUSED: return JobStatus.PAUSED;
+            case COMPLETE: return JobStatus.COMPLETE;
+            case ERROR: return JobStatus.ERROR;
+            case BLOCKED: return JobStatus.BLOCKED;
+            default: return JobStatus.UNKNOWN;
+        }
+    }
+
+
+    /**
+     * 任务状态枚举
+     */
+    public enum JobStatus {
+        NORMAL, PAUSED, RUNNING, COMPLETE, ERROR, BLOCKED, UNKNOWN
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        shutdown();
+    }
 }

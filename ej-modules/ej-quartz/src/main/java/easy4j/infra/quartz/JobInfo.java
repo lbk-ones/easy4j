@@ -2,6 +2,7 @@ package easy4j.infra.quartz;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 
@@ -9,6 +10,7 @@ import java.util.Date;
 
 @Data
 @Schema(description = "任务信息")
+@Accessors(chain = true)
 public class JobInfo {
     /**
      * 任务名称 一般是任务定义ID
@@ -53,4 +55,19 @@ public class JobInfo {
      */
     @Schema(description = "任务传递参数")
     private JobDataMap jobDataMap;
+
+    /**
+     * 任务下一次执行时间
+     */
+    @Schema(description = "任务下一次执行时间")
+    private Date nextState;
+
+    @Schema(description = "任务上一次执行时间")
+    private Date lastState;
+
+    /**
+     * 任务状态
+     */
+    @Schema(description = "任务状态")
+    private Easy4jQzScheduler.JobStatus status;
 }
