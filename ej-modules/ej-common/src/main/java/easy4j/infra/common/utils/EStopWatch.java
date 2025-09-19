@@ -33,6 +33,9 @@ public class EStopWatch {
 
     private String taskName;
 
+    public EStopWatch() {
+    }
+
     public EStopWatch(String taskName) {
         this.taskName = taskName;
     }
