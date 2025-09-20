@@ -11,9 +11,13 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
 import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.style.WriteCellStyle;
+import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,7 +193,8 @@ public class EasyExcelUtils {
             // "xlsxtemplate/UserImportTemplateFill.xlsx"
             InputStream resourceAsStream = classLoader.getResourceAsStream(templatePath);
             // 不导出 改为填充
-            try (ExcelWriter build = EasyExcel.write(response.getOutputStream()).withTemplate(resourceAsStream).build()) {
+            try (ExcelWriter build = EasyExcel.write(response.getOutputStream()).registerWriteHandler(getCellStyleStrategy())
+                    .withTemplate(resourceAsStream).build()) {
                 WriteSheet writeSheet = EasyExcel.writerSheet().build();
                 build.fill(fillObject, writeSheet);
             }
@@ -227,7 +232,7 @@ public class EasyExcelUtils {
             response.setCharacterEncoding("UTF-8");
             String fileName = URLEncoder.encode(fileNameStr, "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-            ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream(), aclass);
+            ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream(), aclass).registerWriteHandler(getCellStyleStrategy());
             if (autoColumnWidth) {
                 write.registerWriteHandler(new LongestMatchColumnWidthStyleStrategy());
             }
@@ -245,6 +250,19 @@ public class EasyExcelUtils {
         }
     }
 
+    private static HorizontalCellStyleStrategy getCellStyleStrategy(){
+        // 头的策略
+        WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+        // 背景设置为红色
+        headWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        headWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        // 内容的策略
+        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+        contentWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        contentWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        // 这个策略是 头是头的样式 内容是内容的样式 其他的策略可以自己实现
+        return new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+    }
 
     /**
      * 一个文件多个sheet
@@ -264,7 +282,9 @@ public class EasyExcelUtils {
             response.setCharacterEncoding("UTF-8");
             String fileName = URLEncoder.encode(fileNameStr, "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-            ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream());
+
+
+            ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream()).registerWriteHandler(getCellStyleStrategy());
             if (autoColumnWidth) {
                 write.registerWriteHandler(new LongestMatchColumnWidthStyleStrategy());
             }
