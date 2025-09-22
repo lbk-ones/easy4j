@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-
 @AutoConfiguration(after = {QuartzAutoConfiguration.class})
 @ConditionalOnClass(value = Scheduler.class)
 public class Config {
@@ -23,4 +22,8 @@ public class Config {
         return new QuartzJobRegister(scheduler, schedulerApi(scheduler));
     }
 
+    @Bean
+    public QuartzJobProcessor quartzJobProcessor(){
+        return new QuartzJobProcessor();
+    }
 }

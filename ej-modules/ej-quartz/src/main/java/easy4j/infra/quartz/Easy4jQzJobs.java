@@ -2,29 +2,39 @@ package easy4j.infra.quartz;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.TYPE, ElementType.METHOD})
+/**
+ * 自定义注解，用于标记Quartz任务类，自动注册JobDetail和Trigger
+ */
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Inherited
-public @interface Easy4jQuartzJob {
+public @interface Easy4jQzJobs {
 
     /**
-     * 定时任务表达式
-     * @return
-     */
-    String cronTab() default "";
-
-    /**
-     * 任务名称默认类的名称
-     * @return
+     * 任务名称（默认使用类名）
      */
     String name() default "";
 
     /**
-     * 任务组
-     * @return
+     * 任务组名（默认"DEFAULT"）
      */
-    String group() default "";
+    String group() default "DEFAULT";
+
+    /**
+     * Cron表达式（与fixedRate二选一）
+     */
+    String cron() default "";
+
+    /**
+     * 固定间隔时间（毫秒），与cron二选一
+     */
+    long fixedRate() default -1;
+
+    /**
+     * 任务描述
+     */
+    String description() default "";
+
 
     /**
      * 是否打印日志

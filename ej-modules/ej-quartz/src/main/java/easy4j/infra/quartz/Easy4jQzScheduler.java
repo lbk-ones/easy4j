@@ -7,10 +7,12 @@ import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 import java.text.ParseException;
 import java.util.*;
@@ -66,7 +68,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
             return;
         }
         Date now = new Date();
-        if (startDate == null || startDate.before(now)) {
+        if (startDate == null || startDate.before(now) || jobClass == null) {
             startDate = now;
         }
         JobKey jobKey = new JobKey(jobName, jobGroup);
@@ -90,6 +92,45 @@ public final class Easy4jQzScheduler implements DisposableBean {
     }
 
     /**
+     * 调度一个临时任务（即只执行一次）
+     *
+     * @param jobInfo
+     * @throws SchedulerException
+     */
+    public void scheduleTempJob(JobInfo jobInfo) throws SchedulerException {
+        String jobName = jobInfo.getJobName();
+        String jobGroup = jobInfo.getJobGroup();
+        Class<? extends Job> jobClass = jobInfo.getJobClass();
+        JobDataMap jobDataMap = jobInfo.getJobDataMap();
+        if (StrUtil.isBlank(jobName) || StrUtil.isBlank(jobGroup) || jobClass == null) {
+            log.info("skip the jobName{}", jobName);
+            return;
+        }
+        JobKey jobKey = new JobKey(jobName, jobGroup);
+        TriggerKey triggerKey = TriggerKey.triggerKey(jobKey.getName(), jobKey.getGroup());
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(triggerKey)
+                .startNow()
+                .build();
+        JobDetail jobDetail = JobBuilder.newJob(jobClass)
+                .withIdentity(jobName, jobGroup)
+                .setJobData(jobDataMap)
+                .storeDurably(false)
+                .build();
+        //register to schedule
+        scheduler.scheduleJob(jobDetail, trigger);
+    }
+
+
+    public boolean checkJobExists(JobKey jobKey) throws SchedulerException {
+        return scheduler.checkExists(jobKey);
+    }
+
+    public boolean checkTriggerExists(TriggerKey triggerKey) throws SchedulerException {
+        return scheduler.checkExists(triggerKey);
+    }
+
+    /**
      * 立即开始一个任务
      *
      * @param jobKey
@@ -109,6 +150,10 @@ public final class Easy4jQzScheduler implements DisposableBean {
      */
     public void startJob(String name, String group, JobDataMap map) throws SchedulerException {
         this.scheduler.triggerJob(new JobKey(name, group), map);
+    }
+
+    public void startJob(JobKey jobKey, JobDataMap map) throws SchedulerException {
+        this.scheduler.triggerJob(jobKey, map);
     }
 
     /**
@@ -168,6 +213,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 验证cron表达式是否有效
+     *
      * @param cronExpression cron表达式
      * @return 是否有效
      */
@@ -183,7 +229,8 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 停止并移除指定任务
-     * @param jobName 任务名称
+     *
+     * @param jobName  任务名称
      * @param jobGroup 任务组
      * @return 是否成功移除
      * @throws SchedulerException 调度器异常
@@ -210,6 +257,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 获取当前正在调度的任务列表
+     *
      * @return 任务信息列表
      * @throws SchedulerException 调度器异常
      */
@@ -236,10 +284,11 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 获取所有任务列表（包括暂停的）
+     *
      * @return 所有任务信息
      * @throws SchedulerException 调度器异常
      */
-    public  List<JobInfo> getAllJobs() throws SchedulerException {
+    public List<JobInfo> getAllJobs() throws SchedulerException {
         List<JobInfo> jobInfos = new ArrayList<>();
 
         // 获取所有任务组
@@ -278,6 +327,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 关闭调度器
+     *
      * @throws SchedulerException 调度器异常
      */
     private void shutdown() throws SchedulerException {
@@ -293,12 +343,18 @@ public final class Easy4jQzScheduler implements DisposableBean {
      */
     private static JobStatus getTriggerStatus(Trigger.TriggerState state) {
         switch (state) {
-            case NORMAL: return JobStatus.NORMAL;
-            case PAUSED: return JobStatus.PAUSED;
-            case COMPLETE: return JobStatus.COMPLETE;
-            case ERROR: return JobStatus.ERROR;
-            case BLOCKED: return JobStatus.BLOCKED;
-            default: return JobStatus.UNKNOWN;
+            case NORMAL:
+                return JobStatus.NORMAL;
+            case PAUSED:
+                return JobStatus.PAUSED;
+            case COMPLETE:
+                return JobStatus.COMPLETE;
+            case ERROR:
+                return JobStatus.ERROR;
+            case BLOCKED:
+                return JobStatus.BLOCKED;
+            default:
+                return JobStatus.UNKNOWN;
         }
     }
 

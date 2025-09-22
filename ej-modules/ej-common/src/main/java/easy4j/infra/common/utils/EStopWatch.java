@@ -34,10 +34,12 @@ public class EStopWatch {
     private String taskName;
 
     public EStopWatch() {
+        startTask("estop-start-first");
     }
 
     public EStopWatch(String taskName) {
         this.taskName = taskName;
+        startTask(taskName);
     }
 
     private final Object lock = new Object();

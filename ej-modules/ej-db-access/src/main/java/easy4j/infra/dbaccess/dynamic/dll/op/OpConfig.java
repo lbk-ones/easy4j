@@ -19,12 +19,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.sql.Wrapper;
+import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.RegexEscapeUtils;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
-import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -36,10 +36,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,6 +69,18 @@ public class OpConfig {
     private boolean autoExeDDL;
 
 
+    public static Map<String,Wrapper> dbVsWrapper = Maps.newHashMap();
+
+    static {
+        dbVsWrapper.put(DbType.MYSQL.getDb(), new Wrapper('`','`'));
+        dbVsWrapper.put(DbType.ORACLE.getDb(), new Wrapper('"','"'));
+        dbVsWrapper.put(DbType.H2.getDb(), new Wrapper('"','"'));
+        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new Wrapper('"','"'));
+        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new Wrapper('[',']'));
+        dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"','"'));
+        dbVsWrapper = Collections.unmodifiableMap(dbVsWrapper);
+    }
+
     private CommonDBAccess commonDBAccess = new CommonDBAccess();
 
     public String getColumnName(String columnName) {
@@ -96,6 +105,25 @@ public class OpConfig {
         return escapeCn(columnName, connection, forceEscape);
     }
 
+    public boolean containUpper(String name){
+        char[] charArray = name.toCharArray();
+        for (char c : charArray) {
+            if (StrUtil.isUpperCase(String.valueOf(c))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean containLower(String name){
+        char[] charArray = name.toCharArray();
+        for (char c : charArray) {
+            if (StrUtil.isLowerCase(String.valueOf(c))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * 转义
      *
@@ -103,8 +131,7 @@ public class OpConfig {
      * @date 2025/9/4
      */
     public String escapeCn(String name, Connection connection, boolean forceEscape) {
-
-        Dialect dialect = JdbcHelper.getDialect(connection);
+        String databaseType = null;
         lbk:
         try {
             // 先大概检查一下肯定需要转义的名称 不考虑数据库保留字
@@ -112,13 +139,13 @@ public class OpConfig {
             if (DBFieldEscapeChecker.needEscape(name) || forceEscape) {
                 break lbk;
             }
-            String databaseType = JdbcHelper.getDatabaseType(connection);
+            databaseType = JdbcHelper.getDatabaseType(connection);
             // 这些数据库 只转义该转义的 其他不转义
-            if (DbType.ORACLE.getDb().equals(databaseType)) {
+            if (DbType.ORACLE.getDb().equals(databaseType) && !containLower(name)) {
                 if (!ListTs.equalIgnoreCase(ORACLE_ESCAPE, name)) {
                     return name;
                 }
-            } else if (DbType.POSTGRE_SQL.getDb().equals(databaseType)) {
+            } else if (DbType.POSTGRE_SQL.getDb().equals(databaseType) && !containUpper(name)) {
                 if (!ListTs.equalIgnoreCase(PG_ESCAPE, name)) {
                     return name;
                 }
@@ -126,7 +153,7 @@ public class OpConfig {
                 if (!ListTs.equalIgnoreCase(MYSQL_ESCAPE, name)) {
                     return name;
                 }
-            } else if (DbType.H2.getDb().equals(databaseType)) {
+            } else if (DbType.H2.getDb().equals(databaseType) && !containLower(name)) {
                 if (!ListTs.equalIgnoreCase(H2_ESCAPE, name)) {
                     return name;
                 }
@@ -138,7 +165,7 @@ public class OpConfig {
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("escapeCn", null, e);
         }
-        Wrapper wrapper = dialect.getWrapper();
+        Wrapper wrapper = dbVsWrapper.getOrDefault(databaseType, new Wrapper());
 
         return wrapper.wrap(name);
     }

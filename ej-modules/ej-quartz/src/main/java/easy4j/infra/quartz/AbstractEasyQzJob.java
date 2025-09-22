@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,17 +22,18 @@ import java.util.concurrent.TimeUnit;
  * @author bokun.li
  * @date 2025/9/18
  */
-public abstract class AbstractEasyQzJob implements Job {
+public abstract class AbstractEasyQzJob extends QuartzJobBean implements Job {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public abstract void executeJob(JobExecutionContext context) throws JobExecutionException;
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         long beginTime = System.currentTimeMillis();
         JobDataMap mergedJobDataMap = context.getMergedJobDataMap();
-        boolean printLog = mergedJobDataMap.getBoolean(QzConstant.PRINT_LOG);
+        boolean printLog = !mergedJobDataMap.containsKey(QzConstant.PRINT_LOG) || mergedJobDataMap.getBoolean(QzConstant.PRINT_LOG);
+
         Boolean property = Easy4j.getProperty(SysConstant.EASY4J_IS_GLOBAL_PRINT_LOG, boolean.class);
         if (!property) printLog = false;
         String metricCountName = StringUtils.defaultIfBlank(mergedJobDataMap.getString(QzConstant.METRIC_COUNT_NAME), QzConstant.DEFAULT_METRIC_QUARTZ_COUNT_NAME);
@@ -59,6 +61,5 @@ public abstract class AbstractEasyQzJob implements Job {
         if (printLog) {
             log.info("end job,cost time....{}ms", l);
         }
-
     }
 }

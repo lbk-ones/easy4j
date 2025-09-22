@@ -154,6 +154,7 @@ public class EasyExcelUtils {
             // String fileName = URLEncoder.encode("用户导入模板", "UTF-8").replaceAll("\\+", "%20");
             String fileName = URLEncoder.encode(fileNameStr, "UTF-8").replaceAll("\\+", "%20");
             httpServletResponse.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            //httpServletResponse.setHeader("Access-Control-Expose-Headers", "content-disposition");
             ClassLoader classLoader = EasyExcelUtils.class.getClassLoader();
             //InputStream resourceAsStream = classLoader.getResourceAsStream("xlsxtemplate/UserImportTemplate.xlsx");
             InputStream inputStream;
@@ -187,6 +188,7 @@ public class EasyExcelUtils {
             response.setCharacterEncoding("UTF-8");
             String fileName = URLEncoder.encode("所有用户", "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            //response.setHeader("Access-Control-Expose-Headers", "content-disposition");
             ClassLoader classLoader = EasyExcelUtils.class.getClassLoader();
 
             // 这个流会自动关闭
@@ -232,6 +234,7 @@ public class EasyExcelUtils {
             response.setCharacterEncoding("UTF-8");
             String fileName = URLEncoder.encode(fileNameStr, "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            //response.setHeader("Access-Control-Expose-Headers", "content-disposition");
             ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream(), aclass).registerWriteHandler(getCellStyleStrategy());
             if (autoColumnWidth) {
                 write.registerWriteHandler(new LongestMatchColumnWidthStyleStrategy());
@@ -282,6 +285,7 @@ public class EasyExcelUtils {
             response.setCharacterEncoding("UTF-8");
             String fileName = URLEncoder.encode(fileNameStr, "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+            //response.setHeader("Access-Control-Expose-Headers", "content-disposition");
 
 
             ExcelWriterBuilder write = EasyExcel.write(response.getOutputStream()).registerWriteHandler(getCellStyleStrategy());
