@@ -134,12 +134,12 @@ public class OpConfig {
         String databaseType = null;
         lbk:
         try {
+            databaseType = JdbcHelper.getDatabaseType(connection);
             // 先大概检查一下肯定需要转义的名称 不考虑数据库保留字
             // 如果强制转义那么也跳过
             if (DBFieldEscapeChecker.needEscape(name) || forceEscape) {
                 break lbk;
             }
-            databaseType = JdbcHelper.getDatabaseType(connection);
             // 这些数据库 只转义该转义的 其他不转义
             if (DbType.ORACLE.getDb().equals(databaseType) && !containLower(name)) {
                 if (!ListTs.equalIgnoreCase(ORACLE_ESCAPE, name)) {

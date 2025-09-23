@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Easy4jQzJobs {
+public @interface Easy4jQzJob {
 
     /**
      * 任务名称（默认使用类名）
@@ -38,31 +38,31 @@ public @interface Easy4jQzJobs {
 
     /**
      * 是否打印日志
-     * @return
      */
     boolean printLog() default true;
 
     /**
      * Count指标名称
-     * @return
      */
     String metricCountName() default QzConstant.DEFAULT_METRIC_QUARTZ_COUNT_NAME;
 
     /**
      * Count指标注释
-     * @return
      */
     String metricCountDesc() default "quartz job exe count static";
 
     /**
      * Time指标名称
-     * @return
      */
     String metricTimeName() default QzConstant.DEFAULT_METRIC_QUARTZ_TIME_NAME;
 
     /**
      * Time指标注释
-     * @return
      */
     String metricTimeDesc() default "quartz job exe cost time";
+
+    /**
+     * 时区 默认上海
+     */
+    String timeZone() default "Asia/Shanghai";
 }

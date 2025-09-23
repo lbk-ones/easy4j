@@ -80,7 +80,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
                 .endAt(endDate)
                 .withSchedule(
                         CronScheduleBuilder.cronSchedule(cronTab)
-                                .withMisfireHandlingInstructionIgnoreMisfires()
+                                .withMisfireHandlingInstructionFireAndProceed()
                                 .inTimeZone(DateUtil.getTimeZone(timeZone)))
                 .build();
         JobDetail jobDetail = JobBuilder.newJob(jobClass)
@@ -122,10 +122,22 @@ public final class Easy4jQzScheduler implements DisposableBean {
     }
 
 
+    /**
+     * 任务是否存在
+     * @param jobKey
+     * @return
+     * @throws SchedulerException
+     */
     public boolean checkJobExists(JobKey jobKey) throws SchedulerException {
         return scheduler.checkExists(jobKey);
     }
 
+    /**
+     * 触发器是否存在
+     * @param triggerKey
+     * @return
+     * @throws SchedulerException
+     */
     public boolean checkTriggerExists(TriggerKey triggerKey) throws SchedulerException {
         return scheduler.checkExists(triggerKey);
     }
@@ -151,7 +163,13 @@ public final class Easy4jQzScheduler implements DisposableBean {
     public void startJob(String name, String group, JobDataMap map) throws SchedulerException {
         this.scheduler.triggerJob(new JobKey(name, group), map);
     }
-
+    /**
+     * 立即开始一个任务
+     *
+     * @param jobKey 任务key
+     * @param map   传递到任务的参数
+     * @throws SchedulerException
+     */
     public void startJob(JobKey jobKey, JobDataMap map) throws SchedulerException {
         this.scheduler.triggerJob(jobKey, map);
     }

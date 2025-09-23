@@ -50,16 +50,17 @@ public abstract class AbstractEasyQzJob extends QuartzJobBean implements Job {
             log.info("begin execute job....{},{}", key.getName(), key.getGroup());
         }
         Timer timer = instance.buildTimer(metricTimeName, metricTimeDesc, null);
-        long l = System.currentTimeMillis() - beginTime;
-        timer.record(l, TimeUnit.MILLISECONDS);
         try {
             executeJob(context);
         } catch (Throwable e) {
             errorCounter.increment();
             throw e;
-        }
-        if (printLog) {
-            log.info("end job,cost time....{}ms", l);
+        }finally {
+            long l = System.currentTimeMillis() - beginTime;
+            timer.record(l, TimeUnit.MILLISECONDS);
+            if (printLog) {
+                log.info("end job,cost time....{}ms", l);
+            }
         }
     }
 }

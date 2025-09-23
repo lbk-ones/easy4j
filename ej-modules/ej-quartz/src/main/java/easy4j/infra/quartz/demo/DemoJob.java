@@ -1,13 +1,13 @@
 package easy4j.infra.quartz.demo;
 
 import easy4j.infra.quartz.AbstractEasyQzJob;
-import easy4j.infra.quartz.Easy4jQzJobs;
+import easy4j.infra.quartz.Easy4jQzJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 // 使用自定义注解标记任务类，配置调度参数
-@Easy4jQzJobs(
+@Easy4jQzJob(
     name = "demoJob",
     group = "DEMO_GROUP",
     cron = "0/10 * * * * ?", // 每10秒执行一次（支持Spring EL：${demo.job.cron}）

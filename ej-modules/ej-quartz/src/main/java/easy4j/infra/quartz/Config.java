@@ -18,12 +18,8 @@ public class Config {
 
 
     @Bean
-    public QuartzJobRegister quartzRunner(Scheduler scheduler) {
-        return new QuartzJobRegister(scheduler, schedulerApi(scheduler));
+    public QuartzJobStart quartzRunner(Scheduler scheduler) {
+        return new QuartzJobStart(scheduler, schedulerApi(scheduler));
     }
 
-    @Bean
-    public QuartzJobProcessor quartzJobProcessor(){
-        return new QuartzJobProcessor();
-    }
 }
