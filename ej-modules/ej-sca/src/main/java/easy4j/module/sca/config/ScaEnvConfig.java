@@ -15,6 +15,7 @@
 package easy4j.module.sca.config;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.resolve.NacosUrlResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
@@ -140,10 +141,14 @@ public class ScaEnvConfig extends AbstractEasy4jEnvironment {
             throw new EasyException("请设置参数：" + Easy4j.getEjSysPropertyName(EjSysProperties::getNacosUrl));
         }
         NacosUrlResolve nacosUrlResolve = new NacosUrlResolve();
-        String username = nacosUrlResolve.getUsername(nacosUrl);
-        String password = nacosUrlResolve.getPassword(nacosUrl);
+        String username = NacosUrlResolve.getUsername(nacosUrl);
+        String password = NacosUrlResolve.getPassword(nacosUrl);
         nacosUrlResolve.handler(properties, nacosUrl);
-
+        boolean forceRegister = getEnvProperty(SysConstant.EASY4J_FORCE_REGISTER_TO_REGISTRY, boolean.class);
+        if (!SystemUtil.getOsInfo().isLinux() && !forceRegister) {
+            System.out.println(SysLog.compact("It is detected that the current machine is running on the local machine, so it will not be registered to the registry. If registration is required, please change " + SysConstant.EASY4J_FORCE_REGISTER_TO_REGISTRY + " value to true"));
+            setProperties(properties, SysConstant.SPRING_REGISTER_TO_NACOS, "false");
+        }
 
         String nacosNameSpace = StrUtil.blankToDefault(ejSys.getNacosNameSpace(), "public");
         String nacosConfigUrl = ejSys.getNacosConfigUrl();

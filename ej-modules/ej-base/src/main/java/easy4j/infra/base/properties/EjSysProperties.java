@@ -651,6 +651,13 @@ public class EjSysProperties {
 
 
     /**
+     * 强制将本机服务注册到注册中心
+     */
+    @SpringVs(desc = "强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了")
+    private boolean forceRegisterToRegistry = false;
+
+
+    /**
      * 根据常量获取 对应的springboot变量
      *
      * @param constant

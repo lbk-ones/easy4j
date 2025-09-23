@@ -1,10 +1,12 @@
 package easy4j.infra.quartz;
 
+import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
@@ -80,8 +82,16 @@ public class Environment extends AbstractEasy4jEnvironment {
         properties.setProperty("spring.quartz.properties.org.quartz.jobStore.tablePrefix", tablePrefix);
         // 获取触发器时是否在事务锁内操作（集群环境下防止并发获取同一触发器，默认false）
         properties.setProperty("spring.quartz.properties.org.quartz.jobStore.acquireTriggersWithinLock", "true");
-        // 调度器实例名称（通常包含服务名，便于集群中区分不同实例）
-        properties.setProperty("spring.quartz.properties.org.quartz.scheduler.instanceName", serverName + "_QuartzScheduler");
+        // 默认所有线上环境都是linux系统
+        if (SystemUtil.getOsInfo().isLinux()) {
+            // 调度器实例名称（通常包含服务名，便于集群中区分不同实例）
+            properties.setProperty("spring.quartz.properties.org.quartz.scheduler.instanceName", serverName + "-QuartzScheduler");
+        }else{
+            // 本地单独起一个集群不然会和线上冲突导致触发器ERROR
+            String hostName = jodd.util.SystemUtil.info().getHostName();
+            System.out.println(SysLog.compact("the env is local so quartz instance name will be set to current hostname " + hostName));
+            properties.setProperty("spring.quartz.properties.org.quartz.scheduler.instanceName", hostName + "-QzLocalScheduler");
+        }
         // 指定线程池实现类：使用Quartz内置的简单线程池
         properties.setProperty("spring.quartz.properties.org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         // 是否将线程池中的线程设置为守护线程（守护线程会随JVM退出而终止，默认false）

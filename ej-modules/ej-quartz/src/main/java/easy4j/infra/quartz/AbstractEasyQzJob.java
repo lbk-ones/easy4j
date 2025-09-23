@@ -31,33 +31,42 @@ public abstract class AbstractEasyQzJob extends QuartzJobBean implements Job {
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         long beginTime = System.currentTimeMillis();
-        JobDataMap mergedJobDataMap = context.getMergedJobDataMap();
-        boolean printLog = !mergedJobDataMap.containsKey(QzConstant.PRINT_LOG) || mergedJobDataMap.getBoolean(QzConstant.PRINT_LOG);
-
-        Boolean property = Easy4j.getProperty(SysConstant.EASY4J_IS_GLOBAL_PRINT_LOG, boolean.class);
-        if (!property) printLog = false;
-        String metricCountName = StringUtils.defaultIfBlank(mergedJobDataMap.getString(QzConstant.METRIC_COUNT_NAME), QzConstant.DEFAULT_METRIC_QUARTZ_COUNT_NAME);
-        String metricTimeName = StringUtils.defaultIfBlank(mergedJobDataMap.getString(QzConstant.METRIC_TIME_NAME), QzConstant.DEFAULT_METRIC_QUARTZ_TIME_NAME);
-        String metricCountDesc = mergedJobDataMap.getString(QzConstant.METRIC_COUNT_DESC);
-        String metricTimeDesc = mergedJobDataMap.getString(QzConstant.METRIC_TIME_DESC);
-        MetricsBuilder instance = MetricsFactory.getInstance();
-        Counter counter = instance.buildCounter(metricCountName, metricCountDesc, null);
-        Counter errorCounter = instance.buildCounter(QzConstant.DEFAULT_METRIC_QUARTZ_EXCEPTION_COUNT_NAME, "quartz exe error count", null);
-        counter.increment();
-        JobDetail jobDetail = context.getJobDetail();
-        JobKey key = jobDetail.getKey();
-        if (printLog) {
-            log.info("begin execute job....{},{}", key.getName(), key.getGroup());
-        }
-        Timer timer = instance.buildTimer(metricTimeName, metricTimeDesc, null);
+        Counter errorCounter = null;
+        Timer timer = null;
+        boolean printLog = false;
         try {
+            JobDataMap mergedJobDataMap = context.getMergedJobDataMap();
+            printLog = !mergedJobDataMap.containsKey(QzConstant.PRINT_LOG) || mergedJobDataMap.getBoolean(QzConstant.PRINT_LOG);
+
+            Boolean property = Easy4j.getProperty(SysConstant.EASY4J_IS_GLOBAL_PRINT_LOG, boolean.class);
+            if (!property) printLog = false;
+            String metricCountName = StringUtils.defaultIfBlank(mergedJobDataMap.getString(QzConstant.METRIC_COUNT_NAME), QzConstant.DEFAULT_METRIC_QUARTZ_COUNT_NAME);
+            String metricTimeName = StringUtils.defaultIfBlank(mergedJobDataMap.getString(QzConstant.METRIC_TIME_NAME), QzConstant.DEFAULT_METRIC_QUARTZ_TIME_NAME);
+            String metricCountDesc = mergedJobDataMap.getString(QzConstant.METRIC_COUNT_DESC);
+            String metricTimeDesc = mergedJobDataMap.getString(QzConstant.METRIC_TIME_DESC);
+            MetricsBuilder instance = MetricsFactory.getInstance();
+            Counter counter = instance.buildCounter(metricCountName, metricCountDesc, null);
+            errorCounter = instance.buildCounter(QzConstant.DEFAULT_METRIC_QUARTZ_EXCEPTION_COUNT_NAME, "quartz exe error count", null);
+            counter.increment();
+            JobDetail jobDetail = context.getJobDetail();
+            JobKey key = jobDetail.getKey();
+            if (printLog) {
+                log.info("begin execute job....{},{}", key.getName(), key.getGroup());
+            }
+            timer = instance.buildTimer(metricTimeName, metricTimeDesc, null);
+
             executeJob(context);
         } catch (Throwable e) {
-            errorCounter.increment();
-            throw e;
-        }finally {
+            if (null != errorCounter) {
+                errorCounter.increment();
+            }
+            e.printStackTrace();
+            throw new JobExecutionException(e.getMessage(),e,true);
+        } finally {
             long l = System.currentTimeMillis() - beginTime;
-            timer.record(l, TimeUnit.MILLISECONDS);
+            if (timer != null) {
+                timer.record(l, TimeUnit.MILLISECONDS);
+            }
             if (printLog) {
                 log.info("end job,cost time....{}ms", l);
             }

@@ -178,6 +178,7 @@ public class SysConstant {
     public static final String EASY4J_MINIO_ACCESS_KEY = PARAM_PREFIX + SP.DOT + "minio-access-key";
     public static final String EASY4J_MINIO_SECRET_KEY = PARAM_PREFIX + SP.DOT + "minio-secret-key";
     public static final String EASY4J_IS_GLOBAL_PRINT_LOG = PARAM_PREFIX + SP.DOT + "global-quartz-job-print-log";
+    public static final String EASY4J_FORCE_REGISTER_TO_REGISTRY = PARAM_PREFIX + SP.DOT + "force-register-to-registry";
 
 
 

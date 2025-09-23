@@ -87,3 +87,5 @@
 - **easy4j.minio-url**: minio地址
 - **easy4j.minio-access-key**: minio访问key
 - **easy4j.minio-secret-key**: minio访问密钥
+- **easy4j.global-quartz-job-print-log**: quartz全局日志打印
+- **easy4j.force-register-to-registry**: 强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了

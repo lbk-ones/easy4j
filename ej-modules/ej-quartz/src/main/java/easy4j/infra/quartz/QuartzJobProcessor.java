@@ -93,6 +93,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                 JobBuilder.newJob(jobClass2)
                         .withIdentity(jobName, group)
                         .withDescription(quartzJob.description())
+                        .storeDurably(true)
                         .build()
         ).getBeanDefinition();
         registry.registerBeanDefinition(jobBeanName, jobDetailDefinition);
@@ -103,6 +104,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         String s = quartzJob.timeZone();
         // 4. 注册Trigger的BeanDefinition（依赖JobDetail）
         BeanDefinition triggerDefinition = BeanDefinitionBuilder.genericBeanDefinition(Trigger.class, () -> {
+
             TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger()
                     .forJob(JobKey.jobKey(jobName, group)) // 绑定JobDetail
                     .withIdentity(jobName + "Trigger", group);
@@ -143,6 +145,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
             triggerBuilder.usingJobData(jobDataMap);
             return triggerBuilder.build();
         }).getBeanDefinition();
+        triggerDefinition.setDependsOn(jobBeanName);
         registry.registerBeanDefinition(triggerBeanName, triggerDefinition);
     }
 
