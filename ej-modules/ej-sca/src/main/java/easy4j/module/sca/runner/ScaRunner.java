@@ -18,7 +18,9 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
+import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.properties.cc.ConfigCenterFactory;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
@@ -26,11 +28,16 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.ThreadPoolUtils;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 /**
@@ -82,7 +89,24 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
 
                 @Override
                 public void receiveConfigInfo(String configInfo) {
+
                     log.info(SysLog.compact(s + "----> receiveConfigInfo ---->   " + configInfo));
+
+                    String trim = StrUtil.trim(configInfo);
+                    StringReader stringReader = new StringReader(trim);
+                    Properties properties = new Properties();
+                    try {
+                        properties.load(stringReader);
+                        Map<@Nullable String, @Nullable String> res = Maps.newHashMap();
+                        for (Object o : properties.keySet()) {
+                            Object o1 = properties.get(o);
+                            res.put(String.valueOf(o),String.valueOf(o1));
+                        }
+                        ConfigCenterFactory.get().change(res);
+                    } catch (IOException ignored) {
+
+                    }
+
 //                    try {
 //                        ConfigurableEnvironment environment = (ConfigurableEnvironment) Easy4j.environment;
 //                        MutablePropertySources propertySources = environment.getPropertySources();

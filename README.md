@@ -19,6 +19,7 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 - **集成化权限认证，授权**：有两种方式：1、基于Easy4j的权限认证授权，2、基于spring-security
 - **模块化设计**：采用模块化架构，各组件可独立使用或按需组合，实现高内聚低耦合
 - **简化开发**：提供常用工具类和基础服务，减少重复开发，极大极大减少配置量，可以0配置启动
+- **任务调度**：封装xxl-job和quartz进行中心化调度或无中心化调度
 - **统一异常处理**：标准化的异常处理机制，提升系统稳定性
 - **统一国际化**：标准化国际i18n
 - **统一api文档规范**：使用openapi3为规范，规范系统文档
@@ -43,6 +44,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-sca**：spring-cloud-alibaba 整合
 - **ej-sca-gateway**：spring-cloud 网关整合比较特殊新增一个
 - **ej-sca-seata**：spring-cloud 整合seata
+- **ej-quartz**：封装quartz,可以使用使用工具类手动调度，也可以以类的形式加上注解自动调度
 - **ej-xxl-job**：xxljob整合
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合

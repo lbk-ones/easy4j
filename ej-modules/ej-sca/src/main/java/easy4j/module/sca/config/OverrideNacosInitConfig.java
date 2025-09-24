@@ -19,6 +19,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.properties.cc.ConfigCenterFactory;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -26,6 +27,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysLog;
 import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
@@ -34,10 +36,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 晚于
@@ -89,6 +88,10 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
                 return;
             }
             assert propertySource != null;
+
+            // init config center
+            ConfigCenterFactory.get().change(castToMap(propertySource));
+
             Map<String, Object> mapPropertiesResource = Maps.newHashMap();
             Map<String, EjSysFieldInfo> stringEjSysFieldInfoMap = ListTs.mapOne(allEjSysFieldInfoList, EjSysFieldInfo::getSysConstantName);
             allEjSysFieldInfoList.forEach(ejSysFieldInfo -> {
@@ -119,6 +122,20 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
             }
         }
 
+    }
+    private static Map<String, String> castToMap(PropertySource<?> propertySource){
+        Map<@Nullable String, @Nullable String> res = Maps.newHashMap();
+        Object source = propertySource.getSource();
+        if (source instanceof Map) {
+            Map<?, ?> source1 = (Map<?, ?>) source;
+            Set<? extends Map.Entry<?, ?>> entries = source1.entrySet();
+            for (Map.Entry<?, ?> entry : entries) {
+                String key = String.valueOf(entry.getKey());
+                Object value = entry.getValue();
+                res.put(key,String.valueOf(value));
+            }
+        }
+        return res;
     }
 
     private static Map<String, Object> getNoSysMap(PropertySource<?> propertySource, Map<String, EjSysFieldInfo> stringEjSysFieldInfoMap) {

@@ -1,5 +1,6 @@
 package easy4j.infra.quartz;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Sets;
 import easy4j.infra.common.utils.SysLog;
@@ -7,12 +8,10 @@ import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 import java.text.ParseException;
 import java.util.*;
@@ -62,7 +61,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
         String cronTab = jobInfo.getCronTab();
         String timeZone = jobInfo.getTimeZone();
         Class<? extends Job> jobClass = jobInfo.getJobClass();
-        JobDataMap jobDataMap = jobInfo.getJobDataMap();
+        JobDataMap jobDataMap = ObjectUtil.defaultIfNull(jobInfo.getJobDataMap(), new JobDataMap());
         if (StrUtil.isBlank(jobName) || StrUtil.isBlank(cronTab)) {
             log.info("skip the jobName{},{}", jobName, cronTab);
             return;
@@ -86,8 +85,9 @@ public final class Easy4jQzScheduler implements DisposableBean {
         JobDetail jobDetail = JobBuilder.newJob(jobClass)
                 .withIdentity(jobName, jobGroup)
                 .setJobData(jobDataMap)
+                .storeDurably(true)
                 .build();
-        //register to schedule
+        //subscribe to schedule
         scheduler.scheduleJob(jobDetail, Sets.newHashSet(cronTrigger), true);
     }
 
@@ -117,13 +117,14 @@ public final class Easy4jQzScheduler implements DisposableBean {
                 .setJobData(jobDataMap)
                 .storeDurably(false)
                 .build();
-        //register to schedule
+        //subscribe to schedule
         scheduler.scheduleJob(jobDetail, trigger);
     }
 
 
     /**
      * 任务是否存在
+     *
      * @param jobKey
      * @return
      * @throws SchedulerException
@@ -134,6 +135,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
     /**
      * 触发器是否存在
+     *
      * @param triggerKey
      * @return
      * @throws SchedulerException
@@ -163,11 +165,12 @@ public final class Easy4jQzScheduler implements DisposableBean {
     public void startJob(String name, String group, JobDataMap map) throws SchedulerException {
         this.scheduler.triggerJob(new JobKey(name, group), map);
     }
+
     /**
      * 立即开始一个任务
      *
      * @param jobKey 任务key
-     * @param map   传递到任务的参数
+     * @param map    传递到任务的参数
      * @throws SchedulerException
      */
     public void startJob(JobKey jobKey, JobDataMap map) throws SchedulerException {
@@ -207,13 +210,13 @@ public final class Easy4jQzScheduler implements DisposableBean {
     }
 
     /**
-     * 停止一个任务
+     * 暂停一个任务
      *
      * @param name  任务名称，通常是任务定义ID
      * @param group 任务组，通常是业务分组，或者项目分组，或者是服务分组
      * @throws SchedulerException
      */
-    public void stopJob(String name, String group) throws SchedulerException {
+    public void pauseJob(String name, String group) throws SchedulerException {
         this.scheduler.pauseJob(new JobKey(name, group));
     }
 
@@ -387,5 +390,58 @@ public final class Easy4jQzScheduler implements DisposableBean {
     @Override
     public void destroy() throws Exception {
         shutdown();
+    }
+
+
+    /**
+     * 热更新Cron表达式
+     * 如果是普通类型（固定频率）的任务，那么也会更新成cron任务
+     *
+     * @param triggerName       触发器名称
+     * @param triggerGroup      触发器组名
+     * @param newCronExpression 新的cron表达式
+     */
+    public void updateCronTrigger(String triggerName, String triggerGroup, String newCronExpression) throws SchedulerException {
+
+        // 1. 获取旧的触发器
+        TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
+        Trigger trigger = scheduler.getTrigger(triggerKey);
+        if (trigger == null) return;
+        CronTrigger oldTrigger = null;
+        // 2. 如果cron表达式没有变化，无需更新
+        String oldCron = null;
+        TimeZone timeZone = null;
+        try {
+            timeZone = DateUtil.getTimeZone("Asia/Shanghai");
+        } catch (UnrecognizedTimeZoneException ignored) {
+
+        }
+        if (trigger instanceof CronTrigger) {
+            oldTrigger = ((CronTrigger) trigger);
+            oldCron = oldTrigger.getCronExpression();
+            timeZone = oldTrigger.getTimeZone();
+        }
+
+        if (StrUtil.isBlank(newCronExpression) || !isValidCronExpression(newCronExpression) || (oldCron != null && oldCron.equals(newCronExpression))) {
+            return;
+        }
+
+        // 创建新的触发器（使用新的cron表达式）
+        CronTrigger newTrigger = TriggerBuilder.newTrigger()
+                .withIdentity(triggerKey) // 保持原触发器的标识
+                .forJob(trigger.getJobKey())
+                .withDescription(trigger.getDescription())
+                .withSchedule(CronScheduleBuilder.cronSchedule(newCronExpression)
+                        .withMisfireHandlingInstructionFireAndProceed()
+                        .inTimeZone(timeZone)
+                )
+                .usingJobData(trigger.getJobDataMap())
+                .build();
+
+        // 4. 替换旧的触发器（实现热更新）
+        Date date = scheduler.rescheduleJob(triggerKey, newTrigger);
+        if (date != null) {
+            System.out.println("Cron表达式更新成功：" + newCronExpression);
+        }
     }
 }

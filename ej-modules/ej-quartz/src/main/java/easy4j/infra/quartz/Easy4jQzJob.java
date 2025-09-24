@@ -1,5 +1,9 @@
 package easy4j.infra.quartz;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.stereotype.Component;
+
 import java.lang.annotation.*;
 
 /**
@@ -8,11 +12,13 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Component
 public @interface Easy4jQzJob {
 
     /**
      * 任务名称（默认使用类名）
      */
+    @AliasFor(annotation = Component.class,attribute = "value")
     String name() default "";
 
     /**
@@ -65,4 +71,9 @@ public @interface Easy4jQzJob {
      * 时区 默认上海
      */
     String timeZone() default "Asia/Shanghai";
+
+    /**
+     * 重启刷新，一般是刷新cron表达式和周期时间
+     */
+    boolean restartRefresh() default false;
 }

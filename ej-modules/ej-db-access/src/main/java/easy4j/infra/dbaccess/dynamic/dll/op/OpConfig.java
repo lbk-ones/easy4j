@@ -105,10 +105,20 @@ public class OpConfig {
         return escapeCn(columnName, connection, forceEscape);
     }
 
+    /**
+     * 校验字符是否为英文字母（大写或小写）
+     * @param c 要校验的字符
+     * @return 如果是英文字母返回 true，否则返回 false
+     */
+    public  boolean isEnglishLetter(char c) {
+        // 检查是否是大写字母 (A-Z) 或小写字母 (a-z)
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+    }
+
     public boolean containUpper(String name){
         char[] charArray = name.toCharArray();
         for (char c : charArray) {
-            if (StrUtil.isUpperCase(String.valueOf(c))) {
+            if (isEnglishLetter(c) && StrUtil.isUpperCase(String.valueOf(c))) {
                 return true;
             }
         }
@@ -117,7 +127,7 @@ public class OpConfig {
     public boolean containLower(String name){
         char[] charArray = name.toCharArray();
         for (char c : charArray) {
-            if (StrUtil.isLowerCase(String.valueOf(c))) {
+            if (isEnglishLetter(c) && StrUtil.isLowerCase(String.valueOf(c))) {
                 return true;
             }
         }

@@ -1,7 +1,15 @@
 package easy4j.infra.quartz;
 
+import org.quartz.JobDataMap;
+
+import cn.hutool.extra.spring.SpringUtil;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
+import easy4j.infra.base.properties.cc.ConfigCenterFactory;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.api.lock.DbLock;
 import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +28,7 @@ import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * 扫描@Easy4jQzJob注解，自动注册JobDetail和Trigger的BeanDefinition
@@ -83,70 +92,121 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
             return;
         }
         Class<? extends Job> jobClass2 = (Class<? extends Job>) jobClass;
-        // 1. 生成JobDetail的Bean名称
         String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+        String triggerName = jobName + "Trigger";
         String jobBeanName = jobName + "JobDetail";
         String group = quartzJob.group();
-
-        // 2. 注册JobDetail的BeanDefinition
-        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () ->
-                JobBuilder.newJob(jobClass2)
-                        .withIdentity(jobName, group)
-                        .withDescription(quartzJob.description())
-                        .storeDurably(true)
-                        .build()
-        ).getBeanDefinition();
-        registry.registerBeanDefinition(jobBeanName, jobDetailDefinition);
-
-        // 3. 生成Trigger的Bean名称
         String triggerBeanName = jobName + "Trigger";
         String cron = quartzJob.cron();
-        String s = quartzJob.timeZone();
-        // 4. 注册Trigger的BeanDefinition（依赖JobDetail）
-        BeanDefinition triggerDefinition = BeanDefinitionBuilder.genericBeanDefinition(Trigger.class, () -> {
-
-            TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger()
-                    .forJob(JobKey.jobKey(jobName, group)) // 绑定JobDetail
-                    .withIdentity(jobName + "Trigger", group);
-
-            // 根据注解配置选择Cron或固定间隔
-            if (StringUtils.hasText(cron)) {
-                // 解析Cron表达式（支持Spring EL表达式，如${cron.expression}）
-                String cronExpression = environment.resolvePlaceholders(cron);
-                if (!isValidCronExpression(cronExpression)) {
-                    throw new IllegalArgumentException("the job " + jobName + "'s cron " + cronExpression + " is not valid , please check");
-                }
-                try {
-                    triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
-                            .withMisfireHandlingInstructionFireAndProceed()
-                            .inTimeZone(DateUtil.getTimeZone(s)));
-                } catch (UnrecognizedTimeZoneException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (quartzJob.fixedRate() > 0) {
-                triggerBuilder.withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInMilliseconds(quartzJob.fixedRate())
-                        .repeatForever());
-            } else {
-                throw new IllegalArgumentException("Job " + jobName + " must specify cron or fixedRate");
-            }
-            triggerBuilder.forJob(jobName, group);
-            boolean printLog = quartzJob.printLog();
-            String metricCountName = quartzJob.metricCountName();
-            String metricTimeName = quartzJob.metricTimeName();
-            String metricCountDesc = quartzJob.metricCountDesc();
-            String metricTimeDesc = quartzJob.metricTimeDesc();
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put(QzConstant.PRINT_LOG, printLog);
-            jobDataMap.put(QzConstant.METRIC_COUNT_NAME, metricCountName);
-            jobDataMap.put(QzConstant.METRIC_TIME_NAME, metricTimeName);
-            jobDataMap.put(QzConstant.METRIC_COUNT_DESC, metricCountDesc);
-            jobDataMap.put(QzConstant.METRIC_TIME_DESC, metricTimeDesc);
-            triggerBuilder.usingJobData(jobDataMap);
-            return triggerBuilder.build();
-        }).getBeanDefinition();
+        // cron hot reload
+        String s1 = cronHotReload(group, jobName, triggerName);
+        if (StrUtil.isNotBlank(s1)) cron = s1;
+        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () -> getJobDetail(jobClass2, quartzJob)).getBeanDefinition();
+        registry.registerBeanDefinition(jobBeanName, jobDetailDefinition);
+        String finalCron = cron;
+        BeanDefinition triggerDefinition = BeanDefinitionBuilder
+                .genericBeanDefinition(Trigger.class, () -> getTrigger(jobClass, quartzJob, finalCron, (e) -> environment.resolvePlaceholders(e)))
+                .getBeanDefinition();
         triggerDefinition.setDependsOn(jobBeanName);
         registry.registerBeanDefinition(triggerBeanName, triggerDefinition);
+    }
+
+    /**
+     * gen
+     * @param jobClass
+     * @param quartzJob
+     * @return
+     */
+    public static JobDetail getJobDetail(Class<? extends Job> jobClass, Easy4jQzJob quartzJob) {
+        String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+        String group = quartzJob.group();
+        String description = quartzJob.description();
+        return JobBuilder.newJob(jobClass)
+                .withIdentity(jobName, group)
+                .withDescription(description)
+                .storeDurably(true)
+                .build();
+    }
+
+    /**
+     * 根据注解信息和类信息获取触发器
+     *
+     * @param jobClass    任务类class对象
+     * @param quartzJob   注解信息
+     * @param finalCron   cron表达式
+     * @param cronConvert cron转换函数
+     * @return
+     */
+    public static Trigger getTrigger(Class<?> jobClass, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert) {
+        String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+        String triggerName = jobName + "Trigger";
+        String group = quartzJob.group();
+        String s = quartzJob.timeZone();
+        String description = quartzJob.description();
+
+        TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger()
+                .forJob(JobKey.jobKey(jobName, group)) // 绑定JobDetail
+                .withIdentity(triggerName, group);
+
+        // 根据注解配置选择Cron或固定间隔
+        if (!StrUtil.isBlank(finalCron)) {
+            String cronExpression = cronConvert.apply(finalCron);
+            // 解析Cron表达式（支持Spring EL表达式，如${cron.expression}）
+
+            if (!isValidCronExpression(cronExpression)) {
+                throw new IllegalArgumentException("the job " + jobName + "'s cron " + cronExpression + " is not valid , please check");
+            }
+            try {
+                triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
+                        .withMisfireHandlingInstructionFireAndProceed()
+                        .inTimeZone(DateUtil.getTimeZone(s)));
+            } catch (UnrecognizedTimeZoneException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (quartzJob.fixedRate() > 0) {
+            triggerBuilder.withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                    .withIntervalInMilliseconds(quartzJob.fixedRate())
+                    .repeatForever());
+        } else {
+            throw new IllegalArgumentException("Job " + jobName + " must specify cron or fixedRate");
+        }
+        triggerBuilder.withDescription(description);
+        boolean printLog = quartzJob.printLog();
+        String metricCountName = quartzJob.metricCountName();
+        String metricTimeName = quartzJob.metricTimeName();
+        String metricCountDesc = quartzJob.metricCountDesc();
+        String metricTimeDesc = quartzJob.metricTimeDesc();
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(QzConstant.PRINT_LOG, printLog);
+        jobDataMap.put(QzConstant.METRIC_COUNT_NAME, metricCountName);
+        jobDataMap.put(QzConstant.METRIC_TIME_NAME, metricTimeName);
+        jobDataMap.put(QzConstant.METRIC_COUNT_DESC, metricCountDesc);
+        jobDataMap.put(QzConstant.METRIC_TIME_DESC, metricTimeDesc);
+        triggerBuilder.usingJobData(jobDataMap);
+        return triggerBuilder.build();
+    }
+
+    private String cronHotReload(String group, String jobName, String triggerName) {
+        String s = group + SP.DOT + jobName + SP.DOT;
+        // subscribe and get
+        return ConfigCenterFactory.get().subscribe(s + "cron", (key, res, type) -> {
+            if ("2".equals(type)) {
+                String lockKey = "quartz:lock:" + key;
+                DbLock dbLock = Easy4j.getContext().get(DbLock.class);
+                // if not aquire lock direct exist
+                dbLock.lock(lockKey, 5, "cron hot reload lock");
+                try {
+                    String[] split = ListTs.split(key, SP.DOT);
+                    String group2 = split[0];
+                    Easy4jQzScheduler scheduler = SpringUtil.getBean(Easy4jQzScheduler.class);
+                    scheduler.updateCronTrigger(triggerName, group2, res);
+                } catch (SchedulerException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    dbLock.unLock(lockKey);
+                }
+            }
+        });
     }
 
     @Override
@@ -155,7 +215,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
     }
 
 
-    public boolean isValidCronExpression(String cronExpression) {
+    public static boolean isValidCronExpression(String cronExpression) {
         try {
             new CronTriggerImpl().setCronExpression(cronExpression);
             return true;

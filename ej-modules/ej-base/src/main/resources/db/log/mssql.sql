@@ -1,6 +1,6 @@
 create TABLE SYS_LOG_RECORD
 (
-    ID           NVARCHAR(36) PRIMARY KEY,
+    ID           NVARCHAR(500) PRIMARY KEY,
     TAG          NVARCHAR(100),
     TAG_DESC     NVARCHAR(200),
     TRACE_ID     NVARCHAR(100),
