@@ -38,6 +38,12 @@
         </dependency>
 
         <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-sactuator</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>

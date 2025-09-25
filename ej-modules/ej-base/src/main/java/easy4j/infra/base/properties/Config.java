@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -45,6 +46,7 @@ public class Config implements InitializingBean {
     }
 
     @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public EasyMinio easyMinio(){
         String property = Easy4j.getProperty(SysConstant.EASY4J_MINIO_URL);
         String accessKey = Easy4j.getProperty(SysConstant.EASY4J_MINIO_ACCESS_KEY);
