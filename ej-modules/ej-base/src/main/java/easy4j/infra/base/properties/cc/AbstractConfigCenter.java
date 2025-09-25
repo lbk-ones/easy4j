@@ -117,8 +117,8 @@ public abstract class AbstractConfigCenter implements ConfigCenter {
     }
 
     public synchronized String subscribe(String key, ConfigCallbackFunction configCallbackFunction) {
+        final String originKey = key;
         if (null != key) {
-            final String originKey = key;
             List<String> strings = keyVsKey.get(originKey);
             if (null == strings) {
                 strings = new CopyOnWriteArrayList<>();
@@ -128,7 +128,7 @@ public abstract class AbstractConfigCenter implements ConfigCenter {
             strings.add(key);
             cacheKeyMap.putIfAbsent(key, configCallbackFunction);
         }
-        return get(key);
+        return get(originKey);
     }
 
     @Override

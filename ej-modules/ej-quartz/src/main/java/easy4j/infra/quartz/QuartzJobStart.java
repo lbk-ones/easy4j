@@ -1,20 +1,19 @@
 package easy4j.infra.quartz;
 
-import com.google.common.collect.Sets;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.api.lock.DbLock;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.beans.BeansException;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -83,7 +82,12 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                             if (null != annotation && annotation.restartRefresh()) {
                                 refreshCount++;
                                 //JobDetail jobDetail = QuartzJobProcessor.getJobDetail(aClass11, annotation);
-                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, annotation, annotation.cron(), Function.identity());
+                                String group = annotation.group();
+                                String jobName = StrUtil.blankToDefault(annotation.name(),aClass11.getSimpleName());
+                                String cronName = group + SP.DOT + jobName + SP.DOT + "cron";
+                                String property = Easy4j.getProperty(cronName);
+                                String finalCron = StrUtil.blankToDefault(property, annotation.cron());
+                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, annotation, finalCron, Function.identity());
                                 String name = annotation.name();
                                 int count = 5;
                                 while (count > 0) {
