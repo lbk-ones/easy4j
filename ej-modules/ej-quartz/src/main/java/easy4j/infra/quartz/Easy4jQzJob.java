@@ -33,7 +33,9 @@ public @interface Easy4jQzJob {
 
     /**
      * 固定间隔时间（毫秒），与cron二选一
+     * 尽量使用 cron表达式
      */
+    @Deprecated
     long fixedRate() default -1;
 
     /**
@@ -73,7 +75,7 @@ public @interface Easy4jQzJob {
     String timeZone() default "Asia/Shanghai";
 
     /**
-     * 重启刷新，一般是刷新cron表达式和周期时间
+     * 重启刷新，一般是刷新cron表达式和周期时间，默认刷新
      */
-    boolean restartRefresh() default false;
+    boolean restartRefresh() default true;
 }

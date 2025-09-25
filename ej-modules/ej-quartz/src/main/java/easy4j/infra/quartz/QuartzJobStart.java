@@ -26,7 +26,7 @@ import java.util.function.Function;
  * @date 2025-09-17
  */
 @Slf4j
-public class QuartzJobStart implements ApplicationContextAware, CommandLineRunner, ApplicationListener<ContextRefreshedEvent> {
+public class QuartzJobStart implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
 
     boolean isInit = false;
     Scheduler scheduler;
@@ -57,6 +57,66 @@ public class QuartzJobStart implements ApplicationContextAware, CommandLineRunne
             isInit = true;
             try {
                 if (scheduler != null) {
+                    // reschedule trigger
+                    DbLock dbLock = Easy4j.getContext().get(DbLock.class);
+                    String lockKey = "easy4j-quartz-start-init-override-lock";
+                    try {
+                        dbLock.lock(lockKey, 2, "注解任务初始化上锁");
+                    } catch (Exception e) {
+                        return;
+                    }
+                    int refreshCount = 0;
+                    try {
+                        log.info(SysLog.compact("begin scan quartz job class..."));
+                        Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(Easy4jQzJob.class);
+                        // pause all
+                        scheduler.standby();
+                        for (Object value : beansWithAnnotation.values()) {
+                            Class<?> aClass1 = value.getClass();
+                            boolean isSubclass = Job.class.isAssignableFrom(aClass1);
+                            if (!isSubclass) {
+                                log.info(SysLog.compact("skip the class register quartz job" + aClass1.getName()));
+                                return;
+                            }
+                            Class<? extends Job> aClass11 = (Class<? extends Job>) aClass1;
+                            Easy4jQzJob annotation = aClass1.getAnnotation(Easy4jQzJob.class);
+                            if (null != annotation && annotation.restartRefresh()) {
+                                refreshCount++;
+                                //JobDetail jobDetail = QuartzJobProcessor.getJobDetail(aClass11, annotation);
+                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, annotation, annotation.cron(), Function.identity());
+                                String name = annotation.name();
+                                int count = 5;
+                                while (count > 0) {
+                                    try {
+                                        scheduler.rescheduleJob(trigger.getKey(), trigger);
+                                        log.info(name + " reschedule success ");
+                                        count = -1;
+                                    } catch (JobPersistenceException e) {
+                                        if (log.isErrorEnabled()) {
+                                            log.error(name + " reschedule error: " + e.getClass().getName() + e.getMessage());
+                                        }
+                                        try {
+                                            Thread.sleep(200L);
+                                        } catch (InterruptedException ex) {
+                                            throw new RuntimeException(ex);
+                                        }
+                                        count--;
+                                    } catch (Exception e) {
+                                        count = -1;
+                                    }
+                                }
+
+                            }
+                        }
+                    } finally {
+                        if (scheduler.isInStandbyMode() && !scheduler.isStarted()) {
+                            // resume
+                            scheduler.start();
+                        }
+                        dbLock.unLock(lockKey);
+                    }
+
+                    log.info(SysLog.compact("success refresh {} quartz job class", String.valueOf(refreshCount)));
                     Boolean property = Easy4j.getProperty("spring.quartz.auto-startup", boolean.class);
                     if (!property && !scheduler.isStarted()) {
                         log.info(SysLog.compact("starting quartz job ....."));
@@ -69,52 +129,6 @@ public class QuartzJobStart implements ApplicationContextAware, CommandLineRunne
             } catch (SchedulerException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
-        // 初始化任务
-        if (scheduler.isStarted()) {
-            DbLock dbLock = Easy4j.getContext().get(DbLock.class);
-            String lockKey = "easy4j-quartz-start-init-override-lock";
-            try {
-                dbLock.lock(lockKey, 2, "注解任务初始化上锁");
-            } catch (Exception e) {
-                return;
-            }
-            int refreshCount = 0;
-            try {
-                log.info(SysLog.compact("begin scan quartz job class..."));
-                Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(Easy4jQzJob.class);
-                for (Object value : beansWithAnnotation.values()) {
-                    Class<?> aClass1 = value.getClass();
-                    boolean isSubclass = Job.class.isAssignableFrom(aClass1);
-                    if (!isSubclass) {
-                        log.info(SysLog.compact("skip the class register quartz job" + aClass1.getName()));
-                        return;
-                    }
-                    Class<? extends Job> aClass11 = (Class<? extends Job>) aClass1;
-                    Easy4jQzJob annotation = aClass1.getAnnotation(Easy4jQzJob.class);
-                    if (null != annotation && annotation.restartRefresh()) {
-                        refreshCount++;
-                        //JobDetail jobDetail = QuartzJobProcessor.getJobDetail(aClass11, annotation);
-                        Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, annotation, annotation.cron(), Function.identity());
-                        try {
-                            // reschedule
-                            scheduler.rescheduleJob(trigger.getKey(),trigger);
-                        } catch (Exception e) {
-                            if (log.isErrorEnabled()) {
-                                log.error("scheduleJob error:" + e.getMessage());
-                            }
-                        }
-                    }
-                }
-            } finally {
-                dbLock.unLock(lockKey);
-            }
-
-            log.info(SysLog.compact("success refresh {} quartz job class", String.valueOf(refreshCount)));
         }
     }
 }
