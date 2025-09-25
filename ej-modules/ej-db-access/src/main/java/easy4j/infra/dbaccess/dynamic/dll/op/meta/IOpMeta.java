@@ -18,6 +18,7 @@ import easy4j.infra.dbaccess.helper.JdbcHelper;
 
 import javax.annotation.Nullable;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -104,6 +105,16 @@ public interface IOpMeta {
      * @date 2025/8/23
      */
     List<DatabaseColumnMetadata> getColumns(String catLog, String schema, String tableName);
+
+    /**
+     * 查字段信息，不查缓存，直查
+     * @param catLog
+     * @param schema
+     * @param tableName
+     * @return
+     * @throws SQLException
+     */
+    List<DatabaseColumnMetadata> getColumnsNoCache(String catLog, String schema, String tableName) throws SQLException;
 
     /**
      * 根据表名称获取 表/视图 中的主键信息

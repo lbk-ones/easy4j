@@ -558,7 +558,15 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     @Override
     public boolean theColumnIsExists(DDLFieldInfo ddlFieldInfo) {
         OpContext opContext1 = this.getOpContext();
-        List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
+        CheckUtils.checkByLambda(opContext1,OpContext::getConnectionCatalog,OpContext::getConnectionSchema,OpContext::getTableName);
+        Connection connection = opContext1.getConnection();
+        IOpMeta select = OpDbMeta.select(connection);
+        List<DatabaseColumnMetadata> dbColumns;
+        try {
+            dbColumns = select.getColumnsNoCache(opContext1.getConnectionCatalog(), opContext1.getConnectionSchema(), opContext1.getTableName());
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("theColumnIsExists", null, e);
+        }
         if (ListTs.isEmpty(dbColumns)) {
             log.error("need in construct input table name! or the tableName need has var：" + opContext1.getTableName());
             return false;

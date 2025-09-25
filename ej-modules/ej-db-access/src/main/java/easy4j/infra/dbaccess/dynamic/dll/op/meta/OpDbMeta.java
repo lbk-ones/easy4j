@@ -236,19 +236,22 @@ public class OpDbMeta implements IOpMeta {
         var cacheKeyPrefix = "getColumns-" + tableName;
         String cacheKey = getCacheKeyFromConnection(connection, cacheKeyPrefix);
 
-        return callbackList(() -> {
-            DatabaseMetaData metaData = this.connection.getMetaData();
-            ResultSet tables = metaData.getColumns(catLog, schema, tableName, null);
-            try {
-                MapListHandler mapListHandler = new MapListHandler();
-                List<Map<String, Object>> handle = mapListHandler.handle(tables);
-                List<DatabaseColumnMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
-                map = ListTs.distinct(map, DatabaseColumnMetadata::getColumnName);
-                return map;
-            } finally {
-                JdbcHelper.close(tables);
-            }
-        }, cacheKey, DatabaseColumnMetadata.class);
+        return callbackList(() -> getColumnsNoCache(catLog,schema,tableName), cacheKey, DatabaseColumnMetadata.class);
+    }
+
+    @Override
+    public List<DatabaseColumnMetadata> getColumnsNoCache(String catLog, String schema, String tableName) throws SQLException {
+        DatabaseMetaData metaData = this.connection.getMetaData();
+        ResultSet tables = metaData.getColumns(catLog, schema, tableName, null);
+        try {
+            MapListHandler mapListHandler = new MapListHandler();
+            List<Map<String, Object>> handle = mapListHandler.handle(tables);
+            List<DatabaseColumnMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+            map = ListTs.distinct(map, DatabaseColumnMetadata::getColumnName);
+            return map;
+        } finally {
+            JdbcHelper.close(tables);
+        }
     }
 
     @Override
