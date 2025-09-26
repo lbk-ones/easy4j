@@ -40,7 +40,7 @@ public class CommonDBAccessTest {
         assertEquals("DELETE FROM users id = 1", sql4);
 
         String sql5 = dbAccess.DDlLine("INSERT", "users", "VALUES ('Alice')", "name");
-        assertEquals("INSERT INTO users name VALUES ('Alice')", sql5);
+        assertEquals("INSERT INTO users (name) VALUES ('Alice')", sql5);
 
         String sql6 = dbAccess.DDlLine("INSERT", "users", "VALUES (1, 'Alice','test')", "id", "name", "testCase");
         assertEquals("INSERT INTO users (id, name, test_case) VALUES (1, 'Alice','test')", sql6);

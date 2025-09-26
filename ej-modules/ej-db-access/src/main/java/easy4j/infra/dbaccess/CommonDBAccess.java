@@ -166,15 +166,14 @@ public class CommonDBAccess {
             case INSERT:
                 ddlList.add(INTO);
                 ddlList.add(tableName);
-                if (fields.size() == 1) {
-                    ddlList.add(fields.get(0));
-                } else if (fields.size() > 1) {
+                if(!fields.isEmpty()){
                     ddlList.add(
                             StringPool.LEFT_BRACKET +
                                     String.join(StringPool.COMMA + StringPool.SPACE, fields) +
                                     StringPool.RIGHT_BRACKET
                     );
                 }
+
                 break;
             default:
                 throw new EasyException("not support ddl type:" + upperCase);

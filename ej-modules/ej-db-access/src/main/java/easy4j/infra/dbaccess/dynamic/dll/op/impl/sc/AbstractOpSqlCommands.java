@@ -237,13 +237,17 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                     }
                 }
             }
-            Object o = dict.get(key2);
+            Object o = dict.get(key);
             if (o == null) {
-                o = dict.get(key2.toUpperCase());
+                o = dict.get(key2);
                 if (o == null) {
-                    o = dict.get(key2.toLowerCase());
+                    o = dict.get(key2.toUpperCase());
+                    if (o == null) {
+                        o = dict.get(key2.toLowerCase());
+                    }
                 }
             }
+
             objects.add(o);
             fieldNames.add(key2);
             zwf.add(SP.QUESTION_MARK);
@@ -558,7 +562,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     @Override
     public boolean theColumnIsExists(DDLFieldInfo ddlFieldInfo) {
         OpContext opContext1 = this.getOpContext();
-        CheckUtils.checkByLambda(opContext1,OpContext::getConnectionCatalog,OpContext::getConnectionSchema,OpContext::getTableName);
+        CheckUtils.checkByLambda(opContext1, OpContext::getConnectionCatalog, OpContext::getConnectionSchema, OpContext::getTableName);
         Connection connection = opContext1.getConnection();
         IOpMeta select = OpDbMeta.select(connection);
         List<DatabaseColumnMetadata> dbColumns;
