@@ -1,9 +1,10 @@
 package easy4j.infra.quartz;
 
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import org.quartz.JobDataMap;
 
 import cn.hutool.extra.spring.SpringUtil;
-import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import easy4j.infra.base.properties.cc.ConfigCenterFactory;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
@@ -21,10 +22,16 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.Set;
@@ -51,10 +58,75 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
             basePackages = new String[]{basePackage};
         }
 
-        // 扫描并处理带@Easy4jQzJob注解的类
+        // 扫描并处理带@Easy4jQzJob注解的类或方法
         for (String basePackage : basePackages) {
             scanAndRegisterJobs(basePackage, registry);
+            registerMethod(basePackage, registry);
         }
+    }
+
+
+    /**
+     * 方法注册
+     *
+     * @param basePackage 扫描的包路径
+     * @param registry    注册器
+     * @author bokun.li
+     * @date 2025/10/8
+     */
+    private void registerMethod(String basePackage, BeanDefinitionRegistry registry) {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        CachingMetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
+
+        try {
+            // 构建扫描路径（classpath: + 包路径 + /**/*.class）
+            String pattern = "classpath:" + ClassUtils.convertClassNameToResourcePath(basePackage) + "/**/*.class";
+            Resource[] resources = resolver.getResources(pattern);
+
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            for (Resource resource : resources) {
+                MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
+                String className = metadataReader.getClassMetadata().getClassName();
+                Class<?> clazz;
+                try {
+                    clazz = classLoader.loadClass(className);
+                } catch (ClassNotFoundException e) {
+                    log.error("scan annotation Easy4jQzJob method error ClassNotFoundException：" + e.getMessage());
+                    continue;
+                }
+                Method[] methods = clazz.getDeclaredMethods();
+                if (clazz.isAnnotationPresent(Easy4jQzJob.class) || ListTs.isEmpty(methods)) {
+                    continue;
+                }
+                lbk:
+                for (Method method : methods) {
+                    if (method.isAnnotationPresent(Easy4jQzJob.class)) {
+                        if (method.getParameterCount() != 1) {
+                            return;
+                        }
+                        Class<?>[] parameterTypes = method.getParameterTypes();
+                        for (Class<?> parameterType : parameterTypes) {
+                            if (parameterType != JobExecutionContext.class) {
+                                continue lbk;
+                            }
+                        }
+                        Easy4jQzJob annotation = method.getAnnotation(Easy4jQzJob.class);
+                        String name = annotation.name();
+                        if (StrUtil.isBlank(name) || (StrUtil.isBlank(annotation.cron()) && annotation.fixedRate() == -1))
+                            continue;
+                        log.info("scan to annotation method ：" + clazz.getName() + "#" + method.getName() + "，jobName：" + annotation.name());
+                        //BeanDefinition beanDefinition2 = BeanDefinitionBuilder.genericBeanDefinition(DelegatingJob.class, () -> new DelegatingJob(clazz, method)).getBeanDefinition();
+                        //String beanName = clazz.getSimpleName() + SP.UNDERSCORE + method.getName();
+                        //registry.registerBeanDefinition(beanName, beanDefinition2);
+                        String jobName = clazz.getSimpleName() + SP.UNDERSCORE + method.getName() + annotation.name();
+                        registerJobAndTrigger(DelegatingJob.class, jobName, annotation, registry, method);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("scan annotation Easy4jQzJob method error：" + e.getMessage());
+        }
+
     }
 
     private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry) {
@@ -72,8 +144,19 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
                 Easy4jQzJob quartzJob = jobClass.getAnnotation(Easy4jQzJob.class);
                 if (quartzJob != null) {
+                    boolean isSubclass = Job.class.isAssignableFrom(jobClass) &&
+                            !jobClass.equals(Job.class);
+                    if (!isSubclass) {
+                        log.info(SysLog.compact("skip the class register quartz job" + jobClass.getName()));
+                        return;
+                    }
+                    Class<? extends Job> jobClass2 = (Class<? extends Job>) jobClass;
+
+                    String jobName = getJobName(jobClass2, quartzJob);
+
+                    registerClassBean(jobClass2, registry);
                     // 注册JobDetail和Trigger
-                    registerJobAndTrigger(jobClass, quartzJob, registry);
+                    registerJobAndTrigger(jobClass2, jobName, quartzJob, registry, null);
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("Failed to load job class", e);
@@ -81,18 +164,27 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         }
     }
 
+    private void registerClassBean(Class<? extends Job> jobClass, BeanDefinitionRegistry registry) {
+        // register that bean
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(Job.class, () -> ReflectUtil.newInstance(jobClass)).getBeanDefinition();
+        registry.registerBeanDefinition("easy4jQuartzBean" + StrUtil.upperFirst(jobClass.getSimpleName()), beanDefinition);
+    }
+
+    /**
+     * 兼容获取任务名称
+     *
+     * @author bokun.li
+     * @date 2025/10/8
+     */
+    public static String getJobName(Class<? extends Job> jobClass, Easy4jQzJob quartzJob) {
+        return StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+    }
+
     /**
      * 注册JobDetail和Trigger的BeanDefinition
      */
-    private void registerJobAndTrigger(Class<?> jobClass, Easy4jQzJob quartzJob, BeanDefinitionRegistry registry) {
-        boolean isSubclass = Job.class.isAssignableFrom(jobClass) &&
-                !jobClass.equals(Job.class);
-        if (!isSubclass) {
-            log.info(SysLog.compact("skip the class register quartz job" + jobClass.getName()));
-            return;
-        }
-        Class<? extends Job> jobClass2 = (Class<? extends Job>) jobClass;
-        String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+    private void registerJobAndTrigger(Class<? extends Job> jobClass, String jobName, Easy4jQzJob quartzJob, BeanDefinitionRegistry registry, Method method) {
+        //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
         String triggerName = jobName + "Trigger";
         String jobBeanName = jobName + "JobDetail";
         String group = quartzJob.group();
@@ -101,11 +193,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         // cron hot reload
         String s1 = cronHotReload(group, jobName, triggerName);
         if (StrUtil.isNotBlank(s1)) cron = s1;
-        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () -> getJobDetail(jobClass2, quartzJob)).getBeanDefinition();
+        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () -> getJobDetail(jobClass, quartzJob)).getBeanDefinition();
         registry.registerBeanDefinition(jobBeanName, jobDetailDefinition);
         String finalCron = cron;
         BeanDefinition triggerDefinition = BeanDefinitionBuilder
-                .genericBeanDefinition(Trigger.class, () -> getTrigger(jobClass, quartzJob, finalCron, (e) -> environment.resolvePlaceholders(e)))
+                .genericBeanDefinition(Trigger.class, () -> getTrigger(jobClass, jobName, quartzJob, finalCron, (e) -> environment.resolvePlaceholders(e), method))
                 .getBeanDefinition();
         triggerDefinition.setDependsOn(jobBeanName);
         registry.registerBeanDefinition(triggerBeanName, triggerDefinition);
@@ -113,6 +205,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
     /**
      * gen
+     *
      * @param jobClass
      * @param quartzJob
      * @return
@@ -131,14 +224,16 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
     /**
      * 根据注解信息和类信息获取触发器
      *
-     * @param jobClass    任务类class对象
+     * @param clazz       任务类
+     * @param jobName     任务名称
      * @param quartzJob   注解信息
      * @param finalCron   cron表达式
      * @param cronConvert cron转换函数
+     * @param method      把method放到参数里面去
      * @return
      */
-    public static Trigger getTrigger(Class<?> jobClass, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert) {
-        String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+    public static Trigger getTrigger(Class<?> clazz, String jobName, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert, Method method) {
+        //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
         String triggerName = jobName + "Trigger";
         String group = quartzJob.group();
         String s = quartzJob.timeZone();
@@ -182,6 +277,10 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         jobDataMap.put(QzConstant.METRIC_TIME_NAME, metricTimeName);
         jobDataMap.put(QzConstant.METRIC_COUNT_DESC, metricCountDesc);
         jobDataMap.put(QzConstant.METRIC_TIME_DESC, metricTimeDesc);
+        jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS, clazz);
+        if (method != null) {
+            jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS_METHOD, method);
+        }
         triggerBuilder.usingJobData(jobDataMap);
         return triggerBuilder.build();
     }

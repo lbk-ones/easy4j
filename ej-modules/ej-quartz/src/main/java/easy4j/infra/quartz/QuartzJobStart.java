@@ -83,11 +83,12 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                                 refreshCount++;
                                 //JobDetail jobDetail = QuartzJobProcessor.getJobDetail(aClass11, annotation);
                                 String group = annotation.group();
-                                String jobName = StrUtil.blankToDefault(annotation.name(),aClass11.getSimpleName());
+                                String jobName = QuartzJobProcessor.getJobName(aClass11, annotation);
+                                //String jobName = StrUtil.blankToDefault(annotation.name(),aClass11.getSimpleName());
                                 String cronName = group + SP.DOT + jobName + SP.DOT + "cron";
                                 String property = Easy4j.getProperty(cronName);
                                 String finalCron = StrUtil.blankToDefault(property, annotation.cron());
-                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, annotation, finalCron, Function.identity());
+                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11,jobName, annotation, finalCron, Function.identity(),null);
                                 String name = annotation.name();
                                 int count = 5;
                                 while (count > 0) {

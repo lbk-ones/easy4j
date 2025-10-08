@@ -1,6 +1,5 @@
 package easy4j.infra.quartz;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
@@ -12,13 +11,11 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Component
 public @interface Easy4jQzJob {
 
     /**
      * 任务名称（默认使用类名）
      */
-    @AliasFor(annotation = Component.class,attribute = "value")
     String name() default "";
 
     /**
@@ -35,7 +32,6 @@ public @interface Easy4jQzJob {
      * 固定间隔时间（毫秒），与cron二选一
      * 尽量使用 cron表达式
      */
-    @Deprecated
     long fixedRate() default -1;
 
     /**
