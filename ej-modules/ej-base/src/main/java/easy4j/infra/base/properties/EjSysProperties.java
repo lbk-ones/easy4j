@@ -656,6 +656,12 @@ public class EjSysProperties {
     @SpringVs(desc = "强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了")
     private boolean forceRegisterToRegistry = false;
 
+    /**
+     * 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否也停止调度，默认不停止调度
+     */
+    @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否也停止调度，默认不停止调度")
+    private boolean quartzJobRestartCheckDelete = false;
+
 
     /**
      * 根据常量获取 对应的springboot变量

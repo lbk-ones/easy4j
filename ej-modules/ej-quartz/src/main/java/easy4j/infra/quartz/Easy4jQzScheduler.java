@@ -334,6 +334,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
                     info.setStartDate(trigger.getStartTime());
                     info.setNextState(trigger.getNextFireTime());
                     info.setLastState(trigger.getPreviousFireTime());
+                    info.setTriggerKey(key);
                     if (trigger instanceof CronTrigger) {
                         info.setCronTab(((CronTrigger) trigger).getCronExpression());
                     }

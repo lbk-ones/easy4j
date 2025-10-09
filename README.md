@@ -385,3 +385,4 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.minio-secret-key**: minio访问密钥
 - **easy4j.global-quartz-job-print-log**: quartz全局日志打印
 - **easy4j.force-register-to-registry**: 强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了
+- **easy4j.quartz-job-restart-check-delete**: 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否也停止调度，默认不停止调度

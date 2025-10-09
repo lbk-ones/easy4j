@@ -71,8 +71,8 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
         // 扫描并处理带@Easy4jQzJob注解的类或方法
         for (String basePackage : basePackages) {
-            scanAndRegisterJobs(basePackage, registry, allJobInfo);
-            registerMethod(basePackage, registry, allJobInfo);
+            scanAndRegisterJobs(basePackage, registry);
+            registerMethod(basePackage, registry);
         }
 
         allJobInfo = Collections.unmodifiableList(allJobInfo);
@@ -84,11 +84,10 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
      *
      * @param basePackage 扫描的包路径
      * @param registry    注册器
-     * @param allJobInfo  任务收集集合
      * @author bokun.li
      * @date 2025/10/8
      */
-    private void registerMethod(String basePackage, BeanDefinitionRegistry registry, List<JobInfo> allJobInfo) {
+    private void registerMethod(String basePackage, BeanDefinitionRegistry registry) {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         CachingMetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
 
@@ -135,6 +134,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                         //registry.registerBeanDefinition(beanName, beanDefinition2);
                         String jobName = getMethodJobName(method, clazz, annotation);
                         registerJobAndTrigger(DelegatingJob.class, clazz, jobName, annotation, registry, method);
+                        JobInfo jobInfo = new JobInfo();
+                        String group = annotation.group();
+                        TriggerKey triggerKey = TriggerKey.triggerKey(jobName + "Trigger", group);
+                        jobInfo.setTriggerKey(triggerKey).setJobName(jobName).setJobGroup(group);
+                        allJobInfo.add(jobInfo);
                     }
                 }
             }
@@ -150,7 +154,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         return clazz.getSimpleName() + SP.UNDERSCORE + method.getName() + annotation.name();
     }
 
-    private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry, List<JobInfo> allJobInfo) {
+    private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry) {
         // 扫描带@Easy4jQzJob注解的类
         Set<BeanDefinition> candidateComponents = QuartzJobScanner.scan(basePackage);
 
@@ -178,6 +182,12 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                     registerClassBean(jobClass2, registry);
                     // 注册JobDetail和Trigger
                     registerJobAndTrigger(jobClass2, null, jobName, quartzJob, registry, null);
+
+                    JobInfo jobInfo = new JobInfo();
+                    String group = quartzJob.group();
+                    TriggerKey triggerKey = TriggerKey.triggerKey(jobName + "Trigger", group);
+                    jobInfo.setTriggerKey(triggerKey).setJobName(jobName).setJobGroup(group);
+                    allJobInfo.add(jobInfo);
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("Failed to load job class", e);

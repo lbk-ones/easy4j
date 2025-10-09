@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
+import org.quartz.TriggerKey;
 
 import java.util.Date;
 
@@ -70,4 +71,9 @@ public class JobInfo {
      */
     @Schema(description = "任务状态")
     private Easy4jQzScheduler.JobStatus status;
+
+    /**
+     * 内部使用
+     */
+    private TriggerKey triggerKey;
 }

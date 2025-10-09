@@ -92,7 +92,7 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                                 String cronName = group + SP.DOT + jobName + SP.DOT + "cron";
                                 String property = Easy4j.getProperty(cronName);
                                 String finalCron = StrUtil.blankToDefault(property, annotation.cron());
-                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11,jobName, annotation, finalCron, Function.identity(),null,null);
+                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11, jobName, annotation, finalCron, Function.identity(), null, null);
                                 String name = annotation.name();
                                 int count = 5;
                                 while (count > 0) {
@@ -119,7 +119,21 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                         rescheduleMethodJob();
 
                         // differ and delete job
-                        List<JobInfo> allJobs = easy4jQuartzScheduler.getAllJobs();
+                        Boolean property = Easy4j.getProperty(SysConstant.EASY4J_QUARTZ_JOB_RESTART_CHECK_DELETE, boolean.class);
+                        if (property) {
+                            List<JobInfo> allJobs = easy4jQuartzScheduler.getAllJobs();
+                            List<JobInfo> allJobInfo = QuartzJobProcessor.getAllJobInfo();
+                            Map<String, JobInfo> currentHaveJob = ListTs.toMap(allJobInfo, e -> e.getTriggerKey().getGroup() + e.getTriggerKey().getName());
+                            for (JobInfo allJob : allJobs) {
+                                TriggerKey triggerKey = allJob.getTriggerKey();
+                                String name = triggerKey.getName();
+                                String group = triggerKey.getGroup();
+                                JobInfo jobInfo = currentHaveJob.get(group + name);
+                                if (jobInfo == null) {
+                                    scheduler.unscheduleJob(triggerKey);
+                                }
+                            }
+                        }
 
                     } finally {
                         if (scheduler.isInStandbyMode() && !scheduler.isStarted()) {
@@ -151,16 +165,16 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
     private void rescheduleMethodJob() throws SchedulerException {
         // if have method job ,the methodJobList must have value
         List<Pair<Class<?>, Method>> methodJobList = QuartzJobProcessor.getMethodJobList();
-        if(ListTs.isNotEmpty(methodJobList)){
+        if (ListTs.isNotEmpty(methodJobList)) {
             for (Pair<Class<?>, Method> classMethodPair : methodJobList) {
                 Class<?> key = classMethodPair.getKey();
                 Method value = classMethodPair.getValue();
-                log.info(SysLog.compact("begin reschedule method job:"+key.getName()+"#"+value.getName()));
+                log.info(SysLog.compact("begin reschedule method job:" + key.getName() + "#" + value.getName()));
                 if (value.isAnnotationPresent(Easy4jQzJob.class)) {
                     Easy4jQzJob annotation = value.getAnnotation(Easy4jQzJob.class);
                     if (annotation.restartRefresh()) {
                         String methodJobName = QuartzJobProcessor.getMethodJobName(value, key, annotation);
-                        Trigger trigger = QuartzJobProcessor.getTrigger(DelegatingJob.class,methodJobName, annotation, annotation.cron(), Function.identity(),value,key);
+                        Trigger trigger = QuartzJobProcessor.getTrigger(DelegatingJob.class, methodJobName, annotation, annotation.cron(), Function.identity(), value, key);
                         scheduler.rescheduleJob(trigger.getKey(), trigger);
                     }
                 }
