@@ -1,7 +1,9 @@
 package easy4j.infra.quartz;
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
@@ -14,6 +16,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -88,7 +92,7 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                                 String cronName = group + SP.DOT + jobName + SP.DOT + "cron";
                                 String property = Easy4j.getProperty(cronName);
                                 String finalCron = StrUtil.blankToDefault(property, annotation.cron());
-                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11,jobName, annotation, finalCron, Function.identity(),null);
+                                Trigger trigger = QuartzJobProcessor.getTrigger(aClass11,jobName, annotation, finalCron, Function.identity(),null,null);
                                 String name = annotation.name();
                                 int count = 5;
                                 while (count > 0) {
@@ -110,9 +114,9 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                                         count = -1;
                                     }
                                 }
-
                             }
                         }
+                        rescheduleMethodJob();
                     } finally {
                         if (scheduler.isInStandbyMode() && !scheduler.isStarted()) {
                             // resume
@@ -135,5 +139,30 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * reschedule method job
+     */
+    private void rescheduleMethodJob() throws SchedulerException {
+        // if have method job ,the methodJobList must have value
+        List<Pair<Class<?>, Method>> methodJobList = QuartzJobProcessor.getMethodJobList();
+        if(ListTs.isNotEmpty(methodJobList)){
+            for (Pair<Class<?>, Method> classMethodPair : methodJobList) {
+                Class<?> key = classMethodPair.getKey();
+                Method value = classMethodPair.getValue();
+                log.info(SysLog.compact("begin reschedule method job:"+key.getName()+"#"+value.getName()));
+                if (value.isAnnotationPresent(Easy4jQzJob.class)) {
+                    Easy4jQzJob annotation = value.getAnnotation(Easy4jQzJob.class);
+                    if (annotation.restartRefresh()) {
+                        String methodJobName = QuartzJobProcessor.getMethodJobName(value, key, annotation);
+                        Trigger trigger = QuartzJobProcessor.getTrigger(DelegatingJob.class,methodJobName, annotation, annotation.cron(), Function.identity(),value,key);
+                        scheduler.rescheduleJob(trigger.getKey(), trigger);
+                    }
+                }
+            }
+        }
+
+
     }
 }

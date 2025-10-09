@@ -1,7 +1,10 @@
 package easy4j.infra.quartz;
 
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.quartz.JobDataMap;
 
 import cn.hutool.extra.spring.SpringUtil;
@@ -33,6 +36,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -44,6 +48,9 @@ import java.util.function.Function;
  */
 @Slf4j
 public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    @Getter
+    private final static List<Pair<Class<?>,Method>> methodJobList = ListTs.newLinkedList();
 
     private Environment environment;
 
@@ -114,12 +121,13 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                         String name = annotation.name();
                         if (StrUtil.isBlank(name) || (StrUtil.isBlank(annotation.cron()) && annotation.fixedRate() == -1))
                             continue;
+                        methodJobList.add(new Pair<>(clazz,method));
                         log.info("scan to annotation method ：" + clazz.getName() + "#" + method.getName() + "，jobName：" + annotation.name());
                         //BeanDefinition beanDefinition2 = BeanDefinitionBuilder.genericBeanDefinition(DelegatingJob.class, () -> new DelegatingJob(clazz, method)).getBeanDefinition();
                         //String beanName = clazz.getSimpleName() + SP.UNDERSCORE + method.getName();
                         //registry.registerBeanDefinition(beanName, beanDefinition2);
-                        String jobName = clazz.getSimpleName() + SP.UNDERSCORE + method.getName() + annotation.name();
-                        registerJobAndTrigger(DelegatingJob.class, jobName, annotation, registry, method);
+                        String jobName = getMethodJobName(method, clazz, annotation);
+                        registerJobAndTrigger(DelegatingJob.class, clazz, jobName, annotation, registry, method);
                     }
                 }
             }
@@ -127,6 +135,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
             log.error("scan annotation Easy4jQzJob method error：" + e.getMessage());
         }
 
+    }
+
+    @NotNull
+    public static String getMethodJobName(Method method, Class<?> clazz, Easy4jQzJob annotation) {
+        return clazz.getSimpleName() + SP.UNDERSCORE + method.getName() + annotation.name();
     }
 
     private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry) {
@@ -156,7 +169,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
                     registerClassBean(jobClass2, registry);
                     // 注册JobDetail和Trigger
-                    registerJobAndTrigger(jobClass2, jobName, quartzJob, registry, null);
+                    registerJobAndTrigger(jobClass2, null, jobName, quartzJob, registry, null);
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("Failed to load job class", e);
@@ -182,8 +195,15 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
     /**
      * 注册JobDetail和Trigger的BeanDefinition
+     *
+     * @param jobClass    任务类
+     * @param targetClass 目标类（写入任务执行参数去）可以为空
+     * @param jobName     任务名称
+     * @param quartzJob   注解信息
+     * @param registry    bean注册器
+     * @param method      方法（写入任务执行参数去）
      */
-    private void registerJobAndTrigger(Class<? extends Job> jobClass, String jobName, Easy4jQzJob quartzJob, BeanDefinitionRegistry registry, Method method) {
+    private void registerJobAndTrigger(Class<? extends Job> jobClass, Class<?> targetClass, String jobName, Easy4jQzJob quartzJob, BeanDefinitionRegistry registry, Method method) {
         //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
         String triggerName = jobName + "Trigger";
         String jobBeanName = jobName + "JobDetail";
@@ -193,11 +213,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         // cron hot reload
         String s1 = cronHotReload(group, jobName, triggerName);
         if (StrUtil.isNotBlank(s1)) cron = s1;
-        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () -> getJobDetail(jobClass, quartzJob)).getBeanDefinition();
+        BeanDefinition jobDetailDefinition = BeanDefinitionBuilder.genericBeanDefinition(JobDetail.class, () -> getJobDetail(jobClass, quartzJob, jobName)).getBeanDefinition();
         registry.registerBeanDefinition(jobBeanName, jobDetailDefinition);
         String finalCron = cron;
         BeanDefinition triggerDefinition = BeanDefinitionBuilder
-                .genericBeanDefinition(Trigger.class, () -> getTrigger(jobClass, jobName, quartzJob, finalCron, (e) -> environment.resolvePlaceholders(e), method))
+                .genericBeanDefinition(Trigger.class, () -> getTrigger(jobClass, jobName, quartzJob, finalCron, (e) -> environment.resolvePlaceholders(e), method, targetClass))
                 .getBeanDefinition();
         triggerDefinition.setDependsOn(jobBeanName);
         registry.registerBeanDefinition(triggerBeanName, triggerDefinition);
@@ -210,8 +230,8 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
      * @param quartzJob
      * @return
      */
-    public static JobDetail getJobDetail(Class<? extends Job> jobClass, Easy4jQzJob quartzJob) {
-        String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
+    public static JobDetail getJobDetail(Class<? extends Job> jobClass, Easy4jQzJob quartzJob, String jobName) {
+        //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
         String group = quartzJob.group();
         String description = quartzJob.description();
         return JobBuilder.newJob(jobClass)
@@ -224,15 +244,16 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
     /**
      * 根据注解信息和类信息获取触发器
      *
-     * @param clazz       任务类
+     * @param clazz       任务类（不能为空）
      * @param jobName     任务名称
      * @param quartzJob   注解信息
      * @param finalCron   cron表达式
      * @param cronConvert cron转换函数
      * @param method      把method放到参数里面去
+     * @param targetClass 目标类（可以为空）要执行的那个类，和method联合起来用，targetClass中要找到method
      * @return
      */
-    public static Trigger getTrigger(Class<?> clazz, String jobName, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert, Method method) {
+    public static Trigger getTrigger(Class<?> clazz, String jobName, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert, Method method, Class<?> targetClass) {
         //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
         String triggerName = jobName + "Trigger";
         String group = quartzJob.group();
@@ -277,9 +298,13 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         jobDataMap.put(QzConstant.METRIC_TIME_NAME, metricTimeName);
         jobDataMap.put(QzConstant.METRIC_COUNT_DESC, metricCountDesc);
         jobDataMap.put(QzConstant.METRIC_TIME_DESC, metricTimeDesc);
-        jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS, clazz);
+        if (targetClass != null) {
+            jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS, targetClass.getName());
+        } else {
+            jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS, clazz.getName());
+        }
         if (method != null) {
-            jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS_METHOD, method);
+            jobDataMap.put(QzConstant.QUARTZ_JOB_CLASS_METHOD, method.getName());
         }
         triggerBuilder.usingJobData(jobDataMap);
         return triggerBuilder.build();

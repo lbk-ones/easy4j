@@ -1,14 +1,11 @@
 package easy4j.infra.quartz;
 
-import org.springframework.core.annotation.AliasFor;
-import org.springframework.stereotype.Component;
-
 import java.lang.annotation.*;
 
 /**
  * 自定义注解，用于标记Quartz任务类，自动注册JobDetail和Trigger
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Easy4jQzJob {

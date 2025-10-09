@@ -2,9 +2,11 @@ package easy4j.infra.quartz;
 
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -15,6 +17,7 @@ import java.lang.reflect.Method;
  * @author bokun.li
  * @date 2025/10/8
  */
+@Slf4j
 final class DelegatingJob extends AbstractEasyQzJob {
 
 
@@ -34,26 +37,28 @@ final class DelegatingJob extends AbstractEasyQzJob {
 
     @Override
     public void executeJob(JobExecutionContext context) throws JobExecutionException {
-        try {
-            Object targetClass_ = context.getMergedJobDataMap().get(QzConstant.QUARTZ_JOB_CLASS);
-            Object method_ = context.getMergedJobDataMap().get(QzConstant.QUARTZ_JOB_CLASS_METHOD);
-            if (null != targetClass_ && method_ != null) {
-                Class<?> targetClass = (Class<?>) targetClass_;
-                Method method = (Method) method_;
-                Object targetObject = getInstance(targetClass);
-                if (null == targetObject) return;
-                int parameterCount = method.getParameterCount();
-                if (parameterCount != 1) return;
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                for (Class<?> parameterType : parameterTypes) {
-                    if (parameterType != JobExecutionContext.class) {
-                        return;
-                    }
-                }
-                method.invoke(targetObject, context);
+        Object targetClass_ = context.getMergedJobDataMap().get(QzConstant.QUARTZ_JOB_CLASS);
+        Object method_ = context.getMergedJobDataMap().get(QzConstant.QUARTZ_JOB_CLASS_METHOD);
+        if (null != targetClass_ && method_ != null) {
+            String targetClassName = targetClass_.toString();
+            String methodName = method_.toString();
+            Class<?> targetClass;
+            try {
+                targetClass = Class.forName(targetClassName);
+            } catch (ClassNotFoundException e) {
+                log.error("the targetClass is not found :" + targetClassName);
+                return;
             }
-        } catch (Exception e) {
-            throw new JobExecutionException("执行任务失败", e);
+            Method method = ReflectUtil.getMethod(targetClass, methodName,JobExecutionContext.class);
+            if (method == null) return;
+            Object targetObject = getInstance(targetClass);
+            if (null == targetObject) return;
+            try {
+                method.invoke(targetObject, context);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                log.error("the targetClass method invoke error :" + e.getMessage());
+
+            }
         }
     }
 }
