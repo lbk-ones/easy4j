@@ -117,6 +117,10 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                             }
                         }
                         rescheduleMethodJob();
+
+                        // differ and delete job
+                        List<JobInfo> allJobs = easy4jQuartzScheduler.getAllJobs();
+
                     } finally {
                         if (scheduler.isInStandbyMode() && !scheduler.isStarted()) {
                             // resume

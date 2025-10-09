@@ -172,19 +172,27 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         String schema = opContext1.getSchema();
         String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining(SP.DOT));
         List<String> nameList = ListTs.newList();
+        List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
+        Map<String, DatabaseColumnMetadata> map = ListTs.toMap(dbColumns, DatabaseColumnMetadata::getColumnName);
         for (String s : dict.keySet()) {
             Object o = dict.get(s);
             if (!updateNull && null == o) {
                 continue;
             }
+            DatabaseColumnMetadata databaseColumnMetadata = map.get(s);
             s = opConfig.escapeCn(s, connection, false);
-            nameList.add(opConfig.getColumnName(s) + " = ? ");
+            if (databaseColumnMetadata == null) databaseColumnMetadata = map.get(s);
+            String columnName = opConfig.getColumnName(s);
+            if (databaseColumnMetadata == null) databaseColumnMetadata = map.get(columnName);
+            if (databaseColumnMetadata == null) continue;
+            nameList.add(columnName + " = ? ");
             args.add(o);
         }
         if (ListTs.isEmpty(nameList)) {
             log.info("The field to be updated is empty ！！！！");
             return 0;
         }
+        whereBuild.bind(connection);
         // build where
         String whereBuildStr = commonDBAccess.where(whereBuild.build(args));
 

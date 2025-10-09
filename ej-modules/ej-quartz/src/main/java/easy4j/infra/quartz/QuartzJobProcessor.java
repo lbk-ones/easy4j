@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +51,10 @@ import java.util.function.Function;
 public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
     @Getter
-    private final static List<Pair<Class<?>,Method>> methodJobList = ListTs.newLinkedList();
+    private static List<Pair<Class<?>, Method>> methodJobList = ListTs.newLinkedList();
+
+    @Getter
+    private static List<JobInfo> allJobInfo = ListTs.newLinkedList();
 
     private Environment environment;
 
@@ -67,9 +71,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
         // 扫描并处理带@Easy4jQzJob注解的类或方法
         for (String basePackage : basePackages) {
-            scanAndRegisterJobs(basePackage, registry);
-            registerMethod(basePackage, registry);
+            scanAndRegisterJobs(basePackage, registry, allJobInfo);
+            registerMethod(basePackage, registry, allJobInfo);
         }
+
+        allJobInfo = Collections.unmodifiableList(allJobInfo);
     }
 
 
@@ -78,10 +84,11 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
      *
      * @param basePackage 扫描的包路径
      * @param registry    注册器
+     * @param allJobInfo  任务收集集合
      * @author bokun.li
      * @date 2025/10/8
      */
-    private void registerMethod(String basePackage, BeanDefinitionRegistry registry) {
+    private void registerMethod(String basePackage, BeanDefinitionRegistry registry, List<JobInfo> allJobInfo) {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         CachingMetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
 
@@ -121,7 +128,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                         String name = annotation.name();
                         if (StrUtil.isBlank(name) || (StrUtil.isBlank(annotation.cron()) && annotation.fixedRate() == -1))
                             continue;
-                        methodJobList.add(new Pair<>(clazz,method));
+                        methodJobList.add(new Pair<>(clazz, method));
                         log.info("scan to annotation method ：" + clazz.getName() + "#" + method.getName() + "，jobName：" + annotation.name());
                         //BeanDefinition beanDefinition2 = BeanDefinitionBuilder.genericBeanDefinition(DelegatingJob.class, () -> new DelegatingJob(clazz, method)).getBeanDefinition();
                         //String beanName = clazz.getSimpleName() + SP.UNDERSCORE + method.getName();
@@ -134,6 +141,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         } catch (IOException e) {
             log.error("scan annotation Easy4jQzJob method error：" + e.getMessage());
         }
+        methodJobList = Collections.unmodifiableList(methodJobList);
 
     }
 
@@ -142,7 +150,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         return clazz.getSimpleName() + SP.UNDERSCORE + method.getName() + annotation.name();
     }
 
-    private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry) {
+    private void scanAndRegisterJobs(String basePackage, BeanDefinitionRegistry registry, List<JobInfo> allJobInfo) {
         // 扫描带@Easy4jQzJob注解的类
         Set<BeanDefinition> candidateComponents = QuartzJobScanner.scan(basePackage);
 
