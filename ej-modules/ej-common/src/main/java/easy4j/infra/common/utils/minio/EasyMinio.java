@@ -198,12 +198,22 @@ public class EasyMinio {
     }
 
     /**
-     * 下载文件
+     * 下载文件（使用原始存储的文件名）
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
      * @param response 响应对象
      */
     public void downloadFile(String bucketName, String objectName, HttpServletResponse response) throws Exception {
+        downloadFile(bucketName, objectName, null, response);
+    }
+
+    /**
+     * 下载文件
+     * @param bucketName 存储桶名称
+     * @param objectName 存储在MinIO中的文件名
+     * @param response 响应对象
+     */
+    public void downloadFile(String bucketName, String objectName, String fileName, HttpServletResponse response) throws Exception {
         // 检查文件是否存在
         if (!existsObject(bucketName, objectName)) {
             throw new Exception("文件不存在");
@@ -214,10 +224,14 @@ public class EasyMinio {
                         .bucket(bucketName)
                         .object(objectName)
                         .build())) {
+            // 如果fileName为空，则从objectName就等于fileName
+            if (fileName == null || fileName.trim().isEmpty()) {
+                fileName = objectName;
+            }
 
             // 设置响应头
             response.setHeader("Content-Disposition", "attachment;filename=" +
-                    URLEncoder.encode(objectName, "UTF-8"));
+                    URLEncoder.encode(fileName, "UTF-8"));
             response.setContentType("application/octet-stream");
 
             IoUtil.copy(stream,response.getOutputStream(),8092);
@@ -336,4 +350,3 @@ public class EasyMinio {
         );
     }
 }
-    

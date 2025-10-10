@@ -63,6 +63,16 @@ public String uploadFile(String bucketName, InputStream inputStream, String obje
 public void downloadFile(String bucketName, String objectName, HttpServletResponse response);
 
 /**
+ * 下载文件
+ * @param bucketName 存储桶名称
+ * @param objectName 存储在MinIO中的文件名
+ * @param fileName 直接对文件命名
+ * @param response 响应对象
+ */
+public void downloadFile(String bucketName, String objectName, String fileName, HttpServletResponse response);
+
+
+/**
  * 删除文件
  * @param bucketName 存储桶名称
  * @param objectName 存储在MinIO中的文件名
