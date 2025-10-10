@@ -50,6 +50,8 @@ import java.util.function.Function;
 @Slf4j
 public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
+    public static final String TRIGGER_SUFFIX = "ATiger";
+
     @Getter
     private static List<Pair<Class<?>, Method>> methodJobList = ListTs.newLinkedList();
 
@@ -78,6 +80,13 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
         allJobInfo = Collections.unmodifiableList(allJobInfo);
     }
 
+    public static String getTriggerName(String prefixName){
+
+
+        return prefixName + TRIGGER_SUFFIX;
+
+
+    }
 
     /**
      * 方法注册
@@ -136,7 +145,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
                         registerJobAndTrigger(DelegatingJob.class, clazz, jobName, annotation, registry, method);
                         JobInfo jobInfo = new JobInfo();
                         String group = annotation.group();
-                        TriggerKey triggerKey = TriggerKey.triggerKey(jobName + "Trigger", group);
+                        TriggerKey triggerKey = TriggerKey.triggerKey(getTriggerName(jobName), group);
                         jobInfo.setTriggerKey(triggerKey).setJobName(jobName).setJobGroup(group);
                         allJobInfo.add(jobInfo);
                     }
@@ -185,7 +194,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
 
                     JobInfo jobInfo = new JobInfo();
                     String group = quartzJob.group();
-                    TriggerKey triggerKey = TriggerKey.triggerKey(jobName + "Trigger", group);
+                    TriggerKey triggerKey = TriggerKey.triggerKey(getTriggerName(jobName), group);
                     jobInfo.setTriggerKey(triggerKey).setJobName(jobName).setJobGroup(group);
                     allJobInfo.add(jobInfo);
                 }
@@ -223,10 +232,10 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
      */
     private void registerJobAndTrigger(Class<? extends Job> jobClass, Class<?> targetClass, String jobName, Easy4jQzJob quartzJob, BeanDefinitionRegistry registry, Method method) {
         //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
-        String triggerName = jobName + "Trigger";
+        String triggerName = getTriggerName(jobName);
         String jobBeanName = jobName + "JobDetail";
         String group = quartzJob.group();
-        String triggerBeanName = jobName + "Trigger";
+        String triggerBeanName = getTriggerName(jobName);
         String cron = quartzJob.cron();
         // cron hot reload
         String s1 = cronHotReload(group, jobName, triggerName);
@@ -273,7 +282,7 @@ public class QuartzJobProcessor implements ImportBeanDefinitionRegistrar, Enviro
      */
     public static Trigger getTrigger(Class<?> clazz, String jobName, Easy4jQzJob quartzJob, String finalCron, Function<String, String> cronConvert, Method method, Class<?> targetClass) {
         //String jobName = StringUtils.hasText(quartzJob.name()) ? quartzJob.name() : jobClass.getSimpleName();
-        String triggerName = jobName + "Trigger";
+        String triggerName = getTriggerName(jobName);
         String group = quartzJob.group();
         String s = quartzJob.timeZone();
         String description = quartzJob.description();

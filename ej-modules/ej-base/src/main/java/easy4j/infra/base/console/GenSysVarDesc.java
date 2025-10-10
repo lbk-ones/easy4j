@@ -18,10 +18,13 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.properties.SpringVs;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
 import jodd.util.StringPool;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 生成系统参数描述
@@ -35,7 +38,17 @@ public class GenSysVarDesc {
             String value = annotation.desc();
             String lowerCase = StrUtil.toUnderlineCase(name).toLowerCase();
             String replace = SysConstant.PARAM_PREFIX + StringPool.DOT + lowerCase.replace(StringPool.UNDERSCORE, StringPool.DASH);
+            String[] strings = annotation.valueEnums();
+            List<String> collect = ListTs.asList(strings).stream().filter(StrUtil::isNotBlank).collect(Collectors.toList());
+            Class<?> type = field.getType();
+            if (type == boolean.class) {
+                collect = ListTs.asList("true", "false");
+            }
+            String join = String.join("|", collect);
             String print = "- **" + replace + "**: " + value;
+            if (StrUtil.isNotBlank(join)) {
+                print = print + " ("+join+")";
+            }
             System.out.println(print);
         }
     }

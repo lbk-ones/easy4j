@@ -17,8 +17,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -124,13 +126,25 @@ public class QuartzJobStart implements ApplicationContextAware, ApplicationListe
                             List<JobInfo> allJobs = easy4jQuartzScheduler.getAllJobs();
                             List<JobInfo> allJobInfo = QuartzJobProcessor.getAllJobInfo();
                             Map<String, JobInfo> currentHaveJob = ListTs.toMap(allJobInfo, e -> e.getTriggerKey().getGroup() + e.getTriggerKey().getName());
+                            Set<String> deleteSet = new HashSet<>();
                             for (JobInfo allJob : allJobs) {
                                 TriggerKey triggerKey = allJob.getTriggerKey();
                                 String name = triggerKey.getName();
+                                if(!StrUtil.endWith(name,QuartzJobProcessor.TRIGGER_SUFFIX)){
+                                    continue;
+                                }
                                 String group = triggerKey.getGroup();
                                 JobInfo jobInfo = currentHaveJob.get(group + name);
                                 if (jobInfo == null) {
+                                    scheduler.pauseTrigger(triggerKey);
                                     scheduler.unscheduleJob(triggerKey);
+                                    String jobName = allJob.getJobName();
+                                    String jobGroup = allJob.getJobGroup();
+                                    String s = jobGroup + jobName;
+                                    if(!deleteSet.contains(s)){
+                                        scheduler.deleteJob(JobKey.jobKey(jobName, jobGroup));
+                                        deleteSet.add(s);
+                                    }
                                 }
                             }
                         }

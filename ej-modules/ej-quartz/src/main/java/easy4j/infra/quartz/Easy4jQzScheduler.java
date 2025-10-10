@@ -3,6 +3,7 @@ package easy4j.infra.quartz;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Sets;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysLog;
 import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.UnrecognizedTimeZoneException;
@@ -249,7 +250,7 @@ public final class Easy4jQzScheduler implements DisposableBean {
 
 
     /**
-     * 停止并移除指定任务
+     * 停止并移除指定任务对应的所有触发器以及任务明细
      *
      * @param jobName  任务名称
      * @param jobGroup 任务组
@@ -257,20 +258,19 @@ public final class Easy4jQzScheduler implements DisposableBean {
      * @throws SchedulerException 调度器异常
      */
     public boolean stopAndRemoveJob(String jobName, String jobGroup) throws SchedulerException {
-
         JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
-
         if (!scheduler.checkExists(jobKey)) {
             return false;
         }
-
-        // 暂停触发器
-        TriggerKey triggerKey = TriggerKey.triggerKey(jobName, jobGroup);
-        scheduler.pauseTrigger(triggerKey);
-
-        // 移除触发器
-        scheduler.unscheduleJob(triggerKey);
-
+        List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(jobKey);
+        if (ListTs.isNotEmpty(triggersOfJob)) {
+            for (Trigger trigger : triggersOfJob) {
+                TriggerKey key = trigger.getKey();
+                scheduler.pauseTrigger(key);
+                // 移除触发器
+                scheduler.unscheduleJob(key);
+            }
+        }
         // 删除任务
         scheduler.deleteJob(jobKey);
         return true;
@@ -320,7 +320,10 @@ public final class Easy4jQzScheduler implements DisposableBean {
             Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(group));
 
             for (JobKey jobKey : jobKeys) {
-                JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+                JobDetail jobDetail = null;
+                try {
+                    jobDetail = scheduler.getJobDetail(jobKey);
+                } catch (Exception ignored) {}
                 List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
 
                 for (Trigger trigger : triggers) {
@@ -329,7 +332,9 @@ public final class Easy4jQzScheduler implements DisposableBean {
                     info.setJobGroup(jobKey.getGroup());
                     TriggerKey key = trigger.getKey();
                     Trigger.TriggerState triggerState = scheduler.getTriggerState(key);
-                    info.setJobClass(jobDetail.getJobClass());
+                    if (null != jobDetail) {
+                        info.setJobClass(jobDetail.getJobClass());
+                    }
                     info.setStatus(getTriggerStatus(triggerState));
                     info.setStartDate(trigger.getStartTime());
                     info.setNextState(trigger.getNextFireTime());

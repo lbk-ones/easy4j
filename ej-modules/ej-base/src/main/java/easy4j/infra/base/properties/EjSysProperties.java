@@ -657,10 +657,10 @@ public class EjSysProperties {
     private boolean forceRegisterToRegistry = false;
 
     /**
-     * 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否也停止调度，默认不停止调度
+     * 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除
      */
-    @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否也停止调度，默认不停止调度")
-    private boolean quartzJobRestartCheckDelete = false;
+    @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除",valueEnums = {"true","false"})
+    private boolean quartzJobRestartCheckDelete = true;
 
 
     /**
