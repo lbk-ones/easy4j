@@ -39,8 +39,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     private static final List<String> PG_ESCAPE = ListTs.asList("all", "analyse", "analyze", "and", "any", "array", "as", "asc", "asymmetric", "both", "case", "cast", "check", "collate", "column", "constraint", "create", "current_catalog", "current_date", "current_role", "current_time", "current_timestamp", "current_user", "default", "deferrable", "desc", "distinct", "do", "else", "end", "except", "false", "fetch", "for", "foreign", "from", "grant", "group", "having", "in", "initially", "intersect", "into", "lateral", "leading", "limit", "localtime", "localtimestamp", "not", "null", "offset", "on", "only", "or", "order", "placing", "primary", "references", "returning", "select", "session_user", "some", "symmetric", "table", "then", "to", "trailing", "true", "union", "unique", "user", "using", "variadic", "when", "where", "window", "with");
     private static final List<String> MYSQL_ESCAPE = ListTs.asList("accessible", "add", "all", "alter", "analyze", "and", "as", "asc", "asensitive", "before", "between", "bigint", "binary", "blob", "both", "by", "call", "cascade", "case", "change", "char", "character", "check", "collate", "column", "condition", "constraint", "continue", "convert", "create", "cross", "cube", "cume_dist", "current_date", "current_time", "current_timestamp", "current_user", "cursor", "database", "databases", "day_hour", "day_microsecond", "day_minute", "day_second", "dec", "decimal", "declare", "default", "delayed", "delete", "dense_rank", "desc", "describe", "deterministic", "distinct", "distinctrow", "div", "double", "drop", "dual", "each", "else", "elseif", "empty", "enclosed", "escaped", "except", "exists", "exit", "explain", "false", "fetch", "first_value", "float", "float4", "float8", "for", "force", "foreign", "from", "fulltext", "function", "generated", "get", "grant", "group", "grouping", "groups", "having", "high_priority", "hour_microsecond", "hour_minute", "hour_second", "if", "ignore", "in", "index", "infile", "inner", "inout", "insensitive", "insert", "int", "int1", "int2", "int3", "int4", "int8", "integer", "intersect", "interval", "into", "io_after_gtids", "io_before_gtids", "is", "iterate", "join", "json_table", "key", "keys", "kill", "lag", "last_value", "lateral", "lead", "leading", "leave", "left", "like", "limit", "linear", "lines", "load", "localtime", "localtimestamp", "lock", "long", "longblob", "longtext", "loop", "low_priority", "master_bind", "master_ssl_verify_server_cert", "match", "maxvalue", "mediumblob", "mediumint", "mediumtext", "middleint", "minute_microsecond", "minute_second", "mod", "modifies", "natural", "not", "no_write_to_binlog", "nth_value", "ntile", "null", "numeric", "of", "on", "optimize", "optimizer_costs", "option", "optionally", "or", "order", "out", "outer", "outfile", "over", "partition", "percent_rank", "precision", "primary", "procedure", "purge", "range", "rank", "read", "reads", "read_write", "real", "recursive", "references", "regexp", "release", "rename", "repeat", "replace", "require", "resignal", "restrict", "return", "revoke", "right", "rlike", "row", "rows", "row_number", "schema", "schemas", "second_microsecond", "select", "sensitive", "separator", "set", "show", "signal", "smallint", "spatial", "specific", "sql", "sqlexception", "sqlstate", "sqlwarning", "sql_big_result", "sql_calc_found_rows", "sql_small_result", "ssl", "starting", "stored", "straight_join", "system", "table", "terminated", "then", "tinyblob", "tinyint", "tinytext", "to", "trailing", "trigger", "true", "undo", "union", "unique", "unlock", "unsigned", "update", "usage", "use", "using", "utc_date", "utc_time", "utc_timestamp", "values", "varbinary", "varchar", "varcharacter", "varying", "virtual", "when", "where", "while", "window", "with", "write", "xor", "year_month", "zerofill");
     private static final List<String> H2_ESCAPE = ListTs.asList("all", "and", "any", "array", "as", "asymmetric", "authorization", "between", "both", "case", "cast", "check", "constraint", "cross", "current_catalog", "current_date", "current_path", "current_role", "current_schema", "current_time", "current_timestamp", "current_user", "day", "default", "distinct", "else", "end", "except", "exists", "false", "fetch", "for", "foreign", "from", "full", "group", "groups", "having", "hour", "if", "ilike", "in", "inner", "intersect", "interval", "is", "join", "key", "leading", "left", "like", "limit", "localtime", "localtimestamp", "minus", "minute", "month", "natural", "not", "null", "offset", "on", "or", "order", "over", "partition", "primary", "qualify", "range", "regexp", "right", "row", "rownum", "rows", "second", "select", "session_user", "set", "some", "symmetric", "system_user", "table", "to", "top", "ms", "cs", "trailing", "true", "uescape", "union", "unique", "unknown", "user", "using", "value", "values", "when", "where", "window", "with", "year", "_rowid_");
-    private static final List<String> MSSQL_ESCAPE = ListTs.asList("add","external","procedure","all","fetch","public","alter","file","raiserror","and","fillfactor","read","any","for","readtext","as","foreign","reconfigure","asc","freetext","references","authorization","freetexttable","replication","backup","from","restore","begin","full","restrict","between","function","return","break","goto","revert","browse","grant","revoke","bulk","group","right","by","having","rollback","cascade","holdlock","rowcount","case","identity","rowguidcol","check","identity_insert","rule","checkpoint","identitycol","save","close","if","schema","clustered","in","securityaudit","coalesce","index","select","collate","inner","semantickeyphrasetable","column","insert","semanticsimilaritydetailstable","commit","intersect","semanticsimilaritytable","compute","into","session_user","constraint","is","set","contains","join","setuser","containstable","key","shutdown","continue","kill","some","convert","left","statistics","create","like","system_user","cross","lineno","table","current","load","tablesample","current_date","merge","textsize","current_time","national","then","current_timestamp","nocheck","to","current_user","nonclustered","top","cursor","not","tran","database","null","transaction","dbcc","nullif","trigger","deallocate","of","truncate","declare","off","try_convert","default","offsets","tsequal","delete","on","union","deny","open","unique","desc","opendatasource","unpivot","disk","openquery","update","distinct","openrowset","updatetext","distributed","openxml","use","double","option","user","drop","or","values","dump","order","varying","else","outer","view","end","over","waitfor","errlvl","percent","when","escape","pivot","where","except","plan","while","exec","precision","with","execute","primary","within group","exists","print","writetext","exit","proc");
-
+    private static final List<String> MSSQL_ESCAPE = ListTs.asList("add", "external", "procedure", "all", "fetch", "public", "alter", "file", "raiserror", "and", "fillfactor", "read", "any", "for", "readtext", "as", "foreign", "reconfigure", "asc", "freetext", "references", "authorization", "freetexttable", "replication", "backup", "from", "restore", "begin", "full", "restrict", "between", "function", "return", "break", "goto", "revert", "browse", "grant", "revoke", "bulk", "group", "right", "by", "having", "rollback", "cascade", "holdlock", "rowcount", "case", "identity", "rowguidcol", "check", "identity_insert", "rule", "checkpoint", "identitycol", "save", "close", "if", "schema", "clustered", "in", "securityaudit", "coalesce", "index", "select", "collate", "inner", "semantickeyphrasetable", "column", "insert", "semanticsimilaritydetailstable", "commit", "intersect", "semanticsimilaritytable", "compute", "into", "session_user", "constraint", "is", "set", "contains", "join", "setuser", "containstable", "key", "shutdown", "continue", "kill", "some", "convert", "left", "statistics", "create", "like", "system_user", "cross", "lineno", "table", "current", "load", "tablesample", "current_date", "merge", "textsize", "current_time", "national", "then", "current_timestamp", "nocheck", "to", "current_user", "nonclustered", "top", "cursor", "not", "tran", "database", "null", "transaction", "dbcc", "nullif", "trigger", "deallocate", "of", "truncate", "declare", "off", "try_convert", "default", "offsets", "tsequal", "delete", "on", "union", "deny", "open", "unique", "desc", "opendatasource", "unpivot", "disk", "openquery", "update", "distinct", "openrowset", "updatetext", "distributed", "openxml", "use", "double", "option", "user", "drop", "or", "values", "dump", "order", "varying", "else", "outer", "view", "end", "over", "waitfor", "errlvl", "percent", "when", "escape", "pivot", "where", "except", "plan", "while", "exec", "precision", "with", "execute", "primary", "within group", "exists", "print", "writetext", "exit", "proc");
 
 
     private final OpConfig opConfig = new OpConfig();
@@ -509,15 +508,16 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
 
     /**
      * 校验字符是否为英文字母（大写或小写）
+     *
      * @param c 要校验的字符
      * @return 如果是英文字母返回 true，否则返回 false
      */
-    public  boolean isEnglishLetter(char c) {
+    public boolean isEnglishLetter(char c) {
         // 检查是否是大写字母 (A-Z) 或小写字母 (a-z)
         return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
 
-    public boolean containUpper(String name){
+    public boolean containUpper(String name) {
         char[] charArray = name.toCharArray();
         for (char c : charArray) {
             if (isEnglishLetter(c) && StrUtil.isUpperCase(String.valueOf(c))) {
@@ -526,7 +526,8 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         }
         return false;
     }
-    public boolean containLower(String name){
+
+    public boolean containLower(String name) {
         char[] charArray = name.toCharArray();
         for (char c : charArray) {
             if (isEnglishLetter(c) && StrUtil.isLowerCase(String.valueOf(c))) {
@@ -539,7 +540,8 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     @Override
     public String escape(String name) {
         String databaseType = this.getDbType();
-        lbk:{
+        lbk:
+        {
             // 先大概检查一下肯定需要转义的名称 不考虑数据库保留字
             // 如果强制转义那么也跳过
             if (DBFieldEscapeChecker.needEscape(name)) {
@@ -562,7 +564,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 if (!ListTs.equalIgnoreCase(H2_ESCAPE, name)) {
                     return name;
                 }
-            }else if (DbType.SQL_SERVER.getDb().equals(databaseType)) {
+            } else if (DbType.SQL_SERVER.getDb().equals(databaseType)) {
                 if (!ListTs.equalIgnoreCase(MSSQL_ESCAPE, name)) {
                     return name;
                 }
@@ -617,7 +619,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         for (String s : params.keySet()) {
             Object o = params.get(s);
             if (o != null) {
-                template = template.replaceAll("[" + s + "]", o.toString());
+                template = template.replaceAll("\\[" + s + "]", o.toString());
             }
         }
         String result = template.replaceAll("\\[.*?]", " ");
@@ -640,7 +642,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     }
 
     public String transferJdbcDelete(Map<String, Object> params) {
-        return transferTemplate(params, getJdbcBatchUpdateSqlTemplate());
+        return transferTemplate(params, getJdbcDeleteSqlTemplate());
     }
 
     public String getJdbcBatchInsertSqlTemplate() {
@@ -655,13 +657,12 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
      * 多条数据以jdbcBatch的方式批量写入
      * 单条则正常执行
      *
-     * @param record             传入要写入的数据map
-     * @param tableName          表名
-     * @param schema             schema
-     * @param skipNotExistsField 跳过不存在的字段
-     * @param batchSize          每次批量的大小
-     * @param toUnderLine        将参数转为下划线
-     * @param isCommit           是否直接提交事务
+     * @param record      传入要写入的数据map
+     * @param tableName   表名
+     * @param schema      schema
+     * @param batchSize   每次批量的大小
+     * @param toUnderLine 将参数转为下划线
+     * @param isCommit    是否直接提交事务
      * @return
      */
     @Override
@@ -669,7 +670,6 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             List<Map<String, Object>> record,
             String tableName,
             String schema,
-            boolean skipNotExistsField,
             int batchSize,
             boolean toUnderLine,
             boolean isCommit
@@ -681,26 +681,26 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         PsResult psResult = new PsResult();
         if (ListTs.isEmpty(record)) return psResult;
         batchSize = batchSize <= 0 ? 200 : batchSize;
-        Map<String, DatabaseColumnMetadata> map = null;
         Set<String> columnNameList = new HashSet<>();
-        if (skipNotExistsField) {
-            List<DatabaseColumnMetadata> columns = this.getColumns(getConnectionCatalog(), schema, tableName);
-            map = ListTs.toMap(columns, DatabaseColumnMetadata::getColumnName);
-        }
+        List<DatabaseColumnMetadata> columns = this.getColumns(getConnectionCatalog(), schema, tableName);
+
+        List<String> autoKey = columns.stream().filter(e -> {
+            String isAutoincrement = e.getIsAutoincrement();
+            return "YES".equals(isAutoincrement);
+        }).map(DatabaseColumnMetadata::getColumnName).collect(Collectors.toList());
+
+        Map<String, DatabaseColumnMetadata> map = ListTs.toMap(columns, DatabaseColumnMetadata::getColumnName);
         List<Map<String, Object>> newList = ListTs.newLinkedList();
         for (Map<String, Object> recordMap : record) {
             Map<String, Object> newMap = new HashMap<>();
             Set<String> strings = recordMap.keySet();
-
             for (String column : strings) {
                 // differ with db columns
-                if (map != null) {
-                    DatabaseColumnMetadata databaseColumnMetadata = map.get(column);
+                DatabaseColumnMetadata databaseColumnMetadata = opConfig.getMatchMapIgnoreCase(map, column);
+                if (databaseColumnMetadata == null) {
+                    databaseColumnMetadata = opConfig.getMatchMapIgnoreCase(map, StrUtil.toUnderlineCase(column));
                     if (databaseColumnMetadata == null) {
-                        DatabaseColumnMetadata databaseColumnMetadata1 = map.get(StrUtil.toUnderlineCase(column));
-                        if (databaseColumnMetadata1 == null) {
-                            continue;
-                        }
+                        continue;
                     }
                 }
                 Object o = recordMap.get(column);
@@ -749,7 +749,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                             preparedStatement.addBatch();
                         }
                         Pair<String, Date> stringDatePair = recordSql(sql, connection, array);
-                        sqls.add(stringDatePair.getKey());
+                        if (stringDatePair != null) sqls.add(stringDatePair.getKey());
                     }
                     if (!oneRow) {
                         preparedStatement.executeBatch();
@@ -769,15 +769,14 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                         if (ListTs.isNotEmpty(stringObjectMap)) {
                             Map<String, Object> resultHandler = handle.get(i);
                             if (ListTs.isNotEmpty(resultHandler)) {
+                                int s_index = 0;
                                 for (String s : resultHandler.keySet()) {
-                                    String camelName = StrUtil.toCamelCase(s);
-                                    String underlineCase = StrUtil.toUnderlineCase(s);
-                                    if (!StrUtil.equals(s, camelName)) {
-                                        resultHandler.put(camelName, resultHandler.get(s));
+                                    String autokeyName = ListTs.get(autoKey, s_index);
+                                    if (null != autokeyName) {
+                                        resultHandler.put(autokeyName, resultHandler.get(s));
                                     }
-                                    if (!StrUtil.equals(s, underlineCase)) {
-                                        resultHandler.put(underlineCase, resultHandler.get(s));
-                                    }
+                                    resultHandler.put(s, resultHandler.get(s));
+                                    s_index++;
                                 }
                                 stringObjectMap.putAll(resultHandler);
                             }
@@ -862,9 +861,12 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 for (String column : recordMap.keySet()) {
                     Object valuye = recordMap.get(column);
                     if (map != null) {
-                        DatabaseColumnMetadata databaseColumnMetadata = map.get(column);
+                        DatabaseColumnMetadata databaseColumnMetadata = opConfig.getMatchMapIgnoreCase(map, column);
                         if (databaseColumnMetadata == null) {
-                            continue;
+                            databaseColumnMetadata = opConfig.getMatchMapIgnoreCase(map, StrUtil.toUnderlineCase(column));
+                            if (databaseColumnMetadata == null) {
+                                continue;
+                            }
                         }
                         Object o = recordMap.get(column);
                         if (skipUpdateNull && o == null) {
@@ -893,7 +895,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                     StatementUtil.fillParams(preparedStatement, array);
                     effectRows += preparedStatement.executeUpdate();
                     Pair<String, Date> stringDatePair = recordSql(sql, connection, array);
-                    sqls.add(stringDatePair.getKey());
+                    if (stringDatePair != null) sqls.add(stringDatePair.getKey());
                 } finally {
                     JdbcHelper.close(preparedStatement);
                 }
@@ -948,7 +950,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 StatementUtil.fillParams(preparedStatement, array);
                 effectRows += preparedStatement.executeUpdate();
                 Pair<String, Date> stringDatePair = recordSql(sql, connection, array);
-                sqls.add(stringDatePair.getKey());
+                if (null != stringDatePair) sqls.add(stringDatePair.getKey());
             } finally {
                 JdbcHelper.close(preparedStatement);
             }

@@ -19,7 +19,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.dbaccess.dialect.*;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.dbaccess.exception.DbAccessException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -312,8 +311,12 @@ public abstract class JdbcHelper {
     public static final SQLErrorCodeSQLExceptionTranslator sqlErrorCodeSQLExceptionTranslator = new SQLErrorCodeSQLExceptionTranslator();
 
     public static DataAccessException translateSqlException(String task, String sql, SQLException sqlException) {
-        sqlErrorCodeSQLExceptionTranslator.setDataSource(getDataSource());
-        DataAccessException translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
+        DataAccessException translate = null;
+        try {
+            sqlErrorCodeSQLExceptionTranslator.setDataSource(getDataSource());
+            translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
+        } catch (Exception ignored) {
+        }
         if (translate == null) {
             throw new DbAccessException(sqlException.getMessage(), sqlException.getSQLState(), sqlException.getCause());
         }
