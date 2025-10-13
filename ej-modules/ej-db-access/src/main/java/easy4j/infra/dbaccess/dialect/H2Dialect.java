@@ -21,6 +21,7 @@ import easy4j.infra.dbaccess.Page;
 /**
  * H2数据库方言实现
  */
+@Deprecated
 public class H2Dialect extends AbstractDialect {
 
     /*@Override

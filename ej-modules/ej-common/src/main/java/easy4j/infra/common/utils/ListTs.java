@@ -329,6 +329,12 @@ public class ListTs {
         objects.addAll(Arrays.asList(id));
         return objects;
     }
+    @SafeVarargs
+    public static <T> List<T> asNonNullList(T... id) {
+        List<T> objects = newArrayList();
+        objects.addAll(Arrays.asList(id));
+        return ListTs.filter(objects,ObjectUtil::isNotEmpty);
+    }
 
     public static List<String> randomStrList(int length) {
         List<String> objects = newArrayList();

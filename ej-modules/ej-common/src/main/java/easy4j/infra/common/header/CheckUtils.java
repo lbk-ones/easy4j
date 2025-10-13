@@ -316,8 +316,12 @@ public class CheckUtils {
     @Desc("检查一个对象是否为空，为空则抛出异常")
     public static void notNull(Object obj) {
         if (ObjectUtil.isEmpty(obj)) {
-            String simpleName = obj.getClass().getSimpleName();
-            throw EasyException.wrap("[Check failed] - this argument "+simpleName+" is required; it must not be null");
+            if (obj != null) {
+                String simpleName = obj.getClass().getSimpleName();
+                throw EasyException.wrap("[Check failed] - this argument " + simpleName + " is required; it must not be null");
+            } else {
+                throw EasyException.wrap("[Check failed] - this argument obj is required; it must not be null");
+            }
         }
     }
 

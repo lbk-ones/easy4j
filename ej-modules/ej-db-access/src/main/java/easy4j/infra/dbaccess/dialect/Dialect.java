@@ -30,6 +30,7 @@ import java.util.Map;
 /**
  * 数据库差异的方言接口
  */
+@Deprecated
 public interface Dialect {
 
     /**

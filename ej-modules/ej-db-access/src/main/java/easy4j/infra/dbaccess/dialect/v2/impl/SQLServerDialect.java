@@ -1,31 +1,43 @@
-/**
- * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package easy4j.infra.dbaccess.dialect;
-
+package easy4j.infra.dbaccess.dialect.v2.impl;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.dialect.v2.AbstractDialectV2;
+import easy4j.infra.dbaccess.dynamic.dll.SqlServerFieldType;
 
+import java.sql.Connection;
+import java.util.List;
+import java.util.Optional;
 /**
- * SQLServer数据库方言实现
+ * SQLServerDialect
+ * @author bokun.li
+ * @date 2025/10/13
  */
-@Deprecated
-public class SQLServerDialect extends AbstractDialect {
+public class SQLServerDialect extends AbstractDialectV2 {
     private static final String STR_ORDERBY = " order by ";
+    public SQLServerDialect(Connection connection) {
+        super(connection);
+    }
 
+
+    @Override
+    public boolean isLob(String typeName) {
+        SqlServerFieldType fromDataType1 = SqlServerFieldType.getFromDataType(typeName);
+        return fromDataType1 == SqlServerFieldType.VARCHAR_MAX || fromDataType1 == SqlServerFieldType.NVARCHAR_MAX || fromDataType1 == SqlServerFieldType.TEXT || fromDataType1 == SqlServerFieldType.NTEXT;
+    }
+
+    @Override
+    public Class<?> getJavaClassByTypeNameAndDbType(String typeName) {
+        return Optional.ofNullable(SqlServerFieldType.getFromDataType(typeName)).map(SqlServerFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+    }
+
+    @Override
+    public boolean isJson(String typeName) {
+        return false;
+    }
+
+    @Override
     public String getPageSql(String sql, Page<?> page) {
         int orderIdx = sql.indexOf(STR_ORDERBY);
         String orderStr = null;
@@ -87,17 +99,16 @@ public class SQLServerDialect extends AbstractDialect {
     }
 
     @Override
-    public Wrapper getWrapper() {
-        return new Wrapper('[', ']');
-    }
-
-
-    @Override
-    public String strDateToFunc(String str) {
+    public String strConvertToDate(String str) {
         if (StrUtil.isNotBlank(str)) {
             return "CONVERT(datetime, '" + str + "')";
         } else {
             return str;
         }
+    }
+
+    @Override
+    public String getDefaultDateTime() {
+        return "SYSDATETIME()";
     }
 }

@@ -22,6 +22,7 @@ import easy4j.infra.dbaccess.Page;
 /**
  * Postgresql数据库方言实现
  */
+@Deprecated
 public class PostgresqlDialect extends AbstractDialect {
 
     /*@Override

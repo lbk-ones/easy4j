@@ -39,6 +39,7 @@ import static easy4j.infra.dbaccess.AbstractDBAccess.getSelectByMap;
  * 标准sql方言实现
  * Ansi Sql Dialect
  */
+@Deprecated
 public class AbstractDialect extends CommonDBAccess implements Dialect {
 
     @Override

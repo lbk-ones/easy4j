@@ -22,6 +22,7 @@ import easy4j.infra.dbaccess.Page;
 /**
  * Mysql数据库方言实现
  */
+@Deprecated
 public class MySqlDialect extends AbstractDialect {
     /**
      * mysql分页通过limit实现

@@ -34,6 +34,7 @@ import java.util.Map;
 /**
  * Oracle数据库方言实现
  */
+@Deprecated
 public class OracleDialect extends AbstractDialect {
 
     @Override
