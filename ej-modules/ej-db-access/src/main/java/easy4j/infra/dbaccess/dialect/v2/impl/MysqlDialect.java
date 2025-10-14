@@ -19,6 +19,7 @@ public class MysqlDialect extends AbstractDialectV2 {
 
     public MysqlDialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
 

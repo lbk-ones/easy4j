@@ -339,9 +339,8 @@ public class CommonDBAccess {
 
     public String getTableName(Class<?> clazz, Dialect dialect) {
         StringBuilder sb = new StringBuilder();
-
-        Wrapper wrapper = dialect.getWrapper();
         // compatible db-access mybatis-plus jpa
+        Wrapper wrapper = dialect.getWrapper();
         JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
         if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
             String schema = StrUtil.blankToDefault(annotation.schema(), "");

@@ -32,6 +32,8 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -153,8 +155,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
      * @throws SQLException
      */
     public String getSqlByObject(Map<String, Object> recordMap, List<Object> newArgsList, boolean isThrowError, Dialect dialect) {
-        Wrapper wrapper = dialect.getWrapper();
-        return getSelectByMap(recordMap, newArgsList, wrapper, isThrowError);
+        return getSelectByMap(recordMap, newArgsList, dialect.getWrapper(), isThrowError);
     }
 
     /**
@@ -829,7 +830,7 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
     public long countByCondition(WhereBuild whereBuilder, String tableName) {
         CheckUtils.notNull(tableName,"tableName");
         Connection connection = getConnection();
-        IOpMeta select = OpDbMeta.select(connection);
+        DialectV2 select = DialectFactory.get(connection);
         List<TableMetadata> tableInfos = select.getTableInfos(tableName);
         if(CollUtil.isEmpty(tableInfos)){
             throw EasyException.wrap(BusCode.A00060,tableName);

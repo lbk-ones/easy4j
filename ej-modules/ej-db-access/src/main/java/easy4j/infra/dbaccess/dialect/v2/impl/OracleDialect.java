@@ -19,6 +19,7 @@ public class OracleDialect extends AbstractDialectV2 {
 
     public OracleDialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
     @Override

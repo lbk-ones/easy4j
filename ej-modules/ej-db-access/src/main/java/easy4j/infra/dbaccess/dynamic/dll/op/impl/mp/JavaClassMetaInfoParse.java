@@ -32,6 +32,8 @@ import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
@@ -124,7 +126,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
             ddlTableInfo = BeanUtil.mapToBean(annotationAttributes, DDLTableInfo.class, true, CopyOptions.create().ignoreError());
         }
         ddlTableInfo.setTableName(getTableName(aclass));
-        IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
+        DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setDbColumns(columns);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
@@ -176,13 +178,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         CommonDBAccess commonDBAccess = this.opContext.getOpConfig().getCommonDBAccess();
         boolean annotationPresent = aclass.isAnnotationPresent(DDLTable.class);
         if (annotationPresent) {
-            Wrapper wrapper = dialect.getWrapper();
-            try {
-                char preWrapQuote = wrapper.getPreWrapQuote();
-                char sufWrapQuote = wrapper.getSufWrapQuote();
-                tableName = StrUtil.unWrap(tableName, preWrapQuote, sufWrapQuote);
-            } catch (Exception ignored) {
-            }
+            tableName = dialect.getWrapper().wrap(tableName);
 
             DDLTable annotation = aclass.getAnnotation(DDLTable.class);
             String s = annotation.tableName();

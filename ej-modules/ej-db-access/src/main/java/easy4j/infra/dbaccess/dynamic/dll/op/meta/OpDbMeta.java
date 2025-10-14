@@ -25,6 +25,7 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +44,10 @@ import java.util.*;
  *
  * @author bokun.li
  * @date 2025-08-23
+ * @see DialectV2
  */
 @Slf4j
+@Deprecated
 public class OpDbMeta implements IOpMeta {
 
     public static final List<String> excludeDbType = ListTs.asList();

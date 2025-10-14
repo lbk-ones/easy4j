@@ -15,6 +15,7 @@ public class DB2Dialect extends AbstractDialectV2 {
 
     public DB2Dialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
     @Override

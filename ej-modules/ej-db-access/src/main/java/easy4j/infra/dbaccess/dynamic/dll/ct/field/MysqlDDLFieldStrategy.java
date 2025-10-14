@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public class MysqlDDLFieldStrategy extends AbstractIDDLFieldStrategy {
     @Override
     public boolean match(DDLFieldInfo ddlFieldInfo) {

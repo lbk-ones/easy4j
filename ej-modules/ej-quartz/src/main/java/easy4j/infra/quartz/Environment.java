@@ -9,6 +9,8 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.TempDataSource;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -52,7 +54,7 @@ public class Environment extends AbstractEasy4jEnvironment {
             TempDataSource tempDataSource = DBAccessFactory.getTempDataSource();
             Connection quietConnection = tempDataSource.getQuietConnection();
             try {
-                IOpMeta select = OpDbMeta.select(quietConnection);
+                DialectV2 select = DialectFactory.get(quietConnection);
                 List<TableMetadata> allTableInfoByTableType = select.getAllTableInfoByTableType(tablePrefix + "%", new String[]{"TABLE"});
                 if(ListTs.isEmpty(allTableInfoByTableType)){
                     allTableInfoByTableType = select.getAllTableInfoByTableType(tablePrefix.toLowerCase() + "%", new String[]{"TABLE"});

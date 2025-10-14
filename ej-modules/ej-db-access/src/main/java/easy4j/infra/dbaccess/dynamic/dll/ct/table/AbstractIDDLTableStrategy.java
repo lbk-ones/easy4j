@@ -9,8 +9,12 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
 @Getter
 @Setter
+@Deprecated
 public abstract class AbstractIDDLTableStrategy implements IDDLTableStrategy {
     boolean toUnderLine;
     boolean toLowCase = true;

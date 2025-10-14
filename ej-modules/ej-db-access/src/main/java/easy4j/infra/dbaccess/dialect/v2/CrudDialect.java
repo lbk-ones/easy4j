@@ -25,19 +25,18 @@ public interface CrudDialect {
     PsResult jdbcInsert(List<Map<String, Object>> record, String tableName, String schema, int batchSize, boolean toUnderLine, boolean isCommit);
 
     /**
-     * jdbc类型的更新，传入多条则批量更新
+     * jdbc类型的更新，传入多条则批量更新，批量更新是一条一条更新和batch有本质区别
      *
-     * @param record             传入要写入的数据map
-     * @param tableName          表名
-     * @param schema             schema
-     * @param skipNotExistsField 跳过不存在的字段
-     * @param toUnderLine        将参数转为下划线
-     * @param skipUpdateNull     跳过更新null值
-     * @param isCommit           是否直接提交事务
-     * @param whereBuild         条件构造器
-     * @return
+     * @param record         传入要写入的数据map
+     * @param tableName      表名
+     * @param schema         schema
+     * @param toUnderLine    将参数转为下划线（set后面的参数和where后面的参数都会转成下划线）
+     * @param skipUpdateNull 跳过更新null值
+     * @param isCommit       是否直接提交事务
+     * @param whereFields    where条件中的额字段（可以带下划线，也可以不带，如果不带会受toUnderLine影响）
+     * @return easy4j.infra.dbaccess.dialect.v2.PsResult
      */
-    PsResult jdbcUpdate(List<Map<String, Object>> record, String tableName, String schema, boolean skipNotExistsField, boolean toUnderLine, boolean skipUpdateNull, boolean isCommit, WhereBuild whereBuild);
+    PsResult jdbcUpdate(List<Map<String, Object>> record, String tableName, String schema, boolean toUnderLine, boolean skipUpdateNull, boolean isCommit, List<String> whereFields);
 
 
     /**

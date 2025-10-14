@@ -19,6 +19,7 @@ public class PostgresqlDialect extends AbstractDialectV2 {
 
     public PostgresqlDialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
     @Override

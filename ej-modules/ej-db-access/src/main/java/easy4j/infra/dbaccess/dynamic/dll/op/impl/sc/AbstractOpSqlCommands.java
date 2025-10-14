@@ -15,6 +15,8 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
@@ -324,7 +326,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     public boolean changeContext(CopyDbConfig copyDbConfig) {
         String ToDbType;
         Connection toConnection = null;
-        IOpMeta opDbMeta = null;
+        DialectV2 opDbMeta = null;
         DataSource toDataSource = null;
         String catalog = null;
         String schema1 = null;
@@ -341,7 +343,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 if (StrUtil.isBlank(ToDbType)) {
                     throw new IllegalArgumentException(" !! not support database " + copyDbConfig);
                 }
-                opDbMeta = OpDbMeta.select(toConnection);
+                opDbMeta = DialectFactory.get(toConnection);
                 catalog = toConnection.getCatalog();
                 schema1 = toConnection.getSchema();
                 toDialect = JdbcHelper.getDialect(toConnection);
@@ -350,7 +352,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             }
         }
         assert opDbMeta != null;
-        String dbType = opDbMeta.getDbType(toConnection);
+        String dbType = opDbMeta.getDbType();
         String productVersion = opDbMeta.getProductVersion();
         this.opContext.setDbType(dbType);
         this.opContext.setDbVersion(productVersion);
@@ -400,7 +402,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         CheckUtils.checkByLambda(this.opContext, OpContext::getDataSource, OpContext::getConnection);
         if (ListTs.isEmpty(tableType)) tableType = new String[]{"TABLE"};
         Connection oldConnection = this.opContext.getConnection();
-        IOpMeta select = OpDbMeta.select(oldConnection);
+        DialectV2 select = DialectFactory.get(oldConnection);
         List<TableMetadata> allTableList = ListTs.newList();
         // get all or custom tableInfo
         if (ListTs.isEmpty(tablePrefix)) {
@@ -433,8 +435,8 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
                 DataSource dataSource = copyDbConfig.getDataSource();
                 try (Connection connection = dataSource.getConnection()) {
-                    IOpMeta select1 = OpDbMeta.select(connection);
-                    copyTargetDbType = select.getDbType(connection);
+                    DialectV2 select1 = DialectFactory.get(connection);
+                    copyTargetDbType = select.getDbType();
                     List<TableMetadata> allTableInfoByTableType = select1.getAllTableInfoByTableType(null, new String[]{"TABLE"});
                     map = ListTs.toMap(allTableInfoByTableType, TableMetadata::getTableName);
                 } catch (SQLException e) {
@@ -572,7 +574,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         OpContext opContext1 = this.getOpContext();
         CheckUtils.checkByLambda(opContext1, OpContext::getConnectionCatalog, OpContext::getConnectionSchema, OpContext::getTableName);
         Connection connection = opContext1.getConnection();
-        IOpMeta select = OpDbMeta.select(connection);
+        DialectV2 select = DialectFactory.get(connection);
         List<DatabaseColumnMetadata> dbColumns;
         try {
             dbColumns = select.getColumnsNoCache(opContext1.getConnectionCatalog(), opContext1.getConnectionSchema(), opContext1.getTableName());

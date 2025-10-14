@@ -15,6 +15,10 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.IdxHandler;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public class MysqlDDLTableStrategy extends AbstractIDDLTableStrategy {
 
     public static final String DEFAULT_ENGINE = "InnoDB";

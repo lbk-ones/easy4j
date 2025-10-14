@@ -677,12 +677,13 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         CheckUtils.notNull(tableName);
         CheckUtils.notNull(record);
         schema = schema == null ? getConnectionSchema() : schema;
+        // 获取参数信息表名不能被转义 不然有些奇怪的表获取不了
+        List<DatabaseColumnMetadata> columns = this.getColumns(getConnectionCatalog(), schema, tableName);
         tableName = escape(tableName);
         PsResult psResult = new PsResult();
         if (ListTs.isEmpty(record)) return psResult;
         batchSize = batchSize <= 0 ? 200 : batchSize;
         Set<String> columnNameList = new HashSet<>();
-        List<DatabaseColumnMetadata> columns = this.getColumns(getConnectionCatalog(), schema, tableName);
 
         List<String> autoKey = columns.stream().filter(e -> {
             String isAutoincrement = e.getIsAutoincrement();
@@ -770,7 +771,8 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                             Map<String, Object> resultHandler = handle.get(i);
                             if (ListTs.isNotEmpty(resultHandler)) {
                                 int s_index = 0;
-                                for (String s : resultHandler.keySet()) {
+                                Set<String> strings1 = resultHandler.keySet();
+                                for (String s : new ArrayList<>(strings1)) {
                                     String autokeyName = ListTs.get(autoKey, s_index);
                                     if (null != autokeyName) {
                                         resultHandler.put(autokeyName, resultHandler.get(s));
@@ -813,41 +815,34 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     /**
      * jdbc方式的批量很难做一个真正的批量更新，因为如果要做真正的批量更新，那么多条数据的更新sql必须一样，但是更新的话很可能每条数据的sql不一样，那么就很尴尬，所以这里要做一个取舍，当然不是说不能做，而是单纯以batch的方式很难
      *
-     * @param record             传入要写入的数据map
-     * @param tableName          表名
-     * @param schema             schema
-     * @param skipNotExistsField 跳过不存在的字段
-     * @param toUnderLine        将参数转为下划线
-     * @param skipUpdateNull     跳过更新null值
-     * @param isCommit           是否直接提交事务
-     * @param whereBuild         条件构造器
-     * @return
+     * @param record         传入要写入的数据map
+     * @param tableName      表名
+     * @param schema         schema
+     * @param toUnderLine    将参数转为下划线（set后面的参数和where后面的参数都会转成下划线）
+     * @param skipUpdateNull 跳过更新null值
+     * @param isCommit       是否直接提交事务
+     * @param whereFields    where条件中的额字段（可以带下划线，也可以不带，如果不带会受toUnderLine影响）
+     * @return easy4j.infra.dbaccess.dialect.v2.PsResult
      */
     @Override
     public PsResult jdbcUpdate(
             List<Map<String, Object>> record,
             String tableName,
             String schema,
-            boolean skipNotExistsField,
             boolean toUnderLine,
             boolean skipUpdateNull,
             boolean isCommit,
-            WhereBuild whereBuild
+            List<String> whereFields
     ) {
         CheckUtils.notNull(tableName, "tableName");
         CheckUtils.notNull(record, "record");
-        CheckUtils.notNull(whereBuild, "whereBuild");
-        whereBuild.bind(connection);
-        whereBuild.setToUnderLine(toUnderLine);
+        CheckUtils.notNull(whereFields, "whereFields");
         schema = schema == null ? getConnectionSchema() : schema;
+        List<DatabaseColumnMetadata> dbColumns = this.getColumns(getConnectionCatalog(), schema, tableName);
         tableName = escape(tableName);
         PsResult psResult = new PsResult();
         if (ListTs.isEmpty(record)) return psResult;
-        Map<String, DatabaseColumnMetadata> map = null;
-        if (skipNotExistsField) {
-            List<DatabaseColumnMetadata> columns = this.getColumns(getConnectionCatalog(), schema, tableName);
-            map = ListTs.toMap(columns, DatabaseColumnMetadata::getColumnName);
-        }
+        Map<String, DatabaseColumnMetadata> map = ListTs.toMap(dbColumns, DatabaseColumnMetadata::getColumnName);
         try {
             long beginTime = System.currentTimeMillis();
             boolean autoCommit = this.connection.getAutoCommit();
@@ -855,11 +850,17 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             int effectRows = 0;
             List<String> sqls = ListTs.newList();
             for (Map<String, Object> recordMap : record) {
-                List<String> columns = new ArrayList<>();
-                List<Object> objects = ListTs.newList();
-                // determine
+                List<String> columns = ListTs.newList();
+                List<Object> argValues = ListTs.newList();
+                Map<String, Object> newRecordMap = Maps.newHashMap();
+                Map<String, Object> whereParams = Maps.newHashMap();
+                // 解析参数信息
                 for (String column : recordMap.keySet()) {
+                    boolean isWhere;
                     Object valuye = recordMap.get(column);
+                    isWhere = whereFields.contains(column);
+                    if (!isWhere) isWhere = whereFields.contains(StrUtil.toUnderlineCase(column));
+                    if (!isWhere) isWhere = whereFields.contains(StrUtil.toCamelCase(column));
                     if (map != null) {
                         DatabaseColumnMetadata databaseColumnMetadata = opConfig.getMatchMapIgnoreCase(map, column);
                         if (databaseColumnMetadata == null) {
@@ -869,29 +870,44 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                             }
                         }
                         Object o = recordMap.get(column);
+                        // 跳过空值
                         if (skipUpdateNull && o == null) {
                             continue;
                         }
+                        // 是否将参数全部转为下划线
                         if (toUnderLine) {
                             column = StrUtil.toUnderlineCase(column);
                         }
                         column = escape(column);
                     }
-                    objects.add(valuye);
-                    columns.add(column);
+                    if (isWhere) whereParams.put(column, valuye);
+                    // 让后一个覆盖前一个
+                    newRecordMap.put(column, valuye);
                 }
-                String where = whereBuild.build(objects);
+                // 解析参数和值
+                for (String s : newRecordMap.keySet()) {
+                    argValues.add(newRecordMap.get(s));
+                    columns.add(s);
+                }
+                CheckUtils.notNull(whereParams, "whereParams");
+                // 拼接where条件
+                StringBuilder stringBuilder = new StringBuilder();
+                for (String s : whereParams.keySet()) {
+                    stringBuilder.append(s).append(SP.SPACE).append("=").append(SP.SPACE).append("?");
+                    argValues.add(whereParams.get(s));
+                }
+                // 只用到了TABLE_NAME、VALUES、WHERE剩下的几个是预留给重写类使用的
                 Map<String, Object> params = Maps.newHashMap();
                 params.put("TABLE_NAME", String.join(SP.DOT, ListTs.asNonNullList(schema, tableName)));
                 params.put("COLUMNS_LIST", columns);
                 params.put("COLUMNS", "(" + ListTs.join(",", columns) + ")");
-                params.put("VALUES", ListTs.join(",", ListTs.map(columns, e -> columns + "=?")));
+                params.put("VALUES", ListTs.join(",", ListTs.map(columns, e -> e + "=?")));
                 params.put("VALUES_ZWF", ListTs.join(",", ListTs.map(columns, e -> "?")));
-                params.put("WHERE", where);
+                params.put("WHERE", stringBuilder.toString());
                 String sql = transferJdbcBatchUpdate(params);
                 PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
                 try {
-                    Object[] array = objects.toArray();
+                    Object[] array = argValues.toArray();
                     StatementUtil.fillParams(preparedStatement, array);
                     effectRows += preparedStatement.executeUpdate();
                     Pair<String, Date> stringDatePair = recordSql(sql, connection, array);
@@ -930,7 +946,6 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         schema = schema == null ? getConnectionSchema() : schema;
         tableName = escape(tableName);
         PsResult psResult = new PsResult();
-        Map<String, DatabaseColumnMetadata> map = null;
         try {
             long beginTime = System.currentTimeMillis();
             boolean autoCommit = this.connection.getAutoCommit();
@@ -940,6 +955,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             List<Object> objects = ListTs.newList();
             // determine
             String where = whereBuild.build(objects);
+            CheckUtils.notNull(where,"where");
             Map<String, Object> params = Maps.newHashMap();
             params.put("TABLE_NAME", String.join(SP.DOT, ListTs.asNonNullList(schema, tableName)));
             params.put("WHERE", where);

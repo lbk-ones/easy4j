@@ -9,7 +9,9 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
  *
  * @author bokun.li
  * @date 2025-08-03
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
  */
+@Deprecated
 public class DDLFieldStrategyExecutor {
 
     private final IDDLFieldStrategy iddlFieldCore;

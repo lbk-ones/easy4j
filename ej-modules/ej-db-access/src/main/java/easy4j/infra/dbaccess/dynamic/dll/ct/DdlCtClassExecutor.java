@@ -33,7 +33,9 @@ import java.util.*;
  *
  * @author bokun.li
  * @date 2025-08-03
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
  */
+@Deprecated
 public class DdlCtClassExecutor extends AbstractDDLParseExecutor implements DDLParseExecutor {
 
     DDLConfig dllConfig;

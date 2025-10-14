@@ -18,6 +18,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.IndexType;
 
@@ -142,7 +144,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
     private DDLTableInfo getDdlTableInfo() throws SQLException {
         CheckUtils.notNull(this.tableName);
         //CheckUtils.checkByLambda(this.opContext, OpContext::getDdlTableInfo);
-        IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
+        DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);// 转换索引列信息
         List<IndexInfoMetaInfo> indexInfoMetaInfos = opDbMeta.getIndexInfos(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);

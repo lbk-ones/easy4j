@@ -48,9 +48,9 @@ public class ListTs {
 
 
     // 注意线程安全
-    public static <T> Stream<T> asStream(List<T> list) {
+    public static <T> Stream<T> asStream(Collection<T> list) {
         Stream<T> empty = Stream.empty();
-        if (CollUtil.isNotEmpty(list)) {
+        if (isNotEmpty(list)) {
             if (list.size() >= 3000) {
                 return list.parallelStream();
             } else {
@@ -186,7 +186,7 @@ public class ListTs {
     }
 
     @Desc("将集合转为另外一个类型的集合，同时去除null值")
-    public static <R, T> List<R> map(List<T> w, Function<T, R> function) {
+    public static <R, T> List<R> map(Collection<T> w, Function<T, R> function) {
         List<R> list = newList();
         if (isNotEmpty(w) && null != function) {
             List<R> collect = asStream(w).filter(Objects::nonNull).map(function).filter(Objects::nonNull).collect(Collectors.toList());
@@ -618,6 +618,12 @@ public class ListTs {
     }
 
     public static String join(String s, List<?> map) {
+        if (isEmpty(map)) {
+            return "";
+        }
+        return map.stream().map(String::valueOf).collect(Collectors.joining(s));
+    }
+    public static String join(String s, Set<?> map) {
         if (isEmpty(map)) {
             return "";
         }

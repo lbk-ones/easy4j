@@ -18,6 +18,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
@@ -75,7 +77,7 @@ public class ModelMetaInfoParse implements MetaInfoParse {
         String tableName = this.ddlTableInfo.getTableName();
         String schema = this.ddlTableInfo.getSchema();
         //ddlTableInfo.setTableName(getTableName(aclass));
-        IOpMeta opDbMeta = OpDbMeta.select(this.opContext.getConnection());
+        DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), tableName);
         this.opContext.setDbColumns(columns);
         this.ddlTableInfo.setDbVersion(this.opContext.getDbVersion());

@@ -18,6 +18,7 @@ public class SQLServerDialect extends AbstractDialectV2 {
     private static final String STR_ORDERBY = " order by ";
     public SQLServerDialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
 

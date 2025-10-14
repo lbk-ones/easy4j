@@ -18,6 +18,7 @@ public class H2Dialect extends AbstractDialectV2 {
 
     public H2Dialect(Connection connection) {
         super(connection);
+        super.setPrintLog(true);
     }
 
     @Override

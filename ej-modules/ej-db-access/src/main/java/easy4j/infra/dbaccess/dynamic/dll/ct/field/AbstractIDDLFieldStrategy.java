@@ -2,11 +2,15 @@ package easy4j.infra.dbaccess.dynamic.dll.ct.field;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * @see DynamicDDL
+ */
+@Deprecated
 public abstract class AbstractIDDLFieldStrategy implements IDDLFieldStrategy {
 
 

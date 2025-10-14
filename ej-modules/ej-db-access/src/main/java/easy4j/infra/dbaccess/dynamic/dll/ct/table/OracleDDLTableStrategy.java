@@ -13,7 +13,9 @@ import java.util.List;
  *
  * @author bokun.li
  * @date 2025/8/19
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
  */
+@Deprecated
 public class OracleDDLTableStrategy extends PgDDLTableStrategy {
 
     @Override

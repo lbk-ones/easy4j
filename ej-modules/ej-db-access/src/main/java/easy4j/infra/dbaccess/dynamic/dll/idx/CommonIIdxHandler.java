@@ -8,6 +8,10 @@ import easy4j.infra.common.utils.SP;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public class CommonIIdxHandler implements IIdxHandler {
 
     @Override

@@ -7,6 +7,8 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -183,7 +185,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     public String dropTableIfExists(String tableName, boolean isExe) {
         OpContext opContext1 = this.getOpContext();
         Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
-        IOpMeta select = OpDbMeta.select(connection);
+        DialectV2 select = DialectFactory.get(connection);
         List<TableMetadata> tableInfos = select.getAllTableInfoByTableType(tableName, new String[]{"TABLE"});
         String s = this.getOpContext().getOpConfig().patchStrWithTemplate(tableName, this.getDropTableTemplate(), COLUMN_MAP, EXT_MAP, this::getDropTableMap);
         if (ListTs.isEmpty(tableInfos)) {
@@ -200,7 +202,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     public List<String> dropALlTableIfExists(boolean isExe) {
         OpContext opContext1 = this.getOpContext();
         Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
-        IOpMeta select = OpDbMeta.select(connection);
+        DialectV2 select = DialectFactory.get(connection);
         List<TableMetadata> allTableInfoByTableType = select.getAllTableInfoByTableType(null, new String[]{"TABLE"});
         List<String> res = ListTs.newList();
         if (ListTs.isNotEmpty(allTableInfoByTableType)) {

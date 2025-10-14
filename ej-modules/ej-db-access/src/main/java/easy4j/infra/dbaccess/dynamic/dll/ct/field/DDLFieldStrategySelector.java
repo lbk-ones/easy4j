@@ -13,7 +13,9 @@ import java.util.List;
  *
  * @author bokun.li
  * @date 2025-08-03
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
  */
+@Deprecated
 public class DDLFieldStrategySelector {
 
     private final static List<IDDLFieldStrategy> list = ListTs.newArrayList();

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 @Data
 @Accessors(chain = true)
+@Deprecated
 public class DDLConfig {
 
     private String dbType;

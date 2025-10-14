@@ -4,6 +4,10 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 
 import java.util.List;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public interface IDDLTableStrategy {
 
     void setToUnderLine(boolean toUnderLine);

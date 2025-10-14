@@ -12,6 +12,10 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public abstract class AbstractDDLParseExecutor extends CommonDBAccess implements DDLParseExecutor {
     protected String getString(DDLTableExecutor dDlTableExecutor, List<String> objects) {
         String tableInfo = dDlTableExecutor.getTableInfo();

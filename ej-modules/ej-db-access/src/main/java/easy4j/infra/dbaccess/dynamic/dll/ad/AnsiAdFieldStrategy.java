@@ -10,6 +10,7 @@ import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategyExecutor;
 import easy4j.infra.dbaccess.dynamic.dll.ct.field.DDLFieldStrategySelector;
 import easy4j.infra.dbaccess.dynamic.dll.ct.table.DDLTableCoreSelector;
 import easy4j.infra.dbaccess.dynamic.dll.ct.table.DDLTableExecutor;
+import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 
 import java.util.List;
 
@@ -20,7 +21,9 @@ import java.util.List;
  *
  * @author bokun.li
  * @date 2025/8/20
+ * @see DynamicDDL
  */
+@Deprecated
 public class AnsiAdFieldStrategy implements AdFieldStrategy {
 
 

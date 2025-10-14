@@ -4,16 +4,16 @@ package easy4j.infra.dbaccess.dynamic.dll.idx;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Maps;
-import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
-import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.util.List;
 import java.util.Map;
-
+/**
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL
+ */
+@Deprecated
 public class IdxHandler {
 
     private static final List<IIdxHandler> idxHandlerMap = ListTs.newLinkedList();
