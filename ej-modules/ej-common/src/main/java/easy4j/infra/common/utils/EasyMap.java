@@ -14,15 +14,13 @@
  */
 package easy4j.infra.common.utils;
 
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.json.JacksonUtil;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Map工具
@@ -41,6 +39,10 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
 
     public EasyMap(Map<K, V> map) {
         super.putAll(map);
+    }
+
+    public static <K1,V1> EasyMap<K1, V1> of(Map<K1, V1> map){
+        return new EasyMap<>(map);
     }
 
     /**
@@ -180,5 +182,50 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
      */
     public static <K, V> EasyMap<K, V> get() {
         return new EasyMap<>();
+    }
+
+    /**
+     * 忽略大小写获取
+     *
+     * @param k
+     * @return
+     */
+    public V getIgnoreKeyCase(K k) {
+        if (k instanceof CharSequence) {
+            CharSequence k1 = (CharSequence) k;
+            V v = get(k1);
+            if (v == null) v = get(String.valueOf(k1).toLowerCase());
+            if (v == null) v = get(String.valueOf(k1).toUpperCase());
+            return v;
+        } else {
+            return get(k);
+        }
+    }
+
+    /**
+     * 忽略驼峰写获取
+     *
+     * @param k
+     * @param ignoreCase 是否忽略key的大小写
+     * @return
+     */
+    public V getIgnoreCame(K k, boolean ignoreCase) {
+        if (k instanceof CharSequence) {
+            CharSequence k1 = (CharSequence) k;
+            V v = get(k1);
+            String underlineCase = StrUtil.toUnderlineCase(k1);
+            String camelCase = StrUtil.toCamelCase(k1);
+            if (v == null) v = get(underlineCase);
+            if (v == null) v = get(camelCase);
+            if (ignoreCase && v == null) {
+                v = get(underlineCase.toUpperCase());
+                if (v == null) v = get(underlineCase.toLowerCase());
+                if (v == null) v = get(camelCase.toUpperCase());
+                if (v == null) v = get(camelCase.toLowerCase());
+            }
+            return v;
+        } else {
+            return get(k);
+        }
     }
 }

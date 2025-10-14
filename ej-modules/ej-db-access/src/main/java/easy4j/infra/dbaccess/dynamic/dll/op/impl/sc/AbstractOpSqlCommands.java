@@ -181,6 +181,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
             if (!updateNull && null == o) {
                 continue;
             }
+            s = StrUtil.toUnderlineCase(s);
             DatabaseColumnMetadata databaseColumnMetadata = map.get(s);
             s = opConfig.escapeCn(s, connection, false);
             if (databaseColumnMetadata == null) databaseColumnMetadata = map.get(s);

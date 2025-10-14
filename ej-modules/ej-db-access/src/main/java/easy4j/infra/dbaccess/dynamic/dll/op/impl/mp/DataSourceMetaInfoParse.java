@@ -279,7 +279,8 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
         ddlFieldInfo.setDbType(dbType);
         ddlFieldInfo.setDbVersion(dbVersion);
-        ddlFieldInfo.setFieldClass(opConfig.getJavaClassByTypeNameAndDbType(typeName, dbType));
+        DialectV2 dialectV2 = DialectFactory.get(this.opContext.getConnection());
+        ddlFieldInfo.setFieldClass(dialectV2.getJavaClassByTypeNameAndDbType(typeName));
         ddlFieldInfo.setName(columnName);
         ddlFieldInfo.setPrimary(opConfig.isMatchMapIgnoreCase(primaryKeyMetadataMap, columnName));
         ddlFieldInfo.setAutoIncrement("YES".equals(e.getIsAutoincrement()));
@@ -307,7 +308,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setIndex(matchMapIgnoreCase != null);
         ddlFieldInfo.setConstraint(new String[0]);
         ddlFieldInfo.setComment(e.getRemarks());
-        boolean lob = opConfig.isLob(typeName, dbType);
+        boolean lob = dialectV2.isLob(typeName);
         // 如果copy的目标库是oracle 那么主键是不能是clob大字段类型
         if(lob && DbType.ORACLE.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
             ddlFieldInfo.setLob(false);
@@ -327,7 +328,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         }else{
             ddlFieldInfo.setLob(lob);
         }
-        ddlFieldInfo.setJson(opConfig.isJson(typeName, dbType));
+        ddlFieldInfo.setJson(dialectV2.isJson(typeName));
         ddlFieldInfo.setGenConstraint(false);
         ddlFieldInfo.setDllConfig(new DDLConfig());
         IndexInfoMetaInfo indexInfoMetaInfo = new IndexInfoMetaInfo();
