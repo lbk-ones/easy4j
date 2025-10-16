@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -29,6 +31,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
@@ -39,9 +44,12 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Jackson通用工具类，封装常用的JSON序列化和反序列化操作
  */
+@Slf4j
 public class JacksonUtil {
 
     @Getter
@@ -319,5 +327,60 @@ public class JacksonUtil {
         }
         return jsonString;
     }
+
+
+    /**
+     * 转成字节数组
+     *
+     * @param obj
+     * @param <T>
+     * @return
+     */
+    public static <T> byte[] toJsonByteArray(T obj) {
+        if (obj == null) {
+            return null;
+        }
+        String json = "";
+        try {
+            json = toJson(obj);
+        } catch (Exception e) {
+            log.error("json serialize exception.", e);
+        }
+
+        return json.getBytes(UTF_8);
+    }
+
+    /**
+     * 将json字符转为 ObjectNode
+     *
+     * @param text
+     * @return
+     */
+    public static ObjectNode parseObject(String text) {
+        try {
+            if (StringUtils.isEmpty(text)) {
+                return toObject(text, ObjectNode.class);
+            } else {
+                return (ObjectNode) mapper.readTree(text);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("String json deserialization exception.", e);
+        }
+    }
+
+    /**
+     * 将json字符转为数组
+     *
+     * @param text
+     * @return
+     */
+    public static ArrayNode parseArray(String text) {
+        try {
+            return (ArrayNode) mapper.readTree(text);
+        } catch (Exception e) {
+            throw new RuntimeException("Json deserialization exception.", e);
+        }
+    }
+
 
 }
