@@ -71,14 +71,10 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         this.connection = connection;
     }
 
-    public static OpDbMeta get(Connection connection) {
-        return new OpDbMeta(connection);
-    }
 
-
-    public AbstractDialectV2 setCloseConnection(boolean closeConnection) {
+    @Override
+    public void setCloseConnection(boolean closeConnection) {
         isCloseConnection = closeConnection;
-        return this;
     }
 
     public String getCacheKeyFromConnection(Connection connection, String prefix) {

@@ -52,10 +52,11 @@ public class DialectFactory {
 
     public static DialectV2 get(Connection connection) {
         DialectV2 resDialect = null;
+        String dbType = null;
         try {
             DatabaseMetaData databaseMetaData = connection.getMetaData();
             String databaseProductName = databaseMetaData.getDatabaseProductName();
-            String dbType = databaseTypeMappings.getProperty(databaseProductName);
+            dbType = databaseTypeMappings.getProperty(databaseProductName);
             if (StrUtil.isEmpty(dbType)) {
                 throw new IllegalArgumentException("the dbType is empty " + dbType);
             }
@@ -75,7 +76,9 @@ public class DialectFactory {
         } catch (SQLException e) {
             throw JdbcHelper.translateSqlException("get dialect", null, e);
         }
-
+        if (resDialect == null) {
+            throw new IllegalArgumentException("not find the db dialect: " + dbType);
+        }
         return resDialect;
     }
 

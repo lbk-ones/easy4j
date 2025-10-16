@@ -36,13 +36,7 @@ public interface DialectV2 extends CrudDialect,SchemaMetaDialect {
      */
     String splitUnescape(String name,String comma);
 
-    /**
-     * 获取数据库类型
-     *
-     * @return
-     * @see JdbcHelper#getDefaultDatabaseTypeMappings()
-     */
-    String getDbType();
+
 
     /**
      * 获取当前传入连接的数据库名称

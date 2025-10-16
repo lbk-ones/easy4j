@@ -145,7 +145,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         CheckUtils.notNull(this.tableName);
         //CheckUtils.checkByLambda(this.opContext, OpContext::getDdlTableInfo);
         DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
-        List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
+        List<DatabaseColumnMetadata> columns = opDbMeta.getColumnsNoCache(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);// 转换索引列信息
         List<IndexInfoMetaInfo> indexInfoMetaInfos = opDbMeta.getIndexInfos(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
 

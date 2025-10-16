@@ -83,7 +83,7 @@ class DDLParseJavaClassTestOpenGuass {
         String schema = connection.getSchema();
         OpDbMeta opDbMeta = new OpDbMeta(connection);
         System.out.println(JacksonUtil.toJson(opDbMeta.getAllTableInfo()));
-        System.out.println(opDbMeta.getDbType(connection));
+        System.out.println(opDbMeta.getDbType());
         System.out.println(opDbMeta.getMajorVersion());
         System.out.println(opDbMeta.getMinorVersion());
         System.out.println(opDbMeta.getProductVersion());

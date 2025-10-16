@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.dialect.v2;
 
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -14,6 +15,14 @@ public interface SchemaMetaDialect {
      * @return
      */
     int getMajorVersion();
+
+    /**
+     * 获取数据库类型
+     *
+     * @return
+     * @see JdbcHelper#getDefaultDatabaseTypeMappings()
+     */
+    String getDbType();
 
     /**
      * 次要版本号
@@ -99,5 +108,11 @@ public interface SchemaMetaDialect {
      * @return
      */
     List<SchemaMetadata> getSchemas(String catLog);
+
+    /**
+     * SchemaMetaDialect里面的方法 执行完毕之后是否关闭连接
+     * @param flag
+     */
+    void setCloseConnection(boolean flag);
 
 }
