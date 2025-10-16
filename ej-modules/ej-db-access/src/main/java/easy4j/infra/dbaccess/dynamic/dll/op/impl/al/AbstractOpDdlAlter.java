@@ -127,12 +127,12 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
         List<DDLFieldInfo> fieldInfoList = ddlTableInfo.getFieldInfoList();
         CheckUtils.notNull(fieldInfoList, "the fieldInfoList is should not empty!");
         OpColumnConstraints opColumnConstraints = OpSelector.selectOpCC(opContext1);
-        String columnName = opConfig.getColumnNameAndEscape(oldName, connection, false);
+        //String columnName = opConfig.getColumnNameAndEscape(oldName, connection, false);
         String columnConstraints = "";
         boolean exist = false;
         for (DDLFieldInfo ddlFieldInfo : fieldInfoList) {
             String name = ddlFieldInfo.getName();
-            if (StrUtil.equals(columnName, name)) {
+            if (StrUtil.equals(oldName, name)) {
                 exist = true;
                 columnConstraints = opColumnConstraints.getCreateColumnSql(ddlFieldInfo);
                 break;
