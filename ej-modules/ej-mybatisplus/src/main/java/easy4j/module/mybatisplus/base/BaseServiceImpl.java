@@ -27,14 +27,6 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.http.server.HttpServerResponse;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.exception.ExcelDataConvertException;
-import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.ListUtils;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -54,14 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Id;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -81,7 +66,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
      * @author bokun.li
      * @date 2025/7/23
      */
-    protected String getFn(Func1<T, ?> func1) {
+    protected <R> String getFn(Func1<R, ?> func1) {
         return LambdaUtil.getFieldName(func1);
     }
 
@@ -118,25 +103,25 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
      * @param pageDto
      * @param queryWrapper
      */
-    public void parsePageKeysToQuery(APage pageDto, QueryWrapper<T> queryWrapper) {
+    public <R> void parsePageKeysToQuery(APage pageDto, QueryWrapper<R> queryWrapper) {
         List<List<Object>> keys = pageDto.getKeys();
         parseKeysWith(queryWrapper, keys, true);
     }
 
-    public void parsePageKeysToQuery(APage pageDto, QueryWrapper<T> queryWrapper, boolean toUnderLine) {
+    public <R> void parsePageKeysToQuery(APage pageDto, QueryWrapper<R> queryWrapper, boolean toUnderLine) {
         List<List<Object>> keys = pageDto.getKeys();
         parseKeysWith(queryWrapper, keys, toUnderLine);
     }
 
-    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper) {
+    public <R> void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<R> queryWrapper) {
         parseKeysWith(queryWrapper, keys, true);
     }
 
-    public void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<T> queryWrapper, boolean toUnderLine) {
+    public <R> void parseKeysToQuery(List<List<Object>> keys, QueryWrapper<R> queryWrapper, boolean toUnderLine) {
         parseKeysWith(queryWrapper, keys, toUnderLine);
     }
 
-    private void parseKeysWith(QueryWrapper<T> queryWrapper, List<List<Object>> keys, boolean toUnderLine) {
+    private <R> void parseKeysWith(QueryWrapper<R> queryWrapper, List<List<Object>> keys, boolean toUnderLine) {
         if (CollUtil.isEmpty(keys)) {
             return;
         }

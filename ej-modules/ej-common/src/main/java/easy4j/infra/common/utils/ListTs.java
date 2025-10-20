@@ -185,6 +185,18 @@ public class ListTs {
         return result;
     }
 
+    @Desc("转为map 根据泛型来决定key的类型,根据泛型来决定value")
+    public static <R, T, V> Map<R, V> toMap(List<T> w, Function<T, R> key, Function<T, V> value) {
+        Map<R, V> result = new HashMap<>();
+        if (isNotEmpty(w) && null != key && value != null) {
+            Map<R, V> collect = asStream(w).filter(e -> key.apply(e) != null).collect(Collectors.toMap(key, value, (k1, k2) -> k1));
+            if (isNotEmpty(collect)) {
+                return collect;
+            }
+        }
+        return result;
+    }
+
     @Desc("将集合转为另外一个类型的集合，同时去除null值")
     public static <R, T> List<R> map(Collection<T> w, Function<T, R> function) {
         List<R> list = newList();
@@ -329,11 +341,12 @@ public class ListTs {
         objects.addAll(Arrays.asList(id));
         return objects;
     }
+
     @SafeVarargs
     public static <T> List<T> asNonNullList(T... id) {
         List<T> objects = newArrayList();
         objects.addAll(Arrays.asList(id));
-        return ListTs.filter(objects,ObjectUtil::isNotEmpty);
+        return ListTs.filter(objects, ObjectUtil::isNotEmpty);
     }
 
     public static List<String> randomStrList(int length) {
@@ -623,6 +636,7 @@ public class ListTs {
         }
         return map.stream().map(String::valueOf).collect(Collectors.joining(s));
     }
+
     public static String join(String s, Set<?> map) {
         if (isEmpty(map)) {
             return "";
@@ -675,9 +689,9 @@ public class ListTs {
     }
 
 
-    public static String splitToStr(String s, String oldSep,String newSep) {
+    public static String splitToStr(String s, String oldSep, String newSep) {
         List<String> strings = splitToList(s, oldSep);
-        return ListTs.join(newSep,strings);
+        return ListTs.join(newSep, strings);
     }
 
     public static <T> void add(List<T> res, T obj) {
