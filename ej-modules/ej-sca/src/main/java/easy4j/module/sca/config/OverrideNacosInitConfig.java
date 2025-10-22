@@ -108,7 +108,7 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
                 BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
                 bootStrapSpecialVsResolve.handler(mapPropertiesResource, null);
 
-                System.out.println(SysLog.compact("success override nacos config keys:" + mapPropertiesResource.keySet().size()));
+                System.out.println(SysLog.compact("success override nacos sys config keys:" + mapPropertiesResource.keySet().size()));
                 OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName(), mapPropertiesResource, true);
 
                 propertySources.addAfter(FIRST_ENV_NAME, originTrackedMapPropertySource);
@@ -117,6 +117,8 @@ public class OverrideNacosInitConfig extends AbstractEasy4jEnvironment {
             // overide non sys properties
             Map<String, Object> nonSysMap = getNoSysMap(propertySource, stringEjSysFieldInfoMap);
             if (CollUtil.isNotEmpty(nonSysMap)) {
+                System.out.println(SysLog.compact("success override nacos nonsys config keys:" + nonSysMap.keySet().size()));
+
                 OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName() + "_2", nonSysMap, true);
                 propertySources.addBefore(FIRST_ENV_NAME, originTrackedMapPropertySource);
             }

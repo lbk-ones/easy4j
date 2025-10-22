@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>easy4j.infra</groupId>
+        <artifactId>ej-modules</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>ej-knife4j-nacos-aggregation</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ej-knife4j-nacos-aggregation</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-webmvc</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-sadmin</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-sactuator</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-aggregation-spring-boot-starter</artifactId>
+            <version>${knife4j.aggregation.version}</version>
+        </dependency>
+
+
+    </dependencies>
+</project>

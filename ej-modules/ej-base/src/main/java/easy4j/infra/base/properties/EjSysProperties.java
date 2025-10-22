@@ -26,6 +26,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -662,6 +663,15 @@ public class EjSysProperties {
     @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除",valueEnums = {"true","false"})
     private boolean quartzJobRestartCheckDelete = true;
 
+
+    /**
+     * knife4j通过nacos进行聚合，默认不聚合
+     */
+    @SpringVs(desc = "knife4j通过nacos进行聚合，默认不聚合",valueEnums = {"true","false"})
+    private boolean knife4jNacosAggregation = false;
+
+    @SpringVs(desc = "knife4j要聚合的路由信息，和nacos整合")
+    private List<Knife4jRouter> knife4jNacosRouters;
 
     /**
      * 根据常量获取 对应的springboot变量

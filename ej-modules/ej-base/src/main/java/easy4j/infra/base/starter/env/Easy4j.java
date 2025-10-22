@@ -399,7 +399,12 @@ public class Easy4j implements ApplicationContextAware {
      * @return
      */
     public static EjSysProperties getEjSysProperties() {
-        Binder binder = Binder.get(environment);
+        return getEjSysPropertiesFromEnv(environment);
+    }
+
+    public static EjSysProperties getEjSysPropertiesFromEnv(Environment env) {
+        if(env == null) env = environment;
+        Binder binder = Binder.get(env);
         BindResult<EjSysProperties> easy4j = binder.bind(SysConstant.PARAM_PREFIX, EjSysProperties.class);
         try {
             return easy4j.get();

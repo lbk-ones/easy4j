@@ -12,6 +12,7 @@
         <module>jpa-spring-boot-starter</module>
         <module>sca-spring-boot-starter</module>
         <module>sca-gateway-spring-boot-starter</module>
+        <module>knife4j-nacos-aggregation-starter</module>
     </modules>
     <name>ej-starter</name>
     <url>http://maven.apache.org</url>

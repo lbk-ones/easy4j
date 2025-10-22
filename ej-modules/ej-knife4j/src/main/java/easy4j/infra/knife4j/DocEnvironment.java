@@ -80,7 +80,12 @@ public class DocEnvironment extends AbstractEasy4jEnvironment {
         properties.setProperty(SysConstant.KNIFE4J_BASIC_USERNAME, "easy4j");
         properties.setProperty(SysConstant.KNIFE4J_BASIC_PASSWORD, "easy123");
 
-        Set<Class<?>> classes = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), ControllerModule.class);
+        Set<Class<?>> classes = new HashSet<>();
+//        Set<Class<?>> classes = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), ControllerModule.class);
+        Boolean aggregations = getEnvProperty(SysConstant.EASY4J_NACOS_AGGREGATION, boolean.class);
+        if(!aggregations){
+            classes = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), ControllerModule.class);
+        }
 
         Set<Class<?>> restControllers = scanPackageByAnnotation(Easy4j.mainClass.getPackage().getName(), Controller.class);
         Map<String, Object> controllerMap = new HashMap<>();

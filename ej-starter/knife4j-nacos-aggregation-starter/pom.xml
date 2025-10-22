@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>easy4j.boot</groupId>
+    <artifactId>knife4j-nacos-aggregation-starter</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>knife4j-nacos-aggregation-starter</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <easy4j.infra.version>1.0-SNAPSHOT</easy4j.infra.version>
+        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-knife4j-nacos-aggregation</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>maven-nethosp-release</id>
+            <name>Nexus Release Repository</name>
+            <url>https://nexus.ssc-hn.com/repository/maven-nethosp-release/</url>
+        </repository>
+        <snapshotRepository>
+            <id>maven-nethosp-snapshot</id>
+            <url>https://nexus.ssc-hn.com/repository/maven-nethosp-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
+</project>

@@ -20,6 +20,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.resolve.AbstractEasy4jResolve;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
@@ -28,6 +29,7 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.*;
 import jodd.util.StringPool;
 import lombok.Getter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.PropertiesPropertySourceLoader;
@@ -397,6 +399,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      */
     public <T> T getEnvProperty(String name, Class<T> tClass) {
         return Easy4j.getEnvProperty(name, tClass, this.configEnvironment);
+    }
+
+    public EjSysProperties getEnvEjSysProperties() {
+        return Easy4j.getEjSysPropertiesFromEnv(this.configEnvironment);
     }
 
     // 这个默认使用String类型

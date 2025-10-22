@@ -41,6 +41,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-lock**：分布式锁，各种分布式锁实现
 - **ej-webmvc**：整合springmvc相关通用功能
 - **ej-knife4j**：整合api文档相关
+- **ej-knife4j-nacos-aggregation**：api文档通过nacos进行聚合
 - **ej-sca**：spring-cloud-alibaba 整合
 - **ej-sca-gateway**：spring-cloud 网关整合比较特殊新增一个
 - **ej-sca-seata**：spring-cloud 整合seata
@@ -74,6 +75,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-starter/ej-spring-nd-boot-starter**：springboot体系无数据源整合starter
 - **ej-starter/sca-spring-boot-starter**：sca启动
 - **ej-starter/sca-gateway-spring-boot-starter**：spring-cloud-reactive网关
+- **ej-starter/knife4j-nacos-aggregation-starter**：api文档聚合相关jar包
 - **ej-test**：starter的测试模块
 - **ej-texample**：例子
 
@@ -137,8 +139,15 @@ Easy4J 框架包含以下核心模块：
             <artifactId>ej-jpa-boot-starter</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+      
+        <!--聚合文档相关-->
+        <dependency>
+          <groupId>easy4j.boot</groupId>
+          <artifactId>knife4j-nacos-aggregation-starter</artifactId>
+          <version>1.0-SNAPSHOT</version>
+        </dependency>
+      
         <!--     注释掉上面不需要的注释      -->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
