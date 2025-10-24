@@ -156,6 +156,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
                 List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                handlerTableMetaData(map);
                 map = ListTs.distinct(map, TableMetadata::getTableName);
                 return map;
             } finally {
@@ -177,6 +178,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
                 List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                handlerTableMetaData(map);
                 map = ListTs.distinct(map, TableMetadata::getTableName);
                 return map;
             } finally {
@@ -202,12 +204,28 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
                 List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                handlerTableMetaData(map);
                 map = ListTs.distinct(map, TableMetadata::getTableName);
                 return map;
             } finally {
                 JdbcHelper.close(tables);
             }
         }, cacheKey, TableMetadata.class);
+    }
+
+    private void handlerTableMetaData(List<TableMetadata> map) {
+        String connectionCatalog = getConnectionCatalog();
+        String connectionSchema = getConnectionSchema();
+        for (TableMetadata tableMetadata : map) {
+            String tableCat = tableMetadata.getTableCat();
+            String tableSchem = tableMetadata.getTableSchem();
+            if(StrUtil.isBlank(tableCat)){
+                tableMetadata.setTableCat(connectionCatalog);
+            }
+            if(StrUtil.isBlank(tableSchem)){
+                tableMetadata.setTableSchem(connectionSchema);
+            }
+        }
     }
 
     @Override

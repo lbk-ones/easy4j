@@ -6,6 +6,8 @@ import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -14,6 +16,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.CatalogMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
@@ -383,5 +386,18 @@ class DDLParseJavaClassTestPG {
                 System.out.println("-----------------------------");
             }
         }
+    }
+
+    @Test
+    void testDs() throws SQLException {
+        try(Connection connection = dataSource.getConnection()){
+            DialectV2 dialectV2 = DialectFactory.get(connection);
+            String connectionCatalog = dialectV2.getConnectionCatalog();
+            System.out.println(connectionCatalog);
+            System.out.println(dialectV2.getConnectionSchema());
+            List<TableMetadata> allTableInfoByTableType = dialectV2.getAllTableInfoByTableType(null, new String[]{"TABLE"});
+            System.out.println(JacksonUtil.toJson(allTableInfoByTableType));
+        }
+
     }
 }
