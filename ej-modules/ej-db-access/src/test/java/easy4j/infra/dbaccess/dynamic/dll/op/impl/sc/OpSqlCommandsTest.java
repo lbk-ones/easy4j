@@ -1,8 +1,11 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.sc;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
@@ -11,6 +14,7 @@ import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.domains.MetaJobDefinition;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -97,5 +101,32 @@ class OpSqlCommandsTest {
         DialectV2 dialectV2 = DialectFactory.get(connection);
         List<DatabaseColumnMetadata> columns = dialectV2.getColumns(connection.getCatalog(), connection.getSchema(), dialectV2.escape("1-2"));
         System.out.println(JacksonUtil.toJson(columns));
+    }
+
+    public DataSource getOracle19cDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("EMR_NURSE");
+        hikariConfig.setPassword("EMR_NURSE");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+
+    @Test
+    void test3() throws SQLException {
+        Connection connection = getOracle19cDataSource().getConnection();
+        String userName = connection.getMetaData().getUserName();
+        System.out.println(userName);
+        DialectV2 dialectV2 = DialectFactory.get(connection);
+        List<TableMetadata> allTableInfoByTableTypeNoCache = dialectV2.getAllTableInfoByTableTypeNoCache(null, new String[]{"TABLE"});
+        System.out.println(JacksonUtil.toJson(allTableInfoByTableTypeNoCache));
     }
 }

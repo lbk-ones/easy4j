@@ -53,6 +53,7 @@ public interface SchemaMetaDialect {
      * @return
      */
     List<TableMetadata> getAllTableInfoByTableType(@Nullable String tableNamePattern, String[] tableType);
+    List<TableMetadata> getAllTableInfoByTableTypeNoCache(@Nullable String tableNamePattern, String[] tableType);
 
     /**
      * 根据表名称获取 表/视图 信息
@@ -79,6 +80,16 @@ public interface SchemaMetaDialect {
      * @throws SQLException
      */
     List<DatabaseColumnMetadata> getColumnsNoCache(String catLog, String schema, String tableName) throws SQLException;
+
+    /**
+     * 查字段信息，不查缓存，直查
+     * @param catLog
+     * @param schema
+     * @param tableName
+     * @return
+     * @throws SQLException
+     */
+    List<DatabaseColumnMetadata> getColumnsNoCacheQuiet(String catLog, String schema, String tableName);
 
     /**
      * 根据表名称获取 表/视图 中的主键信息

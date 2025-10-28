@@ -49,6 +49,7 @@ public class OpDbMeta implements IOpMeta {
     public static OpDbMeta get(Connection connection) {
         return new OpDbMeta(connection);
     }
+
     public OpDbMeta(Connection connection) {
         this.dialectV2 = DialectFactory.get(connection);
     }
@@ -83,7 +84,17 @@ public class OpDbMeta implements IOpMeta {
 
     @Override
     public List<TableMetadata> getAllTableInfoByTableType(@Nullable String tableNamePattern, String[] tableType) {
-        return dialectV2.getAllTableInfoByTableType(tableNamePattern,tableType);
+        return dialectV2.getAllTableInfoByTableType(tableNamePattern, tableType);
+    }
+
+    @Override
+    public List<TableMetadata> getAllTableInfoByTableTypeNoCache(@Nullable String tableNamePattern, String[] tableType) {
+        return dialectV2.getAllTableInfoByTableTypeNoCache(tableNamePattern, tableType);
+    }
+
+    @Override
+    public List<DatabaseColumnMetadata> getColumnsNoCacheQuiet(String catLog, String schema, String tableName) {
+        return dialectV2.getColumnsNoCacheQuiet(catLog, schema, tableName);
     }
 
     @Override
@@ -93,23 +104,23 @@ public class OpDbMeta implements IOpMeta {
 
     @Override
     public List<DatabaseColumnMetadata> getColumns(String catLog, String schema, String tableName) {
-        return dialectV2.getColumns(catLog,schema,tableName);
+        return dialectV2.getColumns(catLog, schema, tableName);
     }
 
     @Override
     public List<DatabaseColumnMetadata> getColumnsNoCache(String catLog, String schema, String tableName) throws SQLException {
-        return dialectV2.getColumnsNoCache(catLog,schema,tableName);
+        return dialectV2.getColumnsNoCache(catLog, schema, tableName);
 
     }
 
     @Override
     public List<PrimaryKeyMetadata> getPrimaryKes(String catLog, String schema, String tableName) {
-        return dialectV2.getPrimaryKes(catLog,schema,tableName);
+        return dialectV2.getPrimaryKes(catLog, schema, tableName);
     }
 
     @Override
     public List<IndexInfoMetaInfo> getIndexInfos(String catLog, String schema, String tableName) {
-        return dialectV2.getIndexInfos(catLog,schema,tableName);
+        return dialectV2.getIndexInfos(catLog, schema, tableName);
     }
 
     @Override

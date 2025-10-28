@@ -23,6 +23,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.var;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,6 +189,27 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     }
 
     @Override
+    public List<TableMetadata> getAllTableInfoByTableTypeNoCache(@Nullable String tableNamePattern, String[] tableType) {
+        ResultSet tables = null;
+        try {
+            DatabaseMetaData metaData = this.connection.getMetaData();
+            String catalog = this.connection.getCatalog();
+            String schema = this.connection.getSchema();
+            tables = metaData.getTables(catalog, schema, tableNamePattern, tableType);
+            MapListHandler mapListHandler = new MapListHandler();
+            List<Map<String, Object>> handle = mapListHandler.handle(tables);
+            List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+            handlerTableMetaData(map);
+            map = ListTs.distinct(map, TableMetadata::getTableName);
+            return map;
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getAllTableInfoByTableTypeNoCache", null, e);
+        } finally {
+            JdbcHelper.close(tables);
+        }
+    }
+
+    @Override
     public List<TableMetadata> getTableInfos(String tableNamePattern) {
         if (StrUtil.isBlank(tableNamePattern)) {
             return ListTs.newList();
@@ -216,16 +238,55 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     private void handlerTableMetaData(List<TableMetadata> map) {
         String connectionCatalog = getConnectionCatalog();
         String connectionSchema = getConnectionSchema();
+        String dbType = getDbType();
+        Map<String, String> commentsMap = Maps.newHashMap();
+        boolean isOracle = DbType.ORACLE.getDb().equals(dbType);
+        if (isOracle) {
+            commentsMap = getOracleComments();
+        }
         for (TableMetadata tableMetadata : map) {
             String tableCat = tableMetadata.getTableCat();
             String tableSchem = tableMetadata.getTableSchem();
-            if(StrUtil.isBlank(tableCat)){
+
+            if (StrUtil.isBlank(tableCat)) {
                 tableMetadata.setTableCat(connectionCatalog);
             }
-            if(StrUtil.isBlank(tableSchem)){
+            // oracle no catalog
+            if (isOracle && StrUtil.isBlank(tableMetadata.getTableCat())) {
+                tableMetadata.setTableCat(connectionSchema);
+            }
+            if (StrUtil.isBlank(tableSchem)) {
                 tableMetadata.setTableSchem(connectionSchema);
             }
+            String remarks = tableMetadata.getRemarks();
+            if (StrUtil.isBlank(remarks) && !commentsMap.isEmpty()) {
+                String tableName = tableMetadata.getTableName();
+                String s = commentsMap.get(tableName);
+                if (StrUtil.isNotBlank(s)) {
+                    tableMetadata.setRemarks(s);
+                }
+            }
         }
+    }
+
+    private Map<String, String> getOracleComments() {
+        Map<String, String> res = Maps.newHashMap();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            String userName = connection.getMetaData().getUserName();
+            preparedStatement = connection.prepareStatement("select * from ALL_TAB_COMMENTS where TABLE_TYPE = 'TABLE' and OWNER = ?");
+            preparedStatement.setString(1, userName);
+            resultSet = preparedStatement.executeQuery();
+            List<Map<String, Object>> handle = new MapListHandler().handle(resultSet);
+            res = ListTs.toMap(handle, e -> String.valueOf(e.get("TABLE_NAME")), e -> String.valueOf(e.get("COMMENTS") == null ? "" : e.get("COMMENTS")));
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getOracleComments", null, e);
+        } finally {
+            JdbcHelper.close(preparedStatement);
+            JdbcHelper.close(resultSet);
+        }
+        return res;
     }
 
     @Override
@@ -249,6 +310,15 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             return map;
         } finally {
             JdbcHelper.close(tables);
+        }
+    }
+
+    @Override
+    public List<DatabaseColumnMetadata> getColumnsNoCacheQuiet(String catLog, String schema, String tableName) {
+        try {
+            return getColumnsNoCache(catLog, schema, tableName);
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getColumnsNoCacheQuiet", null, e);
         }
     }
 
@@ -969,7 +1039,7 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             List<Object> objects = ListTs.newList();
             // determine
             String where = whereBuild.build(objects);
-            CheckUtils.notNull(where,"where");
+            CheckUtils.notNull(where, "where");
             Map<String, Object> params = Maps.newHashMap();
             params.put("TABLE_NAME", String.join(SP.DOT, ListTs.asNonNullList(schema, tableName)));
             params.put("WHERE", where);
