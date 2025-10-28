@@ -129,4 +129,14 @@ class OpSqlCommandsTest {
         List<TableMetadata> allTableInfoByTableTypeNoCache = dialectV2.getAllTableInfoByTableTypeNoCache(null, new String[]{"TABLE"});
         System.out.println(JacksonUtil.toJson(allTableInfoByTableTypeNoCache));
     }
+
+    @Test
+    void test4() throws SQLException {
+        Connection connection = getOracle19cDataSource().getConnection();
+        String userName = connection.getMetaData().getUserName();
+        System.out.println(userName);
+        DialectV2 dialectV2 = DialectFactory.get(connection);
+        List<DatabaseColumnMetadata> cpoeBindItem = dialectV2.getColumnsNoCacheQuiet(connection.getCatalog(), connection.getSchema(), "CPOE_BIND_ITEM");
+        System.out.println(JacksonUtil.toJson(cpoeBindItem));
+    }
 }

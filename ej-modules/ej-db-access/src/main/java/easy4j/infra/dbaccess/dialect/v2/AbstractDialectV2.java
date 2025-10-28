@@ -269,6 +269,27 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         }
     }
 
+    public Map<String, String> getOracleColumnComments(String tableName) {
+        Map<String, String> res = Maps.newHashMap();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            String userName = connection.getMetaData().getUserName();
+            preparedStatement = connection.prepareStatement("select * from ALL_COL_COMMENTS where OWNER = ? and TABLE_NAME = ?");
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, tableName);
+            resultSet = preparedStatement.executeQuery();
+            List<Map<String, Object>> handle = new MapListHandler().handle(resultSet);
+            res = ListTs.toMap(handle, e -> String.valueOf(e.get("COLUMN_NAME")), e -> String.valueOf(e.get("COMMENTS") == null ? "" : e.get("COMMENTS")));
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getOracleColumnComments", null, e);
+        } finally {
+            JdbcHelper.close(preparedStatement);
+            JdbcHelper.close(resultSet);
+        }
+        return res;
+    }
+
     private Map<String, String> getOracleComments() {
         Map<String, String> res = Maps.newHashMap();
         PreparedStatement preparedStatement = null;
@@ -307,9 +328,31 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
             List<Map<String, Object>> handle = mapListHandler.handle(tables);
             List<DatabaseColumnMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, DatabaseColumnMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
             map = ListTs.distinct(map, DatabaseColumnMetadata::getColumnName);
+
+            handlerTableMetaFieldData(tableName, map);
             return map;
         } finally {
             JdbcHelper.close(tables);
+        }
+    }
+
+    private void handlerTableMetaFieldData(String tableName, List<DatabaseColumnMetadata> map) {
+        boolean isOracle = DbType.ORACLE.getDb().equals(getDbType());
+        if (isOracle) {
+            if (StrUtil.isBlank(tableName)) {
+                DatabaseColumnMetadata databaseColumnMetadata = ListTs.get(map, 0);
+                if (null != databaseColumnMetadata) {
+                    tableName = databaseColumnMetadata.getTableName();
+                }
+            }
+            Map<String, String> oracleColumnComments = getOracleColumnComments(tableName);
+            for (DatabaseColumnMetadata databaseColumnMetadata : map) {
+                String remarks = databaseColumnMetadata.getRemarks();
+                String columnName = databaseColumnMetadata.getColumnName();
+                if (StrUtil.isNotBlank(columnName) && StrUtil.isBlank(remarks) && isOracle) {
+                    databaseColumnMetadata.setRemarks(oracleColumnComments.get(columnName));
+                }
+            }
         }
     }
 
