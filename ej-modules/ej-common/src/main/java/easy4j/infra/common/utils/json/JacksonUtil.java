@@ -88,8 +88,8 @@ public class JacksonUtil {
         timeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         timeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         timeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
-        timeModule.addSerializer(long.class, new NumberSerializer(long.class));
-        timeModule.addSerializer(Long.class, new NumberSerializer(Long.class));
+        timeModule.addSerializer(long.class, new ToStringSerializer());
+        timeModule.addSerializer(Long.class, new ToStringSerializer());
         timeModule.addSerializer(BigInteger.class, new ToStringSerializer());
         timeModule.addSerializer(byte[].class, new ByteArraySerializer());
         // 反序列化配置
