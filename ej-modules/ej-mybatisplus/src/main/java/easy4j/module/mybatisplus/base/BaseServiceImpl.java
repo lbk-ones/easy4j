@@ -338,6 +338,14 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         copyOptions.setIgnoreProperties(auditParams);
         BeanUtil.copyProperties(source, target, copyOptions);
     }
+    public void copyObjIgnoreAuditNotIgnoreNull(Object source, Object target) {
+        if (null == source || null == target) return;
+        String[] auditParams = getAuditParams();
+        CopyOptions copyOptions = CopyOptions.create();
+        //copyOptions.ignoreNullValue();
+        copyOptions.setIgnoreProperties(auditParams);
+        BeanUtil.copyProperties(source, target, copyOptions);
+    }
 
     public void clearAudit(Object source) {
         if (source == null) return;
