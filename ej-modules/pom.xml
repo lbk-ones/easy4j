@@ -45,6 +45,7 @@
         <module>ej-xxl-job</module>
         <module>ej-quartz</module>
         <module>ej-knife4j-nacos-aggregation</module>
+        <module>ej-elasticsearch</module>
     </modules>
     <name>ej-modules</name>
     <url>http://maven.apache.org</url>
