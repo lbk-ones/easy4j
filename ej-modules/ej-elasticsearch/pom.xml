@@ -18,6 +18,14 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>easy4j.infra</groupId>
+            <artifactId>ej-base</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
