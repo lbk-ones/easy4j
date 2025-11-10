@@ -156,7 +156,7 @@
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra.es</groupId>
+            <groupId>easy4j.infra</groupId>
             <artifactId>ej-elasticsearch</artifactId>
             <version>${easy4j.infra.version}</version>
         </dependency>

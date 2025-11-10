@@ -50,6 +50,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-datasource**：数据源模块 目前整合了Druid 和 Druid的监控页面
 - **ej-dnspom**：dubbo dns 相关依赖整合
 - **ej-dubbo3**：dubbo3整合（默认配置，异常，jaeger链路整合）
+- **ej-elasticsearch**：es整合
 - **ej-flyway**：flyway整合
 - **ej-h2**：H2数据库整合
 - **ej-idempotent**：幂等操作模块

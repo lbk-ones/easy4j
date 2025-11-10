@@ -1,2 +1,5 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
 easy4j.infra.es.EsEnv
+
+org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
+easy4j.infra.es.ImportFilter
