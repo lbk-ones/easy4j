@@ -155,6 +155,12 @@
             <version>${easy4j.infra.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>easy4j.infra.es</groupId>
+            <artifactId>ej-elasticsearch</artifactId>
+            <version>${easy4j.infra.version}</version>
+        </dependency>
+
     </dependencies>
 
     <distributionManagement>

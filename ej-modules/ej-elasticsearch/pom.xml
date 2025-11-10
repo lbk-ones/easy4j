@@ -4,10 +4,9 @@
     <parent>
         <groupId>easy4j.infra</groupId>
         <artifactId>ej-modules</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
-    <groupId>easy4j.infra.es</groupId>
     <artifactId>ej-elasticsearch</artifactId>
     <packaging>jar</packaging>
 
