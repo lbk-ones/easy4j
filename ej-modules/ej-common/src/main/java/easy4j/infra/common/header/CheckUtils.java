@@ -26,7 +26,8 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;

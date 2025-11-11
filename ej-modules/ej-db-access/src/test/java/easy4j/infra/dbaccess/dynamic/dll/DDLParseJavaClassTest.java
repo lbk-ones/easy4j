@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @Easy4JStarter(
         serverName = "test-db-access",
         serverPort = 9090,
@@ -30,7 +31,7 @@ class DDLParseJavaClassTest {
 
     @Test
     void getDDLFragment() {
-        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class,dataSource,"");
+        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class, dataSource, "");
         ddlParseJavaClass.execDDL();
         System.out.println("执行成功----->");
     }

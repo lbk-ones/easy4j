@@ -37,7 +37,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -158,7 +159,7 @@ public class Config {
 
     @Bean
     @Order(-2)
-    public GlobalFluxExceptionHandler globalFluxExceptionHandler(){
+    public GlobalFluxExceptionHandler globalFluxExceptionHandler() {
         return new GlobalFluxExceptionHandler();
     }
 }

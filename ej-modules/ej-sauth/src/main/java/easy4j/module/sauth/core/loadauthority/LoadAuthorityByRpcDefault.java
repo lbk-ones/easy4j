@@ -14,7 +14,8 @@ import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

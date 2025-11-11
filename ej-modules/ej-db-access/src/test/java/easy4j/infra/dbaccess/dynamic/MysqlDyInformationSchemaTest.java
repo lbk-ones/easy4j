@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -58,7 +59,7 @@ class MysqlDyInformationSchemaTest {
         System.out.println(opDbMeta.getMajorVersion());
         System.out.println(opDbMeta.getMinorVersion());
         System.out.println(opDbMeta.getProductVersion());
-        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos( "tb_sys_api_error")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos("tb_sys_api_error")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "tb_sys_api_error")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "tb_sys_api_error")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "tb_sys_api_error")));

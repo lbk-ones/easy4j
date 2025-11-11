@@ -34,8 +34,9 @@ import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
 import org.springframework.web.method.HandlerMethod;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.lang.reflect.Method;
 
 /**
@@ -72,7 +73,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
             // TODO  api key
         } else {
             // take session
-            String token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN),request.getParameter(SysConstant.X_ACCESS_TOKEN));
+            String token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN), request.getParameter(SysConstant.X_ACCESS_TOKEN));
             if (!authorizationStrategy1.isNeedLogin(handler, request, response)) {
                 return true;
             }
@@ -103,14 +104,14 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                     throw new EasyException(user.getErrorCode());
                 }
                 bindUserCtx(user);
-                request.setAttribute(SysConstant.SESSION_USER,user);
+                request.setAttribute(SysConstant.SESSION_USER, user);
 
 
             } else {
                 // 先不做这种功能
                 throw EasyException.wrap(BusCode.A00041);
             }
-            authorizationStrategy1.authorization(request,onlineUserInfo, handler);
+            authorizationStrategy1.authorization(request, onlineUserInfo, handler);
         }
         return true;
     }
@@ -120,7 +121,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         UserContext userContext = new UserContext();
         userContext.setUserName(user.getUsername());
         userContext.setUserNameCn(user.getUsernameCn());
-        context.registerThreadHash(UserContext.USER_CONTEXT_NAME,UserContext.USER_CONTEXT_NAME,userContext);
+        context.registerThreadHash(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME, userContext);
     }
 
     @Override

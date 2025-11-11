@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -48,7 +49,7 @@ class OpDDLTestComment {
 
     @Test
     void getDDLFragment() {
-        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class,dataSource,null);
+        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class, dataSource, null);
         System.out.println(ddlParseJavaClass.getCreateTableTxt());
         System.out.println("执行成功----------------");
     }
@@ -56,7 +57,7 @@ class OpDDLTestComment {
     @Test
     void dbDatabaseMetaInfo() throws SQLException {
         // byte.class,byte[].class,Byte.class,short.class,Short.class,int.class,Integer.class,float.class,Float.class,double.class,Double.class,long.class,Long.class,boolean.class,Boolean.class,char.class,Character.class,java.util.Date.class,java.sql.Date.class,java.sql.Timestamp.class,java.sql.Time.class,LocalDate.class, LocalDateTime.class, LocalTime.class
-        try(Connection connection = dataSource.getConnection()){
+        try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             int databaseMajorVersion = metaData.getDatabaseMajorVersion();
             System.out.println(databaseMajorVersion);
@@ -93,7 +94,7 @@ class OpDDLTestComment {
         System.out.println(opDbMeta.getMajorVersion());
         System.out.println(opDbMeta.getMinorVersion());
         System.out.println(opDbMeta.getProductVersion());
-        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos( "SqlServerAllTypesDemo")));
+        System.out.println(JacksonUtil.toJson(opDbMeta.getTableInfos("SqlServerAllTypesDemo")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "SqlServerAllTypesDemo")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "SqlServerAllTypesDemo")));
         System.out.println(JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "SqlServerAllTypesDemo")));
@@ -102,13 +103,14 @@ class OpDDLTestComment {
 
     @Test
     void OpMetaTest3() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource, null,TestDynamicDDL.class)) {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource, null, TestDynamicDDL.class)) {
             System.out.println(sscElementTest.getCreateTableDDL());
             System.out.println(sscElementTest.getCreateTableComments().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
             System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
         }
     }
-    public DataSource getMysql5DataSource(){
+
+    public DataSource getMysql5DataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/student");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -117,14 +119,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("root");
         hikariConfig.setPassword("123456");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getMysql5TestCopyDataSource(){
+
+    public DataSource getMysql5TestCopyDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/test_copy");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -133,14 +136,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("root");
         hikariConfig.setPassword("123456");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getMysql8Test2DataSource(){
+
+    public DataSource getMysql8Test2DataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:mysql://10.0.71.38:36180/test2");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -149,14 +153,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("root");
         hikariConfig.setPassword("SSC@hainan123");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getTestPg(){
+
+    public DataSource getTestPg() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/test");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -165,14 +170,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("drhi_user");
         hikariConfig.setPassword("drhi_password");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getTest2Pg(){
+
+    public DataSource getTest2Pg() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/test2");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -181,7 +187,7 @@ class OpDDLTestComment {
         hikariConfig.setUsername("drhi_user");
         hikariConfig.setPassword("drhi_password");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
@@ -189,7 +195,7 @@ class OpDDLTestComment {
         return new HikariDataSource(hikariConfig);
     }
 
-    public DataSource getOracle19cDataSource(){
+    public DataSource getOracle19cDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -198,14 +204,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("SSC");
         hikariConfig.setPassword("SSC@hainan123");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getOracle19cTestCopyDataSource(){
+
+    public DataSource getOracle19cTestCopyDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -214,7 +221,7 @@ class OpDDLTestComment {
         hikariConfig.setUsername("TEST_COPY");
         hikariConfig.setPassword("SSC@hainan123");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
@@ -222,7 +229,7 @@ class OpDDLTestComment {
         return new HikariDataSource(hikariConfig);
     }
 
-    public DataSource getMssqlDataSource(){
+    public DataSource getMssqlDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost:1433;database=test;encrypt=false");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -231,14 +238,15 @@ class OpDDLTestComment {
         hikariConfig.setUsername("sa");
         hikariConfig.setPassword("123456");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
-    public DataSource getH2DataSource(){
+
+    public DataSource getH2DataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:h2:tcp://10.100.128.93:9092/~/test");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -247,7 +255,7 @@ class OpDDLTestComment {
         hikariConfig.setUsername("sa");
         hikariConfig.setPassword("password");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
@@ -269,6 +277,7 @@ class OpDDLTestComment {
             }
         }
     }
+
     //  ds pg 到 pg oracle19c test_copy
     @Test
     void dspgToOracle19cTestCopy() {

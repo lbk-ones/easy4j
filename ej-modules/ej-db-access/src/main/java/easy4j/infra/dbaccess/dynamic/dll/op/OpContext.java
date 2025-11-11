@@ -26,6 +26,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,7 @@ public class OpContext {
      * 解析出来的表元数据
      * 单表操作这个值不会变化
      * 如果是多表操作这个值会切换 ↓
+     *
      * @see OpSqlCommands#copyDataSourceDDL(String[], String[], CopyDbConfig)
      */
     private DDLTableInfo ddlTableInfo;

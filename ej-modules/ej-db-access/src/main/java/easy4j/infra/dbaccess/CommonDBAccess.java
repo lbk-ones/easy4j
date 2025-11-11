@@ -28,10 +28,11 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
@@ -91,14 +92,13 @@ public class CommonDBAccess {
     public String where(String sql) {
 
 
-
         if (StrUtil.isNotBlank(sql)) {
             String trim = StrUtil.trim(sql);
-            if(
-                    StrUtil.startWithIgnoreCase(trim,"group by") ||
-                    StrUtil.startWithIgnoreCase(trim,"order by") ||
-                    StrUtil.startWithIgnoreCase(trim,"having")
-            ){
+            if (
+                    StrUtil.startWithIgnoreCase(trim, "group by") ||
+                            StrUtil.startWithIgnoreCase(trim, "order by") ||
+                            StrUtil.startWithIgnoreCase(trim, "having")
+            ) {
                 return sql;
             }
             return " WHERE " + sql;
@@ -166,7 +166,7 @@ public class CommonDBAccess {
             case INSERT:
                 ddlList.add(INTO);
                 ddlList.add(tableName);
-                if(!fields.isEmpty()){
+                if (!fields.isEmpty()) {
                     ddlList.add(
                             StringPool.LEFT_BRACKET +
                                     String.join(StringPool.COMMA + StringPool.SPACE, fields) +
@@ -272,11 +272,11 @@ public class CommonDBAccess {
 
                 toJson = annotation.toJson();
                 pgFieldType = annotation.pgType();
-            }else if(field.isAnnotationPresent(TableField.class)){
+            } else if (field.isAnnotationPresent(TableField.class)) {
                 TableField tableField = field.getAnnotation(TableField.class);
                 String value = tableField.value();
                 name = StrUtil.isBlank(value) ? name : value;
-            }else if(field.isAnnotationPresent(Column.class)){
+            } else if (field.isAnnotationPresent(Column.class)) {
                 Column tableField = field.getAnnotation(Column.class);
                 String value = tableField.name();
                 name = StrUtil.isBlank(value) ? name : value;
@@ -314,7 +314,7 @@ public class CommonDBAccess {
             if (field.isAnnotationPresent(JdbcColumn.class)) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 return annotation.isPrimaryKey();
-            }else return field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class);
+            } else return field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class);
         });
         return Arrays.stream(fields).map(e -> {
             if (e.isAnnotationPresent(JdbcColumn.class)) {
@@ -323,13 +323,13 @@ public class CommonDBAccess {
                 if (StrUtil.isNotBlank(name)) {
                     return name;
                 }
-            }else if (e.isAnnotationPresent(TableId.class)) {
+            } else if (e.isAnnotationPresent(TableId.class)) {
                 TableId annotation = e.getAnnotation(TableId.class);
                 String name = annotation.value();
                 if (StrUtil.isNotBlank(name)) {
                     return name;
                 }
-            }else if (e.isAnnotationPresent(Id.class)) {
+            } else if (e.isAnnotationPresent(Id.class)) {
                 return e.getName();
             }
             return e.getName();
@@ -348,19 +348,19 @@ public class CommonDBAccess {
             String join = String.join(".", list);
             sb.append(join);
         } else {
-            if(clazz.isAnnotationPresent(TableName.class)){
+            if (clazz.isAnnotationPresent(TableName.class)) {
                 TableName annotation1 = clazz.getAnnotation(TableName.class);
-                if(Objects.nonNull(annotation1)){
+                if (Objects.nonNull(annotation1)) {
                     String value = annotation1.value();
-                    if(StrUtil.isNotBlank(value)){
+                    if (StrUtil.isNotBlank(value)) {
                         return value;
                     }
                 }
-            }else if(clazz.isAnnotationPresent(Table.class)){
+            } else if (clazz.isAnnotationPresent(Table.class)) {
                 Table table = clazz.getAnnotation(Table.class);
-                if(Objects.nonNull(table)){
+                if (Objects.nonNull(table)) {
                     String value = table.name();
-                    if(StrUtil.isNotBlank(value)){
+                    if (StrUtil.isNotBlank(value)) {
                         return value;
                     }
                 }
@@ -425,7 +425,7 @@ public class CommonDBAccess {
         CheckUtils.notNull(key, "logSql_key");
         CheckUtils.notNull(value, "logSql_value");
         long subTime = new Date().getTime() - value.getTime();
-        logger.info("[SQL] -> {}ms {}row {}", subTime,effectRows, key);
+        logger.info("[SQL] -> {}ms {}row {}", subTime, effectRows, key);
     }
 
     public String getPrintSql(Pair<String, Date> pair) {

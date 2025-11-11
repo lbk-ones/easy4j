@@ -23,7 +23,7 @@ import easy4j.module.sauth.domain.SecuritySession;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * RedisSessionStrategy

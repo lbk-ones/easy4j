@@ -40,7 +40,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.lang.reflect.Field;
 import java.util.Optional;
 
@@ -122,7 +123,7 @@ public class GlobalExceptionHandler {
      */
     private String extractSchemaMsg(String fieldName, ObjectError o) {
         String defaultMessage = "";
-        if(StrUtil.isBlank(fieldName)){
+        if (StrUtil.isBlank(fieldName)) {
             return defaultMessage;
         }
         try {

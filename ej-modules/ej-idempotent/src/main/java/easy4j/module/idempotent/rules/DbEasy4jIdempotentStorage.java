@@ -30,8 +30,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import javax.sql.DataSource;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;

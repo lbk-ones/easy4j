@@ -23,8 +23,9 @@ import easy4j.module.sauth.domain.SecurityAuthority;
 
 import org.springframework.web.method.HandlerMethod;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Set;
 
 /**
@@ -62,6 +63,7 @@ public interface SecurityAuthorization {
     /**
      * 根据用户信息来过滤
      * 通过 setErrorCode 或者抛出异常的方式来 处理异常
+     *
      * @param securityUserInfo
      * @return
      */

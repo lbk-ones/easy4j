@@ -23,8 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -126,13 +127,13 @@ public class ThreadPoolUtils {
 
     // --------------------------多线程操作--------------------------
 
-    public <T> void addCompleteFuture(List<CompletableFuture<T>> list, Supplier<T> supplier){
-        list.add(CompletableFuture.supplyAsync(supplier,this.executorService));
+    public <T> void addCompleteFuture(List<CompletableFuture<T>> list, Supplier<T> supplier) {
+        list.add(CompletableFuture.supplyAsync(supplier, this.executorService));
     }
 
     public <T> List<T> invokeList(List<CompletableFuture<T>> objects) {
         List<T> objects1 = new ArrayList<>();
-        if(CollUtil.isNotEmpty(objects)){
+        if (CollUtil.isNotEmpty(objects)) {
             return objects.stream().map(CompletableFuture::join).collect(Collectors.toList());
         }
         return objects1;

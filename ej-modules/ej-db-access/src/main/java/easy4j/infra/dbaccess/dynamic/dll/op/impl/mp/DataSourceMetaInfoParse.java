@@ -41,7 +41,9 @@ import lombok.Setter;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
+
+import jakarta.validation.constraints.NotNull;
+
 import java.sql.SQLException;
 import java.util.*;
 
@@ -75,6 +77,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
     /**
      * 在copy数据源的时候会用到这个字段
+     *
      * @see AbstractOpSqlCommands#copyDataSourceDDL(String[], String[], CopyDbConfig)
      */
     @Setter
@@ -160,8 +163,8 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
 
         // 主键排在前面
         map.sort((o1, o2) -> {
-            Integer primary = o1.isPrimary()?1:0;
-            Integer primary2 = o2.isPrimary()?1:0;
+            Integer primary = o1.isPrimary() ? 1 : 0;
+            Integer primary2 = o2.isPrimary() ? 1 : 0;
             return primary2.compareTo(primary);
         });
 
@@ -270,7 +273,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
      * @param indexInfoMetaInfoMap  indexinfo meta info map
      * @return
      */
-    private  DDLFieldInfo getDdlFieldInfoFromColumnMeta(DatabaseColumnMetadata e, String dbType, String dbVersion, OpConfig opConfig, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap, Map<String, IndexInfoMetaInfo> indexInfoMetaInfoMap) {
+    private DDLFieldInfo getDdlFieldInfoFromColumnMeta(DatabaseColumnMetadata e, String dbType, String dbVersion, OpConfig opConfig, Map<String, PrimaryKeyMetadata> primaryKeyMetadataMap, Map<String, IndexInfoMetaInfo> indexInfoMetaInfoMap) {
         String typeName = e.getTypeName();
         String columnName = e.getColumnName();
         int columnSize = e.getColumnSize();
@@ -310,22 +313,22 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setComment(e.getRemarks());
         boolean lob = dialectV2.isLob(typeName);
         // 如果copy的目标库是oracle 那么主键是不能是clob大字段类型
-        if(lob && DbType.ORACLE.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+        if (lob && DbType.ORACLE.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()) {
             ddlFieldInfo.setLob(false);
             ddlFieldInfo.setFieldClass(String.class);
             ddlFieldInfo.setDataType(OracleFieldType.VARCHAR2.getFieldType());
             ddlFieldInfo.setDataLength(255);
-        }else if(lob && DbType.SQL_SERVER.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+        } else if (lob && DbType.SQL_SERVER.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()) {
             ddlFieldInfo.setLob(false);
             ddlFieldInfo.setFieldClass(String.class);
             ddlFieldInfo.setDataType(SqlServerFieldType.NVARCHAR.getFieldType());
             ddlFieldInfo.setDataLength(255);
-        }else if(lob && DbType.H2.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()){
+        } else if (lob && DbType.H2.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()) {
             ddlFieldInfo.setLob(false);
             ddlFieldInfo.setFieldClass(String.class);
             ddlFieldInfo.setDataType(H2SqlFieldType.VARCHAR.getFieldType());
             ddlFieldInfo.setDataLength(255);
-        }else{
+        } else {
             ddlFieldInfo.setLob(lob);
         }
         ddlFieldInfo.setJson(dialectV2.isJson(typeName));

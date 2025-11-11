@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
+
 import javax.sql.DataSource;
 
 /**
@@ -149,6 +150,7 @@ public class TempDataSource implements DataSource {
 
     /**
      * 安静的获取连接 不申明异常
+     *
      * @return Connection
      */
     public Connection getQuietConnection() {

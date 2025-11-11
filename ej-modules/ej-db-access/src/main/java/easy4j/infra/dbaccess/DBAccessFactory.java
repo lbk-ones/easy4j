@@ -30,6 +30,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
@@ -123,7 +124,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
 
     }
 
-    public static TempDataSource getTempDataSource(){
+    public static TempDataSource getTempDataSource() {
         String normalDbUrl = getNormalDbUrl();
         String url = getUrl(normalDbUrl);
         String username = getUsername(normalDbUrl);
@@ -134,6 +135,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
 
     /**
      * auto DDL
+     *
      * @author bokun.li
      * @date 2025/9/18
      */

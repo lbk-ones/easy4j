@@ -17,12 +17,13 @@ import easy4j.module.jaeger.TraceUtils;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 
-import javax.servlet.AsyncEvent;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -42,7 +43,7 @@ public interface ServletFilterSpanDecorator {
      * {@link TracingFilter#SERVER_SPAN_CONTEXT}.
      *
      * @param httpServletRequest request
-     * @param span span to decorate
+     * @param span               span to decorate
      */
     void onRequest(HttpServletRequest httpServletRequest, Span span);
 
@@ -50,9 +51,9 @@ public interface ServletFilterSpanDecorator {
      * Decorate span after {@link javax.servlet.Filter#doFilter(ServletRequest, ServletResponse, FilterChain)}. When it
      * is an async request this will be called in {@link javax.servlet.AsyncListener#onComplete(AsyncEvent)}.
      *
-     * @param httpServletRequest request
+     * @param httpServletRequest  request
      * @param httpServletResponse response
-     * @param span span to decorate
+     * @param span                span to decorate
      */
     void onResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Span span);
 
@@ -62,8 +63,8 @@ public interface ServletFilterSpanDecorator {
      * also called in {@link javax.servlet.AsyncListener#onError(AsyncEvent)}.
      *
      * @param httpServletRequest request
-     * @param exception exception
-     * @param span span to decorate
+     * @param exception          exception
+     * @param span               span to decorate
      */
     void onError(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                  Throwable exception, Span span);
@@ -72,13 +73,13 @@ public interface ServletFilterSpanDecorator {
      * Decorate span on asynchronous request timeout. It is called in
      * {@link javax.servlet.AsyncListener#onTimeout(AsyncEvent)}.
      *
-     * @param httpServletRequest request
+     * @param httpServletRequest  request
      * @param httpServletResponse response
-     * @param timeout timeout
-     * @param span span to decorate
+     * @param timeout             timeout
+     * @param span                span to decorate
      */
     void onTimeout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-                 long timeout, Span span);
+                   long timeout, Span span);
 
     /**
      * Adds standard tags to span. {@link Tags#HTTP_URL}, {@link Tags#HTTP_STATUS}, {@link Tags#HTTP_METHOD} and
@@ -98,8 +99,8 @@ public interface ServletFilterSpanDecorator {
 
         @Override
         public void onResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-                Span span) {
-                Tags.HTTP_STATUS.set(span, httpServletResponse.getStatus());
+                               Span span) {
+            Tags.HTTP_STATUS.set(span, httpServletResponse.getStatus());
         }
 
         @Override
@@ -110,11 +111,11 @@ public interface ServletFilterSpanDecorator {
 
             Throwable tb = exception.getCause();
             if (tb instanceof TimeoutException) {
-                Tags.HTTP_STATUS.set(span,408);
+                Tags.HTTP_STATUS.set(span, 408);
             } else if (exception instanceof java.util.concurrent.TimeoutException) {
-                Tags.HTTP_STATUS.set(span,408);
+                Tags.HTTP_STATUS.set(span, 408);
             } else {
-                Tags.HTTP_STATUS.set(span,500);
+                Tags.HTTP_STATUS.set(span, 500);
             }
 
             if (httpServletResponse.getStatus() == HttpServletResponse.SC_OK) {

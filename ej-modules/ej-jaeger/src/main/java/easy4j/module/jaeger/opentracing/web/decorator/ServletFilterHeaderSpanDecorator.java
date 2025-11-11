@@ -18,8 +18,9 @@ import easy4j.module.jaeger.opentracing.web.ServletFilterSpanDecorator;
 import io.opentracing.Span;
 import io.opentracing.tag.StringTag;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
 
     /**
      * Constructor of ServletFilterHeaderSpanDecorator with a default prefix of "http.header."
+     *
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
      */
     public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders) {
@@ -41,8 +43,9 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
 
     /**
      * Constructor of ServletFilterHeaderSpanDecorator
+     *
      * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
-     * @param prefix the prefix to prepend on each @{@link StringTag}. Can be null is not prefix is desired
+     * @param prefix         the prefix to prepend on each @{@link StringTag}. Can be null is not prefix is desired
      */
     public ServletFilterHeaderSpanDecorator(List<HeaderEntry> allowedHeaders, String prefix) {
         this.allowedHeaders = new ArrayList<>(allowedHeaders);
@@ -61,12 +64,12 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
 
     @Override
     public void onResponse(HttpServletRequest httpServletRequest,
-        HttpServletResponse httpServletResponse, Span span) {
+                           HttpServletResponse httpServletResponse, Span span) {
     }
 
     @Override
     public void onError(HttpServletRequest httpServletRequest,
-        HttpServletResponse httpServletResponse, Throwable exception, Span span) {
+                        HttpServletResponse httpServletResponse, Throwable exception, Span span) {
 
         //span.log(ExceptionUtil.getStackTrace(exception));
 
@@ -74,7 +77,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
 
     @Override
     public void onTimeout(HttpServletRequest httpServletRequest,
-        HttpServletResponse httpServletResponse, long timeout, Span span) {
+                          HttpServletResponse httpServletResponse, long timeout, Span span) {
     }
 
     private StringTag buildTag(String tag) {
@@ -103,12 +106,13 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
 
         /**
          * @param header Header on the {@link HttpServletRequest}
-         * @param tag Tag to be used if {@link #header} is found
+         * @param tag    Tag to be used if {@link #header} is found
          */
         public HeaderEntry(String header, String tag) {
             this.header = header;
             this.tag = tag;
         }
+
         public String getHeader() {
             return this.header;
         }

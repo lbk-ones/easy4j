@@ -5,9 +5,9 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 
 ## 支持
 
-- **java 8及其以上**
-- **springboot 2.7.18**
-  目前只支持 springboot2 后面有计划支持 springboot 3+
+- **java 17及其以上**
+- **springboot 3.0 ~ springboot 3.3.x**
+- springboot 3.0 版本
 
 ## 特性
 
@@ -95,7 +95,7 @@ Easy4J 框架包含以下核心模块：
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
+        <version>3.3.13</version>
         <relativePath/>
     </parent>
 
@@ -116,7 +116,7 @@ Easy4J 框架包含以下核心模块：
         <!--dubbo3 (dns体系) + mybatisplus 微服务-->
         <dependency>
             <artifactId>ej-dubbo3-mp-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>2.0-SNAPSHOT</version>
             <packaging>jar</packaging>
         </dependency>
 
@@ -145,7 +145,7 @@ Easy4J 框架包含以下核心模块：
         <dependency>
           <groupId>easy4j.boot</groupId>
           <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-          <version>1.0-SNAPSHOT</version>
+          <version>2.0-SNAPSHOT</version>
         </dependency>
       
         <!--     注释掉上面不需要的注释      -->

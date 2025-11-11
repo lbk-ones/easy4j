@@ -31,7 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 public class SecurityConfig {
     // 前后端分离
-    @Bean
+    /*@Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         User user = new User("admin", "admin", null);
         http.sessionManagement()
@@ -51,11 +51,11 @@ public class SecurityConfig {
         http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
+    }*/
 
-    @Bean
+    /*@Bean
     public JwtAuthenticationFilter jwtFilter() {
         return new JwtAuthenticationFilter();
-    }
+    }*/
 
 }

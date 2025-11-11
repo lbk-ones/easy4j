@@ -46,6 +46,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
+
 import java.util.List;
 
 /**
@@ -99,7 +100,7 @@ public class Config implements EnvironmentAware {
 
         String enumPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.ENUMS;
         // 枚举扫描
-        sqlSessionFactory.setTypeEnumsPackage(enumPath);
+        sqlSessionFactory.setTypeAliasesPackage(enumPath);
         String xmlLocation = "classpath*:/mappers/" + db + "/**/*.xml";
         log.info(SysLog.compact("xml文件扫描路径,{}", xmlLocation));
         // xml扫描
@@ -116,6 +117,7 @@ public class Config implements EnvironmentAware {
         configuration.setMapUnderscoreToCamelCase(true);
         // 拦截器
         MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
+//        new PaginationInnerInterceptor()
         mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor(dbType));
         log.info(SysLog.compact("分页插件已经配置"));
         // 乐观锁插件
@@ -204,10 +206,8 @@ public class Config implements EnvironmentAware {
         log.info(SysLog.compact("MYBATIS_PLUS配置结束"));
         return new AutoAudit();
     }*/
-
-
     @Bean
-    public IdGenner idGenner(){
+    public IdGenner idGenner() {
         return new IdGenner();
     }
 

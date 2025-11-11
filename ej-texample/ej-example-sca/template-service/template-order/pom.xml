@@ -4,7 +4,7 @@
     <parent>
         <groupId>template.service</groupId>
         <artifactId>template-service</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>template-order</artifactId>
@@ -21,13 +21,13 @@
         <dependency>
             <groupId>easy4j.boot</groupId>
             <artifactId>sca-spring-boot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>template.service</groupId>
             <artifactId>template-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

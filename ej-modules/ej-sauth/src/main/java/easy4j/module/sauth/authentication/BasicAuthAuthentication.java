@@ -9,7 +9,8 @@ import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.session.SessionStrategy;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 

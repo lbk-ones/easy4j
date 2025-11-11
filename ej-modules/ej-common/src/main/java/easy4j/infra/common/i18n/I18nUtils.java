@@ -21,7 +21,8 @@ import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
+
 import java.util.Locale;
 
 /**

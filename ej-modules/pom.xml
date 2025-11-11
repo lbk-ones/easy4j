@@ -51,14 +51,14 @@
     <url>http://maven.apache.org</url>
 
     <!--在这里统一固定版本号-->
-    <properties>
-        <revision>1.0-SNAPSHOT</revision>
+    <!--<properties>
+        <revision>2.0-SNAPSHOT</revision>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dubbo.version>3.2.7</dubbo.version>
-        <!--        <nacos.version>2.2.1</nacos.version>-->
-        <!--up to 2.7.18-->
+        &lt;!&ndash;        <nacos.version>2.2.1</nacos.version>&ndash;&gt;
+        &lt;!&ndash;up to 2.7.18&ndash;&gt;
         <spring-boot.version>2.7.18</spring-boot.version>
         <grpc.version>1.54.1</grpc.version>
         <protobufjava.version>3.19.6</protobufjava.version>
@@ -89,11 +89,60 @@
         <easyexcel.version>4.0.3</easyexcel.version>
         <minio.version>8.5.2</minio.version>
 
-        <!-- SpringCloud -->
+        &lt;!&ndash; SpringCloud &ndash;&gt;
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <spring-cloud-alibaba.version>2021.0.6.2</spring-cloud-alibaba.version>
-    </properties>
+    </properties>-->
 
+
+    <properties>
+        <revision>2.0-SNAPSHOT</revision>
+        <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 核心框架升级 -->
+        <spring-boot.version>3.5.7</spring-boot.version>
+        <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
+<!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <!-- Spring Cloud Alibaba 对应Spring Boot 3.x的2023.x版本线 -->
+        <spring-cloud-alibaba.version>2023.0.3.4</spring-cloud-alibaba.version>
+
+        <!-- 中间件及工具依赖升级 -->
+        <dubbo.version>3.3.0</dubbo.version> <!-- 适配Spring Boot 3.x -->
+        <nacos.version>2.3.2</nacos.version> <!-- 支持Spring Boot 3.x -->
+        <grpc.version>1.64.0</grpc.version> <!-- 最新稳定版 -->
+        <protobufjava.version>3.25.3</protobufjava.version> <!-- 与grpc匹配 -->
+        <sentinel.version>1.8.7</sentinel.version> <!-- 支持Spring Boot 3.x -->
+        <org.mapstruct.version>1.6.0.Beta1</org.mapstruct.version> <!-- 支持Jakarta -->
+        <log4j.version>2.23.1</log4j.version> <!-- 安全更新 -->
+        <mplus.version>3.5.14</mplus.version> <!-- MyBatis-Plus支持Spring Boot 3 -->
+        <mplus.gen.version>3.5.14</mplus.gen.version> <!-- 对应MP版本 -->
+        <hutool.version>5.8.26</hutool.version> <!-- 兼容Java 17 -->
+        <alibaba.ttl.version>2.14.1</alibaba.ttl.version> <!-- 最新稳定版 -->
+        <flyway2.version>10.15.0</flyway2.version> <!-- 升级大版本，支持Jakarta -->
+        <jodd.version>5.3.0</jodd.version> <!-- 支持Java 17 -->
+        <knife4j.starter.version>4.5.0</knife4j.starter.version> <!-- 支持Spring Boot 3 -->
+        <guava.version>33.2.1-jre</guava.version> <!-- 保持不变（兼容） -->
+        <freemarker.version>2.3.32</freemarker.version> <!-- 安全更新 -->
+        <commons.dbutils.version>1.8.1</commons.dbutils.version> <!-- 保持不变（兼容） -->
+        <rxjava.version>3.1.8</rxjava.version> <!-- 稳定版 -->
+        <druid.version>1.2.27</druid.version> <!-- 支持Spring Boot 3 -->
+        <disruptor.version>3.4.4</disruptor.version> <!-- 保持不变（兼容） -->
+        <spring-boot-admin.version>3.2.3</spring-boot-admin.version> <!-- 适配Spring Boot 3 -->
+        <jaeger.client.version>1.8.1</jaeger.client.version> <!-- 最新稳定版 -->
+        <openfeign.fastjson.version>2.0.60</openfeign.fastjson.version> <!-- 适配Feign 3.x -->
+        <redissioin.version>3.52.0</redissioin.version> <!-- 修正拼写（redisson）并升级 -->
+        <xxljob.version>3.2.0</xxljob.version> <!-- 注意：2.5.0暂不支持Spring Boot 3，需用2.4.0或等待更新 -->
+        <oshi-core.version>6.4.1</oshi-core.version> <!-- 最新稳定版 -->
+        <pinyin4j.version>2.5.1</pinyin4j.version> <!-- 保持不变（兼容） -->
+        <easyexcel.version>3.3.0</easyexcel.version> <!-- 支持Spring Boot 3 -->
+        <minio.version>8.5.13</minio.version> <!-- 安全更新 -->
+        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
+    </properties>
+    
     <developers>
         <developer>
             <name>bokun.li</name>
@@ -270,7 +319,8 @@
 
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
+<!--            <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>-->
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
             <version>${knife4j.starter.version}</version>
         </dependency>
 
@@ -297,20 +347,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
+            <!--<exclusions>
                 <exclusion>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-core</artifactId>
                 </exclusion>
-            </exclusions>
+            </exclusions>-->
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
         </dependency>
-
+-->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite-engine</artifactId>
