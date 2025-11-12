@@ -5,9 +5,9 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 
 ## 支持
 
-- **java 8及其以上**
-- **springboot 2.7.18**
-  目前只支持 springboot2 后面有计划支持 springboot 3+
+### 当钱分支 支持 java8及其以上 和 springboot 2.X
+
+### 切换到springboot3分支 支持java17及其以上 springboot3.0 ~ springboot3.3.13
 
 ## 特性
 
