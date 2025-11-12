@@ -104,7 +104,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- 核心框架升级 -->
-        <spring-boot.version>3.5.7</spring-boot.version>
+        <spring-boot.version>3.3.13</spring-boot.version>
         <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
 <!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
         <spring-cloud.version>2023.0.3</spring-cloud.version>
