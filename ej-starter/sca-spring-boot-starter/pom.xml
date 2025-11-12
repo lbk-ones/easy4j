@@ -1,10 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>easy4j.boot</groupId>
+    <parent>
+        <groupId>easy4j.boot</groupId>
+        <artifactId>ej-starter</artifactId>
+        <version>${revision}</version>
+    </parent>
     <artifactId>sca-spring-boot-starter</artifactId>
-    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>sca-spring-boot-starter</name>
@@ -19,146 +21,146 @@
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
         <!--DNS-->
         <!--        <dependency>-->
         <!--            <groupId>easy4j.module.dnspom</groupId>-->
         <!--            <artifactId>ej-dnspom</artifactId>-->
-        <!--            <version>${easy4j.infra.version}</version>-->
+        <!--            <version>${revision}</version>-->
         <!--        </dependency>-->
         <!--datasource-->
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-datasource</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
         <!--jaeger-->
         <!--        <dependency>-->
         <!--            <groupId>easy4j.module.jaeger</groupId>-->
         <!--            <artifactId>ej-jaeger</artifactId>-->
-        <!--            <version>${easy4j.infra.version}</version>-->
+        <!--            <version>${revision}</version>-->
         <!--        </dependency>-->
         <!--mapstruct-->
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-mapstruct</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-flyway</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-sadmin</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-mybatisplus</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-logback</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-h2</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-seed</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-idempotent</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-sca</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-lock</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-log</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-webmvc</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-knife4j</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-sactuator</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-redis</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-scache</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-sca-seata</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-xxl-job</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-quartz</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-elasticsearch</artifactId>
-            <version>${easy4j.infra.version}</version>
+            <version>${revision}</version>
         </dependency>
 
     </dependencies>

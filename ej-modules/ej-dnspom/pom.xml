@@ -35,6 +35,7 @@
             <groupId>easy4j.infra</groupId>
             <artifactId>ej-sentinel-dubbo3</artifactId>
             <version>${revision}</version>
+            <type>pom</type>
         </dependency>
 
     </dependencies>
