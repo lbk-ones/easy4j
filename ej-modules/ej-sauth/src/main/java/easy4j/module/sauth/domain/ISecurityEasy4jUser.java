@@ -3,6 +3,7 @@ package easy4j.module.sauth.domain;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
 import easy4j.module.sauth.authentication.AuthenticationType;
+import easy4j.module.sauth.authentication.LoadAuthentication;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -439,5 +440,37 @@ public interface ISecurityEasy4jUser extends Serializable {
     @Desc("作用于哪里 拦截器或者认证")
     void setScope(AuthenticationScopeType scope);
 
+    /**
+     * 获取验证码
+     * @return
+     */
+    String getVerifyCode();
 
+    /**
+     * 设置验证码
+     * @return
+     */
+    void setVerifyCode(String verifyCode);
+
+    /**
+     * 获取did身份验证码
+     * @return
+     */
+    String getDid();
+
+    /**
+     * 设置did身份验证
+     * @return
+     */
+    void setDid(String did);
+
+    /**
+     * 设置其他鉴权方式
+     * @param loadAuthentication
+     */
+    void setLoadAuthentication(LoadAuthentication loadAuthentication);
+    /**
+     * 获取其他鉴权方式
+     */
+    LoadAuthentication getLoadAuthentication();
 }

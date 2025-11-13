@@ -19,6 +19,11 @@ public enum AuthenticationType {
     UserNamePassword,
 
     /**
+     * 其他方式认证
+     */
+    Other,
+
+    /**
      * 基于 BasicAuth
      */
     Basic,

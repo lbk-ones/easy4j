@@ -5,6 +5,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
 import easy4j.module.sauth.authentication.AuthenticationType;
+import easy4j.module.sauth.authentication.LoadAuthentication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -30,6 +31,18 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @JdbcIgnore
     @Schema(description = "返回给客户端（前端）保存之后后续使用的token")
     private String shaToken;
+
+
+    @Desc("验证码")
+    @JdbcIgnore
+    @Schema(description = "验证码")
+    private String verifyCode;
+
+    @Desc("did身份验证")
+    @JdbcIgnore
+    @Schema(description = "did身份验证")
+    private String did;
+
 
     @Desc("请求IP")
     @JdbcIgnore
@@ -63,5 +76,8 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "作用域，（认证、拦截）")
     private AuthenticationScopeType scope = AuthenticationScopeType.Authentication;
 
-
+    @Desc("其他鉴权方式")
+    @JdbcIgnore
+    @Schema(description = "其他鉴权方式")
+    private LoadAuthentication loadAuthentication;
 }

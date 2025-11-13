@@ -72,8 +72,6 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
         if (!StrUtil.equals(encryptPwd, dbUser.getPassword())) {
             context.setErrorCode(BusCode.A00033);
         }
-
-
     }
 
 
