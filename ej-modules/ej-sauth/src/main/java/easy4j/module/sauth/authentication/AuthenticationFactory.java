@@ -32,11 +32,13 @@ public class AuthenticationFactory {
         BasicAuthAuthentication basicAuthAuthentication = new BasicAuthAuthentication();
         SimpleUserAuthentication simpleUserAuthentication = new SimpleUserAuthentication();
         JwtAuthAuthentication jwtAuthAuthentication = new JwtAuthAuthentication();
+        OtherAuthentication otherAuthentication = new OtherAuthentication();
         authenticationMap.put(userNamePasswordAuthentication.getName(), userNamePasswordAuthentication);
         authenticationMap.put(shaTokenAuthentication.getName(), shaTokenAuthentication);
         authenticationMap.put(basicAuthAuthentication.getName(), basicAuthAuthentication);
         authenticationMap.put(jwtAuthAuthentication.getName(), jwtAuthAuthentication);
         authenticationMap.put(simpleUserAuthentication.getName(), simpleUserAuthentication);
+        authenticationMap.put(otherAuthentication.getName(), otherAuthentication);
         List<AuthenticationCore> load = ServiceLoaderUtils.load(AuthenticationCore.class);
         for (AuthenticationCore authenticationCore : load) {
             String name = authenticationCore.getName();

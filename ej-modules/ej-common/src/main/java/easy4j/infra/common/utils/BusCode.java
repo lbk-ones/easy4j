@@ -192,4 +192,10 @@ public class BusCode {
     @Desc("网关异常:{0}")
     public static final String A00061 = "A00061";
 
+    @Desc("未传入自定义认证实现")
+    public static final String A00062 = "A00062";
+
+    @Desc("username不能为空")
+    public static final String A00063 = "A00063";
+
 }
