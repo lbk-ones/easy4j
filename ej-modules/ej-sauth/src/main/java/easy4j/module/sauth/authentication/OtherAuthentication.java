@@ -36,22 +36,23 @@ public class OtherAuthentication extends UserNamePasswordAuthentication {
         context.setDbUser(userBy);
         if (null == userBy) {
             context.setErrorCode(BusCode.A00037);
+        }else{
+            String username = userBy.getUsername();
+            if(StrUtil.isBlank(username)){
+                context.setErrorCode(BusCode.A00063);
+                return null;
+            }
+            SessionStrategy sessionStrategy = getSessionStrategy();
+            ISecurityEasy4jSession session = sessionStrategy.getSessionByUserName(username);
+            context.setDbSession(session);
         }
         return userBy;
     }
 
     @Override
     public ISecurityEasy4jSession querySession(AuthenticationContext context) {
-        ISecurityEasy4jUser dbUser = context.getDbUser();
-        String username = dbUser.getUsername();
-        if(StrUtil.isBlank(username)){
-            context.setErrorCode(BusCode.A00063);
-            return null;
-        }
-        SessionStrategy sessionStrategy = getSessionStrategy();
-        ISecurityEasy4jSession session = sessionStrategy.getSessionByUserName(username);
-        context.setDbSession(session);
-        return session;
+        // do nothing
+        return context.getDbSession();
     }
 
     @Override
