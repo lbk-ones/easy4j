@@ -198,4 +198,7 @@ public class BusCode {
     @Desc("username不能为空")
     public static final String A00063 = "A00063";
 
+    @Desc("bearerToken不能为空")
+    public static final String A00064 = "A00064";
+
 }

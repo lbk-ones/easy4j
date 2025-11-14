@@ -10,6 +10,7 @@ import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
+import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.session.SessionStrategy;
 import org.springframework.web.context.request.RequestAttributes;
@@ -126,10 +127,13 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
         if (null != dbUser) {
             ISecurityEasy4jUser reqUser = context.getReqUser();
             if (null != reqUser) {
-                // 反向拷贝一下 以外部传进来的值为优先 没有的从查出来用户信息里面兼容
-                BeanUtil.copyProperties(reqUser, dbUser, CopyOptions.create().ignoreNullValue());
+                SecurityUser securityUser = new SecurityUser();
                 // 再全拷贝一下 防止污染 dbUser 因为这个值很有可能是从外部传过来的
-                BeanUtil.copyProperties(dbUser, reqUser);
+                BeanUtil.copyProperties(dbUser,securityUser);
+                // 反向拷贝一下 以外部传进来的值为优先 没有的从查出来用户信息里面兼容
+                BeanUtil.copyProperties(reqUser, securityUser, CopyOptions.create().ignoreNullValue());
+                // 重新拷贝给reqUser
+                BeanUtil.copyProperties(securityUser, reqUser);
             }
         }
     }

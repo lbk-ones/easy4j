@@ -77,6 +77,13 @@ public final class LoadUserApi {
         String username = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME);
         String password = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_PASSWORD);
         if (StrUtil.isAllNotBlank(username, password)) {
+            // from env
+            if (password.startsWith("$")) {
+                password = System.getenv(password.substring(1));
+                if (StrUtil.isNotBlank(password)) {
+                    return null;
+                }
+            }
             String username_CN = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_USERNAME_CN);
             SecurityUser securityUserInfo = new SecurityUser();
             securityUserInfo.setUsername(username);

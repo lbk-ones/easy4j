@@ -28,6 +28,11 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
     }
 
     @Override
+    public ISecurityEasy4jSession querySession(AuthenticationContext context) {
+        return context.getDbSession();
+    }
+
+    @Override
     public ISecurityEasy4jUser queryUser(AuthenticationContext context) {
         ISecurityEasy4jUser reqUser = context.getReqUser();
         HttpServletRequest servletRequest = getServletRequest();
@@ -55,21 +60,14 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
         ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
         syncReqUser(context, byUserName);
         context.setDbUser(byUserName);
-        return byUserName;
-    }
 
-    @Override
-    public ISecurityEasy4jSession querySession(AuthenticationContext context) {
-        ISecurityEasy4jUser reqUser = context.getReqUser();
-        String username = reqUser.getUsername();
         ISecurityEasy4jSession dbSession = context.getDbSession();
         if (null == dbSession) {
             SessionStrategy sessionStrategy = getSessionStrategy();
             SecuritySession session = sessionStrategy.getSessionByUserName(username);
-            dbSession = session;
             context.setDbSession(session);
         }
-        return dbSession;
+        return byUserName;
     }
 
     @Override

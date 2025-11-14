@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Jwt 认证方式 用于拦截器 和登录 两者并用
+ * 如果是登录认证那么还是要传入用户名和密码相关
+ * 如果是拦截器那么会从jwt里面解析出用户名
  *
  * @author bokun.li
  * @date 2025-07-27
@@ -28,30 +30,9 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
         return AuthenticationType.Jwt.name();
     }
 
-    @Override
-    public ISecurityEasy4jUser queryUser(AuthenticationContext context) {
+    public String getJwtToken(AuthenticationContext context){
         ISecurityEasy4jUser reqUser = context.getReqUser();
-        AuthenticationScopeType scope = reqUser.getScope();
-        if (scope == AuthenticationScopeType.Authentication) {
-            return super.queryUser(context);
-        } else {
-            String shaToken = reqUser.getShaToken();
-
-            if (StrUtil.isBlank(shaToken)) {
-                context.setErrorCode(BusCode.A00034);
-                return null;
-            }
-
-            JWT jwt = JWT.of(shaToken);
-            JWTPayload payload = jwt.getPayload();
-            String userName = String.valueOf(payload.getClaim("un"));
-            reqUser.setUsername(userName);
-            reqUser.setUsernameCn(userName);
-            ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
-            syncReqUser(context, byUserName);
-            context.setDbUser(byUserName);
-            return byUserName;
-        }
+        return reqUser.getShaToken();
     }
 
     @Override
@@ -61,14 +42,46 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
         if (scope == AuthenticationScopeType.Authentication) {
             return super.querySession(context);
         } else {
-            String username = reqUser.getUsername();
-            if (StrUtil.isNotBlank(username)) {
-                SecuritySession sessionByUserName = getSessionStrategy().getSessionByUserName(username);
-                context.setDbSession(sessionByUserName);
-                return sessionByUserName;
+            // parse jwt token
+            String jwtToken = getJwtToken(context);
+            if (StrUtil.isBlank(jwtToken)) {
+                context.setErrorCode(BusCode.A00034);
+                return null;
             }
+            JWT jwt = JWT.of(jwtToken);
+            JWTPayload payload = jwt.getPayload();
+            String userName = String.valueOf(payload.getClaim(JWTUtils.JWT_USER_NAME_KEY));
+            String userNameCn = String.valueOf(payload.getClaim(JWTUtils.JWT_USER_NAME_CN_KEY));
+            reqUser.setUsername(userName);
+            reqUser.setUsernameCn(StrUtil.blankToDefault(userNameCn, userName));
+
+            String username = reqUser.getUsername();
+            if (StrUtil.isBlank(username)) {
+                context.setErrorCode(BusCode.A00063);
+                return null;
+            }
+            SecuritySession sessionByUserName = getSessionStrategy().getSessionByUserName(username);
+            context.setDbSession(sessionByUserName);
+            return sessionByUserName;
         }
-        return null;
+    }
+
+    @Override
+    public ISecurityEasy4jUser queryUser(AuthenticationContext context) {
+        ISecurityEasy4jUser reqUser = context.getReqUser();
+        AuthenticationScopeType scope = reqUser.getScope();
+        if (scope == AuthenticationScopeType.Authentication) {
+            return super.queryUser(context);
+        } else {
+            String username = reqUser.getUsername();
+            ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+            if (checkUserIsNotEnable(byUserName,context)) {
+               return null;
+            }
+            syncReqUser(context, byUserName);
+            context.setDbUser(byUserName);
+            return byUserName;
+        }
     }
 
     @Override
@@ -84,12 +97,9 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
             if (checkUserIsNotEnable(dbUser, context)) {
                 return;
             }
-            String shaToken = reqUser.getShaToken();
-            JWT jwt = JWT.of(shaToken);
-            String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
-            String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
-            jwt.setKey(signatureSecret.getBytes(StandardCharsets.UTF_8));
-            if (!jwt.verify()) {
+            String shaToken = getJwtToken(context);
+            // verify
+            if (!JWTUtils.verify(shaToken,null)) {
                 context.setErrorCode(BusCode.A00034);
                 return;
             }

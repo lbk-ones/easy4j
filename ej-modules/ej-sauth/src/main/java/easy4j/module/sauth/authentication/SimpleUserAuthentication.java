@@ -25,6 +25,8 @@ public class SimpleUserAuthentication extends UserNamePasswordAuthentication {
             context.setErrorCode(BusCode.A00037);
             return null;
         }
+        context.setDbUser(simpleUser);
+        syncReqUser(context,simpleUser);
         return simpleUser;
     }
 

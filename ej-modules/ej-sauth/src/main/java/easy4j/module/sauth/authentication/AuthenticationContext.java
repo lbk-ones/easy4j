@@ -65,6 +65,8 @@ public class AuthenticationContext {
      */
     private String errorCode;
 
+    private boolean checkSession = true;
+
     public ISecurityEasy4jUser getReqUser() {
         if (reqUser == null) {
             throw EasyException.wrap(BusCode.A00004,"【AuthenticationContext of reqUser】");

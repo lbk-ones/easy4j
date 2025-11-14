@@ -52,6 +52,8 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
         return session;
     }
 
+
+
     @Override
     public void verifyPre(AuthenticationContext context) {
         ISecurityEasy4jUser reqUser = context.getReqUser();

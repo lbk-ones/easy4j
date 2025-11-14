@@ -73,6 +73,7 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
         AuthenticationCore authenticationCore = AuthenticationFactory.get(securityUser.getAuthenticationType());
         AuthenticationContext ctx = AuthenticationFactory.ctx(securityUser);
+        ctx.setCheckSession(securityUser.isCheckSession() == null || securityUser.isCheckSession());
         // querySession from db/redis
         authenticationCore.querySession(ctx);
         ctx.checkError();
