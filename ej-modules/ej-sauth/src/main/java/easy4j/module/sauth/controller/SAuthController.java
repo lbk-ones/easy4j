@@ -23,6 +23,7 @@ import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @author bokun.li
  * @date 2025-06-18
  */
+@Hidden
 @RestController
 @RequestMapping("sauth")
 public class SAuthController {
