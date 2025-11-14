@@ -48,6 +48,7 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
             reqUser.setUsername(userName);
             reqUser.setUsernameCn(userName);
             ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
+            syncReqUser(context, byUserName);
             context.setDbUser(byUserName);
             return byUserName;
         }

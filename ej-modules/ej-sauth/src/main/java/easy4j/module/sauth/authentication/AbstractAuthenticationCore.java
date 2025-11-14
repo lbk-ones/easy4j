@@ -1,5 +1,7 @@
 package easy4j.module.sauth.authentication;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
@@ -118,5 +120,17 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
 
     public boolean checkRepeatSession(AuthenticationContext authenticationContext) {
         return !RepeatAuthentication.check(authenticationContext);
+    }
+
+    public void syncReqUser(AuthenticationContext context, ISecurityEasy4jUser dbUser) {
+        if (null != dbUser) {
+            ISecurityEasy4jUser reqUser = context.getReqUser();
+            if (null != reqUser) {
+                // 反向拷贝一下 以外部传进来的值为优先 没有的从查出来用户信息里面兼容
+                BeanUtil.copyProperties(reqUser, dbUser, CopyOptions.create().ignoreNullValue());
+                // 再全拷贝一下 防止污染 dbUser 因为这个值很有可能是从外部传过来的
+                BeanUtil.copyProperties(dbUser, reqUser);
+            }
+        }
     }
 }

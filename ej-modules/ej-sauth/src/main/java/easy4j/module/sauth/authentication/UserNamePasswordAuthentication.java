@@ -36,6 +36,8 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
         context.setDbUser(byUserName);
         if (null == byUserName) {
             context.setErrorCode(BusCode.A00037);
+        }else{
+            syncReqUser(context,byUserName);
         }
         return byUserName;
     }

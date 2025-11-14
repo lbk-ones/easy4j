@@ -41,6 +41,7 @@ public class OtherAuthentication extends UserNamePasswordAuthentication {
                 context.setErrorCode(BusCode.A00063);
                 return null;
             }
+            syncReqUser(context,userBy);
             SessionStrategy sessionStrategy = getSessionStrategy();
             ISecurityEasy4jSession session = sessionStrategy.getSessionByUserName(username);
             context.setDbSession(session);
