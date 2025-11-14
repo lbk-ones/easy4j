@@ -2,7 +2,6 @@ package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
@@ -42,6 +41,7 @@ public class OtherAuthentication extends UserNamePasswordAuthentication {
                 context.setErrorCode(BusCode.A00063);
                 return null;
             }
+            syncReqUser(context,userBy);
             SessionStrategy sessionStrategy = getSessionStrategy();
             ISecurityEasy4jSession session = sessionStrategy.getSessionByUserName(username);
             context.setDbSession(session);
