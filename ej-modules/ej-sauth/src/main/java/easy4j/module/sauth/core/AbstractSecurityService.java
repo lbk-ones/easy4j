@@ -23,7 +23,6 @@ import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecuritySession;
-
 import easy4j.module.sauth.session.SessionStrategy;
 
 import java.util.Objects;

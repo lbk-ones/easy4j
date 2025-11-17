@@ -3,8 +3,7 @@ package easy4j.module.sauth.authentication.repeat;
 import cn.hutool.core.util.StrUtil;
 import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
-import easy4j.module.sauth.domain.ISecurityEasy4jUser;
-import easy4j.module.sauth.domain.SecuritySession;
+
 /**
  * 这个弊端很大 容易混乱，造成会话的误杀
  *

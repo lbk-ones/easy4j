@@ -24,13 +24,6 @@ public interface AuthenticationCore {
      */
     String getName();
 
-    /**
-     * 查询用户信息
-     *
-     * @param context
-     * @return
-     */
-    ISecurityEasy4jUser queryUser(AuthenticationContext context);
 
     /**
      * 查询会话信息
@@ -39,6 +32,15 @@ public interface AuthenticationCore {
      * @return
      */
     ISecurityEasy4jSession querySession(AuthenticationContext context);
+
+    /**
+     * 查询用户信息
+     *
+     * @param context
+     * @return
+     */
+    ISecurityEasy4jUser queryUser(AuthenticationContext context);
+
 
 
     /**

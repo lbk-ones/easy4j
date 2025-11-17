@@ -14,13 +14,11 @@
  */
 package easy4j.module.sauth.core;
 
-import cn.hutool.core.collection.CollUtil;
-import com.google.common.collect.Sets;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
-import easy4j.module.sauth.domain.*;
-
-import java.util.Set;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
 
 /**
  * StandardResolve

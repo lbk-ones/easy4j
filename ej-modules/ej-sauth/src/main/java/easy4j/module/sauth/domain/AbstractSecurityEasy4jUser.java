@@ -5,6 +5,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
 import easy4j.module.sauth.authentication.AuthenticationType;
+import easy4j.module.sauth.authentication.IBearerAuthentication;
 import easy4j.module.sauth.authentication.LoadAuthentication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -32,7 +33,6 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "返回给客户端（前端）保存之后后续使用的token")
     private String shaToken;
 
-
     @Desc("验证码")
     @JdbcIgnore
     @Schema(description = "验证码")
@@ -59,6 +59,11 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "客户端设备信息")
     private String deviceInfo;
 
+    @Desc("平台信息，PC、PHONE、APPLET等")
+    @JdbcIgnore
+    @Schema(description = "平台信息，PC、PHONE、APPLET等")
+    private String platform;
+
     @Desc("是否是超级管理员")
     @JdbcIgnore
     @Schema(description = "是否是超级管理员")
@@ -80,4 +85,21 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @JdbcIgnore
     @Schema(description = "其他鉴权方式")
     private LoadAuthentication loadAuthentication;
+
+    @Desc("BearerToken鉴权方式")
+    @JdbcIgnore
+    @Schema(description = "BearerToken鉴权方式")
+    private IBearerAuthentication bearerAuthentication;
+
+    @Desc("是否检查session默认为true 如果设置为false那么就共享session不会报错")
+    @JdbcIgnore
+    @Schema(description = "是否检查session默认为true 如果设置为false那么就共享session不会报错")
+    private Boolean checkSession = true;
+
+    @Desc("访问码AccessToken")
+    @JdbcIgnore
+    @Schema(description = "访问码AccessToken")
+    private String accessToken;
+
+
 }

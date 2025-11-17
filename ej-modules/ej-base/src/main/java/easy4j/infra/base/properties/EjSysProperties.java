@@ -390,9 +390,9 @@ public class EjSysProperties {
     private String simpleAuthUsernameCn;
 
     /**
-     * 简单权限认证的密码
+     * 简单权限认证的密码，以$开头代表从环境变量中获取
      */
-    @SpringVs(desc = "简单权限认证的密码")
+    @SpringVs(desc = "简单权限认证的密码，以$开头代表从环境变量中获取")
     private String simpleAuthPassword;
     /**
      * 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置
@@ -437,6 +437,14 @@ public class EjSysProperties {
             desc = "认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线"
     )
     private String simpleAuthSessionRepeatStrategy = "default";
+
+    /**
+     * 认证时会话口令集合集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
+     */
+    @SpringVs(
+            desc = "认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取"
+    )
+    private List<AccessToken> simpleAuthAccessTokens;
 
     /**
      * 是否启用RequestLog注解进行请求日志收集 默认启用false关闭

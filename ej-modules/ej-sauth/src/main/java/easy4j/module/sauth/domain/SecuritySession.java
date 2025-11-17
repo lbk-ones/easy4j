@@ -17,20 +17,19 @@ package easy4j.module.sauth.domain;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
-import cn.hutool.jwt.JWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
+import easy4j.module.sauth.authentication.JWTUtils;
 import easy4j.module.seed.CommonKey;
 import lombok.Data;
 
-import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -187,25 +186,9 @@ public class SecuritySession implements ISecurityEasy4jSession {
     public SecuritySession init(ISecurityEasy4jUser reqUser) {
         String username = reqUser.getUsername();
         String usernameCn = reqUser.getUsernameCn();
-        String ejSysPropertyName = Easy4j.getEjSysPropertyName(EjSysProperties::getJwtSecret);
-        String signatureSecret = Easy4j.getProperty(ejSysPropertyName);
-        // unique
-        String s = CommonKey.gennerString();
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("un", username);
-        claims.put("cn", usernameCn);
-        claims.put("jti", s);
-
-        this.jwtToken = JWT.create()
-                .addPayloads(claims)
-                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8))
-                .sign();
-//        this.jwtToken = JWT.create()
-//                .setPayload("un", username)
-//                .setJWTId(s)
-//                .setPayload("cn", usernameCn)
-//                .setKey(signatureSecret.getBytes(StandardCharsets.UTF_8)).sign();
+        long l = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class) * 1000L;
+        long expireTimeMilli = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() + l;
+        this.jwtToken = JWTUtils.genJwtToken(username, usernameCn, expireTimeMilli, null);
         this.jwtSalt = genSalt();
         this.shaToken = genShaToken();
         this.loginDateTime = new Date();
@@ -213,8 +196,7 @@ public class SecuritySession implements ISecurityEasy4jSession {
         this.userName = reqUser.getUsername();
         this.userId = reqUser.getUserId();
         this.sessionId = CommonKey.gennerLong();
-        long l = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class) * 1000L;
-        this.expireTimeSeconds = new Date().getTime() + l;
+        this.expireTimeSeconds = expireTimeMilli;
         this.extMap = reqUser.getExtMap();
         this.deptCode = reqUser.getDeptCode();
         this.deptName = reqUser.getDeptName();

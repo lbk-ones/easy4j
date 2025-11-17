@@ -14,19 +14,13 @@
  */
 package easy4j.module.sauth.authorization;
 
-import cn.hutool.http.server.HttpServerRequest;
-import cn.hutool.http.server.HttpServerResponse;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
-import easy4j.module.sauth.domain.SecurityAuthority;
-
 import org.springframework.web.method.HandlerMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.Set;
 
 /**
  * 授权相关
@@ -63,7 +57,6 @@ public interface SecurityAuthorization {
     /**
      * 根据用户信息来过滤
      * 通过 setErrorCode 或者抛出异常的方式来 处理异常
-     *
      * @param securityUserInfo
      * @return
      */

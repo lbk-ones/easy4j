@@ -39,9 +39,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
-
 import javax.sql.DataSource;
-
 import java.util.concurrent.TimeUnit;
 
 /**

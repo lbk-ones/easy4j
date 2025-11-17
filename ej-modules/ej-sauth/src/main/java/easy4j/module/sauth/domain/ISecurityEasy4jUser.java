@@ -2,6 +2,7 @@ package easy4j.module.sauth.domain;
 
 import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
+import easy4j.module.sauth.authentication.IBearerAuthentication;
 import easy4j.module.sauth.authentication.LoadAuthentication;
 
 import java.io.Serializable;
@@ -367,11 +368,11 @@ public interface ISecurityEasy4jUser extends Serializable {
     void setExtMap(Map<String, Object> extMap);
 
     /**
-     * 获取更新人姓名
+     * 获取设备信息
      *
      * @return
      */
-    @Desc("获取更新人姓名")
+    @Desc("获取设备信息")
     String getDeviceInfo();
 
     /**
@@ -381,6 +382,18 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     @Desc("设置设备信息")
     void setDeviceInfo(String deviceInfo);
+
+    /**
+     * 获取平台信息，PC、PHONE、APPLET等
+     */
+    @Desc("获取平台信息，PC、PHONE、APPLET等")
+    String getPlatform();
+
+    /**
+     * 平台信息，PC、PHONE、APPLET等
+     */
+    @Desc("设置平台信息，PC、PHONE、APPLET等")
+    void setPlatform(String platform);
 
     /**
      * 获取IP
@@ -472,4 +485,33 @@ public interface ISecurityEasy4jUser extends Serializable {
      * 获取其他鉴权方式
      */
     LoadAuthentication getLoadAuthentication();
+
+    /**
+     * 获取BearerToken鉴权方式
+     */
+    IBearerAuthentication getBearerAuthentication();
+
+    /**
+     * 设置BearerToken鉴权方式
+     */
+    void setBearerAuthentication(IBearerAuthentication bearerAuthentication);
+
+    /**
+     * 是否检查session默认为true 如果设置为false那么就共享session不会报错
+     */
+    Boolean getCheckSession();
+    /**
+     * 是否检查session默认为true 如果设置为false那么就共享session不会报错
+     */
+    void setCheckSession(Boolean checkSession);
+
+    /**
+     * 获取访问码
+     */
+    String getAccessToken();
+    /**
+     * 输入访问码
+     */
+    void setAccessToken(String accessToken);
+
 }
