@@ -20,7 +20,10 @@ import easy4j.module.sauth.authentication.AuthenticationCore;
 import easy4j.module.sauth.authentication.AuthenticationFactory;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.context.SecurityContext;
-import easy4j.module.sauth.domain.*;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
+import easy4j.module.sauth.domain.ISecurityEasy4jUser;
+import easy4j.module.sauth.domain.OnlineUserInfo;
+import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.session.SessionStrategy;
 
 import java.util.function.Consumer;
@@ -73,7 +76,7 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
         AuthenticationCore authenticationCore = AuthenticationFactory.get(securityUser.getAuthenticationType());
         AuthenticationContext ctx = AuthenticationFactory.ctx(securityUser);
-        ctx.setCheckSession(securityUser.isCheckSession() == null || securityUser.isCheckSession());
+        ctx.setCheckSession(securityUser.getCheckSession() == null || securityUser.getCheckSession());
         // querySession from db/redis
         authenticationCore.querySession(ctx);
         ctx.checkError();

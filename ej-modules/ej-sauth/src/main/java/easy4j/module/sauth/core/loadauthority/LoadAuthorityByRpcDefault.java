@@ -12,9 +12,9 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.SecurityAuthority;
+import javax.annotation.Resource;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

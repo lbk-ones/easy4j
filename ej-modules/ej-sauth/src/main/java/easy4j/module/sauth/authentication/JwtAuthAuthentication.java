@@ -3,16 +3,12 @@ package easy4j.module.sauth.authentication;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTPayload;
-import easy4j.infra.base.properties.EjSysProperties;
-import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecuritySession;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * Jwt 认证方式 用于拦截器 和登录 两者并用

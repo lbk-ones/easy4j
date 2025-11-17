@@ -11,7 +11,6 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.RegexEscapeUtils;
-import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
@@ -28,7 +27,7 @@ import java.util.Map;
  * 后台要配置token 对应的用户名，用户中文名  格式 AccessToken.username.usernameCn
  *
  * @author bokun.li
- * @date 2025-07-27
+ * @date 2025-11-14
  */
 public class AccessTokenAuthentication extends UserNamePasswordAuthentication {
 

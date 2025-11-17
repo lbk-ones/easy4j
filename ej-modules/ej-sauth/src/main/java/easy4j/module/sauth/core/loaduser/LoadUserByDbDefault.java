@@ -1,23 +1,19 @@
 package easy4j.module.sauth.core.loaduser;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.condition.FWhereBuild;
 import easy4j.infra.dbaccess.condition.WhereBuild;
-import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
+import easy4j.module.sauth.encryption.IPwdEncryptionService;
+import javax.annotation.Resource;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 
 /**

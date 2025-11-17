@@ -2,7 +2,6 @@ package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
-import cn.hutool.jwt.signers.HMacJWTSigner;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.module.seed.CommonKey;

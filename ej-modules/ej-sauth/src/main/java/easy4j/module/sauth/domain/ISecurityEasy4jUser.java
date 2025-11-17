@@ -2,7 +2,6 @@ package easy4j.module.sauth.domain;
 
 import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
-import easy4j.module.sauth.authentication.AuthenticationType;
 import easy4j.module.sauth.authentication.IBearerAuthentication;
 import easy4j.module.sauth.authentication.LoadAuthentication;
 
@@ -500,11 +499,11 @@ public interface ISecurityEasy4jUser extends Serializable {
     /**
      * 是否检查session默认为true 如果设置为false那么就共享session不会报错
      */
-    Boolean isCheckSession();
+    Boolean getCheckSession();
     /**
      * 是否检查session默认为true 如果设置为false那么就共享session不会报错
      */
-    void setCheckSession(boolean checkSession);
+    void setCheckSession(Boolean checkSession);
 
     /**
      * 获取访问码

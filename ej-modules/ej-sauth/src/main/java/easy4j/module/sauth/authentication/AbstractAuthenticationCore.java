@@ -13,11 +13,10 @@ import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.session.SessionStrategy;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
 
 public abstract class AbstractAuthenticationCore implements AuthenticationCore {
 

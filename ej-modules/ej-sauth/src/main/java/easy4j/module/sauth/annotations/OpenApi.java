@@ -22,7 +22,7 @@ import easy4j.module.sauth.authentication.LoadAuthentication;
 import java.lang.annotation.*;
 
 /**
- * 开放api 一般是
+ * 开放api 一般是给第三方接口使用的 拦截器优先级比较高
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -37,7 +37,7 @@ public @interface OpenApi {
 
 
     /**
-     * 默认bearerToken
+     * 默认BearerToken 这种默认方式需要自定义实现识别和解析的逻辑
      * @return
      */
     AuthenticationType authenticationType() default AuthenticationType.BearerToken;

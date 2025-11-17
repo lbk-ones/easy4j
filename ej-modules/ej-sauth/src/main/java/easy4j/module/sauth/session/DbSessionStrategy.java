@@ -33,12 +33,12 @@ import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.SecuritySession;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
 

@@ -34,7 +34,7 @@ public enum AuthenticationType {
 
     /**
      * 基于 BearerToken
-     * @see IBearerAuthentication
+     * @see BearerTokenAuthentication
      */
     BearerToken,
 

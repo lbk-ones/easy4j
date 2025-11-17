@@ -14,11 +14,15 @@
  */
 package easy4j.module.sauth.filter;
 
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
-import easy4j.infra.common.utils.*;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.ServiceLoaderUtils;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
@@ -31,12 +35,12 @@ import easy4j.module.sauth.authorization.SecurityAuthorization;
 import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
-
 import easy4j.module.sauth.domain.SecurityUser;
-import org.springframework.web.method.HandlerMethod;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.web.method.HandlerMethod;
+
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -124,7 +128,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
      * @author bokun.li
      * @date 2025/11/14
      */
-    private static void handlerOpenApi(HttpServletRequest request, Method method, Class<?> beanType, SecurityAuthorization authorizationStrategy1) {
+    private void handlerOpenApi(HttpServletRequest request, Method method, Class<?> beanType, SecurityAuthorization authorizationStrategy1) {
         OpenApi annotation = method.getAnnotation(OpenApi.class);
         if (annotation == null) {
             annotation = beanType.getAnnotation(OpenApi.class);
@@ -140,25 +144,11 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         handlerAccessToken(annotation, securityUser);
         if (AuthenticationType.BearerToken.name().equals(securityUser.getAuthenticationType())) {
             Class<? extends IBearerAuthentication> aClass = annotation.bearerImpl();
-            List<? extends IBearerAuthentication> load = ServiceLoaderUtils.load(aClass);
-            if (ListTs.isEmpty(load)) {
-                IBearerAuthentication bean = SpringUtil.getBean(aClass);
-                if (null != bean) {
-                    load = ListTs.asList(bean);
-                }
-            }
-            IBearerAuthentication iBearerAuthentication = ListTs.get(load, 0);
+            IBearerAuthentication iBearerAuthentication = getInstance(aClass);
             securityUser.setBearerAuthentication(iBearerAuthentication);
         } else if (AuthenticationType.Other.name().equals(securityUser.getAuthenticationType())) {
             Class<? extends LoadAuthentication> aClass = annotation.otherImpl();
-            List<? extends LoadAuthentication> load = ServiceLoaderUtils.load(aClass);
-            if (ListTs.isEmpty(load)) {
-                LoadAuthentication bean = SpringUtil.getBean(aClass);
-                if (null != bean) {
-                    load = ListTs.asList(bean);
-                }
-            }
-            LoadAuthentication iBearerAuthentication = ListTs.get(load, 0);
+            LoadAuthentication iBearerAuthentication = getInstance(aClass);
             securityUser.setLoadAuthentication(iBearerAuthentication);
         }
         OnlineUserInfo onlineUserInfo = Easy4jAuth.authentication(securityUser, null);
@@ -171,6 +161,25 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         }
         bindUserCtx(user);
         request.setAttribute(SysConstant.SESSION_USER, user);
+    }
+
+    @Nullable
+    private <T> T getInstance(Class<T> aClass) {
+        T iBearerAuthentication = null;
+        try{
+            iBearerAuthentication = ReflectUtil.newInstance(aClass);
+        }catch (Throwable ignored){}
+        if(iBearerAuthentication == null){
+            List<T> load = ServiceLoaderUtils.load(aClass);
+            if (ListTs.isEmpty(load)) {
+                try{
+                    iBearerAuthentication = SpringUtil.getBean(aClass);
+                }catch (Exception ignored){}
+            }else{
+                iBearerAuthentication = ListTs.get(load,0);
+            }
+        }
+        return iBearerAuthentication;
     }
 
     /**

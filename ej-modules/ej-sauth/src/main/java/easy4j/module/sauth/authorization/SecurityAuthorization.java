@@ -14,18 +14,12 @@
  */
 package easy4j.module.sauth.authorization;
 
-import cn.hutool.http.server.HttpServerRequest;
-import cn.hutool.http.server.HttpServerResponse;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
-import easy4j.module.sauth.domain.SecurityAuthority;
-
-import org.springframework.web.method.HandlerMethod;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Set;
+import org.springframework.web.method.HandlerMethod;
 
 /**
  * 授权相关

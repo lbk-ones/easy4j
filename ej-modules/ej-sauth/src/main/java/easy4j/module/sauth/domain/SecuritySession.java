@@ -14,28 +14,22 @@
  */
 package easy4j.module.sauth.domain;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
-import cn.hutool.jwt.JWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.module.sauth.authentication.JWTUtils;
-import easy4j.module.sauth.authentication.JwtAuthAuthentication;
 import easy4j.module.seed.CommonKey;
 import lombok.Data;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

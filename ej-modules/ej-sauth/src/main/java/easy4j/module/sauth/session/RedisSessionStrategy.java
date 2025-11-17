@@ -15,15 +15,13 @@
 package easy4j.module.sauth.session;
 
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.module.sauth.domain.SecuritySession;
+import javax.annotation.Resource;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-
-import javax.annotation.Resource;
 
 /**
  * RedisSessionStrategy

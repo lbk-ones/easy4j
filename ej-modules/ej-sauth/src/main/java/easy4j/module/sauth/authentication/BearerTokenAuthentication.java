@@ -2,12 +2,10 @@ package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.infra.common.utils.ListTs;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.session.SessionStrategy;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**

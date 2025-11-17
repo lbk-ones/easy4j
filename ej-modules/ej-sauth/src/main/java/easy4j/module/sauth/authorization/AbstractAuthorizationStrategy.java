@@ -31,11 +31,10 @@ import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityAuthority;
-
-import org.springframework.web.method.HandlerMethod;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.method.HandlerMethod;
+
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Collectors;
