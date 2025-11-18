@@ -2,16 +2,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
 
     <artifactId>ej-dnspom</artifactId>
     <packaging>pom</packaging>
+    <description>easy4j dns (dubbo3,nacos,sentinel) pom module</description>
 
     <name>ej-dnspom</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,21 +21,22 @@
     <dependencies>
         <!--dubbo-->
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-dubbo3</artifactId>
             <version>${revision}</version>
         </dependency>
         <!--naocs-->
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-nacos-dubbo3</artifactId>
             <version>${revision}</version>
         </dependency>
         <!--sentinel-->
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sentinel-dubbo3</artifactId>
             <version>${revision}</version>
+            <type>pom</type>
         </dependency>
 
     </dependencies>

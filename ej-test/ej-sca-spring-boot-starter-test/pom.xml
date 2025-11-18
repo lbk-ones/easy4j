@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <name>ej-sca-spring-boot-starter-test</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
     <modules>
         <module>ej-sca-order</module>
         <module>ej-sca-acount</module>

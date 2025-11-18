@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
 
     <name>ej-example</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
     <modules>
         <module>ej-example-sca</module>
     </modules>

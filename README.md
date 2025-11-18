@@ -104,7 +104,7 @@ Easy4J 框架包含以下核心模块：
     <packaging>jar</packaging>
 
     <name>xxx</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

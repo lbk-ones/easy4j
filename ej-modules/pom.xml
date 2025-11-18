@@ -4,7 +4,7 @@
 
     <!--easy4模块的基础依赖-->
 
-    <groupId>easy4j.infra</groupId>
+    <groupId>io.github.lbk-ones</groupId>
     <artifactId>ej-modules</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -48,11 +48,11 @@
         <module>ej-elasticsearch</module>
     </modules>
     <name>ej-modules</name>
-    <url>http://maven.apache.org</url>
-
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j modules parent pom</description>
     <!--在这里统一固定版本号-->
     <properties>
-        <revision>1.0-SNAPSHOT</revision>
+        <revision>1.0.0</revision>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -100,6 +100,19 @@
             <email>2100370548@qq.com</email>
         </developer>
     </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>https://github.com/lbk-ones/easy4j.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/lbk-ones/easy4j.git</developerConnection>
+        <url>https://github.com/lbk-ones/easy4j.git</url>
+    </scm>
 
     <dependencyManagement>
         <dependencies>
@@ -362,6 +375,9 @@
         </plugins>
     </build>
 
+
+
+
     <profiles>
         <profile>
             <id>dev-snapshots</id>
@@ -444,6 +460,85 @@
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--发布到中央仓库-->
+        <profile>
+            <id>sonatype-maven</id>
+            <build>
+                <plugins>
+                    <!--   central发布插件    -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.4.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>bk</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                        </configuration>
+                    </plugin>
+                    <!--   source源码插件 -->
+                    <!--<plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.2</version>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </plugin>
+                    <!--   javadoc插件 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <!-- 忽略Javadoc错误（不推荐但是错误确实太多了） -->
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <configuration>
+                            <executable>C:\Program Files (x86)\GnuPG\bin\gpg.exe</executable>
+                            <keyname>bokun</keyname>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>

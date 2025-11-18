@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -11,7 +11,8 @@
     <packaging>jar</packaging>
 
     <name>ej-base</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j base module</description>
 
     <dependencies>
         <dependency>
@@ -38,7 +39,7 @@
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-context</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -50,7 +51,7 @@
         </dependency>
 
         <!--        <dependency>-->
-        <!--            <groupId>easy4j.infra</groupId>-->
+        <!--            <groupId>io.github.lbk-ones</groupId>-->
         <!--            <artifactId>ej-log</artifactId>-->
         <!--            <version>${revision}</version>-->
         <!--        </dependency>-->

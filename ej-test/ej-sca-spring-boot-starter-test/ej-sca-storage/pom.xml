@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
 
     <name>ej-sca-storage</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
