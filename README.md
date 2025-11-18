@@ -137,7 +137,7 @@ Easy4J 框架包含以下核心模块：
         <!--springboot jpa封装-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
-            <artifactId>ej-jpa-boot-starter</artifactId>
+            <artifactId>jpa-spring-boot-starter</artifactId>
             <version>2.0.0</version>
         </dependency>
       

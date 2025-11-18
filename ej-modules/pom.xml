@@ -366,17 +366,7 @@
 
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>maven-nethosp-release</id>
-            <name>Nexus Release Repository</name>
-            <url>https://nexus.ssc-hn.com/repository/maven-nethosp-release/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-nethosp-snapshot</id>
-            <url>https://nexus.ssc-hn.com/repository/maven-nethosp-snapshot/</url>
-        </snapshotRepository>
-    </distributionManagement>
+
 
     <build>
         <plugins>
