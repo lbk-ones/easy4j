@@ -14,7 +14,7 @@
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra elasticsearch</description>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     </properties>
 
     <dependencies>
