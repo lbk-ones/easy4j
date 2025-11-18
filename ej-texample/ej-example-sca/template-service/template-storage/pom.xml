@@ -4,7 +4,7 @@
     <parent>
         <groupId>template.service</groupId>
         <artifactId>template-service</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>template-storage</artifactId>
@@ -19,15 +19,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>sca-spring-boot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>template.service</groupId>
             <artifactId>template-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         
     </dependencies>

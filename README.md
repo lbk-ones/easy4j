@@ -116,7 +116,7 @@ Easy4J 框架包含以下核心模块：
         <!--dubbo3 (dns体系) + mybatisplus 微服务-->
         <dependency>
             <artifactId>ej-dubbo3-mp-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
             <packaging>jar</packaging>
         </dependency>
 
@@ -143,9 +143,9 @@ Easy4J 框架包含以下核心模块：
       
         <!--聚合文档相关-->
         <dependency>
-          <groupId>easy4j.boot</groupId>
+          <groupId>io.github.lbk-ones</groupId>
           <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-          <version>1.0-SNAPSHOT</version>
+          <version>1.0.0</version>
         </dependency>
       
         <!--     注释掉上面不需要的注释      -->

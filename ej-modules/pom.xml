@@ -1,10 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <!--easy4模块的基础依赖-->
-
-    <groupId>io.github.lbk-ones</groupId>
+    <parent>
+        <groupId>io.github.lbk-ones</groupId>
+        <artifactId>easy4j</artifactId>
+        <version>${revision}</version>
+    </parent>
     <artifactId>ej-modules</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -52,10 +54,6 @@
     <description>easy4j modules parent pom</description>
     <!--在这里统一固定版本号-->
     <properties>
-        <revision>1.0.0</revision>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dubbo.version>3.2.7</dubbo.version>
         <!--        <nacos.version>2.2.1</nacos.version>-->
         <!--up to 2.7.18-->

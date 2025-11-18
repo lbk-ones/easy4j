@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra.test</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-test</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>ej-sca-spring-boot-starter-test</artifactId>
