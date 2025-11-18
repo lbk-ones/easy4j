@@ -3,10 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--easy4模块的基础依赖-->
-
-    <groupId>easy4j.infra</groupId>
+    <parent>
+        <groupId>io.github.lbk-ones</groupId>
+        <artifactId>easy4j</artifactId>
+        <version>${revision}</version>
+    </parent>
     <artifactId>ej-modules</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
         <module>ej-base</module>
@@ -48,8 +50,8 @@
         <module>ej-elasticsearch</module>
     </modules>
     <name>ej-modules</name>
-    <url>http://maven.apache.org</url>
-
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra modules parent pom</description>
     <!--在这里统一固定版本号-->
     <!--<properties>
         <revision>2.0-SNAPSHOT</revision>
@@ -96,13 +98,7 @@
 
 
     <properties>
-        <revision>2.0-SNAPSHOT</revision>
         <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
         <!-- 核心框架升级 -->
         <spring-boot.version>3.3.13</spring-boot.version>
         <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->

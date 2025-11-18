@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -11,7 +11,8 @@
     <packaging>jar</packaging>
 
     <name>ej-sca-gateway</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra springcloud gateway</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,25 +21,25 @@
     <dependencies>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sca</artifactId>
             <version>${revision}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>easy4j.infra</groupId>
+                    <groupId>io.github.lbk-ones</groupId>
                     <artifactId>ej-webmvc</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sactuator</artifactId>
             <version>${revision}</version>
         </dependency>

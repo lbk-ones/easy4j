@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-starter</artifactId>
         <version>${revision}</version>
 
@@ -11,8 +11,8 @@
     <packaging>jar</packaging>
 
     <name>sca-gateway-spring-boot-starter</name>
-    <url>http://maven.apache.org</url>
-
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j sca-gateway-spring-boot-starter</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -22,7 +22,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sca-gateway</artifactId>
             <version>${revision}</version>
         </dependency>

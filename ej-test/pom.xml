@@ -2,17 +2,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra.all</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>easy4j</artifactId>
-        <version>2.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
-
-    <groupId>easy4j.infra.test</groupId>
     <artifactId>ej-test</artifactId>
     <packaging>pom</packaging>
 
     <name>ej-test</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
     <modules>
         <module>ej-spring-boot-starter-test</module>
         <module>ej-sca-spring-boot-starter-test</module>
@@ -21,10 +19,6 @@
     </modules>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
     </properties>
 
     <dependencies>

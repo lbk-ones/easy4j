@@ -1,9 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>easy4j.boot</groupId>
+    <parent>
+        <groupId>io.github.lbk-ones</groupId>
+        <artifactId>easy4j</artifactId>
+        <version>${revision}</version>
+    </parent>
     <artifactId>ej-starter</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
         <module>dubbo3-spring-boot-starter</module>
@@ -15,14 +18,9 @@
         <module>knife4j-nacos-aggregation-starter</module>
     </modules>
     <name>ej-starter</name>
-    <url>http://maven.apache.org</url>
-
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j starters parent pom</description>
     <properties>
-        <revision>2.0-SNAPSHOT</revision>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
     </properties>
 
     <dependencies>

@@ -5,6 +5,8 @@
 > - 拿取以easy4j.开头的系统参数统一使用Easy4j.getProperty("xxx") 或者 Easy4j.getEjSysProperties()
     来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
 >
+
+
 - **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度 (true|false)
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port
@@ -49,12 +51,13 @@
 - **easy4j.simple-auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
 - **easy4j.simple-auth-username**: 简单权限认证的用户名
 - **easy4j.simple-auth-username-cn**: 简单权限认证的用户名中文
-- **easy4j.simple-auth-password**: 简单权限认证的密码
+- **easy4j.simple-auth-password**: 简单权限认证的密码，以$开头代表从环境变量中获取
 - **easy4j.simple-auth-user-impl-type**: 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置 (default|extra)
 - **easy4j.simple-auth-is-cache-authority**: 简单权限是否缓存权限列表 (true|false)
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用 (true|false)
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线 (default|new|reject|public|kick)
+- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭 (true|false)
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启 (true|false)
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
@@ -90,3 +93,5 @@
 - **easy4j.global-quartz-job-print-log**: quartz全局日志打印 (true|false)
 - **easy4j.force-register-to-registry**: 强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了 (true|false)
 - **easy4j.quartz-job-restart-check-delete**: 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除 (true|false)
+- **easy4j.knife4j-nacos-aggregation**: knife4j通过nacos进行聚合，默认不聚合 (true|false)
+- **easy4j.knife4j-nacos-routers**: knife4j要聚合的路由信息，和nacos整合

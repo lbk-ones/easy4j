@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -11,7 +11,8 @@
     <packaging>jar</packaging>
 
     <name>ej-base</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra base</description>
 
     <dependencies>
         <dependency>
@@ -38,7 +39,7 @@
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-context</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -50,132 +51,11 @@
         </dependency>
 
         <!--        <dependency>-->
-        <!--            <groupId>easy4j.infra</groupId>-->
+        <!--            <groupId>io.github.lbk-ones</groupId>-->
         <!--            <artifactId>ej-log</artifactId>-->
         <!--            <version>${revision}</version>-->
         <!--        </dependency>-->
     </dependencies>
 
-    <!--<build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*Test.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>-->
-    <build>
-<!--        <finalName>${project.artifactId}</finalName>-->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>dev-snapshots</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-
-                <plugins>
-                    <!--deploy 到私仓-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.snapshotRepository.id}</repositoryId>
-                                    <url>${project.distributionManagement.snapshotRepository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!--发布到release-->
-        <profile>
-            <id>pro-release</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-                                    <url>${project.distributionManagement.repository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.infra</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -11,15 +11,15 @@
     <packaging>jar</packaging>
 
     <name>ej-h2</name>
-    <url>http://maven.apache.org</url>
-
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra h2</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>

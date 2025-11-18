@@ -104,7 +104,7 @@ Easy4J 框架包含以下核心模块：
     <packaging>jar</packaging>
 
     <name>xxx</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/lbk-ones/easy4j</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -115,37 +115,37 @@ Easy4J 框架包含以下核心模块：
         <!--按需选择-->
         <!--dubbo3 (dns体系) + mybatisplus 微服务-->
         <dependency>
-            <artifactId>ej-dubbo3-mp-starter</artifactId>
-            <version>2.0-SNAPSHOT</version>
-            <packaging>jar</packaging>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>dubbo3-spring-boot-starter</artifactId>
+            <version>2.0.0</version>
         </dependency>
 
         <!--springboot封装 微服务(带数据源)-->
         <dependency>
-            <groupId>easy4j.module.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
 
         <!--springboot封装 微服务(不带数据源)-->
         <dependency>
-            <groupId>easy4j.module.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-nd-boot-starter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
 
         <!--springboot jpa封装-->
         <dependency>
-            <groupId>easy4j.module.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-jpa-boot-starter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
       
         <!--聚合文档相关-->
         <dependency>
-          <groupId>easy4j.boot</groupId>
+          <groupId>io.github.lbk-ones</groupId>
           <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-          <version>2.0-SNAPSHOT</version>
+          <version>2.0.0</version>
         </dependency>
       
         <!--     注释掉上面不需要的注释      -->
@@ -169,8 +169,8 @@ Easy4J 框架包含以下核心模块：
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -355,12 +355,13 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.simple-auth-session-storage-type**: 权限session存储类型：db代表数据库，redis代表redis
 - **easy4j.simple-auth-username**: 简单权限认证的用户名
 - **easy4j.simple-auth-username-cn**: 简单权限认证的用户名中文
-- **easy4j.simple-auth-password**: 简单权限认证的密码
+- **easy4j.simple-auth-password**: 简单权限认证的密码，以$开头代表从环境变量中获取
 - **easy4j.simple-auth-user-impl-type**: 用户信息的实现类型（default、extra）default代表默认实现（默认实现会自动建表），extra代表是外部业务实现，如果是extra则不建默认用户表：该字段无默认值如果开启了EASY4J_SAUTH_IS_SERVER那么必须设置 (default|extra)
 - **easy4j.simple-auth-is-cache-authority**: 简单权限是否缓存权限列表 (true|false)
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用 (true|false)
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线 (default|new|reject|public|kick)
+- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭 (true|false)
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启 (true|false)
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
@@ -396,3 +397,5 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.global-quartz-job-print-log**: quartz全局日志打印 (true|false)
 - **easy4j.force-register-to-registry**: 强制将本机服务注册到注册中心,本机启动的服务默认不会注册到中心了 (true|false)
 - **easy4j.quartz-job-restart-check-delete**: 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除 (true|false)
+- **easy4j.knife4j-nacos-aggregation**: knife4j通过nacos进行聚合，默认不聚合 (true|false)
+- **easy4j.knife4j-nacos-routers**: knife4j要聚合的路由信息，和nacos整合

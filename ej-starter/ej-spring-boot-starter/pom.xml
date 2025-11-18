@@ -3,13 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-starter</artifactId>
         <version>${revision}</version>
     </parent>
     <artifactId>ej-spring-boot-starter</artifactId>
     <name>ej-spring-boot-starter</name>
-    <description>ej-spring-boot-starter</description>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j ej-spring-boot-starter</description>
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +19,7 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -30,7 +31,7 @@
         <!--        </dependency>-->
         <!--datasource-->
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-datasource</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -42,63 +43,63 @@
         <!--        </dependency>-->
         <!--mapstruct-->
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mapstruct</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-flyway</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mybatisplus</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-logback</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-h2</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-seed</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sentinel</artifactId>
             <version>${revision}</version>
         </dependency>
 
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-idempotent</artifactId>
             <version>${revision}</version>
         </dependency>
 
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-redis</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -110,42 +111,42 @@
         <!--        </dependency>-->
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-lock</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-log</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-knife4j</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sactuator</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-scache</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.infra</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-quartz</artifactId>
             <version>${revision}</version>
         </dependency>
