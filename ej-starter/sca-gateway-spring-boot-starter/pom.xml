@@ -13,11 +13,6 @@
     <name>sca-gateway-spring-boot-starter</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j sca-gateway-spring-boot-starter</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <easy4j.infra.version>2.0-SNAPSHOT</easy4j.infra.version>
-    </properties>
 
     <dependencies>
 

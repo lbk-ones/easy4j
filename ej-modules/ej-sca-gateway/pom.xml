@@ -13,14 +13,23 @@
     <name>ej-sca-gateway</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra springcloud gateway</description>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sca</artifactId>
-            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.github.lbk-ones</groupId>
@@ -32,13 +41,11 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sactuator</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>

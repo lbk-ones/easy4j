@@ -13,34 +13,38 @@
     <name>ej-knife4j-nacos-aggregation</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra knife4j-nacos-aggregation</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <dependencyManagement>
+        <dependencies>
 
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sactuator</artifactId>
-            <version>${revision}</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-aggregation-spring-boot-starter</artifactId>
-            <version>${knife4j.aggregation.version}</version>
         </dependency>
 
 

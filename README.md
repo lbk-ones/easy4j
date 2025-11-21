@@ -117,35 +117,35 @@ Easy4J 框架包含以下核心模块：
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>dubbo3-spring-boot-starter</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
 
         <!--springboot封装 微服务(带数据源)-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
 
         <!--springboot封装 微服务(不带数据源)-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-nd-boot-starter</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
 
         <!--springboot jpa封装-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>jpa-spring-boot-starter</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
       
         <!--聚合文档相关-->
         <dependency>
           <groupId>io.github.lbk-ones</groupId>
           <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-          <version>2.0.0</version>
+          <version>2.0.1</version>
         </dependency>
       
         <!--     注释掉上面不需要的注释      -->

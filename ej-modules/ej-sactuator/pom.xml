@@ -13,12 +13,22 @@
     <name>ej-sactuator</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra actuator</description>
+    <dependencyManagement>
+        <dependencies>
 
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>

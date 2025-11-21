@@ -13,22 +13,43 @@
     <name>ej-sauth</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra auth</description>
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-seed</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
-            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite-engine</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -13,25 +13,32 @@
     <url>https://github.com/lbk-ones/easy4j</url>
 
     <description>easy4j infra springcloud alibaba</description>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sauth</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
@@ -92,7 +99,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.0</version>
         </dependency>
 
 

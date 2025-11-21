@@ -13,22 +13,29 @@
     <name>ej-lock</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra lock</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-db-access</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter -->
@@ -36,7 +43,6 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
-            <version>${redissioin.version}</version>
             <scope>provided</scope>
         </dependency>
 

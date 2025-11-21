@@ -13,12 +13,22 @@
     <name>ej-base</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra base</description>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mplus.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -41,7 +51,6 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-context</artifactId>
-            <version>${revision}</version>
         </dependency>
 
 
