@@ -49,17 +49,19 @@ public class RpcRequest implements Serializable {
      */
     private String returnType;
 
+
     public RpcRequest() {
         this.requestId = atomicInteger.incrementAndGet();
     }
 
     /**
      * 从方法信息解析出请求对象
+     *
      * @param method method对象
-     * @param args 参数信息
+     * @param args   参数信息
      * @return 请求对象
      */
-    public static RpcRequest of(Method method,Object[] args){
+    public static RpcRequest of(Method method, Object[] args) {
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.requestId = atomicInteger.incrementAndGet();
         Class<?> declaringClass = method.getDeclaringClass();

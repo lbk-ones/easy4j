@@ -12,8 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 等待结果，处理超时
- * @since 2.0.1
+ *
  * @author bokun
+ * @since 2.0.1
  */
 @Slf4j
 @Data
@@ -29,8 +30,6 @@ public class ResFuture {
 
     private final long beginTimestamp = System.currentTimeMillis();
 
-    @Getter
-    @Setter
     private RpcResponse rpcResponse;
 
     private volatile boolean sendOk = true;

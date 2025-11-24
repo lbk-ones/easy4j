@@ -8,6 +8,7 @@ import easy4j.infra.rpc.config.NettyBootStrap;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.exception.RpcException;
+import easy4j.infra.rpc.exception.RpcTimeoutException;
 import easy4j.infra.rpc.utils.Host;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -18,6 +19,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.util.internal.StringUtil;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -44,6 +46,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class RpcClient extends NettyBootStrap implements AutoCloseable {
+
+    @Getter
     private final ClientConfig clientConfig;
     private final Bootstrap bootstrap = new Bootstrap();
     private final RpcClientHandler rpcClientHandler;
@@ -113,6 +117,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     /**
      * 获取指定主机通道
+     *
      * @param host 主机信息
      * @return Channel通道
      */
@@ -163,10 +168,42 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         cacheChannel.clear();
     }
 
-    public RpcResponse sendRequestSync(RpcRequest request){
+    public RpcResponse sendRequestSync(RpcRequest request) {
         String serviceName = request.getServiceName();
         // TODO 从注册中心中拿取连接信息
         return null;
+    }
+
+    public RpcResponse sendRequestSync(RpcRequest request, Host host) {
+        Channel channel = getChannel(host);
+        ResFuture resFuture = new ResFuture(request.getRequestId(), clientConfig.getInvokeTimeOutMillis());
+        channel.writeAndFlush(request).addListener(e -> {
+            if (e.isSuccess()) {
+                resFuture.setSendOk(true);
+                return;
+            } else {
+                resFuture.setSendOk(false);
+            }
+            Throwable cause = e.cause();
+            resFuture.setCause(cause);
+            resFuture.putResponse(null);
+        });
+        try {
+            RpcResponse rpcResponse = resFuture.waitResponse();
+            if (null == rpcResponse) {
+                if (resFuture.isSendOk()) {
+                    if (resFuture.isTimeout()) {
+                        throw new RpcTimeoutException(host.getAddress(), clientConfig.getInvokeTimeOutMillis());
+                    }
+                } else {
+                    throw new RpcException(host.toString(), resFuture.getCause());
+                }
+            }
+            return rpcResponse;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -209,5 +246,9 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 //        // 发送请求并获取响应
 //        RpcResponse response = client.sendRequest(request);
 //        System.out.println("RPC响应：" + response.getResult());
+        RpcRequest rpcRequest = new RpcRequest();
+        RpcClient rpcClient = RpcClientFactory.INSTANCE;
+        RpcResponse rpcResponse = rpcClient.sendRequestSync(rpcRequest);
+        System.out.println(rpcResponse);
     }
 }

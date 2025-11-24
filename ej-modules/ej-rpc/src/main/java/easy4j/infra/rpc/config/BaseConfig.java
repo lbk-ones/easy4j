@@ -1,5 +1,6 @@
 package easy4j.infra.rpc.config;
 
+import easy4j.infra.rpc.enums.SerializableType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -12,6 +13,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class BaseConfig {
+
+    private SerializableType serializableType = SerializableType.JACKSON;
 
 
     /**
