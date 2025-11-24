@@ -99,6 +99,10 @@
     </properties>-->
 
 
+    <properties>
+        <lombok.version>1.18.38</lombok.version>
+        <slf4j.version>2.0.17</slf4j.version>
+    </properties>
 
 
     <build>

@@ -5,6 +5,7 @@ import easy4j.infra.rpc.domain.RpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.ReplayingDecoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
@@ -16,6 +17,7 @@ import java.util.List;
  * @since 2.0.1
  */
 public class RpcDecoder extends ByteToMessageDecoder {
+
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
