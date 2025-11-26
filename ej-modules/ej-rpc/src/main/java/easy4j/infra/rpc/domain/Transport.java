@@ -1,14 +1,14 @@
 package easy4j.infra.rpc.domain;
 
 import easy4j.infra.rpc.enums.FrameType;
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * frameType 和 body 是必填的
  */
 @Data
-@Builder
+@Accessors(chain = true)
 public class Transport {
 
     /**
@@ -35,13 +35,17 @@ public class Transport {
     /**
      * body体
      */
-    private byte[] body;
+    private byte[] body = new byte[0];
 
-    public static Transport of(FrameType frameType, byte[] body){
-        return Transport.builder()
-                .frameType(frameType.getFrameType())
-                .body(body)
-                .build();
+    public static Transport of(FrameType frameType, byte[] body) {
+        return new Transport()
+                .setFrameType(frameType.getFrameType())
+                .setBody(body);
+    }
+
+    public static Transport of(FrameType frameType) {
+        return new Transport()
+                .setFrameType(frameType.getFrameType());
     }
 
 }

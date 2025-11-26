@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.domain;
 
-import cn.hutool.core.util.ReflectUtil;
 import lombok.Data;
 
 import java.io.Serializable;

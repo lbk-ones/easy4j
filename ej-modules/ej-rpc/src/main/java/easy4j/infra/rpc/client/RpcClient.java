@@ -12,19 +12,17 @@ import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
+import easy4j.infra.rpc.heart.HeartbeatHandler;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.Host;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.util.internal.StringUtil;
-import lombok.Data;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,11 +30,9 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -65,6 +61,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     private EventLoopGroup workerGroup;
+    private final HeartbeatHandler heartbeatHandler;
+
 
     /**
      * @param clientConfig 客户端配置
@@ -73,6 +71,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         super(true);
         this.clientConfig = clientConfig;
         rpcClientHandler = new RpcClientHandler(this);
+        this.heartbeatHandler = new HeartbeatHandler(false);
         start();
     }
 
@@ -96,6 +95,9 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
+                        // IdleStateHandler：45秒读空闲（服务端没响应），10秒写空闲（主动发心跳）
+                        pipeline.addLast(new IdleStateHandler(45, 10, 0, TimeUnit.SECONDS));
+                        pipeline.addLast(heartbeatHandler);
                         pipeline.addLast(new RpcEncoder());
                         pipeline.addLast(new LengthFieldPrepender(4));
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(

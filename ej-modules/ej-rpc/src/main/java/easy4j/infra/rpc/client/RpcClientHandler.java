@@ -1,21 +1,17 @@
 package easy4j.infra.rpc.client;
 
 
-import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
+import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.ChannelUtils;
 import io.netty.channel.*;
 
-import io.netty.handler.timeout.IdleStateEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.InetAddress;
-
 
 /**
  * rpc客户端 入栈处理器
@@ -35,19 +31,6 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
         this.client = rpcClient;
     }
 
-
-    /**
-     * 通道激活
-     *
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("current channel active");
-        super.channelActive(ctx);
-    }
-
     /**
      * 通道关闭回调
      *
@@ -56,13 +39,13 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("current channel inactive");
+        log.info("current channel inactive");
         this.client.closeChannel(ChannelUtils.toAddress(ctx.channel()));
         ctx.channel().close();
     }
 
     /**
-     * 通道接受到消息
+     * 客户端接受到消息
      *
      * @param ctx
      * @param msg
@@ -70,45 +53,28 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println("current channel receive msg" + msg);
+        log.info("current channel receive msg" + msg);
         Transport msg1 = (Transport) msg;
-        byte[] body = msg1.getBody();
-        ISerializable iSerializable = SerializableFactory.get(client.getClientConfig());
-        RpcResponse deserializable = iSerializable.deserializable(body, RpcResponse.class);
-        long requestId = deserializable.getRequestId();
-        ResFuture future = ResFuture.getFuture(requestId);
-        if (null == future) {
-            log.error("not found future {}", requestId);
+        if (msg1.getFrameType() != FrameType.RESPONSE.getFrameType()) {
             return;
         }
-        future.putResponse(deserializable);
-    }
-
-    /**
-     * 心跳触发
-     *
-     * @param ctx
-     * @param evt
-     * @throws Exception
-     */
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-
+        byte[] body = msg1.getBody();
+        if (body == null || body.length == 0) {
+            return;
         }
-    }
+        try {
+            ISerializable iSerializable = SerializableFactory.get(client.getClientConfig());
+            RpcResponse deserializable = iSerializable.deserializable(body, RpcResponse.class);
+            long requestId = deserializable.getRequestId();
+            ResFuture future = ResFuture.getFuture(requestId);
+            if (null == future) {
+                log.error("not found future {}", requestId);
+                return;
+            }
+            future.putResponse(deserializable);
+        } catch (Exception ignored) {
+        }
 
-    /**
-     * 背压可读状态变更
-     *
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("current channel channelWritabilityChanged");
-
-        super.channelWritabilityChanged(ctx);
     }
 
     /**
@@ -120,8 +86,7 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-
+        log.error("client appear exception", cause);
         super.exceptionCaught(ctx, cause);
     }
 }

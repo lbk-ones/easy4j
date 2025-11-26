@@ -12,6 +12,7 @@ import java.util.zip.CRC32;
 
 /**
  * rpc编码器
+ *
  * @author bokun
  * @since 2.0.1
  */
@@ -20,16 +21,20 @@ public class RpcEncoder extends MessageToByteEncoder<Transport> {
 
     /**
      * 请求头长度为12字节
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
-     * @param msg           the message to encode
-     * @param out           the {@link ByteBuf} into which the encoded message will be written
+     *
+     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
+     * @param msg the message to encode
+     * @param out the {@link ByteBuf} into which the encoded message will be written
      * @throws Exception
      */
     @Override
     protected void encode(ChannelHandlerContext ctx, Transport msg, ByteBuf out) throws Exception {
         byte[] body = msg.getBody();
+        if (body == null) {
+            body = new byte[0];
+        }
         byte frameType = msg.getFrameType();
-        short checkSum = calculateCheckSum(Codec.MAGIC_NUMBER,Codec.VERSION,frameType,body.length, body);
+        short checkSum = calculateCheckSum(Codec.MAGIC_NUMBER, Codec.VERSION, frameType, body.length, body);
         // 4. 按协议格式写入 ByteBuf（顺序：魔术字→版本→消息类型→数据长度→数据→校验和）
         out.writeInt(Codec.MAGIC_NUMBER);
         out.writeByte(Codec.VERSION);
@@ -40,7 +45,7 @@ public class RpcEncoder extends MessageToByteEncoder<Transport> {
     }
 
     // 计算校验和（与解码器逻辑一致）
-    private short calculateCheckSum(int magic,byte version,byte frameType,int dataLength,byte[] body) {
+    private short calculateCheckSum(int magic, byte version, byte frameType, int dataLength, byte[] body) {
         CRC32 crc32 = new CRC32();
         // 写入 magic（4字节）
         crc32.update((magic >> 24) & 0xFF);

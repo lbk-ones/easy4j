@@ -7,6 +7,7 @@ import easy4j.infra.rpc.config.NettyBootStrap;
 import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
+import easy4j.infra.rpc.heart.HeartbeatHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,9 +15,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,6 +30,7 @@ public class RpcServer extends NettyBootStrap {
     public final ServerConfig serverConfig;
     public final ServerBootstrap bootstrap;
     public final RpcServerHandler rpcServerHandler;
+    public final HeartbeatHandler heartbeatHandler;
     public final AtomicBoolean isStart = new AtomicBoolean(false);
 
     public RpcServer(ServerConfig serverConfig) {
@@ -34,9 +38,10 @@ public class RpcServer extends NettyBootStrap {
         this.serverConfig = serverConfig;
         this.bootstrap = new ServerBootstrap();
         this.rpcServerHandler = new RpcServerHandler(this);
+        this.heartbeatHandler = new HeartbeatHandler(true);
     }
 
-    public void start(){
+    public void start() {
         isStart.compareAndExchange(false, true);
         EventLoopGroup bossGroup = getEventLoop(1);
         EventLoopGroup workerGroup = getEventLoop(0);
@@ -45,13 +50,18 @@ public class RpcServer extends NettyBootStrap {
                     .group(bossGroup, workerGroup)
                     .channel(getMainServerChannel())
                     .option(ChannelOption.SO_BACKLOG, this.serverConfig.getSoBackLog())
-                    .option(ChannelOption.SO_REUSEADDR,  this.serverConfig.isSoReuseAddr())
+                    .option(ChannelOption.SO_REUSEADDR, this.serverConfig.isSoReuseAddr())
                     .childOption(ChannelOption.SO_KEEPALIVE, this.serverConfig.isSoKeepLive())
                     .childOption(ChannelOption.TCP_NODELAY, this.serverConfig.isTcpNodeDelay())
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
+
+                            // 30s 客户端未发送消息 主动断开客户端连接
+                            pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
+                            pipeline.addLast(heartbeatHandler);
+
                             pipeline.addLast(new LengthFieldBasedFrameDecoder(
                                     Codec.MAX_FRAME_LENGTH,
                                     6,
@@ -71,9 +81,9 @@ public class RpcServer extends NettyBootStrap {
 
             System.out.println("RPC服务端启动，端口：" + serverConfig.getPort());
             future.channel().closeFuture().sync();
-        }catch (Exception e){
-            log.error("netty server start error",e);
-        }finally {
+        } catch (Exception e) {
+            log.error("netty server start error", e);
+        } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }

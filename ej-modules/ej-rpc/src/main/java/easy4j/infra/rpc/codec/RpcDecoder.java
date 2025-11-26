@@ -82,19 +82,20 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
                 break;
             case BODY:
                 body = new byte[dataLength];
-                in.readBytes(body);
+                if (dataLength > 0) {
+                    in.readBytes(body);
+                }
                 short b = calculateCheckSum();
                 if (checkSum != b) {
                     throw new IllegalArgumentException("illegal packet [checksum]" + checkSum);
                 }
-                Transport build = Transport.builder()
-                        .magic(magic)
-                        .version(version)
-                        .frameType(frameType)
-                        .dataLength(dataLength)
-                        .checkSum(checkSum)
-                        .body(body)
-                        .build();
+                Transport build = new Transport()
+                        .setMagic(magic)
+                        .setVersion(version)
+                        .setFrameType(frameType)
+                        .setDataLength(dataLength)
+                        .setCheckSum(checkSum)
+                        .setBody(body);
                 // fireChannelRead
                 out.add(build);
                 break;
