@@ -3,6 +3,7 @@ package easy4j.infra.rpc.config;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -13,7 +14,7 @@ import lombok.experimental.SuperBuilder;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@SuperBuilder
+@Accessors(chain = true)
 public class ClientConfig extends BaseConfig {
 
     /**

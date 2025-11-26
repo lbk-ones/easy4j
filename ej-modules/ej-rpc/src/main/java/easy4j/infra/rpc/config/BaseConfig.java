@@ -11,7 +11,6 @@ import lombok.experimental.SuperBuilder;
  * @since 2.0.1
  */
 @Data
-@SuperBuilder
 public class BaseConfig {
 
     private SerializableType serializableType = SerializableType.JACKSON;

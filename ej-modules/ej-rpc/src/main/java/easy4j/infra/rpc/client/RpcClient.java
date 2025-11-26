@@ -1,16 +1,22 @@
 package easy4j.infra.rpc.client;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.rpc.codec.Codec;
 import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
 import easy4j.infra.rpc.config.ClientConfig;
 import easy4j.infra.rpc.config.NettyBootStrap;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
+import easy4j.infra.rpc.domain.Transport;
+import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
+import easy4j.infra.rpc.serializable.ISerializable;
+import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.Host;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -22,7 +28,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,11 +72,6 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     public RpcClient(ClientConfig clientConfig) {
         super(true);
         this.clientConfig = clientConfig;
-        String host = this.clientConfig.getHost();
-        Integer port = this.clientConfig.getPort();
-        if (StrUtil.isEmpty(host) || port == null) {
-            throw new RpcException(" host and port is not null ");
-        }
         rpcClientHandler = new RpcClientHandler(this);
         start();
     }
@@ -93,22 +96,17 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
-                        // 1. RPC编码器：将RpcRequest对象序列化为ByteBuf
                         pipeline.addLast(new RpcEncoder());
-                        // 2. 长度字段编码器：自动给请求添加“数据长度”字段（配合服务端拆包）
                         pipeline.addLast(new LengthFieldPrepender(4));
-                        // 3. 拆包解码器（与服务端配置完全一致！否则解析失败）
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(
-                                1024 * 1024 * 10, // 最大包长度10MB
-                                4 + 1 + 1, // 长度字段偏移量（6字节）
-                                4, // 长度字段字节数（4字节）
-                                1, // 长度调整值（+1字节校验和）
-                                0, // 不跳过初始字节（RpcDecoder需要解析完整头部）
-                                false
+                                Codec.MAX_FRAME_LENGTH,
+                                6,
+                                4,
+                                2,
+                                0,
+                                true
                         ));
-                        // 4. RPC解码器：将拆包后的ByteBuf解析为RpcResponse对象
                         pipeline.addLast(new RpcDecoder());
-                        // 5. 业务处理器：处理服务端响应
                         pipeline.addLast(rpcClientHandler);
                     }
                 });
@@ -176,8 +174,10 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     public RpcResponse sendRequestSync(RpcRequest request, Host host) {
         Channel channel = getChannel(host);
+        ISerializable iSerializable = SerializableFactory.get(clientConfig);
         ResFuture resFuture = new ResFuture(request.getRequestId(), clientConfig.getInvokeTimeOutMillis());
-        channel.writeAndFlush(request).addListener(e -> {
+        Transport transport = Transport.of(FrameType.REQUEST, iSerializable.serializable(request));
+        channel.writeAndFlush(transport).addListener(e -> {
             if (e.isSuccess()) {
                 resFuture.setSendOk(true);
                 return;
@@ -246,9 +246,13 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 //        // 发送请求并获取响应
 //        RpcResponse response = client.sendRequest(request);
 //        System.out.println("RPC响应：" + response.getResult());
-        RpcRequest rpcRequest = new RpcRequest();
-        RpcClient rpcClient = RpcClientFactory.INSTANCE;
-        RpcResponse rpcResponse = rpcClient.sendRequestSync(rpcRequest);
+        Method method = RpcDecoder.class.getDeclaredMethod("decode", ChannelHandlerContext.class, ByteBuf.class, List.class);
+        RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{});
+        Host host = Host.of("127.0.0.1:8888");
+        RpcResponse rpcResponse;
+        try (RpcClient rpcClient = RpcClientFactory.of(host)) {
+            rpcResponse = rpcClient.sendRequestSync(rpcRequest, host);
+        }
         System.out.println(rpcResponse);
     }
 }

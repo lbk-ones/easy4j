@@ -5,11 +5,14 @@ import easy4j.infra.rpc.enums.SerializableType;
 
 public class SerializableFactory {
 
+    private static final class JacksonSerializableHolder {
+        private static final JacksonSerializable jacksonSerializable = new JacksonSerializable();
+    }
 
     public static ISerializable get(BaseConfig baseConfig) {
         SerializableType serializableType = baseConfig.getSerializableType();
         if (serializableType == SerializableType.JACKSON) {
-            return new JacksonSerializable();
+            return JacksonSerializableHolder.jacksonSerializable;
         } else if (serializableType == SerializableType.HESSION) {
             return new HessionSerializable();
         }

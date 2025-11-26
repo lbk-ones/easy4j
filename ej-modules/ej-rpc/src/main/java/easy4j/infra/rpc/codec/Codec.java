@@ -8,15 +8,28 @@ package easy4j.infra.rpc.codec;
  */
 public class Codec {
 
-    // 魔术字
+    /**
+     * 魔术字
+     */
     public static final int MAGIC_NUMBER = 0x65346A;
 
-    // 版本
+    /**
+     * 版本
+     */
     public static final byte VERSION = 1;
 
-    // 头部总长度（不含数据）
-    public static final int HEADER_LENGTH = 4 + 1 + 1 + 4 + 1;
+    /**
+     * 头部总长度（不含数据）
+     */
+    public static final int HEADER_LENGTH = 12;
 
+    /**
+     * 最大有效数据长度
+     */
     public static final int MAX_BODY_LENGTH = 10 * 1024 * 1024; // 10MB
 
+    /**
+     * 最大包长度
+     */
+    public static final int MAX_FRAME_LENGTH = MAX_BODY_LENGTH+HEADER_LENGTH;
 }
