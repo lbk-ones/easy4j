@@ -3,9 +3,11 @@ package easy4j.infra.rpc.codec;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
+import easy4j.infra.rpc.exception.DecodeRpcException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
@@ -18,6 +20,7 @@ import java.util.zip.CRC32;
  * @author bokun
  * @since 2.0.1
  */
+@Slf4j
 public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
 
     public RpcDecoder() {
@@ -54,14 +57,14 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
             case MAGIC:
                 magic = in.readInt();
                 if (Codec.MAGIC_NUMBER != magic) {
-                    throw new IllegalArgumentException("illegal packet [magic]" + magic);
+                    throw new DecodeRpcException("illegal packet [magic]" + magic);
                 }
                 checkpoint(State.VERSION);
                 break;
             case VERSION:
                 version = in.readByte();
                 if (Codec.VERSION != version) {
-                    throw new IllegalArgumentException("illegal packet [version]" + version);
+                    throw new DecodeRpcException("illegal packet [version]" + version);
                 }
                 checkpoint(State.MSGTYPE);
                 break;
@@ -72,7 +75,7 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
             case DATALENGTH:
                 dataLength = in.readInt();
                 if (dataLength < 0 || dataLength > Codec.MAX_BODY_LENGTH) {
-                    throw new IllegalArgumentException("illegal packet [dataLength] " + dataLength);
+                    throw new DecodeRpcException("illegal packet [dataLength] " + dataLength);
                 }
                 checkpoint(State.CHECKSUM);
                 break;
@@ -81,13 +84,14 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
                 checkpoint(State.BODY);
                 break;
             case BODY:
+                log.info("decode body dataLength "+dataLength);
                 body = new byte[dataLength];
                 if (dataLength > 0) {
                     in.readBytes(body);
                 }
                 short b = calculateCheckSum();
                 if (checkSum != b) {
-                    throw new IllegalArgumentException("illegal packet [checksum]" + checkSum);
+                    throw new DecodeRpcException("illegal packet [checksum]" + checkSum);
                 }
                 Transport build = new Transport()
                         .setMagic(magic)
@@ -98,10 +102,17 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
                         .setBody(body);
                 // fireChannelRead
                 out.add(build);
+                checkpoint(State.MAGIC);
                 break;
             default:
                 break;
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("decode error ",cause);
+        super.exceptionCaught(ctx,cause);
     }
 
     private short calculateCheckSum() {

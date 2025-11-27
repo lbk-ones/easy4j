@@ -17,6 +17,12 @@ import lombok.experimental.SuperBuilder;
 @Accessors(chain = true)
 public class ServerConfig extends BaseConfig {
 
+
+    /**
+     * 服务名称
+     */
+    private String serverName;
+
     /**
      * 要监听的端口
      */

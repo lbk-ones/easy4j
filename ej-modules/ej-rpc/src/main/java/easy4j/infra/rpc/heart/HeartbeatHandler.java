@@ -2,19 +2,24 @@ package easy4j.infra.rpc.heart;
 
 import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.FrameType;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 通用心跳处理 Handler（客户端/服务端均可复用，通过构造参数区分角色）
  * 不用处理失败等错误信息 错误会自动向下传递
+ * 只发送对面不接受
  *
  * @since 2.0.1
  */
 @Slf4j
+@ChannelHandler.Sharable
 public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
     private final boolean isServer; // true=服务端，false=客户端
 
@@ -64,7 +69,12 @@ public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
      */
     private void sendHeartbeat(ChannelHandlerContext ctx) {
         if (ctx.channel().isActive()) {
-            ctx.writeAndFlush(Transport.of(FrameType.REQUEST_HEART));
+            ctx.writeAndFlush(Transport.of(FrameType.REQUEST_HEART)).addListener(future -> {
+                if (!future.isSuccess()) {
+                    Throwable cause = future.cause();
+                    log.error("heart send false",cause);
+                }
+            });
         }
     }
 }

@@ -4,6 +4,7 @@ package easy4j.infra.rpc.client;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.FrameType;
+import easy4j.infra.rpc.exception.DecodeRpcException;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.ChannelUtils;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @ChannelHandler.Sharable
 @Slf4j
-public class RpcClientHandler extends ChannelInboundHandlerAdapter {
+public class RpcClientHandler extends ChannelDuplexHandler  {
 
     private RpcClient client;
 
@@ -53,7 +54,7 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info("current channel receive msg" + msg);
+        log.info("current client channel receive msg" + msg);
         Transport msg1 = (Transport) msg;
         if (msg1.getFrameType() != FrameType.RESPONSE.getFrameType()) {
             return;
@@ -87,6 +88,11 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("client appear exception", cause);
-        super.exceptionCaught(ctx, cause);
+        if(cause instanceof DecodeRpcException){
+            log.error("decode error , so close channel!");
+            ctx.channel().close();
+        }else{
+            super.exceptionCaught(ctx, cause);
+        }
     }
 }

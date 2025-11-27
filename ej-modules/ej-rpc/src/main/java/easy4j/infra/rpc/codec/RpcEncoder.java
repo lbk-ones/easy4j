@@ -5,6 +5,7 @@ import easy4j.infra.rpc.domain.Transport;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -16,6 +17,7 @@ import java.util.zip.CRC32;
  * @author bokun
  * @since 2.0.1
  */
+@Slf4j
 public class RpcEncoder extends MessageToByteEncoder<Transport> {
 
 

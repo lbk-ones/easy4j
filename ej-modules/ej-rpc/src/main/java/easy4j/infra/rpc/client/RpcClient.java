@@ -22,6 +22,8 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +64,9 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     private EventLoopGroup workerGroup;
     private final HeartbeatHandler heartbeatHandler;
+    private final LoggingHandler loggingHandler;
 
+    private final LengthFieldPrepender lengthFieldPrepender;
 
     /**
      * @param clientConfig 客户端配置
@@ -72,6 +76,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         this.clientConfig = clientConfig;
         rpcClientHandler = new RpcClientHandler(this);
         this.heartbeatHandler = new HeartbeatHandler(false);
+        this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
+        this.lengthFieldPrepender = new LengthFieldPrepender(4);
         start();
     }
 
@@ -95,11 +101,9 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(loggingHandler);
                         // IdleStateHandler：45秒读空闲（服务端没响应），10秒写空闲（主动发心跳）
                         pipeline.addLast(new IdleStateHandler(45, 10, 0, TimeUnit.SECONDS));
-                        pipeline.addLast(heartbeatHandler);
-                        pipeline.addLast(new RpcEncoder());
-                        pipeline.addLast(new LengthFieldPrepender(4));
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(
                                 Codec.MAX_FRAME_LENGTH,
                                 6,
@@ -109,7 +113,10 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                                 true
                         ));
                         pipeline.addLast(new RpcDecoder());
+                        pipeline.addLast(new RpcEncoder());
+                        pipeline.addLast(heartbeatHandler);
                         pipeline.addLast(rpcClientHandler);
+                        pipeline.addLast(lengthFieldPrepender);
                     }
                 });
         isStarted.compareAndSet(false, true);
@@ -154,7 +161,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                 if (workerGroup != null) {
                     this.workerGroup.shutdownGracefully();
                 }
-                log.info("netty client closed");
+                log.info("netty client auto closed");
             } catch (Exception ex) {
                 log.error("netty client close exception", ex);
             }
@@ -195,6 +202,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
             if (null == rpcResponse) {
                 if (resFuture.isSendOk()) {
                     if (resFuture.isTimeout()) {
+                        log.error("wait response on the channel {} timeout {}",host.getAddress(),clientConfig.getInvokeTimeOutMillis());
                         throw new RpcTimeoutException(host.getAddress(), clientConfig.getInvokeTimeOutMillis());
                     }
                 } else {
@@ -237,24 +245,14 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     }
 
     public static void main(String[] args) throws Exception {
-//        RpcClient client = new RpcClient("127.0.0.1", 8888);
-//        // 构造RPC请求
-//        RpcRequest request = new RpcRequest();
-//        request.setRequestId(UUID.randomUUID().toString());
-//        request.setServiceName("UserService");
-//        request.setMethodName("getUser");
-//        request.setParameterTypes(new Class[]{String.class});
-//        request.setParameters(new Object[]{"123"});
-//        // 发送请求并获取响应
-//        RpcResponse response = client.sendRequest(request);
-//        System.out.println("RPC响应：" + response.getResult());
         Method method = RpcDecoder.class.getDeclaredMethod("decode", ChannelHandlerContext.class, ByteBuf.class, List.class);
         RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{});
         Host host = Host.of("127.0.0.1:8888");
         RpcResponse rpcResponse;
         try (RpcClient rpcClient = RpcClientFactory.of(host)) {
             rpcResponse = rpcClient.sendRequestSync(rpcRequest, host);
+            System.out.println(rpcResponse);
+            TimeUnit.MINUTES.sleep(100);
         }
-        System.out.println(rpcResponse);
     }
 }

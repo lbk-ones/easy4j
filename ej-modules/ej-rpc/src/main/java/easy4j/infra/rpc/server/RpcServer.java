@@ -15,6 +15,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,8 @@ public class RpcServer extends NettyBootStrap {
     public final ServerBootstrap bootstrap;
     public final RpcServerHandler rpcServerHandler;
     public final HeartbeatHandler heartbeatHandler;
+    public final LengthFieldPrepender lengthFieldPrepender;
+    public final LoggingHandler loggingHandler;
     public final AtomicBoolean isStart = new AtomicBoolean(false);
 
     public RpcServer(ServerConfig serverConfig) {
@@ -39,6 +43,8 @@ public class RpcServer extends NettyBootStrap {
         this.bootstrap = new ServerBootstrap();
         this.rpcServerHandler = new RpcServerHandler(this);
         this.heartbeatHandler = new HeartbeatHandler(true);
+        this.lengthFieldPrepender = new LengthFieldPrepender(4);
+        this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
     }
 
     public void start() {
@@ -57,11 +63,9 @@ public class RpcServer extends NettyBootStrap {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
-
+                            pipeline.addLast(loggingHandler);
                             // 30s 客户端未发送消息 主动断开客户端连接
                             pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
-                            pipeline.addLast(heartbeatHandler);
-
                             pipeline.addLast(new LengthFieldBasedFrameDecoder(
                                     Codec.MAX_FRAME_LENGTH,
                                     6,
@@ -71,9 +75,11 @@ public class RpcServer extends NettyBootStrap {
                                     true
                             ));
                             pipeline.addLast(new RpcDecoder());
-                            pipeline.addLast(rpcServerHandler);
                             pipeline.addLast(new RpcEncoder());
-                            pipeline.addLast(new LengthFieldPrepender(4)); // 数据长度字段占4字节
+                            pipeline.addLast(heartbeatHandler);
+                            pipeline.addLast(rpcServerHandler);
+
+                            pipeline.addLast(lengthFieldPrepender); // 数据长度字段占4字节
                         }
                     });
 

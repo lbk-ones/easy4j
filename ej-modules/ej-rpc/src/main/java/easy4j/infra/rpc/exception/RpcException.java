@@ -10,16 +10,10 @@ import lombok.EqualsAndHashCode;
 @Data
 public class RpcException extends RuntimeException {
 
-    private String code;
-
     public RpcException(String message) {
         super(message);
     }
 
-    public RpcException(String message, String code) {
-        super(message);
-        this.code = code;
-    }
 
     public RpcException(String message, Throwable throwable) {
         super(message, throwable);
