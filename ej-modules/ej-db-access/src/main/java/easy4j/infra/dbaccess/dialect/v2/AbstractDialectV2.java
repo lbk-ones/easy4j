@@ -210,6 +210,41 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     }
 
     @Override
+    public List<TableMetadata> getAllTableInfo(String catLog, String schema, String tableNamePattern, boolean isCache, String[] tableType) {
+        if (ListTs.isEmpty(tableType)) return ListTs.newList();
+        try {
+            if (StrUtil.isBlank(schema)) {
+                schema = this.connection.getSchema();
+            }
+            if (StrUtil.isBlank(catLog)) {
+                catLog = this.connection.getCatalog();
+            }
+        } catch (Exception ignored) {
+
+        }
+        String cacheKey = null;
+        if (isCache) {
+            cacheKey = getCacheKeyFromConnection(connection, "getAllTableInfo2-" + catLog + schema + tableNamePattern + Arrays.toString(tableType));
+        }
+        final String finalCatLog = catLog;
+        final String finalSchema = schema;
+        return callbackList(() -> {
+            DatabaseMetaData metaData = this.connection.getMetaData();
+            ResultSet tables = metaData.getTables(finalCatLog, finalSchema, tableNamePattern, tableType);
+            try {
+                MapListHandler mapListHandler = new MapListHandler();
+                List<Map<String, Object>> handle = mapListHandler.handle(tables);
+                List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                handlerTableMetaData(map);
+                map = ListTs.distinct(map, TableMetadata::getTableName);
+                return map;
+            } finally {
+                JdbcHelper.close(tables);
+            }
+        }, cacheKey, TableMetadata.class);
+    }
+
+    @Override
     public List<TableMetadata> getTableInfos(String tableNamePattern) {
         if (StrUtil.isBlank(tableNamePattern)) {
             return ListTs.newList();

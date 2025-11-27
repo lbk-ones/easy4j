@@ -6,11 +6,14 @@ import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.TestDynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.jupiter.api.Test;
@@ -153,9 +156,25 @@ class OpDDLTestH2 {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
+    public DataSource getMysql8SysDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:mysql://10.0.71.38:36180/sys");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("root");
+        hikariConfig.setPassword("SSC@hainan123");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
     public DataSource getTestPg(){
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/test");
+        hikariConfig.setJdbcUrl("jdbc:postgresql://10.0.32.19:30163/ds");
         String jdbcUrl = hikariConfig.getJdbcUrl();
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         hikariConfig.setDriverClassName(driverClassNameByUrl);
@@ -202,6 +221,23 @@ class OpDDLTestH2 {
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
     }
+
+    public DataSource getOracle19cSystem(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("system");
+        hikariConfig.setPassword("SSC@hainan123");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
     public DataSource getOracle19cTestCopyDataSource(){
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
@@ -217,6 +253,72 @@ class OpDDLTestH2 {
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
         hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
         return new HikariDataSource(hikariConfig);
+    }
+
+    public DataSource getMsSqlDataSource(){
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:sqlserver://localhost:1433;encrypt=false");
+        String jdbcUrl = hikariConfig.getJdbcUrl();
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        hikariConfig.setDriverClassName(driverClassNameByUrl);
+        hikariConfig.setUsername("sa");
+        hikariConfig.setPassword("123456");
+        hikariConfig.setMaximumPoolSize(20); // 最大连接数
+        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
+        hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
+        hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒
+        hikariConfig.setConnectionTestQuery(SqlType.getValidateSqlByUrl(jdbcUrl)); // 测试连接的 SQL
+        return new HikariDataSource(hikariConfig);
+    }
+
+
+    /**
+     * 指定库查表信息集合
+     * @throws SQLException
+     */
+    @Test
+    void testGetTables() throws SQLException {
+        // oracle（oracle比较特殊 schema当库用）
+        DataSource oracle19cSystem = getOracle19cSystem();
+        Connection connection = oracle19cSystem.getConnection();
+        DialectV2 dialectV2 = DialectFactory.get(connection);
+        String catalog = connection.getCatalog();
+        System.out.println("oracle-->"+catalog);
+        List<TableMetadata> allTableInfo = dialectV2.getAllTableInfo(catalog, "EMR_DICT", null, false, new String[]{"TABLE"});
+        System.out.println(JacksonUtil.toJson(allTableInfo));
+
+        System.out.println("-------------------------------------------------");
+
+        // mysql
+        DataSource mysql8SysDataSource = getMysql8SysDataSource();
+        Connection connection1 = mysql8SysDataSource.getConnection();
+        DialectV2 dialectV22 = DialectFactory.get(connection1);
+        String catalog2 = connection.getCatalog();
+        System.out.println("mysql-->"+catalog2);
+        List<TableMetadata> allTableInfo2 = dialectV22.getAllTableInfo("test", "", null, false, new String[]{"TABLE"});
+        System.out.println(JacksonUtil.toJson(allTableInfo2));
+        System.out.println("-------------------------------------------------");
+
+        // sqlserver sa
+        DataSource msSqlDataSource = getMsSqlDataSource();
+        Connection connection2 = msSqlDataSource.getConnection();
+        DialectV2 dialectV23 = DialectFactory.get(connection2);
+        String catalog23 = connection.getCatalog();
+        System.out.println("sqlserver-->"+catalog23);
+        List<TableMetadata> allTableInfo23 = dialectV23.getAllTableInfo("master", "", null, false, new String[]{"TABLE"});
+        System.out.println(JacksonUtil.toJson(allTableInfo23));
+        System.out.println("-------------------------------------------------");
+
+        // pg (办不到指定库去查表信息，因为它和链接强绑定和权限无关，链接后面是什么库就只能查什么库)
+        DataSource pg1 = getTestPg();
+        Connection connection3 = pg1.getConnection();
+        DialectV2 dialectV24 = DialectFactory.get(connection3);
+        String catalog24 = connection.getCatalog();
+        System.out.println("pg-->"+catalog24);
+        List<TableMetadata> allTableInfo24 = dialectV24.getAllTableInfo("ds", "", null, false, new String[]{"TABLE"});
+        System.out.println(JacksonUtil.toJson(allTableInfo24));
+
     }
 
     // h2 到 oracle
