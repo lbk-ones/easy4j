@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,6 +30,11 @@ public class RpcRequest implements Serializable {
     private String serviceName;
 
     /**
+     * 类标识
+     */
+    private String classIdentify;
+
+    /**
      * 方法名称
      */
     private String methodName;
@@ -36,17 +42,22 @@ public class RpcRequest implements Serializable {
     /**
      * 参数信息
      */
-    private String[] parameterTypes;
+    private String[] parameterTypes = new String[0];
 
     /**
      * 参数值
      */
-    private Object[] parameters;
+    private Object[] parameters = new Object[0];
 
     /**
      * 返回类型
      */
     private String returnType;
+
+    /**
+     * 附加参数信息 会一块传递到服务端去
+     */
+    private Map<String,Object> attachment;
 
 
     public RpcRequest() {
@@ -65,7 +76,10 @@ public class RpcRequest implements Serializable {
         rpcRequest.requestId = atomicInteger.incrementAndGet();
         Class<?> declaringClass = method.getDeclaringClass();
         rpcRequest.methodName = method.getName();
+        // 这个不一定是类的name，可能会在后续变成真正的服务名称也说不准
         rpcRequest.serviceName = declaringClass.getName();
+        // 但是这个一定是类的全类名
+        rpcRequest.classIdentify = declaringClass.getName();
         String[] parameterTypes = new String[method.getParameterCount()];
         int i = 0;
         for (Class<?> parameterType : method.getParameterTypes()) {

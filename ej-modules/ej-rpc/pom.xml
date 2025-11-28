@@ -51,6 +51,14 @@
             <artifactId>hutool-core</artifactId>
         </dependency>
 
+        <!--不传递spring依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!--slf4j + logback-->
         <dependency>
             <groupId>org.slf4j</groupId>

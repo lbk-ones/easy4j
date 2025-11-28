@@ -17,7 +17,9 @@
 
 package easy4j.infra.rpc.utils;
 
+import easy4j.infra.rpc.domain.RpcRequest;
 import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -29,6 +31,9 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class ChannelUtils {
+
+    public static final AttributeKey<RpcRequest> REQUEST_INFO = AttributeKey.newInstance("e4j.netty.request");
+
 
     private ChannelUtils() {
         throw new IllegalStateException(ChannelUtils.class.getName());

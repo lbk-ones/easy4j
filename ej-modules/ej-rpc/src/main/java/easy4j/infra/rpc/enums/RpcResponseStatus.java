@@ -31,6 +31,7 @@ public enum RpcResponseStatus {
     DATA_DUPLICATE(false, 4091, "数据已存在", "Data Duplicate"),
     OPERATION_NOT_ALLOWED(false, 4092, "当前操作不允许", "Operation Not Allowed"),
     QUOTA_EXCEEDED(false, 429, "请求频率超限", "Request Quota Exceeded"),
+    INVOKE_EXCEPTION(false, 430, "调用异常", "Request Invoke Error"),
 
     // ===================== 系统异常（5xx）=====================
     SYSTEM_ERROR(false, 500, "服务器内部错误", "Internal Server Error"),
@@ -48,7 +49,8 @@ public enum RpcResponseStatus {
     // 其他系统异常
     UNSUPPORTED_OPERATION(false, 504, "不支持的操作", "Unsupported Operation"),
     CONFIG_ERROR(false, 505, "配置错误", "Configuration Error"),
-    RESOURCE_EXHAUSTED(false, 506, "服务器资源耗尽", "Resource Exhausted");
+    RESOURCE_EXHAUSTED(false, 506, "服务器资源耗尽", "Resource Exhausted"),
+    DECODE_ERROR(false, 507, "解码异常", "Decode Error");
 
     /** 是否成功（true=成功，false=失败） */
     private final boolean success;
@@ -110,5 +112,9 @@ public enum RpcResponseStatus {
      */
     public static boolean isSystemError(int code) {
         return code >= 500 && code < 600;
+    }
+
+    public String getMsg(){
+        return this.enMsg;
     }
 }

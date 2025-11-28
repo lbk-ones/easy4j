@@ -57,14 +57,14 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
             case MAGIC:
                 magic = in.readInt();
                 if (Codec.MAGIC_NUMBER != magic) {
-                    throw new DecodeRpcException("illegal packet [magic]" + magic);
+                    throw new DecodeRpcException("illegal packet [magic] " + magic);
                 }
                 checkpoint(State.VERSION);
                 break;
             case VERSION:
                 version = in.readByte();
                 if (Codec.VERSION != version) {
-                    throw new DecodeRpcException("illegal packet [version]" + version);
+                    throw new DecodeRpcException("illegal packet [version] " + version);
                 }
                 checkpoint(State.MSGTYPE);
                 break;

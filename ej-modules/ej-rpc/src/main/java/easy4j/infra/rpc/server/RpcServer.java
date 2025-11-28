@@ -1,30 +1,38 @@
 package easy4j.infra.rpc.server;
 
+import cn.hutool.core.thread.ExecutorBuilder;
+import cn.hutool.core.thread.NamedThreadFactory;
 import easy4j.infra.rpc.codec.Codec;
 import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
 import easy4j.infra.rpc.config.NettyBootStrap;
 import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
-import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.heart.HeartbeatHandler;
+import easy4j.infra.rpc.utils.ChannelUtils;
+import easy4j.infra.rpc.utils.DefaultUncaughtExceptionHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.Attribute;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+/**
+ * TCP服务
+ *
+ * @author bokun
+ * @since 2.0.1
+ */
 @Getter
 @Slf4j
 public class RpcServer extends NettyBootStrap {
@@ -32,6 +40,7 @@ public class RpcServer extends NettyBootStrap {
     public final ServerConfig serverConfig;
     public final ServerBootstrap bootstrap;
     public final RpcServerHandler rpcServerHandler;
+    public final RequestHandler requestHandler;
     public final HeartbeatHandler heartbeatHandler;
     public final LengthFieldPrepender lengthFieldPrepender;
     public final LoggingHandler loggingHandler;
@@ -45,6 +54,7 @@ public class RpcServer extends NettyBootStrap {
         this.heartbeatHandler = new HeartbeatHandler(true);
         this.lengthFieldPrepender = new LengthFieldPrepender(4);
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
+        this.requestHandler = new RequestHandler(this);
     }
 
     public void start() {
@@ -76,6 +86,7 @@ public class RpcServer extends NettyBootStrap {
                             ));
                             pipeline.addLast(new RpcDecoder());
                             pipeline.addLast(new RpcEncoder());
+                            pipeline.addLast(requestHandler);
                             pipeline.addLast(heartbeatHandler);
                             pipeline.addLast(rpcServerHandler);
 
@@ -95,9 +106,34 @@ public class RpcServer extends NettyBootStrap {
         }
     }
 
+    /**
+     * 从上下文中获取请求信息
+     *
+     * @param ctx channel 上下文
+     * @return RpcRequest
+     */
+    public RpcRequest getRequest(ChannelHandlerContext ctx) {
+        Attribute<RpcRequest> attr = ctx.channel().attr(ChannelUtils.REQUEST_INFO);
+        return attr.get();
+    }
+
+    /**
+     * @return
+     */
+    public ExecutorService getExecutorService() {
+        int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
+        return ExecutorBuilder.create()
+                .setCorePoolSize(threadNum)
+                .setMaxPoolSize(threadNum * 2)
+                .setThreadFactory(new NamedThreadFactory("e4j-server-pool-", null, true, DefaultUncaughtExceptionHandler.getInstance()))
+                .build();
+    }
+
     public static void main(String[] args) throws InterruptedException {
         ServerConfig build = new ServerConfig()
                 .setPort(8888);
         new RpcServer(build).start();
     }
+
+
 }
