@@ -12,17 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.dubbo3;
+package easy4j.infra.rpc.integrated.spring.annotations;
 
-import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.context.annotation.Configuration;
+import easy4j.infra.rpc.integrated.spring.config.BeanImport;
+import easy4j.infra.rpc.integrated.spring.config.RpcServiceProcessor;
+import org.springframework.context.annotation.Import;
 
 /**
- * Config
+ * EnableEasy4jRpc
+ * 是否启用 rpc
  *
- * @author bokun.li
- * @date 2025-05
+ * @author bokun
+ * @since 2025-11-29 16:54:09
  */
-@Configuration
-public class Config {
+@Import(value = {BeanImport.class, RpcServiceProcessor.class})
+public @interface EnableEasy4jRpc {
+
+    /**
+     * 基本路径，扫描指定路径 暴露服务，将元数据注册到注册中心去
+     *
+     * @return
+     */
+    String[] basePackage() default {};
+
 }

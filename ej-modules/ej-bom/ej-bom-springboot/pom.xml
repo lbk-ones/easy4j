@@ -18,6 +18,15 @@
     <dependencyManagement>
         <dependencies>
 
+            <!--虽然父级有一个 但是这里也必须有这个依赖绑定 不然子模块依赖会混乱 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            
             <!--spring cloud-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
