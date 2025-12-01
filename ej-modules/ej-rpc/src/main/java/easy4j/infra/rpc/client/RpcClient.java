@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.client;
 
-import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.codec.Codec;
 import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
@@ -12,7 +11,7 @@ import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
-import easy4j.infra.rpc.heart.HeartbeatHandler;
+import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.Host;
@@ -63,7 +62,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     private EventLoopGroup workerGroup;
-    private final HeartbeatHandler heartbeatHandler;
+    private final NettyHeartbeatHandler nettyHeartbeatHandler;
     private final LoggingHandler loggingHandler;
 
     private final LengthFieldPrepender lengthFieldPrepender;
@@ -75,7 +74,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         super(true);
         this.clientConfig = clientConfig;
         rpcClientHandler = new RpcClientHandler(this);
-        this.heartbeatHandler = new HeartbeatHandler(false);
+        this.nettyHeartbeatHandler = new NettyHeartbeatHandler(false);
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         this.lengthFieldPrepender = new LengthFieldPrepender(4);
         start();
@@ -114,7 +113,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                         ));
                         pipeline.addLast(new RpcDecoder());
                         pipeline.addLast(new RpcEncoder());
-                        pipeline.addLast(heartbeatHandler);
+                        pipeline.addLast(nettyHeartbeatHandler);
                         pipeline.addLast(rpcClientHandler);
                         pipeline.addLast(lengthFieldPrepender);
                     }

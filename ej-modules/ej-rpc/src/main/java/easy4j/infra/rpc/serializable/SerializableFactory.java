@@ -19,5 +19,9 @@ public class SerializableFactory {
         throw new IllegalArgumentException("serializable type is not support" + serializableType);
     }
 
+    public static ISerializable getJackson() {
+        return JacksonSerializableHolder.jacksonSerializable;
+    }
+
 
 }

@@ -3,8 +3,7 @@ package easy4j.infra.dbaccess.dialect.v2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 
-import jakarta.annotation.Nullable;
-
+import javax.annotation.Nullable;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -64,6 +63,18 @@ public interface SchemaMetaDialect {
      * @return
      */
     List<TableMetadata> getTableInfos(String tableNamePattern);
+
+    /**
+     * 根据数据库名称，schema名称，表名称，表类型 获取 表/视图 信息
+     *
+     * @param catLog           catlog
+     * @param schema           schema
+     * @param tableNamePattern 表名
+     * @param isCache          是否缓存
+     * @param tableType        表类型 说明：典型的类型包括"TABLE"（表）、"VIEW"（视图）、"SYSTEM TABLE"（系统表）、 "GLOBAL TEMPORARY"（全局临时表）、"LOCAL TEMPORARY"（本地临时表）、 "ALIAS"（别名）、"SYNONYM"（同义词）等
+     * @return List<easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata>
+     */
+    List<TableMetadata> getAllTableInfo(String catLog,String schema, String tableNamePattern, boolean isCache, String[] tableType);
 
     /**
      * 根据表名称获取 表/视图 中的字段信息

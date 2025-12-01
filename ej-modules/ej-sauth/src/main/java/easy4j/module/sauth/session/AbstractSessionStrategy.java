@@ -18,6 +18,7 @@ import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.sauth.domain.SecuritySession;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * @author bokun.li
  * @date 2025-05
  */
+@Slf4j
 public abstract class AbstractSessionStrategy implements SessionStrategy {
 
     public List<SecuritySession> cacheSessionList = ListTs.newCopyOnWriteArrayList();
@@ -69,6 +71,7 @@ public abstract class AbstractSessionStrategy implements SessionStrategy {
             }
             if (!securitySession.isValid()) {
                 deleteSession(securitySession.getShaToken());
+                log.info("auto delete invalid session [{}] username is {}",securitySession.getShaToken(),securitySession.getUserName());
                 cacheSessionList.remove(i);
             }
         }

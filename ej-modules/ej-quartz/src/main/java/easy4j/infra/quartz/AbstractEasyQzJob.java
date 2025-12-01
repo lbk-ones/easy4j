@@ -61,7 +61,7 @@ public abstract class AbstractEasyQzJob extends QuartzJobBean implements Job {
                 errorCounter.increment();
             }
             e.printStackTrace();
-            throw new JobExecutionException(e.getMessage(),e,true);
+            throw new JobExecutionException(e.getMessage(),e,false);
         } finally {
             long l = System.currentTimeMillis() - beginTime;
             if (timer != null) {

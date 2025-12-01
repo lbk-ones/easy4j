@@ -139,8 +139,6 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public SecuritySession saveSession(SecuritySession securitySession) {
-        super.saveSession(securitySession);
-
         if (isClient) {
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
@@ -154,8 +152,12 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             SecuritySession securitySession1 = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
             securityContext.setSession(securitySession1);
+            if (null != securitySession1) {
+                securityContext.setSessionByToken(securitySession1.getShaToken(), securitySession1);
+            }
             return securitySession1;
         } else {
+            super.saveSession(securitySession);
             int i = dbAccess.saveOne(securitySession, SecuritySession.class);
             if (i > 0) {
                 return securitySession;
@@ -164,6 +166,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         }
 
     }
+
 
     @Override
     public void deleteSession(String token) {
@@ -178,6 +181,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.delete(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             securityContext.removeSessionByToken(token);
+            ISecurityEasy4jSession session = securityContext.getSession();
+            if (session != null && StrUtil.equals(session.getShaToken(), token)) {
+                securityContext.removeSession();
+            }
         } else {
             Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
             dbAccess.deleteByMap(dict, SecuritySession.class);

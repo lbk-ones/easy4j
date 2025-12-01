@@ -21,15 +21,14 @@ import easy4j.infra.dbaccess.dynamic.dll.op.DBFieldEscapeChecker;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDialectV2 extends CommonDBAccess implements DialectV2 {
@@ -49,15 +48,15 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     // cache 30 minutes
     private static final WeakCache<Object, Object> dynamicColumnCache = new WeakCache<>(30 * 60 * 1000L);
 
-    public static Map<String, cn.hutool.db.sql.Wrapper> dbVsWrapper = Maps.newHashMap();
+    public static Map<String, Wrapper> dbVsWrapper = Maps.newHashMap();
 
     static {
         dynamicColumnCache.schedulePrune(30 * 60 * 1000L);
-        dbVsWrapper.put(DbType.MYSQL.getDb(), new cn.hutool.db.sql.Wrapper('`', '`'));
-        dbVsWrapper.put(DbType.ORACLE.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.H2.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new cn.hutool.db.sql.Wrapper('[', ']'));
+        dbVsWrapper.put(DbType.MYSQL.getDb(), new Wrapper('`', '`'));
+        dbVsWrapper.put(DbType.ORACLE.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.H2.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new Wrapper('[', ']'));
         dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"', '"'));
         dbVsWrapper = Collections.unmodifiableMap(dbVsWrapper);
     }
@@ -207,6 +206,41 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
         } finally {
             JdbcHelper.close(tables);
         }
+    }
+
+    @Override
+    public List<TableMetadata> getAllTableInfo(String catLog, String schema, String tableNamePattern, boolean isCache, String[] tableType) {
+        if (ListTs.isEmpty(tableType)) return ListTs.newList();
+        try {
+            if (StrUtil.isBlank(schema)) {
+                schema = this.connection.getSchema();
+            }
+            if (StrUtil.isBlank(catLog)) {
+                catLog = this.connection.getCatalog();
+            }
+        } catch (Exception ignored) {
+
+        }
+        String cacheKey = null;
+        if (isCache) {
+            cacheKey = getCacheKeyFromConnection(connection, "getAllTableInfo2-" + catLog + schema + tableNamePattern + Arrays.toString(tableType));
+        }
+        final String finalCatLog = catLog;
+        final String finalSchema = schema;
+        return callbackList(() -> {
+            DatabaseMetaData metaData = this.connection.getMetaData();
+            ResultSet tables = metaData.getTables(finalCatLog, finalSchema, tableNamePattern, tableType);
+            try {
+                MapListHandler mapListHandler = new MapListHandler();
+                List<Map<String, Object>> handle = mapListHandler.handle(tables);
+                List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                handlerTableMetaData(map);
+                map = ListTs.distinct(map, TableMetadata::getTableName);
+                return map;
+            } finally {
+                JdbcHelper.close(tables);
+            }
+        }, cacheKey, TableMetadata.class);
     }
 
     @Override

@@ -9,8 +9,6 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * 通用心跳处理 Handler（客户端/服务端均可复用，通过构造参数区分角色）
  * 不用处理失败等错误信息 错误会自动向下传递
@@ -20,11 +18,11 @@ import java.nio.charset.StandardCharsets;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
+public class NettyHeartbeatHandler extends ChannelInboundHandlerAdapter {
     private final boolean isServer; // true=服务端，false=客户端
 
 
-    public HeartbeatHandler(boolean isServer) {
+    public NettyHeartbeatHandler(boolean isServer) {
         this.isServer = isServer;
     }
 

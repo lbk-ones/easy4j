@@ -1,10 +1,11 @@
-package easy4j.infra.rpc.server;
+package easy4j.infra.rpc.server.handlers;
 
 import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
+import easy4j.infra.rpc.server.RpcServer;
 import easy4j.infra.rpc.utils.ChannelUtils;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,5 +32,6 @@ public class RequestHandler extends SimpleChannelInboundHandler<Transport> {
         ISerializable iSerializable = SerializableFactory.get(rpcServer.getServerConfig());
         RpcRequest deserializable = iSerializable.deserializable(body, RpcRequest.class);
         channelHandlerContext.channel().attr(ChannelUtils.REQUEST_INFO).set(deserializable);
+        channelHandlerContext.fireChannelRead(transport);
     }
 }
