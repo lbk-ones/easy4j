@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-easy4j.infra.rpc.config.SpringConfig

@@ -1,9 +1,10 @@
 package easy4j.infra.rpc.config;
 
+import easy4j.infra.rpc.enums.LbType;
+import easy4j.infra.rpc.enums.RegisterInfoType;
+import easy4j.infra.rpc.enums.RegisterType;
 import easy4j.infra.rpc.enums.SerializableType;
-import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
 
 /**
  * netty的一些基础配置
@@ -13,7 +14,20 @@ import lombok.experimental.SuperBuilder;
 @Data
 public class BaseConfig {
 
+    /**
+     * 序列化方式 默认jackson
+     */
     private SerializableType serializableType = SerializableType.JACKSON;
+
+    /**
+     * 注册中心类型 默认为jdbc
+     */
+    private RegisterType registerType = RegisterType.JDBC;
+
+    /**
+     * 负载均衡的方式
+     */
+    private LbType lbType = LbType.ROUND_ROBIN;
 
 
     /**
@@ -70,4 +84,20 @@ public class BaseConfig {
      * 恢复 “可写” 状态的阈值：缓冲区字节数 < 该值时，通道恢复可写
      */
     private Integer writeBufferLowWaterMark = 64 * 1024;
+
+
+    /**
+     * 注册中心 jdbc url
+     */
+    private String registryJdbcUrl;
+
+    /**
+     * 注册中心jdbc 用户名
+     */
+    private String registryJdbcUsername;
+
+    /**
+     * 注册中心jdbc 密码
+     */
+    private String registryJdbcPassword;
 }

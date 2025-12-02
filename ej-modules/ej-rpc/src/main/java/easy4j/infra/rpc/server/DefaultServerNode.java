@@ -5,9 +5,11 @@ import cn.hutool.core.util.StrUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import easy4j.infra.rpc.enums.LbType;
-import easy4j.infra.rpc.enums.RegisterType;
+import easy4j.infra.rpc.enums.RegisterInfoType;
 import easy4j.infra.rpc.heart.NodeHeartbeatInfo;
+import easy4j.infra.rpc.registry.Event;
 import easy4j.infra.rpc.registry.Registry;
+import easy4j.infra.rpc.registry.SubscribeListener;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.utils.Host;
@@ -38,8 +40,8 @@ public class DefaultServerNode implements ServerNode {
 
     @Override
     public List<Node> getNodesByServerName(String serverName) {
+        String s = RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + serverName;
         return HOST_CACHE.get(serverName,sn->{
-            String s = RegisterType.NODE.getRegisterPath() + StrPool.SLASH + serverName;
             Collection<String> children = registry.children(s);
             return new HashSet<>(children).stream().map(e -> {
                 try {

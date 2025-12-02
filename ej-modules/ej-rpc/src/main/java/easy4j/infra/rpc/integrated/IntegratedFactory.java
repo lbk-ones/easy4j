@@ -19,7 +19,8 @@ public class IntegratedFactory {
         if (null != implObject && !implObject.getClass().getName().equals(Object.class.getName())) {
             Class<?> aClass = implObject.getClass();
             if (
-                    implObject instanceof ServerInstanceInit
+                    implObject instanceof ServerInstanceInit ||
+                    implObject instanceof ConnectionManager
             ) {
                 serverInstanceInitCache.put(aClass, implObject);
             }

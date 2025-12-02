@@ -12,8 +12,12 @@ import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
 import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
+import easy4j.infra.rpc.registry.RegistryFactory;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
+import easy4j.infra.rpc.server.DefaultServerNode;
+import easy4j.infra.rpc.server.Node;
+import easy4j.infra.rpc.server.ServerNode;
 import easy4j.infra.rpc.utils.Host;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -67,6 +71,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     private final LengthFieldPrepender lengthFieldPrepender;
 
+    private final ServerNode serverNode;
+
     /**
      * @param clientConfig 客户端配置
      */
@@ -77,6 +83,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         this.nettyHeartbeatHandler = new NettyHeartbeatHandler(false);
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         this.lengthFieldPrepender = new LengthFieldPrepender(4);
+        this.serverNode = new DefaultServerNode(RegistryFactory.get(this.clientConfig));
         start();
     }
 
@@ -176,8 +183,13 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     public RpcResponse sendRequestSync(RpcRequest request) {
         String serviceName = request.getServiceName();
-        // TODO 从注册中心中拿取连接信息
-        return null;
+        Node node = serverNode.selectNodeByServerName(serviceName, this.clientConfig.getLbType());
+        if(node != null){
+            Host host = node.getHost();
+            return sendRequestSync(request,host);
+        }else{
+            throw new RpcException("the servername "+serviceName+" not have available host !");
+        }
     }
 
     public RpcResponse sendRequestSync(RpcRequest request, Host host) {
