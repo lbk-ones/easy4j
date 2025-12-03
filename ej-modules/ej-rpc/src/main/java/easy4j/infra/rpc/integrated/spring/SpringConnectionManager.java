@@ -1,5 +1,7 @@
-package easy4j.infra.rpc.integrated;
+package easy4j.infra.rpc.integrated.spring;
 
+import easy4j.infra.rpc.integrated.ConnectionManager;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationContext;

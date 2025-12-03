@@ -1,7 +1,7 @@
 package easy4j.infra.rpc.integrated;
 
 import cn.hutool.db.dialect.DialectFactory;
-import easy4j.infra.rpc.config.BaseConfig;
+import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.utils.RpcJdbcTempDataSource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,13 +11,12 @@ import java.sql.SQLException;
 @Slf4j
 public class DefaultConnectionManager implements ConnectionManager{
 
-    final BaseConfig baseConfig;
 
-    public DefaultConnectionManager(BaseConfig baseConfig) {
-        this.baseConfig = baseConfig;
-        String registryJdbcUrl = this.baseConfig.getRegistryJdbcUrl();
-        String registryJdbcUsername = this.baseConfig.getRegistryJdbcUsername();
-        String registryJdbcPassword = this.baseConfig.getRegistryJdbcPassword();
+    public DefaultConnectionManager() {
+        E4jRpcConfig rpcConfig = IntegratedFactory.getRpcConfig().getConfig();
+        String registryJdbcUrl =rpcConfig.getRegistryJdbcUrl();
+        String registryJdbcUsername = rpcConfig.getRegistryJdbcUsername();
+        String registryJdbcPassword = rpcConfig.getRegistryJdbcPassword();
         log.info("registry jdbc url {}",registryJdbcUrl);
         log.info("registry jdbc username {}",registryJdbcUsername);
         log.info("registry jdbc password {}",registryJdbcPassword);
@@ -25,8 +24,9 @@ public class DefaultConnectionManager implements ConnectionManager{
 
     @Override
     public DataSource getDataSource() {
-        String s = DialectFactory.identifyDriver(baseConfig.getRegistryJdbcUrl());
-        return new RpcJdbcTempDataSource(s, baseConfig.getRegistryJdbcUrl(), baseConfig.getRegistryJdbcUsername(), baseConfig.getRegistryJdbcPassword());
+        E4jRpcConfig rpcConfig = IntegratedFactory.getRpcConfig().getConfig();
+        String s = DialectFactory.identifyDriver(rpcConfig.getRegistryJdbcUrl());
+        return new RpcJdbcTempDataSource(s, rpcConfig.getRegistryJdbcUrl(), rpcConfig.getRegistryJdbcUsername(), rpcConfig.getRegistryJdbcPassword());
     }
 
     @Override

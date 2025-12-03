@@ -1,21 +1,14 @@
 package easy4j.infra.rpc.config;
 
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
-/**
- * 客户端配置
- *
- * @author bokun.li
- * @since 2.0.1
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@Accessors(chain = true)
-public class ClientConfig extends BaseConfig {
+public class E4jClientConfig {
+
+    /**
+     * 检查服务提供者是否存在
+     */
+    private boolean check = true;
 
     /**
      * 要连接的主机
@@ -33,7 +26,8 @@ public class ClientConfig extends BaseConfig {
      */
     private Integer invokeTimeOutMillis = 1000 * 30;
 
-
-
-
+    /**
+     * 客户端TCP三次握手阶段连接超时，控制客户端与服务器简历连接的最大耗时，避免客户端无限期等待连接建立，默认3000ms
+     */
+    private Integer connectTimeOutMillis = 3000;
 }

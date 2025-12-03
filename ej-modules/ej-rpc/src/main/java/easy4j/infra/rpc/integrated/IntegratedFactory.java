@@ -1,6 +1,8 @@
 package easy4j.infra.rpc.integrated;
 
 
+import easy4j.infra.rpc.integrated.config.DefaultRpcConfig;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -20,7 +22,8 @@ public class IntegratedFactory {
             Class<?> aClass = implObject.getClass();
             if (
                     implObject instanceof ServerInstanceInit ||
-                    implObject instanceof ConnectionManager
+                            implObject instanceof ConnectionManager ||
+                            implObject instanceof IRpcConfig
             ) {
                 serverInstanceInitCache.put(aClass, implObject);
             }
@@ -36,7 +39,7 @@ public class IntegratedFactory {
         }
     }
 
-    public static <T> T getOrDefault(Class<T> tClass, Supplier<? extends  T> function) {
+    public static <T> T getOrDefault(Class<T> tClass, Supplier<? extends T> function) {
         Object o = serverInstanceInitCache.get(tClass);
         if (o != null) {
             return (T) o;
@@ -48,6 +51,14 @@ public class IntegratedFactory {
                 return apply;
             }
         }
+    }
+
+    public static class DefaultRpcConfigHolder {
+        public static DefaultRpcConfig INSTANCE = new DefaultRpcConfig();
+    }
+
+    public static IRpcConfig getRpcConfig() {
+        return getOrDefault(IRpcConfig.class, () -> DefaultRpcConfigHolder.INSTANCE);
     }
 
 }

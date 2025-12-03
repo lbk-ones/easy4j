@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.server.handlers;
 
-import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.serializable.ISerializable;
@@ -29,7 +28,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<Transport> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Transport transport) throws Exception {
         byte[] body = transport.getBody();
-        ISerializable iSerializable = SerializableFactory.get(rpcServer.getServerConfig());
+        ISerializable iSerializable = SerializableFactory.get();
         RpcRequest deserializable = iSerializable.deserializable(body, RpcRequest.class);
         channelHandlerContext.channel().attr(ChannelUtils.REQUEST_INFO).set(deserializable);
         channelHandlerContext.fireChannelRead(transport);

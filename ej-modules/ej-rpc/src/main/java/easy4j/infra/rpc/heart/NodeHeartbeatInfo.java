@@ -59,4 +59,15 @@ public class NodeHeartbeatInfo {
      */
     protected int port;
 
+    /**
+     * 加权
+     */
+    protected int weight = 1;
+
+
+    /**
+     * 连接数
+     */
+    protected int conn;
+
 }

@@ -1,18 +1,17 @@
 package easy4j.infra.rpc.config;
 
 import easy4j.infra.rpc.enums.LbType;
-import easy4j.infra.rpc.enums.RegisterInfoType;
 import easy4j.infra.rpc.enums.RegisterType;
 import easy4j.infra.rpc.enums.SerializableType;
 import lombok.Data;
 
-/**
- * netty的一些基础配置
- *
- * @since 2.0.1
- */
 @Data
-public class BaseConfig {
+public class E4jRpcConfig {
+
+    public E4jRpcConfig() {
+        this.server = new E4jServerConfig();
+        this.client = new E4jClientConfig();
+    }
 
     /**
      * 序列化方式 默认jackson
@@ -29,7 +28,6 @@ public class BaseConfig {
      */
     private LbType lbType = LbType.ROUND_ROBIN;
 
-
     /**
      * 禁用Nagle算法，确保小数据包即使发送，降低延迟
      */
@@ -41,26 +39,13 @@ public class BaseConfig {
     private boolean soKeepLive = true;
 
     /**
-     * 是否允许端口复用（解决端口占用 “TIME_WAIT” 状态导致的启动失败）
-     */
-    private boolean soReuseAddr = true;
-
-    /**
-     * 服务端半连接大小
-     */
-    private Integer soBackLog = 2048;
-
-    /**
      * Socket 读操作超时,已连接后的数据读写操作
      * 控制阻塞 I/O 模式下，Socket 读操作的最大等待时间（避免读操作无限期阻塞）
-     * NIO下无效
+     * NIO下无效(默认配置它不生效)
      */
+    @Deprecated
     private Integer soTimeOut = 2048;
 
-    /**
-     * 客户端TCP三次握手阶段连接超时，控制客户端与服务器简历连接的最大耗时，避免客户端无限期等待连接建立，默认3000ms
-     */
-    private Integer connectTimeOutMillis = 3000;
 
     /**
      * 设置 Socket 发送缓冲区大小（底层操作系统缓冲区）
@@ -100,4 +85,22 @@ public class BaseConfig {
      * 注册中心jdbc 密码
      */
     private String registryJdbcPassword;
+
+    /**
+     * 注册中心jdbc 扫描间隔时间 单位 milliseconds 默认10秒
+     */
+    private long registryJdbcCheckPeriod = 1000 * 10L;
+
+
+    /**
+     * 服务端配置
+     */
+    private E4jServerConfig server;
+
+    /**
+     * 客户端配置
+     */
+    private E4jClientConfig client;
+
+
 }

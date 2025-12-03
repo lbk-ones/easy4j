@@ -64,7 +64,7 @@ public class RpcClientHandler extends ChannelDuplexHandler  {
             return;
         }
         try {
-            ISerializable iSerializable = SerializableFactory.get(client.getClientConfig());
+            ISerializable iSerializable = SerializableFactory.get();
             RpcResponse deserializable = iSerializable.deserializable(body, RpcResponse.class);
             long requestId = deserializable.getRequestId();
             ResFuture future = ResFuture.getFuture(requestId);

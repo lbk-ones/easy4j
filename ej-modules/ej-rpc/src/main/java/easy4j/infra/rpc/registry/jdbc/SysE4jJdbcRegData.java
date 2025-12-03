@@ -11,9 +11,9 @@ import java.util.Date;
 public class SysE4jJdbcRegData {
 
     /**
-     * 主键
+     * 主键 一定自增
      */
-    private long id;
+    private Long id;
 
     /**
      * key

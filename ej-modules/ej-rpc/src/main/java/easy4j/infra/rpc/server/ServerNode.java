@@ -1,6 +1,7 @@
 package easy4j.infra.rpc.server;
 
 import easy4j.infra.rpc.enums.LbType;
+import easy4j.infra.rpc.heart.NodeHeartbeatManager;
 import easy4j.infra.rpc.utils.Host;
 
 import java.util.List;
@@ -41,6 +42,6 @@ public interface ServerNode {
     /**
      * 开启心跳定时上报
      */
-    void startHeartbeat();
+    void startHeartbeat(NodeHeartbeatManager nodeHeartbeatManager);
 
 }

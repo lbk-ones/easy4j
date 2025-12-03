@@ -5,11 +5,14 @@ import cn.hutool.core.thread.NamedThreadFactory;
 import easy4j.infra.rpc.codec.Codec;
 import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
+import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.config.NettyBootStrap;
-import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
 import easy4j.infra.rpc.heart.NodeHeartbeatManager;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.registry.Registry;
+import easy4j.infra.rpc.registry.RegistryFactory;
 import easy4j.infra.rpc.server.handlers.ChannelCountHandler;
 import easy4j.infra.rpc.server.handlers.RequestHandler;
 import easy4j.infra.rpc.server.handlers.RpcServerHandler;
@@ -42,7 +45,7 @@ public class RpcServer extends NettyBootStrap {
 
     @Getter
     private static long startTime;
-    public final ServerConfig serverConfig;
+    public final E4jRpcConfig serverConfig;
     public final ServerBootstrap bootstrap;
     public final RpcServerHandler rpcServerHandler;
     public final RequestHandler requestHandler;
@@ -54,7 +57,8 @@ public class RpcServer extends NettyBootStrap {
 
     public EventLoopGroup bossGroup;
     public EventLoopGroup workerGroup;
-    public RpcServer(ServerConfig serverConfig) {
+    public ServerNode serverNode;
+    public RpcServer(E4jRpcConfig serverConfig) {
         super(false);
         this.serverConfig = serverConfig;
         this.bootstrap = new ServerBootstrap();
@@ -64,57 +68,67 @@ public class RpcServer extends NettyBootStrap {
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         this.requestHandler = new RequestHandler(this);
         this.channelCountHandler = new ChannelCountHandler();
+        this.serverNode = DefaultServerNode.INSTANCE;
     }
 
     public void start() {
-        Integer port = serverConfig.getPort();
+        Integer port = serverConfig.getServer().getPort();
         ServerPortChannelManager.initPortChannelSet(port);
-        isStart.compareAndExchange(false, true);
-        EventLoopGroup bossGroup = getEventLoop(1);
-        EventLoopGroup workerGroup = getEventLoop(0);
-        try {
-            this.bootstrap
-                    .group(bossGroup, workerGroup)
-                    .channel(getMainServerChannel())
-                    .option(ChannelOption.SO_BACKLOG, this.serverConfig.getSoBackLog())
-                    .option(ChannelOption.SO_REUSEADDR, this.serverConfig.isSoReuseAddr())
-                    .childOption(ChannelOption.SO_KEEPALIVE, this.serverConfig.isSoKeepLive())
-                    .childOption(ChannelOption.TCP_NODELAY, this.serverConfig.isTcpNodeDelay())
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) {
-                            ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(loggingHandler);
-                            // 30s 客户端未发送消息 主动断开客户端连接
-                            pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
-                            pipeline.addLast(new LengthFieldBasedFrameDecoder(
-                                    Codec.MAX_FRAME_LENGTH,
-                                    6,
-                                    4,
-                                    2,
-                                    0,
-                                    true
-                            ));
-                            pipeline.addLast(new RpcDecoder());
-                            pipeline.addLast(new RpcEncoder());
-                            pipeline.addLast(channelCountHandler);
-                            pipeline.addLast(requestHandler);
-                            pipeline.addLast(nettyHeartbeatHandler);
-                            pipeline.addLast(rpcServerHandler);
+        if (isStart.compareAndSet(false, true)) {
+            EventLoopGroup bossGroup = getEventLoop(1);
+            EventLoopGroup workerGroup = getEventLoop(0);
+            // 只有服务端才会close,客户端不用，如果只开启客户端那么不会走到这里来，registry照常运行
+            try(Registry registry = RegistryFactory.get()) {
+                this.bootstrap
+                        .group(bossGroup, workerGroup)
+                        .channel(getMainServerChannel())
+                        .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(this.serverConfig.getWriteBufferLowWaterMark(), this.serverConfig.getWriteBufferHighWaterMark()))
+                        .option(ChannelOption.SO_BACKLOG, this.serverConfig.getServer().getSoBackLog())
+                        .option(ChannelOption.SO_REUSEADDR, this.serverConfig.getServer().isSoReuseAddr())
+                        .childOption(ChannelOption.SO_KEEPALIVE, this.serverConfig.isSoKeepLive())
+                        .childOption(ChannelOption.TCP_NODELAY, this.serverConfig.isTcpNodeDelay())
 
-                            pipeline.addLast(lengthFieldPrepender); // 数据长度字段占4字节
-                        }
-                    });
-            NodeHeartbeatManager.initPort(port);
-            ChannelFuture future = bootstrap.bind(port).sync();
-            startTime = System.currentTimeMillis();
-            System.out.println("RPC服务端启动，端口：" + port);
-            future.channel().closeFuture().sync();
-        } catch (Exception e) {
-            log.error("netty server start error", e);
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
+                        .childHandler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            protected void initChannel(SocketChannel ch) {
+                                ChannelPipeline pipeline = ch.pipeline();
+                                pipeline.addLast(loggingHandler);
+                                // 30s 客户端未发送消息 主动断开客户端连接
+                                pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
+                                pipeline.addLast(new LengthFieldBasedFrameDecoder(
+                                        Codec.MAX_FRAME_LENGTH,
+                                        6,
+                                        4,
+                                        2,
+                                        0,
+                                        true
+                                ));
+                                pipeline.addLast(new RpcDecoder());
+                                pipeline.addLast(new RpcEncoder());
+                                pipeline.addLast(channelCountHandler);
+                                pipeline.addLast(requestHandler);
+                                pipeline.addLast(nettyHeartbeatHandler);
+                                pipeline.addLast(rpcServerHandler);
+
+                                pipeline.addLast(lengthFieldPrepender); // 数据长度字段占4字节
+                            }
+                        });
+                NodeHeartbeatManager.initPort(port);
+                ChannelFuture future = bootstrap.bind(port).sync();
+                startTime = System.currentTimeMillis();
+                log.info("e4j rpc server is started the port listener in：" + port);
+                registry.start();
+                log.info("e4j registry start success!");
+                this.serverNode.startHeartbeat(new NodeHeartbeatManager());
+                future.channel().closeFuture().sync();
+
+            } catch (Exception e) {
+                log.error("e4j rpc server start error", e);
+                System.exit(1);
+            } finally {
+                bossGroup.shutdownGracefully();
+                workerGroup.shutdownGracefully();
+            }
         }
     }
 
@@ -143,8 +157,8 @@ public class RpcServer extends NettyBootStrap {
 
 
     public static void main(String[] args) throws InterruptedException {
-        ServerConfig build = new ServerConfig()
-                .setPort(8888);
+        E4jRpcConfig build = new E4jRpcConfig();
+        build.getServer().setPort(8111);
         new RpcServer(build).start();
     }
 

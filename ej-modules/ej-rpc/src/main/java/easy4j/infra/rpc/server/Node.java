@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class Node {
+public class Node implements Cloneable{
 
     private Host host;
     private boolean enabled;
@@ -17,5 +17,15 @@ public class Node {
     public Node(Host host, boolean enabled) {
         this.host = host;
         this.enabled = enabled;
+    }
+
+
+    @Override
+    public Node clone() {
+        try {
+            return (Node) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

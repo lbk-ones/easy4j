@@ -50,7 +50,8 @@ public enum RpcResponseStatus {
     UNSUPPORTED_OPERATION(false, 504, "不支持的操作", "Unsupported Operation"),
     CONFIG_ERROR(false, 505, "配置错误", "Configuration Error"),
     RESOURCE_EXHAUSTED(false, 506, "服务器资源耗尽", "Resource Exhausted"),
-    DECODE_ERROR(false, 507, "解码异常", "Decode Error");
+    DECODE_ERROR(false, 507, "解码异常", "Decode Error"),
+    SERVICE_NAME_NOT_BE_NULL(false, 508, "ServiceName不能为空", "ServiceName cannot be empty");
 
     /** 是否成功（true=成功，false=失败） */
     private final boolean success;

@@ -1,7 +1,9 @@
-package easy4j.infra.rpc.integrated;
+package easy4j.infra.rpc.integrated.spring;
 
 import cn.hutool.core.exceptions.UtilException;
 import easy4j.infra.rpc.domain.RpcRequest;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.integrated.ServerInstanceInit;
 import easy4j.infra.rpc.server.ServerMethodInvoke;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;

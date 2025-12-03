@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.server.handlers;
 
-import easy4j.infra.rpc.config.ServerConfig;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
@@ -73,7 +72,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
      * @since 2.0.1
      */
     private void send(ChannelHandlerContext ctx, RpcResponse result) {
-        ISerializable iSerializable = SerializableFactory.get(this.rpcServer.getServerConfig());
+        ISerializable iSerializable = SerializableFactory.get();
         Transport transport = Transport.of(FrameType.RESPONSE, iSerializable.serializable(result));
         ctx.channel().writeAndFlush(transport).addListener((ChannelFutureListener) channelFuture -> {
             if (!channelFuture.isSuccess()) {

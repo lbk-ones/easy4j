@@ -60,6 +60,13 @@ public interface Registry extends Closeable {
     void subscribe(String path, SubscribeListener listener);
 
     /**
+     * judge the path if subscribe
+     *
+     * @param path the path to subscribe
+     */
+    boolean isSubscribe(String path);
+
+    /**
      * Remove the path from the subscribe list.
      */
     void unsubscribe(String path);
@@ -75,7 +82,7 @@ public interface Registry extends Closeable {
     String get(String key) throws RegistryException;
 
     /**
-     * Put the key-value pair into the registry
+     * Put the key-value pair into the registry, Update if available, add if not available
      *
      * @param key                the key, cannot be null
      * @param value              the value, cannot be null

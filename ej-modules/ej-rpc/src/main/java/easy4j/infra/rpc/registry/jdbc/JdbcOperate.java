@@ -7,11 +7,11 @@ import cn.hutool.db.dialect.Dialect;
 import cn.hutool.db.dialect.DialectFactory;
 import cn.hutool.db.sql.Query;
 import cn.hutool.db.sql.SqlBuilder;
-import easy4j.infra.rpc.config.BaseConfig;
 import easy4j.infra.rpc.exception.SqlRuntimeException;
 import easy4j.infra.rpc.integrated.ConnectionManager;
 import easy4j.infra.rpc.integrated.DefaultConnectionManager;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
+import lombok.Getter;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
@@ -21,7 +21,7 @@ import java.sql.*;
 import java.util.List;
 
 /**
- * 一个简单的jdbc封装 传入connection连接 很简单  实现orm部分功能 这里只处理一种逻辑
+ * 一个简单的jdbc封装 传入connection连接 很简单  实现orm部分功能 这里只处理一种逻辑 且与rpc模块深度耦合
  * <br/>
  * PS:连接获取和释放由 ConnectionManager 进行管理
  *
@@ -34,8 +34,8 @@ public class JdbcOperate {
 
     private final QueryRunner queryRunner = new QueryRunner();
 
-    public JdbcOperate(BaseConfig baseConfig) {
-        this.connectionManager = IntegratedFactory.getOrDefault(ConnectionManager.class, () -> new DefaultConnectionManager(baseConfig));
+    public JdbcOperate() {
+        this.connectionManager = IntegratedFactory.getOrDefault(ConnectionManager.class, DefaultConnectionManager::new);
     }
 
     public Connection getConnection() {

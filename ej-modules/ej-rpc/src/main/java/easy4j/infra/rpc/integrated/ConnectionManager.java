@@ -6,18 +6,22 @@ import java.sql.SQLException;
 
 /**
  * 连接管理
- * @since 2.0.1
+ *
  * @author bokun
+ * @since 2.0.1
  */
 public interface ConnectionManager {
 
     /**
      * getDataSource
+     *
      * @return DataSource
      */
     DataSource getDataSource();
+
     /**
      * getConnection
+     *
      * @return Connection
      */
     Connection getConnection() throws SQLException;
