@@ -21,6 +21,7 @@ import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.server.DefaultServerNode;
 import easy4j.infra.rpc.server.Node;
 import easy4j.infra.rpc.server.ServerNode;
+import easy4j.infra.rpc.utils.ChannelUtils;
 import easy4j.infra.rpc.utils.Host;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -38,7 +39,9 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,10 +67,12 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     private final Bootstrap bootstrap = new Bootstrap();
     private final RpcClientHandler rpcClientHandler;
 
+    @Getter
     private static final Map<Host, Channel> cacheChannel = new ConcurrentHashMap<>(128);
 
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
+    @Getter
     private EventLoopGroup workerGroup;
     private final NettyHeartbeatHandler nettyHeartbeatHandler;
     private final LoggingHandler loggingHandler;
@@ -93,41 +98,45 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     // 初始化客户端连接
     private void start() {
+        if (isStarted.compareAndSet(false, true)) {
+            workerGroup = getEventLoop(1);
+            final RpcClient rpcClient = this;
+            this.bootstrap
+                    .group(workerGroup)
+                    .channel(getMainClientChannel())
+                    .option(ChannelOption.SO_KEEPALIVE, rpcConfig.isSoKeepLive())
+                    .option(ChannelOption.TCP_NODELAY, rpcConfig.isTcpNodeDelay())
+                    //.option(ChannelOption.SO_TIMEOUT, rpcConfig.getSoTimeOut())
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, rpcConfig.getClient().getConnectTimeOutMillis())
+                    .option(ChannelOption.SO_SNDBUF, rpcConfig.getSoSndBuf())
+                    .option(ChannelOption.SO_RCVBUF, rpcConfig.getSoRcvBuf())
+                    .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(rpcConfig.getWriteBufferLowWaterMark(), rpcConfig.getWriteBufferHighWaterMark()))
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ChannelPipeline pipeline = ch.pipeline();
+                            pipeline.addLast(loggingHandler);
+                            // IdleStateHandler：45秒读空闲（服务端没响应），10秒写空闲（主动发心跳）
+                            pipeline.addLast(new IdleStateHandler(45, 10, 0, TimeUnit.SECONDS));
+                            pipeline.addLast(new LengthFieldBasedFrameDecoder(
+                                    Codec.MAX_FRAME_LENGTH,
+                                    6,
+                                    4,
+                                    2,
+                                    0,
+                                    true
+                            ));
+                            pipeline.addLast(new RpcDecoder());
+                            pipeline.addLast(new RpcEncoder());
+                            pipeline.addLast(nettyHeartbeatHandler);
+                            pipeline.addLast(rpcClientHandler);
+                            pipeline.addLast(new RpcReconnectHandler(rpcClient));
+                            pipeline.addLast(lengthFieldPrepender);
+                        }
+                    });
+        }
 
-        workerGroup = getEventLoop(1);
-        this.bootstrap
-                .group(workerGroup)
-                .channel(getMainClientChannel())
-                .option(ChannelOption.SO_KEEPALIVE, rpcConfig.isSoKeepLive())
-                .option(ChannelOption.TCP_NODELAY, rpcConfig.isTcpNodeDelay())
-                .option(ChannelOption.SO_TIMEOUT, rpcConfig.getSoTimeOut())
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, rpcConfig.getClient().getConnectTimeOutMillis())
-                .option(ChannelOption.SO_SNDBUF, rpcConfig.getSoSndBuf())
-                .option(ChannelOption.SO_RCVBUF, rpcConfig.getSoRcvBuf())
-                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(rpcConfig.getWriteBufferLowWaterMark(), rpcConfig.getWriteBufferHighWaterMark()))
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch) {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(loggingHandler);
-                        // IdleStateHandler：45秒读空闲（服务端没响应），10秒写空闲（主动发心跳）
-                        pipeline.addLast(new IdleStateHandler(45, 10, 0, TimeUnit.SECONDS));
-                        pipeline.addLast(new LengthFieldBasedFrameDecoder(
-                                Codec.MAX_FRAME_LENGTH,
-                                6,
-                                4,
-                                2,
-                                0,
-                                true
-                        ));
-                        pipeline.addLast(new RpcDecoder());
-                        pipeline.addLast(new RpcEncoder());
-                        pipeline.addLast(nettyHeartbeatHandler);
-                        pipeline.addLast(rpcClientHandler);
-                        pipeline.addLast(lengthFieldPrepender);
-                    }
-                });
-        isStarted.compareAndSet(false, true);
+
     }
 
     /**
@@ -185,20 +194,24 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     public RpcResponse sendRequestSync(RpcRequest request) {
         String serviceName = request.getServiceName();
-        if(StrUtil.isBlank(serviceName)) return RpcResponse.error(request.getRequestId(), RpcResponseStatus.SERVICE_NAME_NOT_BE_NULL);
+        if (StrUtil.isBlank(serviceName))
+            return RpcResponse.error(request.getRequestId(), RpcResponseStatus.SERVICE_NAME_NOT_BE_NULL);
         // adapter hot reload
         LbType lbType = IntegratedFactory.getRpcConfig().getConfig().getLbType();
         Node node = serverNode.selectNodeByServerName(serviceName, lbType);
-        if(node != null){
+        if (node != null) {
             Host host = node.getHost();
-            return sendRequestSync(request,host);
-        }else{
-            throw new RpcException("the servername "+serviceName+" not have available host !");
+            return sendRequestSync(request, host);
+        } else {
+            throw new RpcException("the servername " + serviceName + " not have available host !");
         }
     }
 
     public RpcResponse sendRequestSync(RpcRequest request, Host host) {
         Channel channel = getChannel(host);
+        if (channel == null) {
+            throw new RpcException("not obtain get channel from:" + host);
+        }
         ISerializable iSerializable = SerializableFactory.get();
         ResFuture resFuture = new ResFuture(request.getRequestId(), rpcConfig.getClient().getInvokeTimeOutMillis());
         Transport transport = Transport.of(FrameType.REQUEST, iSerializable.serializable(request));
@@ -218,7 +231,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
             if (null == rpcResponse) {
                 if (resFuture.isSendOk()) {
                     if (resFuture.isTimeout()) {
-                        log.error("wait response on the channel {} timeout {}",host.getAddress(), rpcConfig.getClient().getInvokeTimeOutMillis());
+                        log.error("wait response on the channel {} timeout {}", host.getAddress(), rpcConfig.getClient().getInvokeTimeOutMillis());
                         throw new RpcTimeoutException(host.getAddress(), rpcConfig.getClient().getInvokeTimeOutMillis());
                     }
                 } else {
@@ -239,21 +252,33 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
      * @param isSync sync flag
      * @return channel
      */
-    private Channel createChannel(Host host, boolean isSync) {
+    public Channel createChannel(Host host, boolean isSync) {
         try {
             ChannelFuture future;
             synchronized (bootstrap) {
                 future = bootstrap.connect(new InetSocketAddress(host.getIp(), host.getPort()));
             }
             if (isSync) {
-                future.sync();
-            }
-            if (future.isSuccess()) {
-                Channel channel = future.channel();
+                Channel channel = future.sync().channel();
                 cacheChannel.put(host, channel);
                 return channel;
+            } else {
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+                future.addListener((ChannelFutureListener) e -> {
+                    if (e.isSuccess()) {
+                        Channel channel = e.channel();
+                        log.info("async obtain get channel: " + ChannelUtils.toAddress(channel));
+                        cacheChannel.putIfAbsent(host, channel);
+                        countDownLatch.countDown();
+                    } else {
+                        log.error("async get connection error {}", host);
+                    }
+                });
+                if (!countDownLatch.await(rpcConfig.getClient().getConnectTimeOutMillis(), TimeUnit.MILLISECONDS)) {
+                    throw new RuntimeException("Connect to host: " + host + " timeout");
+                }
             }
-            throw new IllegalArgumentException("connect to host: " + host + " failed");
+            return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Connect to host: " + host + " failed", e);
@@ -261,9 +286,9 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     }
 
     public static void main(String[] args) throws Exception {
-        Method method = RpcDecoder.class.getDeclaredMethod("decode", ChannelHandlerContext.class, ByteBuf.class, List.class);
-        RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{}, null);
-        Host host = Host.of("127.0.0.1:8888");
+        Method method = TestHello.class.getDeclaredMethod("testHello", String.class);
+        RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{"xxx"}, null);
+        Host host = Host.of("127.0.0.1:8111");
         RpcResponse rpcResponse;
         try (RpcClient rpcClient = RpcClientFactory.getClient()) {
             rpcResponse = rpcClient.sendRequestSync(rpcRequest, host);

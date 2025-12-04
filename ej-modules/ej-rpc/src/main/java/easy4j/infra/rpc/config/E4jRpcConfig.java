@@ -102,5 +102,4 @@ public class E4jRpcConfig {
      */
     private E4jClientConfig client;
 
-
 }

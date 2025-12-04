@@ -30,4 +30,11 @@ public class E4jClientConfig {
      * 客户端TCP三次握手阶段连接超时，控制客户端与服务器简历连接的最大耗时，避免客户端无限期等待连接建立，默认3000ms
      */
     private Integer connectTimeOutMillis = 3000;
+
+
+    /**
+     * 最大重连次数
+     */
+    private int reconnectMaxRetryCount = 5;
+
 }

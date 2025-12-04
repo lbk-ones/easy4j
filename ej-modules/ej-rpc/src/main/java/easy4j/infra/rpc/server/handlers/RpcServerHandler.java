@@ -13,6 +13,7 @@ import easy4j.infra.rpc.server.ServerMethodInvoke;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -48,18 +49,21 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         Transport msg1 = (Transport) msg;
         log.info("current channel receive msg msgType is " + msg1.getFrameType() + " body -> " + new String(msg1.getBody(), StandardCharsets.UTF_8));
         RpcRequest request = rpcServer.getRequest(ctx);
-        long requestId = request.getRequestId();
-        try {
-            Optional.ofNullable(executorService)
-                    .ifPresent(e -> e.execute(() -> {
-                        ServerMethodInvoke serverMethodInvoke = new ServerMethodInvoke(request);
-                        RpcResponse invoke = serverMethodInvoke.invoke();
-                        send(ctx,invoke);
-                    }));
-        } catch (RejectedExecutionException exception) {
-            RpcResponse error = RpcResponse.error(requestId, RpcResponseStatus.RESOURCE_EXHAUSTED);
-            send(ctx, error);
+        if (request != null) {
+            long requestId = request.getRequestId();
+            try {
+                Optional.ofNullable(executorService)
+                        .ifPresent(e -> e.execute(() -> {
+                            ServerMethodInvoke serverMethodInvoke = new ServerMethodInvoke(request);
+                            RpcResponse invoke = serverMethodInvoke.invoke();
+                            send(ctx, invoke);
+                        }));
+            } catch (RejectedExecutionException exception) {
+                RpcResponse error = RpcResponse.error(requestId, RpcResponseStatus.RESOURCE_EXHAUSTED);
+                send(ctx, error);
+            }
         }
+
 
     }
 
@@ -95,7 +99,9 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof DecodeRpcException) {
             send(ctx, RpcResponse.error(request.getRequestId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()));
         } else {
-            send(ctx, RpcResponse.error(request.getRequestId(), RpcResponseStatus.SYSTEM_ERROR, cause));
+            if (!(cause instanceof SocketException)) {
+                send(ctx, RpcResponse.error(request.getRequestId(), RpcResponseStatus.SYSTEM_ERROR, cause));
+            }
         }
     }
 }

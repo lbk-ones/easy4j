@@ -28,9 +28,11 @@ public class RequestHandler extends SimpleChannelInboundHandler<Transport> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Transport transport) throws Exception {
         byte[] body = transport.getBody();
-        ISerializable iSerializable = SerializableFactory.get();
-        RpcRequest deserializable = iSerializable.deserializable(body, RpcRequest.class);
-        channelHandlerContext.channel().attr(ChannelUtils.REQUEST_INFO).set(deserializable);
+        if (body.length > 0) {
+            ISerializable iSerializable = SerializableFactory.get();
+            RpcRequest deserializable = iSerializable.deserializable(body, RpcRequest.class);
+            channelHandlerContext.channel().attr(ChannelUtils.REQUEST_INFO).set(deserializable);
+        }
         channelHandlerContext.fireChannelRead(transport);
     }
 }

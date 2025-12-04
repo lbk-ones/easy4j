@@ -247,7 +247,7 @@ public class DefaultServerNode implements ServerNode {
     @Override
     public void registry(NodeHeartbeatManager nodeHeartbeatManager, String serviceName) {
 
-        if (nodeHeartbeatManager == null) return;
+        if (nodeHeartbeatManager == null || StrUtil.isBlank(serviceName)) return;
         if (registerMap.get(serviceName) == null) {
             registerMap.put(serviceName, true);
             registerWith(nodeHeartbeatManager, serviceName);

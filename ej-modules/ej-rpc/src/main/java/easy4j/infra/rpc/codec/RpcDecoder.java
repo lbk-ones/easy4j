@@ -84,7 +84,7 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
                 checkpoint(State.BODY);
                 break;
             case BODY:
-                log.info("decode body dataLength "+dataLength);
+                log.info("decode body dataLength " + dataLength);
                 body = new byte[dataLength];
                 if (dataLength > 0) {
                     in.readBytes(body);
@@ -107,12 +107,6 @@ public class RpcDecoder extends ReplayingDecoder<RpcDecoder.State> {
             default:
                 break;
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("decode error ",cause);
-        super.exceptionCaught(ctx,cause);
     }
 
     private short calculateCheckSum() {

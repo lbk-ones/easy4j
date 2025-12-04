@@ -48,4 +48,14 @@ public class Transport {
                 .setFrameType(frameType.getFrameType());
     }
 
+    @Override
+    public String toString() {
+        return "Transport{" +
+                "magic=" + magic +
+                ", version=" + version +
+                ", frameType=" + frameType +
+                ", dataLength=" + dataLength +
+                ", checkSum=" + checkSum +
+                '}';
+    }
 }
