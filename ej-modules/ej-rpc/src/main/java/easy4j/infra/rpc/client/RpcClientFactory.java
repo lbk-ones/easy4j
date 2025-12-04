@@ -3,8 +3,21 @@ package easy4j.infra.rpc.client;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 
 public class RpcClientFactory {
+    private static volatile RpcClient rpcClient;
 
+
+    /**
+     * 获取客户端
+     * @return easy4j.infra.rpc.client.RpcClient
+     */
     public static RpcClient getClient() {
-        return new RpcClient(IntegratedFactory.getRpcConfig().getConfig());
+        if (rpcClient == null) {
+            synchronized (RpcClientFactory.class) {
+                if (rpcClient == null) {
+                    rpcClient = new RpcClient(IntegratedFactory.getRpcConfig().getConfig());
+                }
+            }
+        }
+        return rpcClient;
     }
 }

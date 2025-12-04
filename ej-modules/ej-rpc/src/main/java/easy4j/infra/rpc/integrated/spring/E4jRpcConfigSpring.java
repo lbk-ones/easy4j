@@ -1,4 +1,4 @@
-package easy4j.infra.rpc.integrated.spring.config;
+package easy4j.infra.rpc.integrated.spring;
 
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;

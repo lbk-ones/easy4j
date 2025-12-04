@@ -51,8 +51,13 @@ public class SpringServerInstanceInit implements BeanNameAware, ServerInstanceIn
 
     @Override
     public Object instance(RpcRequest request) {
-        String classIdentify = request.getClassIdentify();
-        Class<?> classByClassIdentify = ServerMethodInvoke.getClassByClassIdentify(classIdentify);
-        return getBeanFactory().getBean(classByClassIdentify);
+        try{
+            String classIdentify = request.getClassIdentify();
+            Class<?> classByClassIdentify = ServerMethodInvoke.getClassByClassIdentify(classIdentify);
+            return getBeanFactory().getBean(classByClassIdentify);
+        }catch (Exception e){
+            return null;
+        }
+
     }
 }

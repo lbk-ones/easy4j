@@ -41,6 +41,8 @@ public class ServerMethodInvoke {
 
             Object instance = getClassInstance();
 
+            if (null == instance) return RpcResponse.error(request.getRequestId(), RpcResponseStatus.INSTANCE_NOT_FOUND);
+
             Object invoke = ReflectUtil.invoke(instance, method, parameters);
 
             return RpcResponse.success(request.getRequestId(), invoke);
@@ -53,7 +55,7 @@ public class ServerMethodInvoke {
         }
     }
 
-    public static Class<?> getClassByClassIdentify(String classIdentify){
+    public static Class<?> getClassByClassIdentify(String classIdentify) {
         return cacheClass.computeIfAbsent(classIdentify, e ->
                 {
                     try {
@@ -64,6 +66,7 @@ public class ServerMethodInvoke {
                 }
         );
     }
+
     private void initContext(RpcRequest request) throws ClassNotFoundException, NoSuchMethodException {
         String classIdentify = request.getClassIdentify();
         aClass = getClassByClassIdentify(classIdentify);
@@ -96,7 +99,7 @@ public class ServerMethodInvoke {
         return serverInstanceInit.instance(request);
     }
 
-    static class DefaultServerInstanceInit implements ServerInstanceInit{
+    static class DefaultServerInstanceInit implements ServerInstanceInit {
 
         Class<?> aClass;
 

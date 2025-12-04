@@ -39,7 +39,11 @@ public class SpringE4jRpcConfig extends AbstractRpcConfig implements Application
         Environment environment = context.getEnvironment();
         Binder binder = Binder.get(environment);
         BindResult<E4jRpcConfig> bind = binder.bind("easy4j.rpc", E4jRpcConfig.class);
-        return bind.get();
+        if(bind.isBound()){
+            return bind.get();
+        }else{
+            return new E4jRpcConfig();
+        }
     }
 
     @Override

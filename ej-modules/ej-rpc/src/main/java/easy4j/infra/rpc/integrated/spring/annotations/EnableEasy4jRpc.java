@@ -14,8 +14,8 @@
  */
 package easy4j.infra.rpc.integrated.spring.annotations;
 
-import easy4j.infra.rpc.integrated.spring.config.BeanImport;
-import easy4j.infra.rpc.integrated.spring.config.RpcServiceProcessor;
+import easy4j.infra.rpc.integrated.spring.BeanImport;
+import easy4j.infra.rpc.integrated.spring.SpringRpcServiceProcessor;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -25,11 +25,11 @@ import org.springframework.context.annotation.Import;
  * @author bokun
  * @since 2025-11-29 16:54:09
  */
-@Import(value = {BeanImport.class, RpcServiceProcessor.class})
+@Import(value = {BeanImport.class, SpringRpcServiceProcessor.class})
 public @interface EnableEasy4jRpc {
 
     /**
-     * 基本路径，扫描指定路径 暴露服务，将元数据注册到注册中心去
+     * 基本路径，扫描指定路径，这里设置的路径里面的类 @RpcProxy 才会生效有值
      *
      * @return
      */

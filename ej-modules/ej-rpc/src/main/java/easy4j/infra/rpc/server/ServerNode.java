@@ -40,8 +40,9 @@ public interface ServerNode {
     void invalidHost(Host host);
 
     /**
-     * 开启心跳定时上报
+     * 定时上报
      */
-    void startHeartbeat(NodeHeartbeatManager nodeHeartbeatManager);
+    void registry(NodeHeartbeatManager nodeHeartbeatManager,String serviceName);
+
 
 }

@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * 整合spring实现
+ * 获取连接的方式，整合spring实现
  */
 public class SpringConnectionManager implements ConnectionManager, ApplicationContextAware, BeanNameAware {
     ApplicationContext context;

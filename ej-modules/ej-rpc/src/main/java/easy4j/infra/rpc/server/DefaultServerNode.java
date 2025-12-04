@@ -18,6 +18,7 @@ import easy4j.infra.rpc.registry.Registry;
 import easy4j.infra.rpc.registry.RegistryFactory;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
+import easy4j.infra.rpc.utils.DefaultUncaughtExceptionHandler;
 import easy4j.infra.rpc.utils.Host;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.stream.Collectors;
 
 /**
  * 默认节点实现
@@ -45,8 +48,9 @@ public class DefaultServerNode implements ServerNode {
     public static final DefaultServerNode INSTANCE = new DefaultServerNode();
 
     private final Registry registry;
+    public static final ThreadFactory registerThreadFactory = new NamedThreadFactory("e4j-register-heart-thread-", null, true, DefaultUncaughtExceptionHandler.getInstance());
 
-    private AtomicBoolean reportHeartIng = new AtomicBoolean(false);
+    private static final Map<String, Boolean> registerMap = new ConcurrentHashMap<>();
 
     private DefaultServerNode() {
         this.registry = RegistryFactory.get();
@@ -78,6 +82,10 @@ public class DefaultServerNode implements ServerNode {
                         ISerializable jackson = SerializableFactory.getJackson();
                         NodeHeartbeatInfo deserializable = jackson.deserializable(heartInfo.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
                         node.setNodeHeartbeatInfo(deserializable);
+                        // 如果注册中心直接禁用了 那么就过滤掉它
+                        if (deserializable.isDisabled()) {
+                            return null;
+                        }
                     }
                     return node;
                 } catch (Exception e2) {
@@ -86,6 +94,7 @@ public class DefaultServerNode implements ServerNode {
                 }
             }).filter(Objects::nonNull).toList();
         });
+        nodes = nodes.stream().filter(Node::isEnabled).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(nodes)) {
             roundRobinWeight.putIfAbsent(serverName, new WeightedRoundRobinScheduler(nodes));
             subscribe(serverName, s);
@@ -234,38 +243,44 @@ public class DefaultServerNode implements ServerNode {
         return nodesNew;
     }
 
+
     @Override
-    public void startHeartbeat(NodeHeartbeatManager nodeHeartbeatManager) {
+    public void registry(NodeHeartbeatManager nodeHeartbeatManager, String serviceName) {
 
         if (nodeHeartbeatManager == null) return;
-        if (reportHeartIng.compareAndSet(false, true)) {
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("e4j-register-heart-thread-", true));
-            E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
-            Long heartInfoReportFixRateMilli = config.getServer().getHeartInfoReportFixRateMilli();
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                private boolean exeIng = false;
-
-                private int num = 0;
-
-                @Override
-                public void run() {
-                    if (exeIng) return;
-                    exeIng = true;
-                    try {
-                        NodeHeartbeatInfo nodeHeartbeatInfo = nodeHeartbeatManager.buildHeart();
-                        String serverName = IntegratedFactory.getRpcConfig().getConfig().getServer().getServerName();
-                        String s = RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + serverName + StrPool.SLASH + nodeHeartbeatInfo.getHost() + StrPool.COLON + nodeHeartbeatInfo.getPort();
-                        ISerializable jackson = SerializableFactory.getJackson();
-                        registry.put(s, new String(jackson.serializable(nodeHeartbeatInfo), StandardCharsets.UTF_8), true);
-                        if (num == 0) {
-                            log.info("e4j node registry success!");
-                        }
-                        num++;
-                    } finally {
-                        exeIng = false;
-                    }
-                }
-            }, 0, heartInfoReportFixRateMilli, TimeUnit.MILLISECONDS);
+        if (registerMap.get(serviceName) == null) {
+            registerMap.put(serviceName, true);
+            registerWith(nodeHeartbeatManager, serviceName);
         }
+    }
+
+    private void registerWith(NodeHeartbeatManager nodeHeartbeatManager, String serviceName) {
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(registerThreadFactory);
+        E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
+        Long heartInfoReportFixRateMilli = config.getServer().getHeartInfoReportFixRateMilli();
+
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            private boolean exeIng = false;
+
+            private int num = 0;
+
+            @Override
+            public void run() {
+                if (exeIng) return;
+                exeIng = true;
+                try {
+                    NodeHeartbeatInfo nodeHeartbeatInfo = nodeHeartbeatManager.buildHeart();
+                    String s = RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + serviceName + StrPool.SLASH + nodeHeartbeatInfo.getHost() + StrPool.COLON + nodeHeartbeatInfo.getPort();
+                    ISerializable jackson = SerializableFactory.getJackson();
+                    registry.put(s, new String(jackson.serializable(nodeHeartbeatInfo), StandardCharsets.UTF_8), true);
+                    if (num == 0) {
+                        log.info("e4j server {} registry success!", serviceName);
+                    }
+                    num++;
+                } finally {
+                    exeIng = false;
+                }
+            }
+        }, 0, heartInfoReportFixRateMilli, TimeUnit.MILLISECONDS);
     }
 }

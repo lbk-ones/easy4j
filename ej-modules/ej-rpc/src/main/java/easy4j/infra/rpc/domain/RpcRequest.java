@@ -67,17 +67,17 @@ public class RpcRequest implements Serializable {
     /**
      * 从方法信息解析出请求对象
      *
-     * @param method method对象
-     * @param args   参数信息
+     * @param method     method对象
+     * @param args       参数信息
+     * @param serviceName 服务名称
      * @return 请求对象
      */
-    public static RpcRequest of(Method method, Object[] args) {
+    public static RpcRequest of(Method method, Object[] args, String serviceName) {
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.requestId = atomicInteger.incrementAndGet();
         Class<?> declaringClass = method.getDeclaringClass();
         rpcRequest.methodName = method.getName();
-        // 这个不一定是类的name，可能会在后续变成真正的服务名称也说不准
-        rpcRequest.serviceName = declaringClass.getName();
+        rpcRequest.serviceName = serviceName;
         // 但是这个一定是类的全类名
         rpcRequest.classIdentify = declaringClass.getName();
         String[] parameterTypes = new String[method.getParameterCount()];

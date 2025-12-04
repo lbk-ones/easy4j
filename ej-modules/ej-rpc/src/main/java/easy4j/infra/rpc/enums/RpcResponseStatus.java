@@ -24,6 +24,7 @@ public enum RpcResponseStatus {
     PERMISSION_DENIED(false, 403, "权限不足", "Permission Denied"),
     // 资源相关
     RESOURCE_NOT_FOUND(false, 404, "资源不存在", "Resource Not Found"),
+    INSTANCE_NOT_FOUND(false, 405, "未找到被调用者实例", "The called instance was not found"),
     USER_NOT_FOUND(false, 4041, "用户不存在", "User Not Found"),
     DATA_NOT_FOUND(false, 4042, "数据不存在", "Data Not Found"),
     // 业务逻辑相关

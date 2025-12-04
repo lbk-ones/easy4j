@@ -15,17 +15,16 @@ import easy4j.infra.rpc.registry.jdbc.JdbcRegistry;
  */
 public class RegistryFactory {
 
-    private static JdbcRegistry jdbcRegistry;
+    private static final class JdbcRegistryHolder {
+        private static final JdbcRegistry jdbcRegistry = new JdbcRegistry(new JdbcOperate());
+    }
 
     public static Registry get() {
         IRpcConfig rpcConfig = IntegratedFactory.getRpcConfig();
         E4jRpcConfig config = rpcConfig.getConfig();
         RegisterType registerType = config.getRegisterType();
         if (RegisterType.JDBC == registerType) {
-            if (jdbcRegistry == null) {
-                jdbcRegistry = new JdbcRegistry(new JdbcOperate());
-            }
-            return jdbcRegistry;
+            return JdbcRegistryHolder.jdbcRegistry;
         } else {
             throw new RuntimeException("not support the type " + config.getRegisterType());
         }

@@ -119,7 +119,8 @@ public class RpcServer extends NettyBootStrap {
                 log.info("e4j rpc server is started the port listener in：" + port);
                 registry.start();
                 log.info("e4j registry start success!");
-                this.serverNode.startHeartbeat(new NodeHeartbeatManager());
+                String serverName = IntegratedFactory.getRpcConfig().getConfig().getServer().getServerName();
+                this.serverNode.registry(new NodeHeartbeatManager(),serverName);
                 future.channel().closeFuture().sync();
 
             } catch (Exception e) {

@@ -262,7 +262,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
     public static void main(String[] args) throws Exception {
         Method method = RpcDecoder.class.getDeclaredMethod("decode", ChannelHandlerContext.class, ByteBuf.class, List.class);
-        RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{});
+        RpcRequest rpcRequest = RpcRequest.of(method, new Object[]{}, null);
         Host host = Host.of("127.0.0.1:8888");
         RpcResponse rpcResponse;
         try (RpcClient rpcClient = RpcClientFactory.getClient()) {
