@@ -6,6 +6,7 @@ import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.exception.DecodeRpcException;
+import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.server.RpcServer;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -38,30 +40,54 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * 通道接受到消息
+     * 通道接受到消息,注意消息的类型
      *
      * @param ctx channel 上下文
-     * @param msg
+     * @param msg 解码出来的消息
      * @throws Exception
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        Transport msg1 = (Transport) msg;
-        log.info("current channel receive msg msgType is " + msg1.getFrameType() + " body -> " + new String(msg1.getBody(), StandardCharsets.UTF_8));
-        RpcRequest request = rpcServer.getRequest(ctx);
-        if (request != null) {
-            long requestId = request.getRequestId();
-            try {
-                Optional.ofNullable(executorService)
-                        .ifPresent(e -> e.execute(() -> {
-                            ServerMethodInvoke serverMethodInvoke = new ServerMethodInvoke(request);
-                            RpcResponse invoke = serverMethodInvoke.invoke();
-                            send(ctx, invoke);
-                        }));
-            } catch (RejectedExecutionException exception) {
-                RpcResponse error = RpcResponse.error(requestId, RpcResponseStatus.RESOURCE_EXHAUSTED);
-                send(ctx, error);
+        Transport transport = (Transport) msg;
+        long msgId = transport.getMsgId();
+        byte frameType = transport.getFrameType();
+        if (FrameType.REQUEST.getFrameType() != frameType) {
+            // heart beat return
+            if (FrameType.REQUEST_HEART.getFrameType() == frameType) {
+                send(ctx,RpcResponse.success(msgId,RpcResponseStatus.INSTANCE_NOT_FOUND),FrameType.RESPONSE_HEART);
+            }else{
+                super.channelRead(ctx, msg);
             }
+            return;
+        }
+        try {
+            FrameType byFrameType = FrameType.getByFrameType(transport.getFrameType());
+            if (byFrameType == null) {
+                RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_EXHAUSTED);
+                send(ctx, error,FrameType.RESPONSE);
+                return;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("current channel receive msg[{}] msgType is {} body:{}", msgId, byFrameType.getFrameTypeDesc(), new String(transport.getBody(), StandardCharsets.UTF_8));
+            }
+            ISerializable iSerializable = SerializableFactory.get();
+            RpcRequest request = iSerializable.deserializable(transport.getBody(), RpcRequest.class);
+            if (request != null) {
+                try {
+                    Optional.ofNullable(executorService)
+                            .ifPresent(e -> e.execute(() -> {
+                                ServerMethodInvoke serverMethodInvoke = new ServerMethodInvoke(request, transport);
+                                RpcResponse invoke = serverMethodInvoke.invoke();
+                                send(ctx, invoke,FrameType.RESPONSE);
+                            }));
+                } catch (RejectedExecutionException exception) {
+                    RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_EXHAUSTED);
+                    send(ctx, error,FrameType.RESPONSE);
+                }
+            }
+        } catch (RpcException e) {
+            e.setMsgId(msgId);
+            throw e;
         }
 
 
@@ -75,15 +101,22 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
      * @author bokun
      * @since 2.0.1
      */
-    private void send(ChannelHandlerContext ctx, RpcResponse result) {
+    private void send(ChannelHandlerContext ctx, RpcResponse result,FrameType frameType) {
         ISerializable iSerializable = SerializableFactory.get();
-        Transport transport = Transport.of(FrameType.RESPONSE, iSerializable.serializable(result));
-        ctx.channel().writeAndFlush(transport).addListener((ChannelFutureListener) channelFuture -> {
-            if (!channelFuture.isSuccess()) {
-                Throwable cause = channelFuture.cause();
-                log.error(result.getCode() + " res error ", cause);
+        Transport transport = Transport.of(frameType, iSerializable.serializable(result));
+        if (ctx.channel().isOpen() && ctx.channel().isActive()) {
+            if (ctx.channel().isWritable()) {
+                ctx.writeAndFlush(transport).addListener((ChannelFutureListener) channelFuture -> {
+                    if (!channelFuture.isSuccess()) {
+                        Throwable cause = channelFuture.cause();
+                        log.error(result.getCode() + " res error ", cause);
+                    }
+                });
+            }else{
+
             }
-        });
+
+        }
     }
 
     /**
@@ -95,13 +128,9 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("catch exception ", cause);
-        RpcRequest request = rpcServer.getRequest(ctx);
-        if (cause instanceof DecodeRpcException) {
-            send(ctx, RpcResponse.error(request.getRequestId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()));
-        } else {
-            if (!(cause instanceof SocketException)) {
-                send(ctx, RpcResponse.error(request.getRequestId(), RpcResponseStatus.SYSTEM_ERROR, cause));
-            }
+        if (cause instanceof RpcException ex2) {
+            if (ex2.getCause() != null) cause = ex2.getCause();
+            send(ctx, RpcResponse.error(ex2.getMsgId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()),FrameType.RESPONSE);
         }
     }
 }

@@ -66,7 +66,7 @@ public class NettyHeartbeatHandler extends ChannelInboundHandlerAdapter {
      * @param ctx channel 上下文
      */
     private void sendHeartbeat(ChannelHandlerContext ctx) {
-        if (ctx.channel().isActive()) {
+        if (ctx.channel().isActive() || ctx.channel().isOpen()) {
             ctx.writeAndFlush(Transport.of(FrameType.REQUEST_HEART)).addListener(future -> {
                 if (!future.isSuccess()) {
                     Throwable cause = future.cause();

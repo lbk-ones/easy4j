@@ -14,7 +14,12 @@ public class RpcProxyFactory {
     public static <T> T getProxy(Class<T> tClass, String serviceName) {
         Object o = Proxy.newProxyInstance(tClass.getClassLoader(), new Class[]{tClass}, (proxy, method, args) -> {
             RpcRequest rpcRequest = RpcRequest.of(method, args, serviceName);
-            RpcResponse rpcResponse = RpcClientFactory.getClient().sendRequestSync(rpcRequest);
+            RpcResponse rpcResponse = null;
+            try{
+                rpcResponse = RpcClientFactory.getClient().sendRequestSync(rpcRequest);
+            }catch (Exception e){
+                rpcResponse = RpcResponse.error(RpcResponse.ERROR_MSG_ID,RpcResponseStatus.INVOKE_EXCEPTION,e);
+            }
             return rpcResponse.getResult();
         });
         return (T) o;

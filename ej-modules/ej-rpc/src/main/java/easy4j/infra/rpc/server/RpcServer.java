@@ -7,16 +7,13 @@ import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.config.NettyBootStrap;
-import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
 import easy4j.infra.rpc.heart.NodeHeartbeatManager;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.registry.Registry;
 import easy4j.infra.rpc.registry.RegistryFactory;
 import easy4j.infra.rpc.server.handlers.ChannelCountHandler;
-import easy4j.infra.rpc.server.handlers.RequestHandler;
 import easy4j.infra.rpc.server.handlers.RpcServerHandler;
-import easy4j.infra.rpc.utils.ChannelUtils;
 import easy4j.infra.rpc.utils.DefaultUncaughtExceptionHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -26,7 +23,6 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.Attribute;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +44,6 @@ public class RpcServer extends NettyBootStrap {
     public final E4jRpcConfig serverConfig;
     public final ServerBootstrap bootstrap;
     public final RpcServerHandler rpcServerHandler;
-    public final RequestHandler requestHandler;
     public final NettyHeartbeatHandler nettyHeartbeatHandler;
     public final LengthFieldPrepender lengthFieldPrepender;
     public final LoggingHandler loggingHandler;
@@ -66,7 +61,6 @@ public class RpcServer extends NettyBootStrap {
         this.nettyHeartbeatHandler = new NettyHeartbeatHandler(true);
         this.lengthFieldPrepender = new LengthFieldPrepender(4);
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
-        this.requestHandler = new RequestHandler(this);
         this.channelCountHandler = new ChannelCountHandler();
         this.serverNode = DefaultServerNode.INSTANCE;
     }
@@ -97,7 +91,7 @@ public class RpcServer extends NettyBootStrap {
                                 pipeline.addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
                                 pipeline.addLast(new LengthFieldBasedFrameDecoder(
                                         Codec.MAX_FRAME_LENGTH,
-                                        6,
+                                        14,
                                         4,
                                         2,
                                         0,
@@ -106,11 +100,10 @@ public class RpcServer extends NettyBootStrap {
                                 pipeline.addLast(new RpcDecoder());
                                 pipeline.addLast(new RpcEncoder());
                                 pipeline.addLast(channelCountHandler);
-                                pipeline.addLast(requestHandler);
                                 pipeline.addLast(nettyHeartbeatHandler);
                                 pipeline.addLast(rpcServerHandler);
 
-                                pipeline.addLast(lengthFieldPrepender); // 数据长度字段占4字节
+                                //pipeline.addLast(lengthFieldPrepender); // 数据长度字段占4字节
                             }
                         });
                 NodeHeartbeatManager.initPort(port);
@@ -131,17 +124,6 @@ public class RpcServer extends NettyBootStrap {
                 workerGroup.shutdownGracefully();
             }
         }
-    }
-
-    /**
-     * 从上下文中获取请求信息
-     *
-     * @param ctx channel 上下文
-     * @return RpcRequest
-     */
-    public RpcRequest getRequest(ChannelHandlerContext ctx) {
-        Attribute<RpcRequest> attr = ctx.channel().attr(ChannelUtils.REQUEST_INFO);
-        return attr.get();
     }
 
     /**

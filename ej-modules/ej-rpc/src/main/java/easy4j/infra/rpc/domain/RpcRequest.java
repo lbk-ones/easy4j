@@ -17,13 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Data
 public class RpcRequest implements Serializable {
 
-    private static AtomicInteger atomicInteger = new AtomicInteger(0);
-
-    /**
-     * 唯一请求ID
-     */
-    private long requestId;
-
     /**
      * 服务名称
      */
@@ -60,10 +53,6 @@ public class RpcRequest implements Serializable {
     private Map<String,Object> attachment;
 
 
-    public RpcRequest() {
-        this.requestId = atomicInteger.incrementAndGet();
-    }
-
     /**
      * 从方法信息解析出请求对象
      *
@@ -74,7 +63,6 @@ public class RpcRequest implements Serializable {
      */
     public static RpcRequest of(Method method, Object[] args, String serviceName) {
         RpcRequest rpcRequest = new RpcRequest();
-        rpcRequest.requestId = atomicInteger.incrementAndGet();
         Class<?> declaringClass = method.getDeclaringClass();
         rpcRequest.methodName = method.getName();
         rpcRequest.serviceName = serviceName;

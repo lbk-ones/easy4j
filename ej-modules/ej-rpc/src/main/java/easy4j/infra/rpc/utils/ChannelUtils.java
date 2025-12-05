@@ -19,6 +19,7 @@ package easy4j.infra.rpc.utils;
 
 import easy4j.infra.rpc.domain.RpcRequest;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,7 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class ChannelUtils {
 
-    public static final AttributeKey<RpcRequest> REQUEST_INFO = AttributeKey.newInstance("e4j.netty.request");
+    public static final AttributeKey<Boolean> IS_RECONNECT = AttributeKey.newInstance("easy4j.is.reconnect");
 
 
     private ChannelUtils() {
@@ -92,4 +93,17 @@ public class ChannelUtils {
         return new Host(getHost(socketAddress.getAddress()), socketAddress.getPort());
     }
 
+
+    /**
+     * 判断是否需要重连
+     * @param ctx channel 上下文
+     * @return Boolean
+     */
+    public static Boolean isNeedReconnect(ChannelHandlerContext ctx){
+        Boolean isNeedConnect = true;
+        if (ctx.channel().hasAttr(ChannelUtils.IS_RECONNECT)) {
+            isNeedConnect = ctx.channel().attr(ChannelUtils.IS_RECONNECT).get();
+        }
+        return isNeedConnect;
+    }
 }

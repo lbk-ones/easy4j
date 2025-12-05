@@ -1,10 +1,14 @@
 package easy4j.infra.rpc.client;
 
+import easy4j.infra.rpc.domain.Transport;
+import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.utils.ChannelUtils;
 import easy4j.infra.rpc.utils.Host;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
@@ -41,23 +45,27 @@ public class RpcReconnectHandler extends ChannelInboundHandlerAdapter {
         log.info("current channel {} inactive", ctx.channel().id());
         Host address = ChannelUtils.toAddress(ctx.channel());
         this.client.closeChannel(address);
+        Boolean isNeedConnect = ChannelUtils.isNeedReconnect(ctx);
         ctx.channel().close();
-        log.info("begin reconnect!!");
-        reConnected(address);
+        if (isNeedConnect) {
+            log.info("begin reconnect!!");
+            reConnected(address);
+        }
     }
 
 
     public void reConnected(Host address) {
-        if (retryCount >= maxRetryCount) {
+        Channel channel = RpcClient.getCacheChannel().get(address);
+        if (null != channel) return;
+        if (maxRetryCount <= 0 || retryCount >= maxRetryCount) {
             log.error("[Reconnect Termination] The maximum number of retries has been reached, stop reconnecting");
             return;
         }
-
         //  计算指数退避间隔（1s→2s→4s→8s->16...）
-        long delay = Math.min(2 * (1L << retryCount), 10);
+        long delay = Math.min(2 * (1L << retryCount), 65);
         retryCount++;
 
-        this.client.getWorkerGroup().next().schedule(() -> {
+        this.client.getWorkerGroup().schedule(() -> {
             try {
                 client.createChannel(address, false);
             } catch (Exception e) {

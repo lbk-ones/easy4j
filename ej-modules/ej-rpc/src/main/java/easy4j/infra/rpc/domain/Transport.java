@@ -1,6 +1,8 @@
 package easy4j.infra.rpc.domain;
 
 import easy4j.infra.rpc.enums.FrameType;
+import easy4j.infra.rpc.utils.Sequence;
+import easy4j.infra.rpc.utils.SequenceUtils;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -31,6 +33,10 @@ public class Transport {
      * 校验和2字节
      */
     private short checkSum;
+    /**
+     * 消息ID
+     */
+    private long msgId;
 
     /**
      * body体
@@ -39,19 +45,22 @@ public class Transport {
 
     public static Transport of(FrameType frameType, byte[] body) {
         return new Transport()
+                .setMsgId(SequenceUtils.gen())
                 .setFrameType(frameType.getFrameType())
                 .setBody(body);
     }
 
     public static Transport of(FrameType frameType) {
         return new Transport()
+                .setMsgId(SequenceUtils.gen())
                 .setFrameType(frameType.getFrameType());
     }
 
     @Override
     public String toString() {
         return "Transport{" +
-                "magic=" + magic +
+                "msgId=" + msgId +
+                ",magic=" + magic +
                 ", version=" + version +
                 ", frameType=" + frameType +
                 ", dataLength=" + dataLength +

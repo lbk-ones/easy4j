@@ -19,7 +19,7 @@
 
 package easy4j.infra.rpc.exception;
 
-public final class RegistryException extends RuntimeException {
+public final class RegistryException extends RpcException {
 
     public RegistryException(String message, Throwable cause) {
         super(message, cause);

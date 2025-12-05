@@ -7,17 +7,13 @@ import easy4j.infra.rpc.enums.FrameType;
 import easy4j.infra.rpc.exception.DecodeRpcException;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
-import easy4j.infra.rpc.utils.ChannelUtils;
-import easy4j.infra.rpc.utils.Host;
 import io.netty.channel.*;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
 /**
  * rpc客户端 入栈处理器
@@ -49,9 +45,9 @@ public class RpcClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Transport msg1 = (Transport) msg;
-        if (log.isDebugEnabled()) {
-            log.debug("current client channel {} receive msg: " + msg1, ctx.channel().id());
-        }
+//        if (log.isInfoEnabled()) {
+//            log.info("current client channel {} receive msg: " + msg1, ctx.channel().id());
+//        }
         if (msg1.getFrameType() != FrameType.RESPONSE.getFrameType()) {
             return;
         }
@@ -59,19 +55,19 @@ public class RpcClientHandler extends ChannelDuplexHandler {
         if (body == null || body.length == 0) {
             return;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("current client channel {} receive msg header {}, receive msg body {}", ctx.channel().id(), msg1, new String(body, StandardCharsets.UTF_8));
+        if (log.isInfoEnabled()) {
+            log.info("current client channel {} receive msg header {}, receive msg body {}", ctx.channel().id(), msg1, new String(body, StandardCharsets.UTF_8));
         }
         try {
             ISerializable iSerializable = SerializableFactory.get();
-            RpcResponse deserializable = iSerializable.deserializable(body, RpcResponse.class);
-            long requestId = deserializable.getRequestId();
-            ResFuture future = ResFuture.getFuture(requestId);
+            RpcResponse response = iSerializable.deserializable(body, RpcResponse.class);
+            long msgId = response.getMsgId();
+            ResFuture future = ResFuture.getFuture(msgId);
             if (null == future) {
-                log.error("not found future {}", requestId);
+                log.error("msgId {},not found future", msgId);
                 return;
             }
-            future.putResponse(deserializable);
+            future.putResponse(response);
         } catch (Exception ignored) {
         }
 

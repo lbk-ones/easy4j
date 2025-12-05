@@ -14,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.utils.ByteArrayDeserializer;
 import lombok.extern.slf4j.Slf4j;
 
@@ -100,7 +101,7 @@ public class JacksonSerializable implements ISerializable {
         try {
             return objectMapper.readValue(s, tClass);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 }

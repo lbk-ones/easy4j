@@ -4,6 +4,7 @@ import cn.hutool.core.exceptions.InvocationTargetRuntimeException;
 import cn.hutool.core.util.ReflectUtil;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
+import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.integrated.ServerInstanceInit;
@@ -29,29 +30,28 @@ public class ServerMethodInvoke {
     private Class<?>[] parameterTypes;
     private final RpcRequest request;
 
-    public ServerMethodInvoke(RpcRequest request) {
+    private final Transport transport;
+
+    public ServerMethodInvoke(RpcRequest request, Transport transport_) {
         this.request = request;
+        this.transport = transport_;
     }
 
     public RpcResponse invoke() {
+        long msgId = transport.getMsgId();
         try {
-
             // init
-            initContext(request);
-
+            init(request);
             Object instance = getClassInstance();
-
-            if (null == instance) return RpcResponse.error(request.getRequestId(), RpcResponseStatus.INSTANCE_NOT_FOUND);
-
+            if (null == instance) return RpcResponse.error(msgId, RpcResponseStatus.INSTANCE_NOT_FOUND);
             Object invoke = ReflectUtil.invoke(instance, method, parameters);
-
-            return RpcResponse.success(request.getRequestId(), invoke);
+            return RpcResponse.success(msgId, invoke);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
-            return RpcResponse.error(request.getRequestId(), RpcResponseStatus.RESOURCE_NOT_FOUND);
+            return RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_NOT_FOUND);
         } catch (InvocationTargetRuntimeException exception) {
-            return RpcResponse.error(request.getRequestId(), RpcResponseStatus.INVOKE_EXCEPTION, exception.getCause());
+            return RpcResponse.error(msgId, RpcResponseStatus.INVOKE_EXCEPTION, exception.getCause());
         } catch (Exception ex) {
-            return RpcResponse.error(request.getRequestId(), RpcResponseStatus.INVOKE_EXCEPTION, ex);
+            return RpcResponse.error(msgId, RpcResponseStatus.INVOKE_EXCEPTION, ex);
         }
     }
 
@@ -67,7 +67,7 @@ public class ServerMethodInvoke {
         );
     }
 
-    private void initContext(RpcRequest request) throws ClassNotFoundException, NoSuchMethodException {
+    private void init(RpcRequest request) throws ClassNotFoundException, NoSuchMethodException {
         String classIdentify = request.getClassIdentify();
         aClass = getClassByClassIdentify(classIdentify);
         if (aClass == null) {

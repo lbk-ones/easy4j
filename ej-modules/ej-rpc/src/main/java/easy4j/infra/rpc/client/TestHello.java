@@ -11,4 +11,9 @@ public class TestHello {
         objectObjectHashMap.put("hello2", input);
         return objectObjectHashMap;
     }
+
+
+    public void testVoid(String input) {
+        System.out.println("test void "+input);
+    }
 }

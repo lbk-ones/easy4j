@@ -2,8 +2,6 @@ package easy4j.infra.rpc.client;
 
 import easy4j.infra.rpc.domain.RpcResponse;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class ResFuture {
     private static final ConcurrentHashMap<Long, ResFuture> FUTURE_TABLE = new ConcurrentHashMap<>();
 
-    private final long requestId;
+    private final long msgId;
 
     // remove the timeout
     private final long timeoutMillis;
@@ -36,10 +34,10 @@ public class ResFuture {
 
     private Throwable cause;
 
-    public ResFuture(long requestId, long timeoutMillis) {
-        this.requestId = requestId;
+    public ResFuture(long msgId, long timeoutMillis) {
+        this.msgId = msgId;
         this.timeoutMillis = timeoutMillis;
-        FUTURE_TABLE.put(requestId, this);
+        FUTURE_TABLE.put(msgId, this);
     }
 
     /**
@@ -49,7 +47,7 @@ public class ResFuture {
      */
     public RpcResponse waitResponse() throws InterruptedException {
         if (!latch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
-            log.warn("Wait response in {}/ms timeout, request id {}", timeoutMillis, requestId);
+            log.error("Wait response in {}/ms timeout, msgId {}", timeoutMillis, msgId);
         }
         return this.rpcResponse;
     }
@@ -57,7 +55,7 @@ public class ResFuture {
     public void putResponse(final RpcResponse iRpcResponse) {
         this.rpcResponse = iRpcResponse;
         this.latch.countDown();
-        FUTURE_TABLE.remove(requestId);
+        FUTURE_TABLE.remove(msgId);
     }
 
     public static ResFuture getFuture(long opaque) {

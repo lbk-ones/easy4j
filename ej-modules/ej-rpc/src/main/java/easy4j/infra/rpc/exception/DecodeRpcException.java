@@ -5,7 +5,10 @@ package easy4j.infra.rpc.exception;
  * @since 2.0.1
  * @author bokun
  */
-public class DecodeRpcException extends RuntimeException{
+public class DecodeRpcException extends RpcException{
+
+
+
     public DecodeRpcException() {
         super();
     }

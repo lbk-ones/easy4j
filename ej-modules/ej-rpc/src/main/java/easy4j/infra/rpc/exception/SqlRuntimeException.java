@@ -5,7 +5,7 @@ import java.sql.SQLException;
 /**
  * SQL 运行时异常（包装 SQLException，转为非受检异常）
  */
-public class SqlRuntimeException extends RuntimeException {
+public class SqlRuntimeException extends RpcException {
 
     // 无参构造
     public SqlRuntimeException() {
