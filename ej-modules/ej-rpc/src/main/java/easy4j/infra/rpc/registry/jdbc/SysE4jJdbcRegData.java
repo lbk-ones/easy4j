@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.registry.jdbc;
 
-import easy4j.infra.rpc.registry.jdbc.ddl.FieldInfo;
 import lombok.Data;
 
 import java.sql.JDBCType;

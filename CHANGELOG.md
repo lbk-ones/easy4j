@@ -77,7 +77,6 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 
 ### 修复
 
-
 ### 移除
 - 移除对java8的支持
 
@@ -92,7 +91,7 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 
 ### 修复
 - 修复quartzJob出现异常无限重试的问题
-
+- 修复自动执行sql脚本sqlserver和postgresql找不到的问题
 ### 移除
 
 
