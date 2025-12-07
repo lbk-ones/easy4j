@@ -1,5 +1,6 @@
 package easy4j.infra.rpc.domain;
 
+import easy4j.infra.rpc.exception.RpcException;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -48,16 +49,21 @@ public class RpcRequest implements Serializable {
     private String returnType;
 
     /**
+     * 调用方IP
+     */
+    private String callerIp;
+
+    /**
      * 附加参数信息 会一块传递到服务端去
      */
-    private Map<String,Object> attachment;
+    private Map<String, Object> attachment;
 
 
     /**
      * 从方法信息解析出请求对象
      *
-     * @param method     method对象
-     * @param args       参数信息
+     * @param method      method对象
+     * @param args        参数信息
      * @param serviceName 服务名称
      * @return 请求对象
      */
@@ -79,5 +85,13 @@ public class RpcRequest implements Serializable {
         rpcRequest.parameters = args;
         rpcRequest.returnType = method.getReturnType().getName();
         return rpcRequest;
+    }
+
+    public Class<?> getInterface() {
+        try {
+            return Class.forName(this.getClassIdentify());
+        } catch (Exception e) {
+            throw new RpcException("the class " + this.classIdentify + " is not found");
+        }
     }
 }

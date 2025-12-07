@@ -1,0 +1,4 @@
+easy4j.infra.rpc.filter.impl.RpcRequestServicesNameFilter
+easy4j.infra.rpc.filter.impl.CheckGeneralizedInvoke
+easy4j.infra.rpc.filter.impl.ExceptionRpcFilter
+easy4j.infra.rpc.filter.impl.RpcAttachmentsFilter

@@ -9,7 +9,10 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-// RPC 响应对象
+/**
+ * RPC 响应对象
+ * 如果rpc提供方出现异常
+ */
 @Data
 @Accessors(chain = true)
 public class RpcResponse implements Serializable {
@@ -83,9 +86,9 @@ public class RpcResponse implements Serializable {
         rpcResponse.setCode(status.getCode());
         rpcResponse.setResult(null);
         rpcResponse.setMsgId(msgId);
-        if(StrUtil.isNotBlank(message)){
+        if (StrUtil.isNotBlank(message)) {
             rpcResponse.setMessage(message);
-        }else{
+        } else {
             rpcResponse.setMessage(status.getMsg());
         }
         rpcResponse.setTimestamp(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());

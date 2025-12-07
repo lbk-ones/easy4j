@@ -23,12 +23,14 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * TCP服务
  *
@@ -53,6 +55,7 @@ public class RpcServer extends NettyBootStrap {
     public EventLoopGroup bossGroup;
     public EventLoopGroup workerGroup;
     public ServerNode serverNode;
+
     public RpcServer(E4jRpcConfig serverConfig) {
         super(false);
         this.serverConfig = serverConfig;
@@ -72,7 +75,7 @@ public class RpcServer extends NettyBootStrap {
             EventLoopGroup bossGroup = getEventLoop(1);
             EventLoopGroup workerGroup = getEventLoop(0);
             // 只有服务端才会close,客户端不用，如果只开启客户端那么不会走到这里来，registry照常运行
-            try(Registry registry = RegistryFactory.get()) {
+            try (Registry registry = RegistryFactory.get()) {
                 this.bootstrap
                         .group(bossGroup, workerGroup)
                         .channel(getMainServerChannel())
@@ -113,7 +116,7 @@ public class RpcServer extends NettyBootStrap {
                 registry.start();
                 log.info("e4j registry start success!");
                 String serverName = IntegratedFactory.getRpcConfig().getConfig().getServer().getServerName();
-                this.serverNode.registry(new NodeHeartbeatManager(),serverName);
+                this.serverNode.registry(new NodeHeartbeatManager(), serverName);
                 future.channel().closeFuture().sync();
 
             } catch (Exception e) {
@@ -134,7 +137,7 @@ public class RpcServer extends NettyBootStrap {
         return ExecutorBuilder.create()
                 .setCorePoolSize(threadNum)
                 .setMaxPoolSize(threadNum * 2)
-                .setThreadFactory(new NamedThreadFactory("e4j-server-pool-", null, true, DefaultUncaughtExceptionHandler.getInstance()))
+                .setThreadFactory(new DefaultThreadFactory2("e4j-server-pool-", true, Thread.NORM_PRIORITY, null, DefaultUncaughtExceptionHandler.getInstance()))
                 .build();
     }
 
