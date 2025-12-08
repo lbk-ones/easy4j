@@ -13,6 +13,8 @@ import easy4j.infra.rpc.client.RpcProxyFactory;
 import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.enums.RegisterInfoType;
 import easy4j.infra.rpc.exception.RpcException;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.integrated.ServerInstanceInit;
 import easy4j.infra.rpc.integrated.spring.annotations.RpcProxy;
 import easy4j.infra.rpc.integrated.spring.annotations.RpcService;
 import easy4j.infra.rpc.registry.Registry;
@@ -61,7 +63,7 @@ public class SpringIntegrated implements ApplicationContextAware, CommandLineRun
     private ApplicationContext springContext;
 
     @Bean
-    public SpringServerInstanceInit springServerInstanceInit() {
+    public ServerInstanceInit springServerInstanceInit() {
         return new SpringServerInstanceInit();
     }
 
@@ -79,6 +81,14 @@ public class SpringIntegrated implements ApplicationContextAware, CommandLineRun
     @Bean
     public GeneralizedInvoke generalizedInvoke() {
         return RpcProxyFactory.getGeneralizedProxy();
+    }
+
+    @Bean
+    public Object register(ServerInstanceInit serverInstanceInit, SpringConnectionManager springConnectionManager, SpringE4jRpcConfig springRpcConfig) {
+        IntegratedFactory.register(serverInstanceInit);
+        IntegratedFactory.register(springConnectionManager);
+        IntegratedFactory.register(springRpcConfig);
+        return null;
     }
 
     @Override
@@ -176,8 +186,8 @@ public class SpringIntegrated implements ApplicationContextAware, CommandLineRun
 
     @ConditionalOnProperty(
             prefix = "easy4j.rpc",
-            name = {"registerType"},
-            value = "JDBC"
+            name = {"register-type"},
+            havingValue = "jdbc"
     )
     @Configuration(proxyBeanMethods = false)
     @Slf4j

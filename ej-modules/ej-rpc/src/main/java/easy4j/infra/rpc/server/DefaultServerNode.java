@@ -277,6 +277,8 @@ public class DefaultServerNode implements ServerNode {
                         log.info("e4j server {} registry success!", serviceName);
                     }
                     num++;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 } finally {
                     exeIng = false;
                 }

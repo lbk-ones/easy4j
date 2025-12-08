@@ -4,6 +4,7 @@ import easy4j.infra.rpc.enums.LbType;
 import easy4j.infra.rpc.enums.RegisterType;
 import easy4j.infra.rpc.enums.SerializableType;
 import lombok.Data;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @Data
 public class E4jRpcConfig {
@@ -95,11 +96,13 @@ public class E4jRpcConfig {
     /**
      * 服务端配置
      */
+    @NestedConfigurationProperty
     private E4jServerConfig server;
 
     /**
      * 客户端配置
      */
+    @NestedConfigurationProperty
     private E4jClientConfig client;
 
 }

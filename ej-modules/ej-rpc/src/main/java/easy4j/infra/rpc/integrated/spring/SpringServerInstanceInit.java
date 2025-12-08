@@ -10,6 +10,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
 /**
  * spring整合配置
  *
@@ -36,26 +37,25 @@ public class SpringServerInstanceInit implements BeanNameAware, ServerInstanceIn
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
-        Object bean = this.beanFactory.getBean(this.beanName);
-        IntegratedFactory.register(bean);
     }
 
-    public  ListableBeanFactory getBeanFactory() {
+
+    public ListableBeanFactory getBeanFactory() {
         ListableBeanFactory factory = null == beanFactory ? applicationContext : (ListableBeanFactory) beanFactory;
         if (null == factory) {
             throw new UtilException("No ConfigurableListableBeanFactory or ApplicationContext injected, maybe not in the Spring environment?");
         } else {
-            return (ListableBeanFactory)factory;
+            return (ListableBeanFactory) factory;
         }
     }
 
     @Override
     public Object instance(RpcRequest request) {
-        try{
+        try {
             String classIdentify = request.getClassIdentify();
             Class<?> classByClassIdentify = ServerMethodInvoke.getClassByClassIdentify(classIdentify);
             return getBeanFactory().getBean(classByClassIdentify);
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
 

@@ -18,6 +18,11 @@ import easy4j.infra.rpc.integrated.spring.BeanImport;
 import easy4j.infra.rpc.integrated.spring.SpringRpcServiceProcessor;
 import org.springframework.context.annotation.Import;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * EnableEasy4jRpc
  * 是否启用 rpc
@@ -26,6 +31,8 @@ import org.springframework.context.annotation.Import;
  * @since 2025-11-29 16:54:09
  */
 @Import(value = {BeanImport.class, SpringRpcServiceProcessor.class})
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface EnableEasy4jRpc {
 
     /**

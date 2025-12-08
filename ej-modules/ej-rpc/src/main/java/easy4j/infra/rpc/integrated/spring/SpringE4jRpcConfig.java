@@ -30,8 +30,7 @@ public class SpringE4jRpcConfig extends AbstractRpcConfig implements Application
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;
-        Object bean = context.getBean(beanName);
-        IntegratedFactory.register(bean);
+
     }
 
     @Override
@@ -39,9 +38,9 @@ public class SpringE4jRpcConfig extends AbstractRpcConfig implements Application
         Environment environment = context.getEnvironment();
         Binder binder = Binder.get(environment);
         BindResult<E4jRpcConfig> bind = binder.bind("easy4j.rpc", E4jRpcConfig.class);
-        if(bind.isBound()){
+        if (bind.isBound()) {
             return bind.get();
-        }else{
+        } else {
             return new E4jRpcConfig();
         }
     }

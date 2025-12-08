@@ -30,9 +30,11 @@ public class NodeHeartbeatManager {
     public NodeHeartbeatManager() {
         this.weight = 1;
     }
+
     public static void initPort(int port_) {
         port = port_;
     }
+
     public boolean isOverload(SystemMetrics systemMetrics) {
         if (systemMetrics.getSystemCpuUsagePercentage() > maxSystemCpuUsagePercentageThresholds) {
             log.info(
@@ -68,7 +70,7 @@ public class NodeHeartbeatManager {
         SystemMetrics systemMetrics = new MetricsCollector().collectAllMetrics();
 
         E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
-        weight = Math.max(config.getServer().getWeight(),1);
+        weight = Math.max(config.getServer().getWeight(), 1);
         int processID = getProcessID();
         last = new NodeHeartbeatInfo()
                 .setProcessId(processID)
@@ -80,7 +82,7 @@ public class NodeHeartbeatManager {
                 .setMemoryUsage(systemMetrics.getSystemMemoryUsedPercentage())
                 .setDiskUsage(systemMetrics.getDiskUsedPercentage())
                 .setServerStatus(isOverload(systemMetrics) ? ServerStatus.BUSY : ServerStatus.NORMAL)
-                .setHost(NetUtil.getLocalhost().toString())
+                .setHost(NetUtil.getLocalhost().getHostAddress())
                 .setWeight(weight)
                 .setConn(ServerPortChannelManager.countChannelByPort(port))
                 .setDisabled(false)
@@ -95,7 +97,7 @@ public class NodeHeartbeatManager {
 
     private void dynamicWeight(E4jRpcConfig config, SystemMetrics systemMetrics) {
         LbType lbType = config.getLbType();
-        if(lbType == LbType.PERFORMANCE_BASED){
+        if (lbType == LbType.PERFORMANCE_BASED) {
             int baseWeight = weight * 2;
             int dynamicWeight;
             if (systemMetrics.getSystemCpuUsagePercentage() > 90) {

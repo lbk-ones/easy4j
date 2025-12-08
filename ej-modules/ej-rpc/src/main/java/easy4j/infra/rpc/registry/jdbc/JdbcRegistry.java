@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,13 +109,14 @@ public class JdbcRegistry implements Registry {
         Long id;
         List<SysE4jJdbcRegData> sysE4jJdbcRegData1 = jdbcOperate.queryList(where, SysE4jJdbcRegData.class);
         if (CollUtil.isNotEmpty(sysE4jJdbcRegData1)) {
-            Entity dataValue = Entity.create().set("data_value", value);
+            Entity dataValue = Entity.create("sys_e4j_jdbc_reg_data").set("data_value", value).set("last_update_date", new Date());
             jdbcOperate.update(dataValue, Entity.create().set("data_key", key));
             id = sysE4jJdbcRegData1.get(0).getId();
         } else {
             SysE4jJdbcRegData sysE4jJdbcRegData = new SysE4jJdbcRegData();
             sysE4jJdbcRegData.setDataKey(key);
             sysE4jJdbcRegData.setDataValue(value);
+            sysE4jJdbcRegData.setCreateDate(new Date());
             if (deleteOnDisconnect) {
                 sysE4jJdbcRegData.setDataType("0");
             } else {

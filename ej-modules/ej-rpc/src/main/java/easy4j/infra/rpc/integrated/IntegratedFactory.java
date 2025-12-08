@@ -35,6 +35,12 @@ public class IntegratedFactory {
         if (o != null) {
             return (T) o;
         } else {
+            for (Object value : serverInstanceInitCache.values()) {
+                Class<?> aClass1 = value.getClass();
+                if (tClass.isAssignableFrom(aClass1)) {
+                    return (T) value;
+                }
+            }
             throw new IllegalArgumentException("not support type" + tClass.getName());
         }
     }
@@ -44,6 +50,12 @@ public class IntegratedFactory {
         if (o != null) {
             return (T) o;
         } else {
+            for (Object value : serverInstanceInitCache.values()) {
+                Class<?> aClass1 = value.getClass();
+                if (tClass.isAssignableFrom(aClass1)) {
+                    return (T) value;
+                }
+            }
             T apply = function.get();
             if (null == apply) {
                 throw new IllegalArgumentException("not support type" + tClass.getName());
