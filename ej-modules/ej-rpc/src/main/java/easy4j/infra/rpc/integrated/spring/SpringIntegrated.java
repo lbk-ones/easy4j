@@ -1,8 +1,6 @@
 package easy4j.infra.rpc.integrated.spring;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.io.resource.InputStreamResource;
-import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.text.StrPool;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.util.ReflectUtil;
@@ -12,7 +10,7 @@ import easy4j.infra.rpc.client.GeneralizedInvoke;
 import easy4j.infra.rpc.client.RpcClient;
 import easy4j.infra.rpc.client.RpcClientFactory;
 import easy4j.infra.rpc.client.RpcProxyFactory;
-import easy4j.infra.rpc.domain.ProxyAttributes;
+import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.enums.RegisterInfoType;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.integrated.spring.annotations.RpcProxy;
@@ -23,31 +21,22 @@ import easy4j.infra.rpc.server.RpcServer;
 import easy4j.infra.rpc.utils.RpcJdbcTempDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.type.AnnotationMetadata;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -116,10 +105,10 @@ public class SpringIntegrated implements ApplicationContextAware, CommandLineRun
                         serverName.add(value);
                         Class<?> type = field.getType();
                         if (type.isInterface()) {
-                            ProxyAttributes proxyAttributes = new ProxyAttributes()
+                            FilterAttributes filterAttributes = new FilterAttributes()
                                     .setServiceName(value)
                                     .setTimeOut(annotation.timeOut());
-                            Object proxy = RpcProxyFactory.getProxy(type, proxyAttributes);
+                            Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
                             ReflectUtil.setFieldValue(bean, field, proxy);
                         } else {
                             throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
@@ -131,10 +120,10 @@ public class SpringIntegrated implements ApplicationContextAware, CommandLineRun
                             if (annotationPresent) {
                                 String sn = type.getAnnotation(RpcService.class).serviceName();
                                 if (StrUtil.isNotBlank(sn)) {
-                                    ProxyAttributes proxyAttributes = new ProxyAttributes()
+                                    FilterAttributes filterAttributes = new FilterAttributes()
                                             .setServiceName(sn)
                                             .setTimeOut(annotation.timeOut());
-                                    Object proxy = RpcProxyFactory.getProxy(type, proxyAttributes);
+                                    Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
                                     ReflectUtil.setFieldValue(bean, field, proxy);
                                 }
                             } else {

@@ -1,8 +1,10 @@
 package easy4j.infra.rpc.filter;
 
-import easy4j.infra.rpc.domain.ProxyAttributes;
+import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
+import easy4j.infra.rpc.enums.ExecutorPhase;
+import easy4j.infra.rpc.enums.ExecutorSide;
 
 import java.util.Map;
 
@@ -84,22 +86,10 @@ public interface RpcFilterContext {
      */
     void interrupted();
 
-    ProxyAttributes getProxyAttributes();
+    FilterAttributes getFilterAttributes();
 
-    void setProxyAttributes(ProxyAttributes proxyAttributes);
+    void setFilterAttributes(FilterAttributes filterAttributes);
 
 
-    // 枚举：执行端
-    enum ExecutorSide {
-        ALL, CLIENT, SERVER
-    }
 
-    // 枚举：执行阶段
-    enum ExecutorPhase {
-        ALL,
-        // 客户端发送请求前 / 服务端接收请求前
-        REQUEST_BEFORE,
-        // 服务端返回响应前 / 客户端接收响应后
-        RESPONSE_BEFORE
-    }
 }

@@ -1,6 +1,6 @@
 package easy4j.infra.rpc.client;
 
-import easy4j.infra.rpc.domain.ProxyAttributes;
+import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.enums.RpcResponseStatus;
@@ -12,16 +12,16 @@ import java.lang.reflect.Proxy;
  */
 public class RpcProxyFactory {
 
-    public static <T> T getProxy(Class<T> tClass, ProxyAttributes proxyAttributes) {
+    public static <T> T getProxy(Class<T> tClass, FilterAttributes filterAttributes) {
         Object o = Proxy.newProxyInstance(tClass.getClassLoader(), new Class[]{tClass}, (proxy, method, args) -> {
-            proxyAttributes.setProxy(proxy);
-            proxyAttributes.setProxyMethod(method);
-            proxyAttributes.setProxyMethodArgs(args);
-            RpcRequest rpcRequest = RpcRequest.of(method, args, proxyAttributes.getServiceName());
-            RpcResponse rpcResponse = null;
+            filterAttributes.setProxy(proxy);
+            filterAttributes.setProxyMethod(method);
+            filterAttributes.setProxyMethodArgs(args);
+            RpcRequest rpcRequest = RpcRequest.of(method, args, filterAttributes.getServiceName());
+            RpcResponse rpcResponse;
             try {
                 rpcResponse = new RpcClientWrapper(RpcClientFactory.getClient())
-                        .sendRequestSync(rpcRequest, proxyAttributes);
+                        .sendRequestSync(rpcRequest, filterAttributes);
             } catch (Exception e) {
                 rpcResponse = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.INVOKE_EXCEPTION, e);
             }
@@ -38,13 +38,13 @@ public class RpcProxyFactory {
      */
     public static GeneralizedInvoke getGeneralizedProxy() {
         Object o = Proxy.newProxyInstance(GeneralizedInvoke.class.getClassLoader(), new Class[]{GeneralizedInvoke.class}, (proxy, method, args) -> {
-            ProxyAttributes proxyAttributes = new ProxyAttributes();
-            proxyAttributes.setGeneralizedInvoke(true);
-            proxyAttributes.setProxy(proxy);
-            proxyAttributes.setProxyMethod(method);
-            proxyAttributes.setProxyMethodArgs(args);
+            FilterAttributes filterAttributes = new FilterAttributes();
+            filterAttributes.setGeneralizedInvoke(true);
+            filterAttributes.setProxy(proxy);
+            filterAttributes.setProxyMethod(method);
+            filterAttributes.setProxyMethodArgs(args);
             RpcResponse rpcResponse = new RpcClientWrapper(RpcClientFactory.getClient())
-                    .sendRequestSync(null, proxyAttributes);
+                    .sendRequestSync(null, filterAttributes);
             return rpcResponse.getResult();
         });
         return ((GeneralizedInvoke) o);

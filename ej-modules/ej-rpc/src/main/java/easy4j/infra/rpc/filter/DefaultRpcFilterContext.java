@@ -1,9 +1,11 @@
 package easy4j.infra.rpc.filter;
 
 import cn.hutool.core.convert.Convert;
-import easy4j.infra.rpc.domain.ProxyAttributes;
+import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
+import easy4j.infra.rpc.enums.ExecutorPhase;
+import easy4j.infra.rpc.enums.ExecutorSide;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +30,7 @@ public class DefaultRpcFilterContext implements RpcFilterContext {
 
     @Setter
     @Getter
-    ProxyAttributes proxyAttributes;
+    FilterAttributes filterAttributes;
 
     String callerIp;
 

@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 @Data
 @Accessors(chain = true)
-public class ProxyAttributes {
+public class FilterAttributes {
 
     /**
      * 服务名称
@@ -41,4 +41,9 @@ public class ProxyAttributes {
      */
     private Object[] proxyMethodArgs;
 
+
+    /**
+     * 服务端传输层数据
+     */
+    Transport transport;
 }

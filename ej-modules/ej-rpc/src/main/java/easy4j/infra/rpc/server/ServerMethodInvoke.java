@@ -8,6 +8,7 @@ import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.integrated.ServerInstanceInit;
+import lombok.Getter;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -28,14 +29,17 @@ public class ServerMethodInvoke {
     private Method method;
     private Object[] parameters;
     private Class<?>[] parameterTypes;
+    @Getter
     private final RpcRequest request;
 
+    @Getter
     private final Transport transport;
 
     public ServerMethodInvoke(RpcRequest request, Transport transport_) {
         this.request = request;
         this.transport = transport_;
     }
+
 
     public RpcResponse invoke() {
         long msgId = transport.getMsgId();

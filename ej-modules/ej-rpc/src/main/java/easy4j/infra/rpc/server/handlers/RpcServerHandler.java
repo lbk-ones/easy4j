@@ -10,6 +10,7 @@ import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.server.RpcServer;
+import easy4j.infra.rpc.server.RpcServerWrapper;
 import easy4j.infra.rpc.server.ServerMethodInvoke;
 import io.netty.channel.*;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
                 try {
                     Optional.ofNullable(executorService)
                             .ifPresent(e -> e.execute(() -> {
-                                ServerMethodInvoke serverMethodInvoke = new ServerMethodInvoke(request, transport);
+                                RpcServerWrapper serverMethodInvoke = new RpcServerWrapper(new ServerMethodInvoke(request, transport));
                                 RpcResponse invoke = serverMethodInvoke.invoke();
                                 send(ctx, invoke,FrameType.RESPONSE);
                             }));

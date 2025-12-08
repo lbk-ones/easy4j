@@ -6,6 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -56,7 +57,7 @@ public class RpcRequest implements Serializable {
     /**
      * 附加参数信息 会一块传递到服务端去
      */
-    private Map<String, Object> attachment;
+    private Map<String, Object> attachment = new ConcurrentHashMap<>();
 
 
     /**
