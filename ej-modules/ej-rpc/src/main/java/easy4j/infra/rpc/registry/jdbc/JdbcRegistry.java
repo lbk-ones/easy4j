@@ -10,6 +10,7 @@ import easy4j.infra.rpc.registry.ConnectionListener;
 import easy4j.infra.rpc.registry.Registry;
 import easy4j.infra.rpc.registry.SubscribeListener;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
  * @author bokun
  * @since 2.0.1
  */
+@Slf4j
 public class JdbcRegistry implements Registry {
 
 
@@ -34,6 +37,8 @@ public class JdbcRegistry implements Registry {
     final JdbcLoopCheckManager jdbcLoopCheckManager;
 
     final EphemeralDataManager ephemeralDataManager;
+
+    final AtomicBoolean isStarted = new AtomicBoolean(false);
 
 
     public JdbcRegistry(JdbcOperate jdbcOperate) {
@@ -44,14 +49,16 @@ public class JdbcRegistry implements Registry {
 
     @Override
     public void start() {
-        this.jdbcLoopCheckManager.start();
+        if (isStarted.compareAndSet(false, true)) {
+            this.jdbcLoopCheckManager.start();
+        }
     }
 
     @Override
     public boolean isConnected() {
         SysE4jJdbcRegData sysE4jJdbcRegData = new SysE4jJdbcRegData();
         try {
-            int count = jdbcOperate.count(sysE4jJdbcRegData);
+            long count = jdbcOperate.count(sysE4jJdbcRegData);
             return true;
         } catch (Exception e) {
             return false;
@@ -149,7 +156,12 @@ public class JdbcRegistry implements Registry {
         if (CollUtil.isNotEmpty(regData)) {
             return regData.stream().map(e -> {
                 String s = StrUtil.replaceFirst(e.getDataKey(), finalKey, "");
-                return s.substring(0, s.indexOf("/"));
+                int i = s.indexOf("/");
+                if (i > 0) {
+                    return s.substring(0, i);
+                } else {
+                    return s;
+                }
             }).distinct().collect(Collectors.toList());
         }
         return Collections.emptyList();
@@ -179,11 +191,13 @@ public class JdbcRegistry implements Registry {
 
     @Override
     public void close() throws IOException {
-        this.jdbcLoopCheckManager.close();
-        try {
-            this.ephemeralDataManager.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (isStarted.compareAndSet(true, false)) {
+            try {
+                this.jdbcLoopCheckManager.close();
+                this.ephemeralDataManager.close();
+            } catch (Exception e) {
+                log.error("close appear exception " + e.getMessage());
+            }
         }
     }
 }

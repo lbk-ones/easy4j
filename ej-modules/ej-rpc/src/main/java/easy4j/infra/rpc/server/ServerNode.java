@@ -44,5 +44,10 @@ public interface ServerNode {
      */
     void registry(NodeHeartbeatManager nodeHeartbeatManager,String serviceName);
 
+    /**
+     * 卸载注册信息
+     */
+    void unRegistry();
+
 
 }

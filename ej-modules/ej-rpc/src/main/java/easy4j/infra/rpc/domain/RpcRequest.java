@@ -87,12 +87,4 @@ public class RpcRequest implements Serializable {
         rpcRequest.returnType = method.getReturnType().getName();
         return rpcRequest;
     }
-
-    public Class<?> getInterface() {
-        try {
-            return Class.forName(this.getClassIdentify());
-        } catch (Exception e) {
-            throw new RpcException("the class " + this.classIdentify + " is not found");
-        }
-    }
 }

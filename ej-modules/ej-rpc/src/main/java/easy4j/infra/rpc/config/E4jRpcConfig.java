@@ -1,8 +1,10 @@
 package easy4j.infra.rpc.config;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.enums.LbType;
 import easy4j.infra.rpc.enums.RegisterType;
 import easy4j.infra.rpc.enums.SerializableType;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
 import lombok.Data;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -104,5 +106,28 @@ public class E4jRpcConfig {
      */
     @NestedConfigurationProperty
     private E4jClientConfig client;
+
+
+    public String getRegistryJdbcUrl() {
+        if(StrUtil.isBlank(registryJdbcUrl)){
+            return IntegratedFactory.getRpcConfig().get("spring.datasource.url");
+        }
+        return registryJdbcUrl;
+    }
+
+    public String getRegistryJdbcUsername() {
+        if(StrUtil.isBlank(registryJdbcUsername)){
+            return IntegratedFactory.getRpcConfig().get("spring.datasource.username");
+        }
+        return registryJdbcUsername;
+    }
+
+    public String getRegistryJdbcPassword() {
+        if(StrUtil.isBlank(registryJdbcPassword)){
+            return IntegratedFactory.getRpcConfig().get("spring.datasource.password");
+        }
+        return registryJdbcPassword;
+    }
+
 
 }

@@ -60,6 +60,9 @@ public class ServerMethodInvoke {
     }
 
     public static Class<?> getClassByClassIdentify(String classIdentify) {
+        if("void".equals(classIdentify)){
+            return void.class;
+        }
         return cacheClass.computeIfAbsent(classIdentify, e ->
                 {
                     try {
@@ -99,21 +102,9 @@ public class ServerMethodInvoke {
     }
 
     private Object getClassInstance() {
-        ServerInstanceInit serverInstanceInit = IntegratedFactory.getOrDefault(ServerInstanceInit.class, () -> new DefaultServerInstanceInit(aClass));
+        ServerInstanceInit serverInstanceInit = IntegratedFactory.getServerInstanceInit();
         return serverInstanceInit.instance(request);
     }
 
-    static class DefaultServerInstanceInit implements ServerInstanceInit {
 
-        Class<?> aClass;
-
-        public DefaultServerInstanceInit(Class<?> aClass) {
-            this.aClass = aClass;
-        }
-
-        @Override
-        public Object instance(RpcRequest request) {
-            return ReflectUtil.newInstanceIfPossible(aClass);
-        }
-    }
 }

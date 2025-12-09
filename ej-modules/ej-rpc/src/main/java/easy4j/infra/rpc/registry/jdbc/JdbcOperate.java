@@ -1,18 +1,17 @@
 package easy4j.infra.rpc.registry.jdbc;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.Entity;
+import cn.hutool.db.StatementUtil;
 import cn.hutool.db.dialect.Dialect;
 import cn.hutool.db.dialect.DialectFactory;
 import cn.hutool.db.sql.Query;
 import cn.hutool.db.sql.SqlBuilder;
 import easy4j.infra.rpc.exception.SqlRuntimeException;
 import easy4j.infra.rpc.integrated.ConnectionManager;
-import easy4j.infra.rpc.integrated.DefaultConnectionManager;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
-import lombok.Getter;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.lang.reflect.Field;
@@ -32,10 +31,10 @@ public class JdbcOperate {
 
     private final ConnectionManager connectionManager;
 
-    private final QueryRunner queryRunner = new QueryRunner();
+    private final SqlRunner sqlRunner = new SqlRunner();
 
     public JdbcOperate() {
-        this.connectionManager = IntegratedFactory.getOrDefault(ConnectionManager.class, DefaultConnectionManager::new);
+        this.connectionManager = IntegratedFactory.getConnectionManager();
     }
 
     public Connection getConnection() {
@@ -58,10 +57,10 @@ public class JdbcOperate {
      * @return 整数
      */
     public int update(Connection connection, String sql, Object... args) {
-        notNull(connection,"connection");
-        notNull(sql,"sql");
+        notNull(connection, "connection");
+        notNull(sql, "sql");
         try {
-            return queryRunner.update(connection, sql, args);
+            return sqlRunner.update(connection, sql, args);
         } catch (SQLException e) {
             throw new SqlRuntimeException(e);
         }
@@ -75,10 +74,10 @@ public class JdbcOperate {
      * @return 自增主键
      */
     public Object insert(Connection connection, String sql, Object... args) {
-        notNull(connection,"connection");
-        notNull(sql,"sql");
+        notNull(connection, "connection");
+        notNull(sql, "sql");
         try {
-            return queryRunner.insert(connection, sql, new ScalarHandler<>(), args);
+            return sqlRunner.insert(connection,sql,new ScalarHandler<>(),args);
         } catch (SQLException e) {
             throw new SqlRuntimeException(e);
         }
@@ -94,11 +93,10 @@ public class JdbcOperate {
      * @return 实体集合
      */
     public <T> List<T> query(Connection connection, String sql, Class<T> clazz, Object... args) {
-        notNull(connection,"connection");
-        notNull(sql,"sql");
+        notNull(connection, "connection");
+        notNull(sql, "sql");
         try {
-            QueryRunner queryRunner = new QueryRunner();
-            return queryRunner.query(connection, sql, new BeanPropertyHandler<>(clazz), args);
+            return sqlRunner.query(connection, sql, new BeanPropertyHandler<>(clazz), args);
         } catch (SQLException e) {
             throw new SqlRuntimeException(e);
         }
@@ -110,12 +108,12 @@ public class JdbcOperate {
      * @param sql 占位符必须是 ?
      * @return
      */
-    public int count(Connection connection, String sql, Object... args) {
-        notNull(connection,"connection");
-        notNull(sql,"sql");
+    public long count(Connection connection, String sql, Object... args) {
+        notNull(connection, "connection");
+        notNull(sql, "sql");
         try {
-            QueryRunner queryRunner = new QueryRunner();
-            return queryRunner.query(connection, sql, new ScalarHandler<>(), args);
+            Object query = sqlRunner.query(connection, sql, new ScalarHandler<>(), args);
+            return Convert.toLong(query);
         } catch (SQLException e) {
             throw new SqlRuntimeException(e);
         }
@@ -128,7 +126,7 @@ public class JdbcOperate {
      * @return
      */
     public int delete(Object object) {
-        notNull(object,"where");
+        notNull(object, "where");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -156,7 +154,7 @@ public class JdbcOperate {
      * @return 自增值
      */
     public Object insert(Object object) {
-        notNull(object,"where");
+        notNull(object, "where");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -180,7 +178,7 @@ public class JdbcOperate {
      * @return
      */
     public int del(Object object) {
-        notNull(object,"where");
+        notNull(object, "where");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -206,8 +204,8 @@ public class JdbcOperate {
      * @return
      */
     public int update(Entity entity, Entity where) {
-        notNull(where,"where");
-        notNull(entity,"entity");
+        notNull(where, "where");
+        notNull(entity, "entity");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -233,8 +231,8 @@ public class JdbcOperate {
      * @return
      */
     public int saveOrUpdate(Object object, Entity where) {
-        notNull(where,"where");
-        notNull(object,"object");
+        notNull(where, "where");
+        notNull(object, "object");
         if (exists(where)) {
             return update(getWhere(object), where);
         } else {
@@ -250,7 +248,7 @@ public class JdbcOperate {
      * @return
      */
     public boolean exists(Object where) {
-        notNull(where,"where");
+        notNull(where, "where");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -258,7 +256,7 @@ public class JdbcOperate {
             final SqlBuilder query = SqlBuilder
                     .create(dialect.getWrapper())
                     .query(Query.of(getWhere(where)).setFields("count(*)"));
-            return count(connection,query.build(),query.getParamValueArray()) > 0;
+            return count(connection, query.build(), query.getParamValueArray()) > 0;
         } catch (SQLException e) {
             throw new SqlRuntimeException(e);
         } finally {
@@ -266,21 +264,22 @@ public class JdbcOperate {
         }
     }
 
-    public void notNull(Object object,String name){
+    public void notNull(Object object, String name) {
 
-        if(object == null){
-            throw new IllegalArgumentException(StrUtil.blankToDefault(name,"object")+" is not null !");
+        if (object == null) {
+            throw new IllegalArgumentException(StrUtil.blankToDefault(name, "object") + " is not null !");
         }
 
     }
+
     /**
      * 是否存在
      *
      * @param where 条件
      * @return
      */
-    public int count(Object where) {
-        notNull(where,"where");
+    public long count(Object where) {
+        notNull(where, "where");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();
@@ -307,8 +306,8 @@ public class JdbcOperate {
      * @return
      */
     public <T> List<T> queryList(Object object, Class<T> tClass, String... fields) {
-        notNull(object,"where");
-        notNull(tClass,"tClass");
+        notNull(object, "where");
+        notNull(tClass, "tClass");
         Connection connection = null;
         try {
             connection = connectionManager.getConnection();

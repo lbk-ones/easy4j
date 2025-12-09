@@ -7,7 +7,7 @@ import lombok.Getter;
 public enum RegisterInfoType {
 
     /**
-     * /e4j/node/{ServerName}/{Ip:Port}/{HeartJson}
+     * /e4j/node/{ServerName}/{Ip:Port}
      */
     NODE("节点信息","/e4j/node");
     private final String name;

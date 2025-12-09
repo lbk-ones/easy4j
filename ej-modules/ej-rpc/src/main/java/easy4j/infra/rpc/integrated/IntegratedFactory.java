@@ -1,7 +1,9 @@
 package easy4j.infra.rpc.integrated;
 
 
+import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.integrated.config.DefaultRpcConfig;
+import easy4j.infra.rpc.server.ServerMethodInvoke;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +40,7 @@ public class IntegratedFactory {
             for (Object value : serverInstanceInitCache.values()) {
                 Class<?> aClass1 = value.getClass();
                 if (tClass.isAssignableFrom(aClass1)) {
+                    serverInstanceInitCache.putIfAbsent(tClass, value);
                     return (T) value;
                 }
             }
@@ -53,6 +56,7 @@ public class IntegratedFactory {
             for (Object value : serverInstanceInitCache.values()) {
                 Class<?> aClass1 = value.getClass();
                 if (tClass.isAssignableFrom(aClass1)) {
+                    serverInstanceInitCache.putIfAbsent(tClass, value);
                     return (T) value;
                 }
             }
@@ -65,12 +69,40 @@ public class IntegratedFactory {
         }
     }
 
-    public static class DefaultRpcConfigHolder {
-        public static DefaultRpcConfig INSTANCE = new DefaultRpcConfig();
+    /**
+     * 从配置中心中获取
+     *
+     * @return easy4j.infra.rpc.integrated.IRpcConfig
+     */
+    public static IRpcConfig getRpcConfig() {
+        return getOrDefault(IRpcConfig.class, () -> DefaultRpcConfig.INSTANCE);
     }
 
-    public static IRpcConfig getRpcConfig() {
-        return getOrDefault(IRpcConfig.class, () -> DefaultRpcConfigHolder.INSTANCE);
+    /**
+     * 获取系统配置
+     *
+     * @return easy4j.infra.rpc.config.E4jRpcConfig
+     */
+    public static E4jRpcConfig getConfig() {
+        return getRpcConfig().getConfig();
+    }
+
+    /**
+     * 获取连接管理器
+     *
+     * @return easy4j.infra.rpc.integrated.ConnectionManager
+     */
+    public static ConnectionManager getConnectionManager() {
+        return IntegratedFactory.getOrDefault(ConnectionManager.class, () -> DefaultConnectionManager.INSTANCE);
+    }
+
+    /**
+     * 获取实例获取器
+     *
+     * @return easy4j.infra.rpc.integrated.ServerInstanceInit
+     */
+    public static ServerInstanceInit getServerInstanceInit() {
+        return IntegratedFactory.getOrDefault(ServerInstanceInit.class, () -> DefaultServerInstanceInit.INSTANCE);
     }
 
 }

@@ -75,7 +75,7 @@ public class RpcServer extends NettyBootStrap {
             EventLoopGroup bossGroup = getEventLoop(1);
             EventLoopGroup workerGroup = getEventLoop(0);
             // 只有服务端才会close,客户端不用，如果只开启客户端那么不会走到这里来，registry照常运行
-            try (Registry registry = RegistryFactory.get()) {
+            try {
                 this.bootstrap
                         .group(bossGroup, workerGroup)
                         .channel(getMainServerChannel())
@@ -113,9 +113,7 @@ public class RpcServer extends NettyBootStrap {
                 ChannelFuture future = bootstrap.bind(port).sync();
                 startTime = System.currentTimeMillis();
                 log.info("e4j rpc server is started the port listener in：" + port);
-                registry.start();
-                log.info("e4j registry start success!");
-                String serverName = IntegratedFactory.getRpcConfig().getConfig().getServer().getServerName();
+                String serverName = IntegratedFactory.getConfig().getServer().getServerName();
                 this.serverNode.registry(new NodeHeartbeatManager(), serverName);
                 future.channel().closeFuture().sync();
 

@@ -69,7 +69,7 @@ public class NodeHeartbeatManager {
         }
         SystemMetrics systemMetrics = new MetricsCollector().collectAllMetrics();
 
-        E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
+        E4jRpcConfig config = IntegratedFactory.getConfig();
         weight = Math.max(config.getServer().getWeight(), 1);
         int processID = getProcessID();
         last = new NodeHeartbeatInfo()

@@ -27,7 +27,7 @@ public class RpcReconnectHandler extends ChannelInboundHandlerAdapter {
     // 已重试次数
     private int retryCount = 0;
 
-    private final int maxRetryCount = IntegratedFactory.getRpcConfig().getConfig().getClient().getReconnectMaxRetryCount();
+    private final int maxRetryCount = IntegratedFactory.getConfig().getClient().getReconnectMaxRetryCount();
 
     public RpcReconnectHandler(RpcClient rpcClient) {
         this.client = rpcClient;

@@ -1,5 +1,7 @@
 package easy4j.infra.rpc.config;
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
 import lombok.Data;
 
 @Data
@@ -39,4 +41,12 @@ public class E4jServerConfig {
      * 心跳上报间隔时间，默认两分钟
      */
     private Long heartInfoReportFixRateMilli = 1000 * 60 * 2L;
+
+    public String getServerName() {
+        if(StrUtil.isBlank(serverName)){
+            return IntegratedFactory.getRpcConfig().get("spring.application.name");
+        }
+        return serverName;
+    }
+
 }

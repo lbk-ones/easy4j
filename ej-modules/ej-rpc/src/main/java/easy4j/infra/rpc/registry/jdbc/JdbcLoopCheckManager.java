@@ -40,7 +40,7 @@ public class JdbcLoopCheckManager implements AutoCloseable {
     public JdbcLoopCheckManager(JdbcOperate jdbcOperate) {
         this.jdbcOperate = jdbcOperate;
         this.executorService = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
-        E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
+        E4jRpcConfig config = IntegratedFactory.getConfig();
         period = config.getRegistryJdbcCheckPeriod();
     }
 

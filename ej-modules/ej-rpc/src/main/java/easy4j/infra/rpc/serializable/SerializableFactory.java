@@ -11,7 +11,7 @@ public class SerializableFactory {
     }
 
     public static ISerializable get() {
-        E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
+        E4jRpcConfig config = IntegratedFactory.getConfig();
         SerializableType serializableType = config.getSerializableType();
         if (serializableType == SerializableType.JACKSON) {
             return JacksonSerializableHolder.jacksonSerializable;

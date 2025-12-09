@@ -20,8 +20,8 @@ public class RegistryFactory {
     }
 
     public static Registry get() {
-        IRpcConfig rpcConfig = IntegratedFactory.getRpcConfig();
-        E4jRpcConfig config = rpcConfig.getConfig();
+        //IRpcConfig rpcConfig = IntegratedFactory.getRpcConfig();
+        E4jRpcConfig config = IntegratedFactory.getConfig();
         RegisterType registerType = config.getRegisterType();
         if (RegisterType.JDBC == registerType) {
             return JdbcRegistryHolder.jdbcRegistry;

@@ -1,8 +1,10 @@
 package easy4j.infra.rpc.integrated.spring;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.integrated.config.AbstractRpcConfig;
+import easy4j.infra.rpc.integrated.config.DefaultRpcConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.boot.context.properties.bind.BindResult;
@@ -47,6 +49,10 @@ public class SpringE4jRpcConfig extends AbstractRpcConfig implements Application
 
     @Override
     public String defaultGet(String key) {
-        return context.getEnvironment().getProperty(key);
+        String property1 = context.getEnvironment().getProperty(key);
+        if(StrUtil.isBlank(property1)){
+            property1 =  DefaultRpcConfig.fileProperties.getProperty(key);
+        }
+        return property1;
     }
 }

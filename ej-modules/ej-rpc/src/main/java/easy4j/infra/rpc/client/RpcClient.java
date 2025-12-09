@@ -195,7 +195,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         if (StrUtil.isBlank(serviceName))
             return RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.SERVICE_NAME_NOT_BE_NULL);
         // adapter hot reload
-        LbType lbType = IntegratedFactory.getRpcConfig().getConfig().getLbType();
+        LbType lbType = IntegratedFactory.getConfig().getLbType();
         Node node = serverNode.selectNodeByServerName(serviceName, lbType);
         if (node != null) {
             Host host = node.getHost();

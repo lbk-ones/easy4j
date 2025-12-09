@@ -10,6 +10,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.enums.LbType;
 import easy4j.infra.rpc.enums.RegisterInfoType;
+import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.heart.NodeHeartbeatInfo;
 import easy4j.infra.rpc.heart.NodeHeartbeatManager;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
@@ -52,6 +53,8 @@ public class DefaultServerNode implements ServerNode {
 
     private static final Map<String, Boolean> registerMap = new ConcurrentHashMap<>();
 
+    private final Set<String> registerDataKeys = Collections.synchronizedSet(new HashSet<>());
+
     private DefaultServerNode() {
         this.registry = RegistryFactory.get();
     }
@@ -75,7 +78,7 @@ public class DefaultServerNode implements ServerNode {
                     String[] split = e.split(StrPool.COLON);
                     String ip = split[0];
                     String port = split[1];
-                    String address = ip + StrPool.SLASH + port;
+                    String address = RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + serverName + StrPool.SLASH + e;
                     String heartInfo = registry.get(address);
                     Node node = new Node(new Host(ip, Integer.parseInt(port)), true);
                     if (StrUtil.isNotEmpty(heartInfo)) {
@@ -195,6 +198,9 @@ public class DefaultServerNode implements ServerNode {
             case ROUND_ROBIN -> {
                 // 轮询中简单用下权重,权重高的多轮询几次
                 List<Node> nodesNew = extractByWeight(nodesByServerName);
+                if(nodesNew.isEmpty()){
+                    throw new RpcException("SLB cannot find a suitable set of nodes");
+                }
                 Integer i = roundRobin.get(serverName);
                 if (i == null || i >= (nodesNew.size() - 1)) {
                     roundRobin.put(serverName, 0);
@@ -230,6 +236,9 @@ public class DefaultServerNode implements ServerNode {
         List<Node> nodesNew = new ArrayList<>();
         for (Node node : nodesByServerName) {
             NodeHeartbeatInfo nodeHeartbeatInfo = node.getNodeHeartbeatInfo();
+            if (nodeHeartbeatInfo == null) {
+                continue;
+            }
             int weight = nodeHeartbeatInfo.getWeight();
             if (weight > 0) {
                 for (int i = 0; i < weight; i++) {
@@ -255,10 +264,10 @@ public class DefaultServerNode implements ServerNode {
     }
 
     private void registerWith(NodeHeartbeatManager nodeHeartbeatManager, String serviceName) {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(registerThreadFactory);
-        E4jRpcConfig config = IntegratedFactory.getRpcConfig().getConfig();
-        Long heartInfoReportFixRateMilli = config.getServer().getHeartInfoReportFixRateMilli();
 
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(registerThreadFactory);
+        E4jRpcConfig config = IntegratedFactory.getConfig();
+        Long heartInfoReportFixRateMilli = config.getServer().getHeartInfoReportFixRateMilli();
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             private boolean exeIng = false;
 
@@ -271,6 +280,7 @@ public class DefaultServerNode implements ServerNode {
                 try {
                     NodeHeartbeatInfo nodeHeartbeatInfo = nodeHeartbeatManager.buildHeart();
                     String s = RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + serviceName + StrPool.SLASH + nodeHeartbeatInfo.getHost() + StrPool.COLON + nodeHeartbeatInfo.getPort();
+                    registerDataKeys.add(s);
                     ISerializable jackson = SerializableFactory.getJackson();
                     registry.put(s, new String(jackson.serializable(nodeHeartbeatInfo), StandardCharsets.UTF_8), true);
                     if (num == 0) {
@@ -284,5 +294,19 @@ public class DefaultServerNode implements ServerNode {
                 }
             }
         }, 0, heartInfoReportFixRateMilli, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void unRegistry() {
+        try {
+            for (String string : registerDataKeys) {
+                if (StrUtil.isNotBlank(string)) {
+                    registry.delete(string);
+                }
+            }
+            registerDataKeys.clear();
+        } catch (Exception e) {
+            log.error("un registry appear error :" + e.getMessage());
+        }
     }
 }

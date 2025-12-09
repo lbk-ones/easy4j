@@ -14,7 +14,7 @@ public class RpcClientFactory {
         if (rpcClient == null) {
             synchronized (RpcClientFactory.class) {
                 if (rpcClient == null) {
-                    rpcClient = new RpcClient(IntegratedFactory.getRpcConfig().getConfig());
+                    rpcClient = new RpcClient(IntegratedFactory.getConfig());
                 }
             }
         }
