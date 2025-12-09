@@ -51,18 +51,25 @@ public class SpringRpcServiceProcessor implements ImportBeanDefinitionRegistrar 
                         RpcService annotation = aClass.getAnnotation(RpcService.class);
                         if (annotation.disabled()) continue;
                         boolean b = aClass.isAnnotationPresent(Service.class) || aClass.isAnnotationPresent(Component.class) || aClass.isAnnotationPresent(Configuration.class);
+                        boolean isUsed = false;
                         if (!b) {
-                            BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(aClass)
-                                    .getBeanDefinition();
                             String o1 = StrUtil.blankToDefault(annotation.beanName(), StrUtil.lowerFirst(aClass.getSimpleName()));
-                            // dynamic register
-                            registry.registerBeanDefinition(o1, beanDefinition);
+                            if (!registry.isBeanNameInUse(o1)) {
+                                BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(aClass)
+                                        .getBeanDefinition();
+                                // dynamic register
+                                registry.registerBeanDefinition(o1, beanDefinition);
+                            }else{
+                                isUsed = true;
+                            }
                         }
-                        String serviceName = annotation.serviceName();
-                        if (serviceName == null) {
-                            throw new RpcException("RpcService annotation serviceName is not be null");
+                        if(!isUsed){
+                            String serviceName = annotation.serviceName();
+                            if (serviceName == null) {
+                                throw new RpcException("RpcService annotation serviceName is not be null");
+                            }
+                            DefaultServerNode.INSTANCE.registry(new NodeHeartbeatManager(),serviceName);
                         }
-                        DefaultServerNode.INSTANCE.registry(new NodeHeartbeatManager(),serviceName);
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
