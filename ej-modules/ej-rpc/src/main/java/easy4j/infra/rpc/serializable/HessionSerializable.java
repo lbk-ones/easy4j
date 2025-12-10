@@ -1,5 +1,7 @@
 package easy4j.infra.rpc.serializable;
 
+import com.caucho.hessian.io.Hessian2Input;
+import com.caucho.hessian.io.Hessian2Output;
 import com.caucho.hessian.io.HessianInput;
 import com.caucho.hessian.io.HessianOutput;
 import easy4j.infra.rpc.exception.RpcException;
@@ -23,7 +25,7 @@ public class HessionSerializable implements ISerializable {
     public byte[] serializable(Object object) {
         if (object == null) return null;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        HessianOutput ho = new HessianOutput(bos);
+        Hessian2Output ho = new Hessian2Output(bos);
         try {
             ho.setSerializerFactory(HessianSerializerFactory.getInstance());
             ho.writeObject(object); // 核心序列化方法
@@ -33,11 +35,12 @@ public class HessionSerializable implements ISerializable {
         return bos.toByteArray();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T deserializable(byte[] object, Class<T> tClass) {
         if (object == null) return null;
         ByteArrayInputStream bis = new ByteArrayInputStream(object);
-        HessianInput hi = new HessianInput(bis);
+        Hessian2Input hi = new Hessian2Input(bis);
         try {
             hi.setSerializerFactory(HessianSerializerFactory.getInstance());
             return (T) hi.readObject(tClass); // 核心反序列化方法

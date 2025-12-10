@@ -67,7 +67,7 @@ public class ServerMethodInvoke {
     }
 
     public static Class<?> getClassByClassIdentify(String classIdentify) {
-        if(StrUtil.isBlank(classIdentify)) return null;
+        if (StrUtil.isBlank(classIdentify)) return null;
         Class<?> re = switch (classIdentify) {
             case "int" -> int.class;
             case "byte" -> byte.class;
@@ -93,7 +93,7 @@ public class ServerMethodInvoke {
     }
 
     private void init(RpcRequest request) throws ClassNotFoundException, NoSuchMethodException {
-        String classIdentify = request.getClassIdentify();
+        String classIdentify = request.getInterfaceIdentify();
         aClass = getClassByClassIdentify(classIdentify);
         if (aClass == null) {
             throw new ClassNotFoundException();

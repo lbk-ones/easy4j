@@ -1,13 +1,13 @@
 package easy4j.infra.rpc.domain;
 
-import easy4j.infra.rpc.exception.RpcException;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 调用信息封装,序列化之后客户端传给服务端
@@ -19,15 +19,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Data
 public class RpcRequest implements Serializable {
 
+    public static final String SERVER_HANDLER = "$SERVER_HANDLER";
+
+
     /**
      * 服务名称
      */
     private String serviceName;
 
     /**
-     * 类标识
+     * 接口类的标识
      */
-    private String classIdentify;
+    private String interfaceIdentify;
 
     /**
      * 方法名称
@@ -74,7 +77,7 @@ public class RpcRequest implements Serializable {
         rpcRequest.methodName = method.getName();
         rpcRequest.serviceName = serviceName;
         // 但是这个一定是类的全类名
-        rpcRequest.classIdentify = declaringClass.getName();
+        rpcRequest.interfaceIdentify = declaringClass.getName();
         String[] parameterTypes = new String[method.getParameterCount()];
         int i = 0;
         for (Class<?> parameterType : method.getParameterTypes()) {
@@ -87,4 +90,41 @@ public class RpcRequest implements Serializable {
         rpcRequest.returnType = method.getReturnType().getName();
         return rpcRequest;
     }
+
+
+    public <T> T getParametersIndex(int index, Class<T> tClass) {
+        if (parameters.length > 0 && parameters.length > index) {
+            Object parameter = parameters[index];
+            return Convert.convert(tClass, parameter);
+        }
+        return null;
+    }
+
+    public void setAttachmentValue(String key, String value) {
+        attachment.put(key, value);
+    }
+
+    public String getAttachmentValue(String key) {
+        Object o = attachment.get(key);
+        return Convert.toStr(o);
+    }
+
+    public void serverHandler(String type) {
+        setAttachmentValue(SERVER_HANDLER, type);
+    }
+
+    public boolean mayBeHandler() {
+        String attachmentValue = getAttachmentValue(SERVER_HANDLER);
+        return StrUtil.isNotBlank(attachmentValue);
+    }
+
+    public String getServerHandler() {
+        return getAttachmentValue(SERVER_HANDLER);
+    }
+
+    public boolean matchHandler(String type) {
+        return StrUtil.equals(getAttachmentValue(SERVER_HANDLER), type) && StrUtil.isNotBlank(type);
+    }
+
+
 }

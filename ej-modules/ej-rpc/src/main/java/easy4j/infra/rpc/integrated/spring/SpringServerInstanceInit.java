@@ -1,6 +1,8 @@
 package easy4j.infra.rpc.integrated.spring;
 
 import cn.hutool.core.exceptions.UtilException;
+import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.integrated.ServerInstanceInit;
@@ -51,13 +53,22 @@ public class SpringServerInstanceInit implements BeanNameAware, ServerInstanceIn
 
     @Override
     public Object instance(RpcRequest request) {
+        ListableBeanFactory beanFactory1 = getBeanFactory();
+        String serviceName = request.getServiceName();
+        Object instance = null;
         try {
-            String classIdentify = request.getClassIdentify();
+            String classIdentify = request.getInterfaceIdentify();
             Class<?> classByClassIdentify = ServerMethodInvoke.getClassByClassIdentify(classIdentify);
-            return getBeanFactory().getBean(classByClassIdentify);
-        } catch (Exception e) {
-            return null;
+            if (classByClassIdentify != null && !ClassUtil.isBasicType(classByClassIdentify)) {
+                String serverName = IntegratedFactory.getConfig().getServer().getServerName();
+                if (!StrUtil.equals(serviceName, serverName)) {
+                    instance = beanFactory1.getBean(serviceName, classByClassIdentify);
+                } else {
+                    instance = beanFactory1.getBean(classByClassIdentify);
+                }
+            }
+        } catch (Exception ignored) {
         }
-
+        return instance;
     }
 }

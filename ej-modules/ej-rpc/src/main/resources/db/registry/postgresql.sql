@@ -21,7 +21,7 @@ COMMENT ON COLUMN sys_e4j_jdbc_reg_data.create_date IS '创建时间';
 COMMENT ON COLUMN sys_e4j_jdbc_reg_data.last_update_date IS '更新时间';
 
 -- 给data_key创建索引
-CREATE INDEX idx_sys_e4j_jdbc_reg_data_data_key ON sys_e4j_jdbc_reg_data (data_key);
+CREATE UNIQUE INDEX idx_sys_e4j_jdbc_reg_data_data_key ON sys_e4j_jdbc_reg_data (data_key);
 
 -- 给data_type创建索引
 CREATE INDEX idx_sys_e4j_jdbc_reg_data_data_type ON sys_e4j_jdbc_reg_data (data_type);

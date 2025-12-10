@@ -85,10 +85,6 @@ public class DefaultServerNode implements ServerNode {
                         ISerializable jackson = SerializableFactory.getJackson();
                         NodeHeartbeatInfo deserializable = jackson.deserializable(heartInfo.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
                         node.setNodeHeartbeatInfo(deserializable);
-                        // 如果注册中心直接禁用了 那么就过滤掉它
-                        if (deserializable.isDisabled()) {
-                            return null;
-                        }
                     }
                     return node;
                 } catch (Exception e2) {
@@ -197,7 +193,7 @@ public class DefaultServerNode implements ServerNode {
             case ROUND_ROBIN -> {
                 // 轮询中简单用下权重,权重高的多轮询几次
                 List<Node> nodesNew = extractByWeight(nodesByServerName);
-                if(nodesNew.isEmpty()){
+                if (nodesNew.isEmpty()) {
                     throw new RpcException("SLB cannot find a suitable set of nodes");
                 }
                 Integer i = roundRobin.get(serverName);

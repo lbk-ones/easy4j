@@ -14,7 +14,7 @@ public class DefaultServerInstanceInit implements ServerInstanceInit {
 
     @Override
     public Object instance(RpcRequest request) {
-        String classIdentify = request.getClassIdentify();
+        String classIdentify = request.getInterfaceIdentify();
         return ReflectUtil.newInstanceIfPossible(ServerMethodInvoke.getClassByClassIdentify(classIdentify));
     }
 }

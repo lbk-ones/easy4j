@@ -2,6 +2,7 @@ package easy4j.infra.rpc.registry.jdbc;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.sql.JDBCType;
 import java.util.Date;
 
@@ -9,7 +10,7 @@ import java.util.Date;
  * 表名 sys_e4j_jdbc_reg_data 注册表
  */
 @Data
-public class SysE4jJdbcRegData {
+public class SysE4jJdbcRegData implements Serializable {
 
     /**
      * 主键 自增

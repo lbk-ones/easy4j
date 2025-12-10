@@ -49,7 +49,7 @@ public class RpcServerWrapper extends AbstractRpcWrapper {
         Throwable exception = rpcContext.getException();
         RpcResponse invoke;
         if (exception == null) {
-            invoke = serverMethodInvoke.invoke();
+            invoke = new ServerMethodInvokeWrapper(serverMethodInvoke).invoke();
         } else {
             invoke = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.SERVER_ERROR);
             invoke.setUnknownException(exception);

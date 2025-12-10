@@ -4,6 +4,7 @@ import lombok.Getter;
 
 /**
  * 响应状态码 用ai小小的生成了一波
+ *
  * @since 2.0.1
  */
 @Getter
@@ -54,15 +55,24 @@ public enum RpcResponseStatus {
     DECODE_ERROR(false, 507, "解码异常", "Decode Error"),
     SERVICE_NAME_NOT_BE_NULL(false, 508, "ServiceName不能为空", "ServiceName cannot be empty"),
     CLIENT_ERROR(false, 509, "客户端出现未知异常", "Unknown exception occurred on the client side"),
-    SERVER_ERROR(false, 510, "服务端出现未知异常", "Unknown exception occurred on the server");
+    SERVER_ERROR(false, 510, "服务端出现未知异常", "Unknown exception occurred on the server"),
+    SERVER_HANDLER_NOT_FOUND_ERROR(false, 511, "未找到handler或者出现异常", "Not found handler or handler appear exception!");
 
-    /** 是否成功（true=成功，false=失败） */
+    /**
+     * 是否成功（true=成功，false=失败）
+     */
     private final boolean success;
-    /** 状态码（200=成功，4xx=业务异常，5xx=系统异常） */
+    /**
+     * 状态码（200=成功，4xx=业务异常，5xx=系统异常）
+     */
     private final int code;
-    /** 中文名称（面向国内业务/日志） */
+    /**
+     * 中文名称（面向国内业务/日志）
+     */
     private final String cnMsg;
-    /** 英文名称（面向多语言客户端/国际化） */
+    /**
+     * 英文名称（面向多语言客户端/国际化）
+     */
     private final String enMsg;
 
     /**
@@ -76,8 +86,10 @@ public enum RpcResponseStatus {
     }
 
     // ===================== 工具方法（便捷使用）=====================
+
     /**
      * 根据状态码获取枚举项（用于客户端/服务端解析状态）
+     *
      * @param code 状态码
      * @return 对应的枚举项，未找到返回 SYSTEM_ERROR
      */
@@ -93,6 +105,7 @@ public enum RpcResponseStatus {
 
     /**
      * 判断状态码是否为成功状态
+     *
      * @param code 状态码
      * @return true=成功，false=失败
      */
@@ -102,6 +115,7 @@ public enum RpcResponseStatus {
 
     /**
      * 判断状态码是否为业务异常（4xx）
+     *
      * @param code 状态码
      * @return true=业务异常，false=其他
      */
@@ -111,6 +125,7 @@ public enum RpcResponseStatus {
 
     /**
      * 判断状态码是否为系统异常（5xx）
+     *
      * @param code 状态码
      * @return true=系统异常，false=其他
      */
@@ -118,7 +133,7 @@ public enum RpcResponseStatus {
         return code >= 500 && code < 600;
     }
 
-    public String getMsg(){
+    public String getMsg() {
         return this.enMsg;
     }
 }

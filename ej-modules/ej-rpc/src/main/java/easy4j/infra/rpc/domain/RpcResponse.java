@@ -68,6 +68,16 @@ public class RpcResponse implements Serializable {
         return rpcResponse;
     }
 
+    public static RpcResponse success(long msgId) {
+        RpcResponse rpcResponse = new RpcResponse();
+        rpcResponse.setCode(RpcResponseStatus.SUCCESS.getCode());
+        rpcResponse.setResult(null);
+        rpcResponse.setMsgId(msgId);
+        rpcResponse.setMessage(RpcResponseStatus.SUCCESS.getMsg());
+        rpcResponse.setTimestamp(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        return rpcResponse;
+    }
+
     public static RpcResponse success(long msgId, Object result) {
         RpcResponse rpcResponse = new RpcResponse();
         rpcResponse.setCode(RpcResponseStatus.SUCCESS.getCode());

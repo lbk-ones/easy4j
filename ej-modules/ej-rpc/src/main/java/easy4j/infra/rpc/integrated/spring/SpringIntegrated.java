@@ -259,13 +259,6 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                     if (!type.isInterface()) {
                         throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
                     }
-                    Method[] methods = ReflectUtil.getMethods(type);
-                    for (Method method : methods) {
-                        Class<?>[] parameterTypes = method.getParameterTypes();
-                        for (Class<?> parameterType : parameterTypes) {
-
-                        }
-                    }
                     if (StrUtil.isNotBlank(value)) {
                         value = springContext.getEnvironment().resolvePlaceholders(value);
                         serverName.add(value);

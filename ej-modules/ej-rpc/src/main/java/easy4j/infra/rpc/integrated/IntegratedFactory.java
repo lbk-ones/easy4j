@@ -3,7 +3,6 @@ package easy4j.infra.rpc.integrated;
 
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.integrated.config.DefaultRpcConfig;
-import easy4j.infra.rpc.server.ServerMethodInvoke;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

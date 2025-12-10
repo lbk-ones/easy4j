@@ -1,6 +1,5 @@
 package easy4j.infra.rpc.integrated.spring;
 
-import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.heart.NodeHeartbeatManager;
 import easy4j.infra.rpc.integrated.spring.annotations.EnableEasy4jRpc;
@@ -17,12 +16,14 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
+
 import java.util.Map;
 import java.util.Set;
 
 /**
  * handler RpcService annotation
  * 扫描标注了RpcService注解的实现类
+ *
  * @author bokun
  * @since 2.0.1
  */
@@ -45,30 +46,29 @@ public class SpringRpcServiceProcessor implements ImportBeanDefinitionRegistrar 
                     String beanClassName = candidateComponent.getBeanClassName();
                     try {
                         Class<?> aClass = Class.forName(beanClassName);
-                        if(aClass.isInterface()){
+                        if (aClass.isInterface()) {
                             continue;
                         }
                         RpcService annotation = aClass.getAnnotation(RpcService.class);
                         if (annotation.disabled()) continue;
+                        String serviceName = annotation.serviceName();
+                        if (serviceName == null) {
+                            throw new RpcException("RpcService annotation serviceName is not be null");
+                        }
                         boolean b = aClass.isAnnotationPresent(Service.class) || aClass.isAnnotationPresent(Component.class) || aClass.isAnnotationPresent(Configuration.class);
                         boolean isUsed = false;
                         if (!b) {
-                            String o1 = StrUtil.blankToDefault(annotation.beanName(), StrUtil.lowerFirst(aClass.getSimpleName()));
-                            if (!registry.isBeanNameInUse(o1)) {
+                            if (!registry.isBeanNameInUse(serviceName)) {
                                 BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(aClass)
                                         .getBeanDefinition();
                                 // dynamic register
-                                registry.registerBeanDefinition(o1, beanDefinition);
-                            }else{
+                                registry.registerBeanDefinition(serviceName, beanDefinition);
+                            } else {
                                 isUsed = true;
                             }
                         }
-                        if(!isUsed){
-                            String serviceName = annotation.serviceName();
-                            if (serviceName == null) {
-                                throw new RpcException("RpcService annotation serviceName is not be null");
-                            }
-                            DefaultServerNode.INSTANCE.registry(new NodeHeartbeatManager(),serviceName);
+                        if (!isUsed) {
+                            DefaultServerNode.INSTANCE.registry(new NodeHeartbeatManager(), serviceName);
                         }
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);

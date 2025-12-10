@@ -85,7 +85,6 @@ public class NodeHeartbeatManager {
                 .setHost(NetUtil.getLocalhost().getHostAddress())
                 .setWeight(weight)
                 .setConn(ServerPortChannelManager.countChannelByPort(port))
-                .setDisabled(false)
                 .setPort(port);
 
         // dynamic weight

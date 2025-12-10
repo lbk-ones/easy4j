@@ -55,8 +55,8 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         if (FrameType.REQUEST.getFrameType() != frameType) {
             // heart beat return
             if (FrameType.REQUEST_HEART.getFrameType() == frameType) {
-                send(ctx,RpcResponse.success(msgId,RpcResponseStatus.INSTANCE_NOT_FOUND),FrameType.RESPONSE_HEART);
-            }else{
+                send(ctx, RpcResponse.success(msgId, RpcResponseStatus.INSTANCE_NOT_FOUND), FrameType.RESPONSE_HEART);
+            } else {
                 super.channelRead(ctx, msg);
             }
             return;
@@ -64,8 +64,8 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         try {
             FrameType byFrameType = FrameType.getByFrameType(transport.getFrameType());
             if (byFrameType == null) {
-                RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_EXHAUSTED);
-                send(ctx, error,FrameType.RESPONSE);
+                RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.UNSUPPORTED_OPERATION);
+                send(ctx, error, FrameType.RESPONSE);
                 return;
             }
             if (log.isDebugEnabled()) {
@@ -78,22 +78,22 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
                     Optional.ofNullable(executorService)
                             .ifPresent(e -> e.execute(() -> {
                                 RpcServerWrapper serverMethodInvoke = new RpcServerWrapper(new ServerMethodInvoke(request, transport));
-                                try{
+                                try {
                                     RpcResponse invoke = serverMethodInvoke.invoke();
-                                    send(ctx, invoke,FrameType.RESPONSE);
-                                }catch (Throwable ex2){
-                                    send(ctx, RpcResponse.error(msgId,RpcResponseStatus.SERVER_ERROR),FrameType.RESPONSE);
+                                    send(ctx, invoke, FrameType.RESPONSE);
+                                } catch (Throwable ex2) {
+                                    send(ctx, RpcResponse.error(msgId, RpcResponseStatus.SERVER_ERROR), FrameType.RESPONSE);
                                 }
                             }));
                 } catch (RejectedExecutionException exception) {
                     RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_EXHAUSTED);
-                    send(ctx, error,FrameType.RESPONSE);
+                    send(ctx, error, FrameType.RESPONSE);
                 }
             }
         } catch (RpcException e) {
             e.setMsgId(msgId);
             throw e;
-        }catch (Throwable e){
+        } catch (Throwable e) {
             throw new RpcException(e).setMsgId(msgId);
         }
     }
@@ -106,7 +106,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
      * @author bokun
      * @since 2.0.1
      */
-    private void send(ChannelHandlerContext ctx, RpcResponse result,FrameType frameType) {
+    private void send(ChannelHandlerContext ctx, RpcResponse result, FrameType frameType) {
         ISerializable iSerializable = SerializableFactory.get();
         Transport transport = Transport.of(frameType, iSerializable.serializable(result));
         if (ctx.channel().isOpen() && ctx.channel().isActive()) {
@@ -131,7 +131,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         log.error("catch exception ", cause);
         if (cause instanceof RpcException ex2) {
             if (ex2.getCause() != null) cause = ex2.getCause();
-            send(ctx, RpcResponse.error(ex2.getMsgId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()),FrameType.RESPONSE);
+            send(ctx, RpcResponse.error(ex2.getMsgId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()), FrameType.RESPONSE);
         }
     }
 }

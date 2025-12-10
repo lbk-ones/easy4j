@@ -35,6 +35,7 @@ import java.lang.annotation.*;
  * 3、同时会额外的注册一个服务到注册中心去用来单独管理这个服务
  * --------------------------
  * </pre>
+ *
  * @author bokun
  * @since 2025-11-29 15:57:49
  */
@@ -48,14 +49,10 @@ public @interface RpcService {
      */
     String serviceName() default "";
 
-    /**
-     * beanName
-     * @return
-     */
-    String beanName() default "";
 
     /**
      * 是否禁用这个服务
+     *
      * @return
      */
     boolean disabled() default false;

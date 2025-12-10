@@ -1,5 +1,5 @@
 # 轻量级rpc调用框架
-## 摆脱对dubbo、openfeign、grpc的依赖，自定义传输协议和序列化方式以netty作为底层通讯
+## 摆脱对dubbo、openfeign、grpc的依赖，自定义TCP应用层协议，以netty作为底层通讯，支持hession、kryo、jackson协议
 
 ### 1、服务发现
 
