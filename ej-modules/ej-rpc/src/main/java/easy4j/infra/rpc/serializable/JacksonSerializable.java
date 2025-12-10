@@ -77,7 +77,7 @@ public class JacksonSerializable implements ISerializable {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON序列化失败: " + e.getMessage(), e);
+            throw new RpcException("JSON serializable exception: " + e.getMessage(), e);
         }
     }
 
@@ -86,12 +86,7 @@ public class JacksonSerializable implements ISerializable {
         if (object == null) {
             return null;
         }
-        String json = "";
-        try {
-            json = toJson(object);
-        } catch (Exception e) {
-            log.error("json serialize exception.", e);
-        }
+        String json = toJson(object);
         return json.getBytes(UTF_8);
     }
 

@@ -17,9 +17,10 @@ public class E4jRpcConfig {
     }
 
     /**
-     * 序列化方式 默认jackson
+     * 序列化方式 默认kryo
+     *
      */
-    private SerializableType serializableType = SerializableType.JACKSON;
+    private SerializableType serializableType = SerializableType.KRYO;
 
     /**
      * 注册中心类型 默认为jdbc
@@ -94,6 +95,10 @@ public class E4jRpcConfig {
      */
     private long registryJdbcCheckPeriod = 1000 * 10L;
 
+    /**
+     * kryo池最大数量
+     */
+    private Integer kryoPoolMaxNum = 100;
 
     /**
      * 服务端配置

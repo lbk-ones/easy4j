@@ -37,9 +37,16 @@ public @interface EnableEasy4jRpc {
 
     /**
      * 基本路径，扫描指定路径，这里设置的路径里面的类 @RpcProxy 才会生效有值
+     * 这个路径下面的 @RpcService 标识的类会被注册
+     * 这个路径下面的 @RpcProxy 标识的字段会被填充
      *
      * @return
      */
     String[] basePackage() default {};
+
+    /**
+     * 要序列化的实体类路径 aa.bb.cc.xx
+     */
+    String[] domainPackage() default {};
 
 }

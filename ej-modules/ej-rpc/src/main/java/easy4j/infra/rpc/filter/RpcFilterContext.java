@@ -57,6 +57,9 @@ public interface RpcFilterContext {
     // 异常信息
     Throwable getException();
 
+    /**
+     * 上下文的异常只能记录一次，且在onError回放一次
+     */
     void setException(Throwable e);
 
 
@@ -77,7 +80,7 @@ public interface RpcFilterContext {
 
 
     /**
-     * 是否被打断
+     * 是否被打断,如果被打断那么必须调用 setRpcResponse 设置返回值，如果没返回值那么打断不生效
      */
     boolean isInterrupted();
 

@@ -4,13 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
-import easy4j.infra.rpc.enums.RpcResponseStatus;
-import easy4j.infra.rpc.serializable.ISerializable;
-import easy4j.infra.rpc.serializable.SerializableFactory;
+import easy4j.infra.rpc.serializable.*;
+import easy4j.infra.rpc.serializable.kryo.KryoSerializable;
 import easy4j.infra.rpc.server.ServerMethodInvoke;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
@@ -25,19 +23,30 @@ public class RpcProxyFactory {
             filterAttributes.setProxyMethod(method);
             filterAttributes.setProxyMethodArgs(args);
             RpcRequest rpcRequest = RpcRequest.of(method, args, filterAttributes.getServiceName());
-            RpcResponse rpcResponse;
-            try {
-                rpcResponse = new RpcClientWrapper(RpcClientFactory.getClient())
-                        .sendRequestSync(rpcRequest, filterAttributes);
-            } catch (Exception e) {
-                log.error("proxy invoke exception", e);
-                rpcResponse = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.INVOKE_EXCEPTION, e);
-            }
+            RpcResponse rpcResponse = new RpcClientWrapper(RpcClientFactory.getClient())
+                    .sendRequestSync(rpcRequest, filterAttributes);
             Object result = rpcResponse.getResult();
-            // 这里会成为rpc的性能瓶颈 但是要改的话 没有太好的办法 等再想想，先这样吧
-            if (result != null) {
-                String returnType = rpcRequest.getReturnType();
-                Class<?> aClass = ServerMethodInvoke.getClassByClassIdentify(returnType);
+            String returnType = rpcRequest.getReturnType();
+            return deserializableObj(returnType,result);
+        });
+        return (T) o;
+    }
+
+    /**
+     * 根据协议来反序列化
+     * @param returnType 返回对象类型
+     * @param result 返回对象
+     * @return 对应的类型
+     */
+    private static Object deserializableObj(String returnType,Object result){
+        if(result == null) return null;
+        ISerializable iSerializable = SerializableFactory.get();
+        if(iSerializable instanceof HessionSerializable || iSerializable instanceof KryoSerializable){
+            return result;
+        }else if(iSerializable instanceof JacksonSerializable){
+            // 如果是使用jackson这里要再次反序列化一次，因为默认jackson对嵌套对象会反序列化成LinkedHashMap类型对不上
+            Class<?> aClass = ServerMethodInvoke.getClassByClassIdentify(returnType);
+            if (aClass != null) {
                 if (void.class == aClass || ObjectUtil.isBasicType(aClass) || String.class == aClass || Object.class.getName().equals(returnType)) {
                     return result;
                 }
@@ -46,8 +55,9 @@ public class RpcProxyFactory {
                 return jackson.deserializable(serializable, aClass);
             }
             return result;
-        });
-        return (T) o;
+        }
+
+        return result;
     }
 
     /**
@@ -64,7 +74,9 @@ public class RpcProxyFactory {
             filterAttributes.setProxyMethodArgs(args);
             RpcResponse rpcResponse = new RpcClientWrapper(RpcClientFactory.getClient())
                     .sendRequestSync(null, filterAttributes);
-            return rpcResponse.getResult();
+            Object result = rpcResponse.getResult();
+            String returnType = ((RpcRequest)args[0]).getReturnType();
+            return deserializableObj(returnType,result);
         });
         return ((GeneralizedInvoke) o);
     }

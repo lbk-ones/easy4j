@@ -130,12 +130,12 @@ public class DefaultServerNode implements ServerNode {
                 } catch (Exception ex) {
                     return;
                 }
+                ISerializable jackson = SerializableFactory.getJackson();
                 switch (type) {
                     case ADD -> {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
                         Node node = new Node(newHost, true);
                         if (StrUtil.isNotEmpty(data)) {
-                            ISerializable jackson = SerializableFactory.getJackson();
                             NodeHeartbeatInfo deserializable = jackson.deserializable(data.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
                             node.setNodeHeartbeatInfo(deserializable);
                         }
@@ -146,7 +146,6 @@ public class DefaultServerNode implements ServerNode {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
                         NodeHeartbeatInfo deserializable = null;
                         if (StrUtil.isNotEmpty(data)) {
-                            ISerializable jackson = SerializableFactory.getJackson();
                             deserializable = jackson.deserializable(data.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
                         }
                         for (Node node : nodes1) {

@@ -30,7 +30,7 @@ public final class RpcFilterChain implements IRpcFilterChain {
      * @param context RPC 上下文
      */
     public void invoke(RpcFilterContext context) {
-        if (this.filters == null || context.isInterrupted()) {
+        if (this.filters == null || (context.isInterrupted() && context.getRpcResponse() != null)) {
             return;
         }
         RpcFilter current = this.filters.getCurrent();

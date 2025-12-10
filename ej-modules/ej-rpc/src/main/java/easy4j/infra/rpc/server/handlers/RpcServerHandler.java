@@ -78,8 +78,12 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
                     Optional.ofNullable(executorService)
                             .ifPresent(e -> e.execute(() -> {
                                 RpcServerWrapper serverMethodInvoke = new RpcServerWrapper(new ServerMethodInvoke(request, transport));
-                                RpcResponse invoke = serverMethodInvoke.invoke();
-                                send(ctx, invoke,FrameType.RESPONSE);
+                                try{
+                                    RpcResponse invoke = serverMethodInvoke.invoke();
+                                    send(ctx, invoke,FrameType.RESPONSE);
+                                }catch (Throwable ex2){
+                                    send(ctx, RpcResponse.error(msgId,RpcResponseStatus.SERVER_ERROR),FrameType.RESPONSE);
+                                }
                             }));
                 } catch (RejectedExecutionException exception) {
                     RpcResponse error = RpcResponse.error(msgId, RpcResponseStatus.RESOURCE_EXHAUSTED);
@@ -89,9 +93,9 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         } catch (RpcException e) {
             e.setMsgId(msgId);
             throw e;
+        }catch (Throwable e){
+            throw new RpcException(e).setMsgId(msgId);
         }
-
-
     }
 
     /**
@@ -106,16 +110,12 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
         ISerializable iSerializable = SerializableFactory.get();
         Transport transport = Transport.of(frameType, iSerializable.serializable(result));
         if (ctx.channel().isOpen() && ctx.channel().isActive()) {
-            if (ctx.channel().isWritable()) {
-                ctx.writeAndFlush(transport).addListener((ChannelFutureListener) channelFuture -> {
-                    if (!channelFuture.isSuccess()) {
-                        Throwable cause = channelFuture.cause();
-                        log.error(result.getCode() + " res error ", cause);
-                    }
-                });
-            }else{
-
-            }
+            ctx.writeAndFlush(transport).addListener((ChannelFutureListener) channelFuture -> {
+                if (!channelFuture.isSuccess()) {
+                    Throwable cause = channelFuture.cause();
+                    log.error(result.getCode() + " res error ", cause);
+                }
+            });
 
         }
     }

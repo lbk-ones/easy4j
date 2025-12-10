@@ -5,6 +5,7 @@ import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.enums.ExecutorPhase;
 import easy4j.infra.rpc.enums.ExecutorSide;
+import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.filter.*;
 import easy4j.infra.rpc.utils.Host;
 
@@ -36,21 +37,34 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
         RpcFilterNode firstFilterNode = getFirstFilterNode(rpcContext);
         this.rpcFilterChain = RpcFilterChain.build(firstFilterNode);
         this.rpcFilterChain.invoke(rpcContext);
-        if (rpcContext.isInterrupted()) {
-            // 链路中断，返回错误响应
+        if (rpcContext.isInterrupted() && rpcContext.getRpcResponse() != null) {
+            // 链路中断，提前返回
             return rpcContext.getRpcResponse();
         }
+        Throwable exception = rpcContext.getException();
         RpcRequest rpcRequest1 = rpcContext.getRpcRequest();
-        RpcResponse rpcResponse;
-        if (host == null) {
-            // SLB
-            rpcResponse = rpcClient.sendRequestSync(rpcRequest1);
+        RpcResponse rpcResponse = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.CLIENT_ERROR);
+        // 如果CLIENT的REQUEST_BEFORE阶段出现了异常、那么不会执行调用请求，但是还是要过RESPONSE_BEFORE阶段的Filter逻辑
+        if (exception != null) {
+            try {
+                if (host == null) {
+                    // SLB
+                    rpcResponse = rpcClient.sendRequestSync(rpcRequest1);
+                } else {
+                    rpcResponse = rpcClient.sendRequestSync(rpcRequest1, host);
+                }
+                rpcResponse.setUnknownException(null);
+            } catch (Throwable throwable) {
+                rpcResponse.setMessage(throwable.getMessage());
+                rpcResponse.setUnknownException(throwable);
+            }
         } else {
-            rpcResponse = rpcClient.sendRequestSync(rpcRequest1, host);
+            rpcResponse.setUnknownException(exception);
         }
-        // reset
         rpcContext.setRpcResponse(rpcResponse);
         rpcContext.setExecutorPhase(ExecutorPhase.RESPONSE_BEFORE);
+        rpcContext.setException(null);
+        // reset
         this.rpcFilterChain.reset(firstFilterNode);
         this.rpcFilterChain.invoke(rpcContext);
         return rpcContext.getRpcResponse();

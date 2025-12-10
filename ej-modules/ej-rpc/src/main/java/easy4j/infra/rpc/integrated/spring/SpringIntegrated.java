@@ -42,6 +42,7 @@ import org.springframework.core.io.ClassPathResource;
 import javax.sql.DataSource;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -254,37 +255,38 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                 if (field.isAnnotationPresent(RpcProxy.class)) {
                     RpcProxy annotation = field.getAnnotation(RpcProxy.class);
                     String value = annotation.value();
+                    Class<?> type = field.getType();
+                    if (!type.isInterface()) {
+                        throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
+                    }
+                    Method[] methods = ReflectUtil.getMethods(type);
+                    for (Method method : methods) {
+                        Class<?>[] parameterTypes = method.getParameterTypes();
+                        for (Class<?> parameterType : parameterTypes) {
+
+                        }
+                    }
                     if (StrUtil.isNotBlank(value)) {
                         value = springContext.getEnvironment().resolvePlaceholders(value);
                         serverName.add(value);
-                        Class<?> type = field.getType();
-                        if (type.isInterface()) {
-                            FilterAttributes filterAttributes = new FilterAttributes()
-                                    .setServiceName(value)
-                                    .setTimeOut(annotation.timeOut());
-                            Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
-                            ReflectUtil.setFieldValue(bean, field, proxy);
-                        } else {
-                            throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
-                        }
+                        FilterAttributes filterAttributes = new FilterAttributes()
+                                .setServiceName(value)
+                                .setTimeOut(annotation.timeOut());
+                        Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
+                        ReflectUtil.setFieldValue(bean, field, proxy);
                     } else {
-                        Class<?> type = field.getType();
-                        if (type.isInterface()) {
-                            boolean annotationPresent = type.isAnnotationPresent(RpcService.class);
-                            if (annotationPresent) {
-                                String sn = type.getAnnotation(RpcService.class).serviceName();
-                                if (StrUtil.isNotBlank(sn)) {
-                                    FilterAttributes filterAttributes = new FilterAttributes()
-                                            .setServiceName(sn)
-                                            .setTimeOut(annotation.timeOut());
-                                    Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
-                                    ReflectUtil.setFieldValue(bean, field, proxy);
-                                }
-                            } else {
-                                throw new IllegalArgumentException("The value of RpcProxy annotation must be the service name!");
+                        boolean annotationPresent = type.isAnnotationPresent(RpcService.class);
+                        if (annotationPresent) {
+                            String sn = type.getAnnotation(RpcService.class).serviceName();
+                            if (StrUtil.isNotBlank(sn)) {
+                                FilterAttributes filterAttributes = new FilterAttributes()
+                                        .setServiceName(sn)
+                                        .setTimeOut(annotation.timeOut());
+                                Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
+                                ReflectUtil.setFieldValue(bean, field, proxy);
                             }
                         } else {
-                            throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
+                            throw new IllegalArgumentException("The value of RpcProxy annotation must be the service name!");
                         }
                     }
                 }

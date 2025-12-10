@@ -7,6 +7,7 @@ import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
 import easy4j.infra.rpc.enums.ExecutorPhase;
 import easy4j.infra.rpc.enums.ExecutorSide;
+import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.filter.*;
 
 /**
@@ -41,14 +42,22 @@ public class RpcServerWrapper extends AbstractRpcWrapper {
         RpcFilterNode firstFilterNode = getFirstFilterNode(rpcContext);
         this.rpcFilterChain = RpcFilterChain.build(firstFilterNode);
         this.rpcFilterChain.invoke(rpcContext);
-        if (rpcContext.isInterrupted()) {
+        if (rpcContext.isInterrupted() && rpcContext.getRpcResponse() != null) {
             // 链路中断，返回错误响应
             return rpcContext.getRpcResponse();
         }
-        RpcResponse invoke = serverMethodInvoke.invoke();
+        Throwable exception = rpcContext.getException();
+        RpcResponse invoke;
+        if (exception == null) {
+            invoke = serverMethodInvoke.invoke();
+        } else {
+            invoke = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.SERVER_ERROR);
+            invoke.setUnknownException(exception);
+        }
         // reset
         rpcContext.setRpcResponse(invoke);
         rpcContext.setExecutorPhase(ExecutorPhase.RESPONSE_BEFORE);
+        rpcContext.setException(null);
         this.rpcFilterChain.reset(firstFilterNode);
         this.rpcFilterChain.invoke(rpcContext);
         return rpcContext.getRpcResponse();
