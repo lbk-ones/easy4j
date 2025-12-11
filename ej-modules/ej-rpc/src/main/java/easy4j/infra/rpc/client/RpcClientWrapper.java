@@ -1,5 +1,7 @@
 package easy4j.infra.rpc.client;
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.domain.FilterAttributes;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
@@ -7,7 +9,12 @@ import easy4j.infra.rpc.enums.ExecutorPhase;
 import easy4j.infra.rpc.enums.ExecutorSide;
 import easy4j.infra.rpc.enums.RpcResponseStatus;
 import easy4j.infra.rpc.filter.*;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.utils.Host;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * 客户端包装器
@@ -25,7 +32,7 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
     }
 
     public RpcResponse sendRequestSync(RpcRequest rpcRequest, FilterAttributes filterAttributes) {
-        return sendRequestSync(rpcRequest, null, filterAttributes);
+        return sendRequestSync(rpcRequest, determineHost(rpcRequest, filterAttributes), filterAttributes);
     }
 
     public RpcResponse sendRequestSync(RpcRequest rpcRequest, Host host, FilterAttributes filterAttributes) {
@@ -48,8 +55,10 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
         if (exception != null) {
             try {
                 if (host == null) {
-                    // SLB
-                    rpcResponse = rpcClient.sendRequestSync(rpcRequest1);
+                    if (!rpcClient.sendRequestBroadCast(rpcRequest1)) {
+                        // SLB
+                        rpcResponse = rpcClient.sendRequestSync(rpcRequest1);
+                    }
                 } else {
                     rpcResponse = rpcClient.sendRequestSync(rpcRequest1, host);
                 }
@@ -68,7 +77,35 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
         this.rpcFilterChain.reset(firstFilterNode);
         this.rpcFilterChain.invoke(rpcContext);
         return rpcContext.getRpcResponse();
+    }
 
-
+    /**
+     * 决断host
+     *
+     * @param rpcRequest       请求信息
+     * @param filterAttributes 拦截器信息
+     * @return easy4j.infra.rpc.utils.Host
+     */
+    private static Host determineHost(RpcRequest rpcRequest, FilterAttributes filterAttributes) {
+        String url = filterAttributes.getUrl();
+        Host host = null;
+        if (StrUtil.isNotBlank(url)) host = new Host(url);
+        if (host == null) {
+            Map<String, E4jRpcConfig.ReferenceUrl> reference = IntegratedFactory.getConfig().getReference();
+            String serviceName = rpcRequest.getServiceName();
+            host = Optional.ofNullable(serviceName)
+                    .map(e -> reference)
+                    .map(e -> e.get(serviceName))
+                    .map(E4jRpcConfig.ReferenceUrl::getUrl)
+                    .map(e -> {
+                        try {
+                            return new Host(e);
+                        } catch (Exception ex) {
+                            return null;
+                        }
+                    })
+                    .orElse(null);
+        }
+        return host;
     }
 }

@@ -24,6 +24,12 @@ public class RpcAttachmentsFilter implements RpcFilter {
             if (filterAttributes.isGeneralizedInvoke()) {
                 context.setAttachment(CommonConstant.IS_GENERALIZED_INVOKE, "true");
             }
+            if (filterAttributes.isBroadcast()) {
+                context.setAttachment(CommonConstant.IS_BROAD_CAST, "true");
+            }
+            if (filterAttributes.isBroadcastAsync()) {
+                context.setAttachment(CommonConstant.IS_BROAD_CAST_ASYNC, "true");
+            }
         }
         Map<String, Object> attachment = context.getAttachment();
         if (attachment != null && !attachment.isEmpty()) {

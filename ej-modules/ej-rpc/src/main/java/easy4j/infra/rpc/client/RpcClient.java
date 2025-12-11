@@ -1,24 +1,29 @@
 package easy4j.infra.rpc.client;
 
+import java.util.Collection;
 import java.util.HashMap;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.SystemClock;
+import cn.hutool.core.text.StrPool;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.codec.Codec;
 import easy4j.infra.rpc.codec.RpcDecoder;
 import easy4j.infra.rpc.codec.RpcEncoder;
+import easy4j.infra.rpc.config.CommonConstant;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.config.NettyBootStrap;
 import easy4j.infra.rpc.domain.RpcRequest;
 import easy4j.infra.rpc.domain.RpcResponse;
 import easy4j.infra.rpc.domain.Transport;
-import easy4j.infra.rpc.enums.FrameType;
-import easy4j.infra.rpc.enums.LbType;
-import easy4j.infra.rpc.enums.RpcResponseStatus;
+import easy4j.infra.rpc.enums.*;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
 import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
-import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.registry.RegistryFactory;
+import easy4j.infra.rpc.registry.jdbc.ServiceManagement;
+import easy4j.infra.rpc.retry.SendRetryFunction;
+import easy4j.infra.rpc.retry.RetryableQueueConsumer;
 import easy4j.infra.rpc.serializable.ISerializable;
 import easy4j.infra.rpc.serializable.SerializableFactory;
 import easy4j.infra.rpc.server.DefaultServerNode;
@@ -78,6 +83,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
 
 
     private final ServerNode serverNode;
+    private final RetryableQueueConsumer<SendRetryFunction> requestRetryableQueueConsumer;
 
     /**
      * @param rpcConfig 客户端配置
@@ -89,6 +95,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         this.nettyHeartbeatHandler = new NettyHeartbeatHandler(false);
         this.loggingHandler = new LoggingHandler(LogLevel.DEBUG);
         this.serverNode = DefaultServerNode.INSTANCE;
+        this.requestRetryableQueueConsumer = new RetryableQueueConsumer<>(1000, 1000 * 60, 1, 100, "rpc-send-");
         start();
     }
 
@@ -104,7 +111,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                     .option(ChannelOption.SO_KEEPALIVE, rpcConfig.isSoKeepLive())
                     .option(ChannelOption.TCP_NODELAY, rpcConfig.isTcpNodeDelay())
                     //.option(ChannelOption.SO_TIMEOUT, rpcConfig.getSoTimeOut())
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, rpcConfig.getClient().getConnectTimeOutMillis())
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Convert.toInt(rpcConfig.getClient().getConnectTimeOutMillis()))
                     .option(ChannelOption.SO_SNDBUF, rpcConfig.getSoSndBuf())
                     .option(ChannelOption.SO_RCVBUF, rpcConfig.getSoRcvBuf())
                     .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(rpcConfig.getWriteBufferLowWaterMark(), rpcConfig.getWriteBufferHighWaterMark()))
@@ -130,6 +137,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                             pipeline.addLast(new RpcReconnectHandler(rpcClient));
                         }
                     });
+
+            this.requestRetryableQueueConsumer.startConsume(SendRetryFunction::retry);
         }
 
 
@@ -142,6 +151,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
      * @return Channel通道
      */
     public Channel getChannel(Host host) {
+        if (host == null) return null;
         Channel channel1 = cacheChannel.get(host);
         if (channel1 != null && channel1.isActive()) {
             return channel1;
@@ -174,6 +184,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                 if (workerGroup != null) {
                     this.workerGroup.shutdownGracefully();
                 }
+                this.requestRetryableQueueConsumer.shutdown(1,TimeUnit.SECONDS);
                 log.info("netty client auto closed");
             } catch (Exception ex) {
                 log.error("netty client close exception", ex);
@@ -192,14 +203,17 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         String serviceName = request.getServiceName();
         if (StrUtil.isBlank(serviceName))
             return RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.SERVICE_NAME_NOT_BE_NULL);
-        // adapter hot reload
-        LbType lbType = IntegratedFactory.getConfig().getLbType();
+        // 获取当前服务的负载均衡策略
+        LbType lbType = ServiceManagement.getCurrent(
+                e -> LbType.of(e.getLbType()),
+                E4jRpcConfig::getLbType
+        );
         Node node = serverNode.selectNodeByServerName(serviceName, lbType);
         if (node != null) {
             Host host = node.getHost();
             return sendRequestSync(request, host);
         } else {
-            throw new RpcException("the servername " + serviceName + " not have available host !");
+            throw new RpcException("the servername " + serviceName + " not have available host !").setWillRetry(true);
         }
     }
 
@@ -216,14 +230,67 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         if (channel == null) {
             throw new RpcException("not obtain get channel from:" + host);
         }
+        ServiceManagement serviceManagement = ServiceManagement.getServiceManagement(request.getServiceName(), host);
+        Long invokeTimeOut = serviceManagement.get(ServiceManagement::getInvokeTimeOutMillis, (e) -> e.getClient().getInvokeTimeOutMillis());
+        Integer invokeRetryMaxCount = serviceManagement.get(ServiceManagement::getInvokeRetryMaxCount, E4jRpcConfig::getInvokeRetryMaxCount);
+        RetryType retryType = serviceManagement.get(ServiceManagement::getRetryType, E4jRpcConfig::getRetryType);
         long beginTime = SystemClock.now();
         ISerializable iSerializable = SerializableFactory.get();
+        pickRequestAttachements(request);
         Transport transport = Transport.of(FrameType.REQUEST, iSerializable.serializable(request));
         long msgId = transport.getMsgId();
         if (log.isDebugEnabled()) {
             log.debug("begin send request info {}", transport);
         }
-        ResFuture resFuture = new ResFuture(msgId, rpcConfig.getClient().getInvokeTimeOutMillis());
+        RpcResponse rpcResponse = null;
+        try {
+            rpcResponse = doInvoke(host, msgId, invokeTimeOut, channel, transport, beginTime);
+        } catch (Throwable e) {
+            if (RetryableQueueConsumer.determineException(e) != null) {
+                RpcResponse retryRpcResponse = retry(retryType, invokeRetryMaxCount, () -> doInvoke(host, msgId, invokeTimeOut, channel, transport, beginTime));
+                if (retryRpcResponse != null) rpcResponse = retryRpcResponse;
+            }
+        }
+        return rpcResponse;
+    }
+
+    private RpcResponse retry(RetryType retryType, Integer invokeRetryMaxCount, SendRetryFunction object) {
+        if (invokeRetryMaxCount <= 0) return null;
+        if (retryType == RetryType.BLOCK) {
+            int retryCount = 0;
+            do {
+                try {
+                    return object.retry();
+                } catch (Throwable e) {
+                    if (RetryableQueueConsumer.determineException(e) == null) {
+                        break;
+                    }
+                }finally {
+                    retryCount++;
+                }
+            } while (retryCount < invokeRetryMaxCount);
+        } else if (retryType == RetryType.ASYNC) {
+            try {
+                this.requestRetryableQueueConsumer.add(object, invokeRetryMaxCount);
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * @param host
+     * @param msgId
+     * @param invokeTimeOut
+     * @param channel
+     * @param transport
+     * @param beginTime
+     * @return
+     */
+    private static RpcResponse doInvoke(Host host, long msgId, Long invokeTimeOut, Channel channel, Transport transport, long beginTime) {
+        ResFuture resFuture = new ResFuture(msgId, invokeTimeOut);
         channel.writeAndFlush(transport).addListener(e -> {
             if (e.isSuccess()) {
                 resFuture.setSendOk(true);
@@ -240,12 +307,12 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
             if (null == rpcResponse) {
                 if (resFuture.isSendOk()) {
                     if (resFuture.isTimeout()) {
-                        log.error("wait response on the channel {} timeout {}", host.getAddress(), rpcConfig.getClient().getInvokeTimeOutMillis());
-                        throw new RpcTimeoutException(host.getAddress(), rpcConfig.getClient().getInvokeTimeOutMillis())
+                        log.error("wait response on the channel {} timeout {}", host.getAddress(), invokeTimeOut);
+                        throw new RpcTimeoutException(host.getAddress(), invokeTimeOut)
                                 .setMsgId(msgId);
                     }
                 } else {
-                    throw new RpcException(host.toString(), resFuture.getCause()).setMsgId(msgId);
+                    throw new RpcException(host.toString(), resFuture.getCause()).setMsgId(msgId).setWillRetry(true);
                 }
             } else {
                 long cost = SystemClock.now() - beginTime;
@@ -258,7 +325,24 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         }
     }
 
+    /**
+     * 这里可以选择性的保留传入服务端的参数,默认全部清除
+     *
+     * @param request
+     */
+    private void pickRequestAttachements(RpcRequest request) {
+        Map<String, Object> attachment = request.getAttachment();
+        attachment.clear();
+    }
 
+    /**
+     * 异步发起请求
+     *
+     * @param request request请求对象
+     * @param host    要发往的主机
+     * @return ChannelFuture
+     * @throws RpcException
+     */
     public ChannelFuture sendRequestASync(RpcRequest request, Host host) throws RpcException {
         Channel channel = getChannel(host);
         if (channel == null) {
@@ -269,8 +353,53 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         if (log.isDebugEnabled()) {
             log.debug("begin async send request info {}", transport);
         }
-        return channel.writeAndFlush(transport);
+        ServiceManagement serviceManagement = ServiceManagement.getServiceManagement(request.getServiceName(), host);
+
+        Integer invokeRetryMaxCount = serviceManagement.get(ServiceManagement::getInvokeRetryMaxCount, E4jRpcConfig::getInvokeRetryMaxCount);
+        // 强制异步
+        return channel.writeAndFlush(transport).addListener((ChannelFutureListener) future -> {
+            if (!future.isSuccess()) {
+                requestRetryableQueueConsumer.add(() -> {
+                    sendRequestASync(request,host);
+                    return null;
+                },invokeRetryMaxCount);
+            }
+        });
     }
+
+    /**
+     * 同步广播/异步广播
+     *
+     * @param request 请求体
+     * @return 是否是广播请求
+     */
+    public boolean sendRequestBroadCast(RpcRequest request) {
+        boolean broadCast = request.matchAttachment(CommonConstant.IS_BROAD_CAST, "true");
+        boolean broadCastAsync = request.matchAttachment(CommonConstant.IS_BROAD_CAST_ASYNC, "true");
+        if (broadCast) {
+            Collection<String> children = RegistryFactory.get()
+                    .children(RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + request.getServiceName());
+            for (String child : children) {
+                try {
+                    Host host = new Host(child);
+                    if (broadCastAsync) {
+                        ChannelFuture channelFuture = sendRequestASync(request, host);
+                        channelFuture.addListener((ChannelFutureListener) future -> {
+                            if (!future.isSuccess()) {
+                                log.error("broadcast " + child + " appear error", future.cause());
+                            }
+                        });
+                    } else {
+                        sendRequestSync(request, host);
+                    }
+                } catch (Throwable e) {
+                    log.error("catch exception broadcast " + child + " appear error", e);
+                }
+            }
+        }
+        return broadCast;
+    }
+
 
     /**
      * create channel

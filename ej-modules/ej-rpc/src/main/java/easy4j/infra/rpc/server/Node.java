@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class Node implements Cloneable{
+public class Node implements Cloneable {
 
     private Host host;
     private boolean enabled;
@@ -19,6 +19,12 @@ public class Node implements Cloneable{
         this.enabled = enabled;
     }
 
+    public boolean isEnabled() {
+        if (nodeHeartbeatInfo != null) {
+            return nodeHeartbeatInfo.isDisabled();
+        }
+        return enabled;
+    }
 
     @Override
     public Node clone() {

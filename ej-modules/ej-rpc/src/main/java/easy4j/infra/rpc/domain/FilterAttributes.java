@@ -46,4 +46,23 @@ public class FilterAttributes {
      * 服务端传输层数据
      */
     Transport transport;
+
+    /**
+     * 广播所有服务
+     */
+    boolean broadcast;
+    /**
+     * 异步广播所有服务
+     */
+    boolean broadcastAsync;
+
+    /**
+     * 直连地址
+     */
+    String url;
+
+    /**
+     * 最大重试次数
+     */
+    Integer invokeRetryMaxCount;
 }

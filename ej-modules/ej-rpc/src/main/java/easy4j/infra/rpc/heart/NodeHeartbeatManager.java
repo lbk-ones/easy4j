@@ -4,7 +4,7 @@ import cn.hutool.core.net.NetUtil;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.enums.LbType;
 import easy4j.infra.rpc.enums.ServerStatus;
-import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.registry.jdbc.ServiceManagement;
 import easy4j.infra.rpc.server.RpcServer;
 import easy4j.infra.rpc.server.ServerPortChannelManager;
 import easy4j.infra.rpc.utils.MetricsCollector;
@@ -17,7 +17,7 @@ import java.lang.management.RuntimeMXBean;
 @Slf4j
 public class NodeHeartbeatManager {
 
-    static int port;
+    public static int port;
     private NodeHeartbeatInfo last;
     private long lastRefresh;
     long lastRefreshIntervalTime = 2_000L;
@@ -69,8 +69,10 @@ public class NodeHeartbeatManager {
         }
         SystemMetrics systemMetrics = new MetricsCollector().collectAllMetrics();
 
-        E4jRpcConfig config = IntegratedFactory.getConfig();
-        weight = Math.max(config.getServer().getWeight(), 1);
+        ServiceManagement currentServiceManagement = ServiceManagement.getCurrentServiceManagement();
+        weight = currentServiceManagement.get(ServiceManagement::getWeight, (e) -> e.getServer().getWeight());
+        weight = Math.max(weight, 1);
+        boolean disabled = currentServiceManagement.get(ServiceManagement::getDisabled, (e) -> false);
         int processID = getProcessID();
         last = new NodeHeartbeatInfo()
                 .setProcessId(processID)
@@ -84,18 +86,18 @@ public class NodeHeartbeatManager {
                 .setServerStatus(isOverload(systemMetrics) ? ServerStatus.BUSY : ServerStatus.NORMAL)
                 .setHost(NetUtil.getLocalhost().getHostAddress())
                 .setWeight(weight)
+                .setDisabled(disabled)
                 .setConn(ServerPortChannelManager.countChannelByPort(port))
                 .setPort(port);
-
         // dynamic weight
-        dynamicWeight(config, systemMetrics);
+        dynamicWeight(currentServiceManagement, systemMetrics);
 
         lastRefresh = l;
         return last;
     }
 
-    private void dynamicWeight(E4jRpcConfig config, SystemMetrics systemMetrics) {
-        LbType lbType = config.getLbType();
+    private void dynamicWeight(ServiceManagement config, SystemMetrics systemMetrics) {
+        LbType lbType = config.get(e -> LbType.of(e.getLbType()), E4jRpcConfig::getLbType);
         if (lbType == LbType.PERFORMANCE_BASED) {
             int baseWeight = weight * 2;
             int dynamicWeight;

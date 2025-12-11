@@ -41,11 +41,17 @@ public class Host implements Serializable {
     }
 
     public Host(String address) {
+        // http://
         int lastColonIndex = address.lastIndexOf(StrPool.COLON);
         if (lastColonIndex < 0) {
             throw new IllegalArgumentException(String.format("Host : %s illegal.", address));
         }
-        this.ip = address.substring(0, lastColonIndex);
+        int i = address.indexOf("//");
+        if(i>=0){
+            this.ip = address.substring(i+2, lastColonIndex);
+        }else{
+            this.ip = address.substring(0, lastColonIndex);
+        }
         this.port = Integer.parseInt(address.substring(lastColonIndex + 1));
     }
 

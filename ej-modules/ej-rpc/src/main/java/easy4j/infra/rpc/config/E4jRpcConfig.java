@@ -3,10 +3,16 @@ package easy4j.infra.rpc.config;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.rpc.enums.LbType;
 import easy4j.infra.rpc.enums.RegisterType;
+import easy4j.infra.rpc.enums.RetryType;
 import easy4j.infra.rpc.enums.SerializableType;
 import easy4j.infra.rpc.integrated.IntegratedFactory;
 import lombok.Data;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class E4jRpcConfig {
@@ -101,6 +107,16 @@ public class E4jRpcConfig {
     private Integer kryoPoolMaxNum = 100;
 
     /**
+     * 最大重试 默认三次
+     */
+    private Integer invokeRetryMaxCount = 3;
+
+    /**
+     * 重试类型，阻塞、异步
+     */
+    private RetryType retryType;
+
+    /**
      * 服务端配置
      */
     @NestedConfigurationProperty
@@ -111,6 +127,9 @@ public class E4jRpcConfig {
      */
     @NestedConfigurationProperty
     private E4jClientConfig client;
+
+
+    private Map<String,ReferenceUrl> reference = new HashMap<>();
 
 
     public String getRegistryJdbcUrl() {
@@ -132,6 +151,11 @@ public class E4jRpcConfig {
             return IntegratedFactory.getRpcConfig().get("spring.datasource.password");
         }
         return registryJdbcPassword;
+    }
+
+    @Data
+    public static class ReferenceUrl implements Serializable {
+        String url;
     }
 
 

@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class DefaultServerNode implements ServerNode {
 
     private static final Cache<String, List<Node>> HOST_CACHE = Caffeine.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES) // 写入后 5 分钟过期
+            .expireAfterWrite(30, TimeUnit.MINUTES) // 写入后 30 分钟过期
             .maximumSize(10_000) // 最大缓存容量 10000 条（超量后触发淘汰）
             .build();
 

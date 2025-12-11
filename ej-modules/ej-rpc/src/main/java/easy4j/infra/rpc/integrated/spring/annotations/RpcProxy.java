@@ -44,4 +44,24 @@ public @interface RpcProxy {
      * 超时时间
      */
     long timeOut() default 30 * 1000L;
+
+    /**
+     * 是否广播
+     */
+    boolean broadcast() default false;
+
+    /**
+     * 是否异步广播，broadcast必须为true才生效
+     */
+    boolean broadcastAsync() default false;
+
+    /**
+     * 直连地址
+     */
+    String url() default "";
+
+    /**
+     * 最大重试次数 默认三次 服务治理 > 注解配置 > 配置文件
+     */
+    int invokeRetryMaxCount() default 3;
 }

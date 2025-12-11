@@ -70,4 +70,11 @@ public class NodeHeartbeatInfo {
      */
     protected int conn;
 
+    /**
+     * 服务是否被禁用
+     */
+    protected boolean disabled;
+
+
+
 }

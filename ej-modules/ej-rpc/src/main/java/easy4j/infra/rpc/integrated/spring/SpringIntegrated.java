@@ -264,6 +264,10 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                         serverName.add(value);
                         FilterAttributes filterAttributes = new FilterAttributes()
                                 .setServiceName(value)
+                                .setBroadcast(annotation.broadcast())
+                                .setBroadcastAsync(annotation.broadcastAsync())
+                                .setUrl(annotation.url())
+                                .setInvokeRetryMaxCount(annotation.invokeRetryMaxCount())
                                 .setTimeOut(annotation.timeOut());
                         Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
                         ReflectUtil.setFieldValue(bean, field, proxy);

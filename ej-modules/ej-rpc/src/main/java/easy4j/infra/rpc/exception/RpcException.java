@@ -12,8 +12,16 @@ public class RpcException extends RuntimeException {
 
     public long msgId;
 
+    private boolean willRetry = false;
+
     public RpcException setMsgId(long msgId) {
         this.msgId = msgId;
+        return this;
+    }
+
+
+    public RpcException setWillRetry(boolean willRetry) {
+        this.willRetry = willRetry;
         return this;
     }
 
