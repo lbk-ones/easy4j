@@ -17,7 +17,7 @@ package easy4j.infra.context.api.idempotent;
 import cn.hutool.core.convert.Convert;
 import easy4j.infra.context.THConstant;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Objects;
 

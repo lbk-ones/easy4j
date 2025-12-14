@@ -18,7 +18,7 @@ import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccessFactory;
-import org.apache.seata.spring.boot.autoconfigure.SeataCoreAutoConfiguration;
+import io.seata.spring.boot.autoconfigure.SeataCoreAutoConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator;

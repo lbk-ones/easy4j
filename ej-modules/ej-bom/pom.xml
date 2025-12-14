@@ -17,48 +17,44 @@
     </modules>
 
     <properties>
-        <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
-        <!-- 核心框架升级 -->
-        <spring-boot.version>3.3.13</spring-boot.version>
-        <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
-        <!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
-        <spring-cloud.version>2023.0.3</spring-cloud.version>
-        <!-- Spring Cloud Alibaba 对应Spring Boot 3.x的2023.x版本线 -->
-        <spring-cloud-alibaba.version>2023.0.3.4</spring-cloud-alibaba.version>
-
-        <!-- 中间件及工具依赖升级 -->
-        <dubbo.version>3.3.0</dubbo.version> <!-- 适配Spring Boot 3.x -->
-        <nacos.version>2.3.2</nacos.version> <!-- 支持Spring Boot 3.x -->
-        <grpc.version>1.64.0</grpc.version> <!-- 最新稳定版 -->
-        <protobufjava.version>3.25.3</protobufjava.version> <!-- 与grpc匹配 -->
-        <sentinel.version>1.8.7</sentinel.version> <!-- 支持Spring Boot 3.x -->
-        <org.mapstruct.version>1.6.0.Beta1</org.mapstruct.version> <!-- 支持Jakarta -->
-        <log4j.version>2.23.1</log4j.version> <!-- 安全更新 -->
-        <mplus.version>3.5.14</mplus.version> <!-- MyBatis-Plus支持Spring Boot 3 -->
-        <mplus.gen.version>3.5.14</mplus.gen.version> <!-- 对应MP版本 -->
-        <hutool.version>5.8.26</hutool.version> <!-- 兼容Java 17 -->
-        <alibaba.ttl.version>2.14.1</alibaba.ttl.version> <!-- 最新稳定版 -->
-        <flyway2.version>10.15.0</flyway2.version> <!-- 升级大版本，支持Jakarta -->
-        <jodd.version>5.3.0</jodd.version> <!-- 支持Java 17 -->
-        <knife4j.starter.version>4.5.0</knife4j.starter.version> <!-- 支持Spring Boot 3 -->
-        <guava.version>33.2.1-jre</guava.version> <!-- 保持不变（兼容） -->
-        <freemarker.version>2.3.32</freemarker.version> <!-- 安全更新 -->
-        <commons.dbutils.version>1.8.1</commons.dbutils.version> <!-- 保持不变（兼容） -->
-        <rxjava.version>3.1.8</rxjava.version> <!-- 稳定版 -->
-        <druid.version>1.2.27</druid.version> <!-- 支持Spring Boot 3 -->
-        <disruptor.version>3.4.4</disruptor.version> <!-- 保持不变（兼容） -->
-        <spring-boot-admin.version>3.2.3</spring-boot-admin.version> <!-- 适配Spring Boot 3 -->
-        <jaeger.client.version>1.8.1</jaeger.client.version> <!-- 最新稳定版 -->
-        <openfeign.fastjson.version>2.0.60</openfeign.fastjson.version> <!-- 适配Feign 3.x -->
-        <redissioin.version>3.52.0</redissioin.version> <!-- 修正拼写（redisson）并升级 -->
-        <xxljob.version>3.2.0</xxljob.version> <!-- 注意：2.5.0暂不支持Spring Boot 3，需用2.4.0或等待更新 -->
-        <oshi-core.version>6.4.1</oshi-core.version> <!-- 最新稳定版 -->
-        <pinyin4j.version>2.5.1</pinyin4j.version> <!-- 保持不变（兼容） -->
-        <easyexcel.version>3.3.0</easyexcel.version> <!-- 支持Spring Boot 3 -->
-        <minio.version>8.5.13</minio.version> <!-- 安全更新 -->
-        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
+        <dubbo.version>3.2.7</dubbo.version>
+        <!--        <nacos.version>2.2.1</nacos.version>-->
+        <!--up to 2.7.18-->
+        <spring-boot.version>2.7.18</spring-boot.version>
+        <grpc.version>1.54.1</grpc.version>
+        <protobufjava.version>3.19.6</protobufjava.version>
+        <sentinel.version>1.8.6</sentinel.version>
+        <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+        <log4j.version>2.17.2</log4j.version>
+        <mplus.version>3.5.4</mplus.version>
+        <mplus.gen.version>3.5.12</mplus.gen.version>
+        <hutool.version>5.8.22</hutool.version>
+        <alibaba.ttl.version>2.11.4</alibaba.ttl.version>
+        <flyway2.version>5.2.1</flyway2.version>
+        <jodd.version>5.3.0</jodd.version>
+        <knife4j.starter.version>4.5.0</knife4j.starter.version>
+        <guava.version>33.2.1-jre</guava.version>
+        <freemarker.version>2.3.31</freemarker.version>
+        <commons.dbutils.version>1.8.1</commons.dbutils.version>
+        <rxjava.version>3.1.10</rxjava.version>
+        <druid.version>1.2.24</druid.version>
+        <disruptor.version>3.4.2</disruptor.version>
+        <nacos.version>2.2.0</nacos.version>
+        <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
+        <jaeger.client.version>1.5.0</jaeger.client.version>
+        <openfeign.fastjson.version>2.0.56</openfeign.fastjson.version>
+        <redissioin.version>3.49.0</redissioin.version>
+        <xxljob.version>2.5.0</xxljob.version>
+        <oshi-core.version>6.4.1</oshi-core.version>
+        <pinyin4j.version>2.5.1</pinyin4j.version>
+        <easyexcel.version>4.0.3</easyexcel.version>
+        <minio.version>8.5.2</minio.version>
         <commons-io.version>2.15.0</commons-io.version>
         <jjwt.version>0.11.5</jjwt.version>
+        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
+        <!-- SpringCloud -->
+        <spring-cloud.version>2021.0.8</spring-cloud.version>
+        <spring-cloud-alibaba.version>2021.0.6.2</spring-cloud-alibaba.version>
     </properties>
 
     <dependencyManagement>
@@ -83,7 +79,7 @@
 
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
                 <version>${knife4j.starter.version}</version>
             </dependency>
             <dependency>
@@ -164,11 +160,6 @@
                 <version>${jodd.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-generator</artifactId>
-                <version>${mplus.gen.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
                 <version>${redissioin.version}</version>
@@ -192,7 +183,16 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mplus.version}</version>
-                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mplus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-generator</artifactId>
+                <version>${mplus.gen.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
@@ -201,7 +201,7 @@
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-3-starter</artifactId>
+                <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.version}</version>
             </dependency>
             <dependency>
@@ -237,6 +237,16 @@
                 <version>${knife4j.aggregation.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
+                <version>${sentinel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-transport-simple-http</artifactId>
+                <version>${sentinel.version}</version>
+            </dependency>
 
             <!--======================easy4j modules version controller======================-->
             <!--ej-base-->

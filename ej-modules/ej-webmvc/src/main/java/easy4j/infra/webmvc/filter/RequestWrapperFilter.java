@@ -18,8 +18,8 @@ import easy4j.infra.common.utils.SysConstant;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.Map;

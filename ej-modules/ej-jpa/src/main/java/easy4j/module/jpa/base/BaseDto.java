@@ -32,8 +32,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import javax.persistence.Id;
+import javax.persistence.Version;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;

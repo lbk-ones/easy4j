@@ -22,13 +22,13 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
-import org.apache.seata.core.context.RootContext;
-//import org.apache.seata.rm.tcc.api.BusinessActionContext;
-//import org.apache.seata.rm.tcc.api.BusinessActionContextUtil;
-import org.apache.seata.rm.tcc.api.BusinessActionContext;
-import org.apache.seata.rm.tcc.api.LocalTCC;
-import org.apache.seata.rm.tcc.api.TwoPhaseBusinessAction;
-import org.apache.seata.rm.tcc.api.BusinessActionContextUtil;
+import io.seata.core.context.RootContext;
+//import io.seata.rm.tcc.api.BusinessActionContext;
+//import io.seata.rm.tcc.api.BusinessActionContextUtil;
+import io.seata.rm.tcc.api.BusinessActionContext;
+import io.seata.rm.tcc.api.LocalTCC;
+import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
+import io.seata.rm.tcc.api.BusinessActionContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,7 +129,7 @@ public class BaseTccAction {
     @Desc("seata服务降级，如果seata服务不可用或者被降级 那么 可以直接在回调里面调用commit方法")
     public void tccDegrade(NullConsumerCallback consumer) {
 
-        org.apache.seata.rm.tcc.api.BusinessActionContext context = BusinessActionContextUtil.getContext();
+        io.seata.rm.tcc.api.BusinessActionContext context = BusinessActionContextUtil.getContext();
         // 如果不在全局事务里面 则可能是服务故障 或者全局降级
         if ((!SeataUtils.isInGlobalTransaction() || null == context) && consumer != null) {
             Class<? extends BaseTccAction> aClass = this.getClass();

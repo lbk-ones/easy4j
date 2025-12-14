@@ -19,7 +19,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 /**
  * BroadcastFeign

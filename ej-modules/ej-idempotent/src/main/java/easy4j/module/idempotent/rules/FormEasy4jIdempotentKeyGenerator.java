@@ -16,7 +16,7 @@ package easy4j.module.idempotent.rules;
 
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * FormEasy4jIdempotentKeyGenerator

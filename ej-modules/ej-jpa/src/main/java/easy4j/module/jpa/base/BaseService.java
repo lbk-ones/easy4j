@@ -30,8 +30,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import javax.persistence.Id;
+import javax.persistence.Version;
 
 import java.lang.reflect.Field;
 import java.util.Collection;

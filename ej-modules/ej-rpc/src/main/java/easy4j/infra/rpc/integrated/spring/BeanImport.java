@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author bokun
@@ -20,10 +21,10 @@ public class BeanImport implements ImportSelector {
     private static final List<String> domainPackages = new ArrayList<>();
 
     public static List<String> getBasePackages() {
-        return basePackages.stream().distinct().toList();
+        return basePackages.stream().distinct().collect(Collectors.toList());
     }
     public static List<String> getDomainPackages() {
-        return domainPackages.stream().distinct().toList();
+        return domainPackages.stream().distinct().collect(Collectors.toList());
     }
 
     @Override

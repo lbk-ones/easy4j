@@ -91,7 +91,7 @@ public class DefaultServerNode implements ServerNode {
                     log.error("get nodes appear exception", e2);
                     return null;
                 }
-            }).filter(Objects::nonNull).toList();
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         });
         nodes = nodes.stream().filter(Node::isEnabled).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(nodes)) {
@@ -128,7 +128,7 @@ public class DefaultServerNode implements ServerNode {
                 }
                 ISerializable jackson = SerializableFactory.getJackson();
                 switch (type) {
-                    case ADD -> {
+                    case ADD : {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
                         Node node = new Node(newHost, true);
                         if (StrUtil.isNotEmpty(data)) {
@@ -137,8 +137,9 @@ public class DefaultServerNode implements ServerNode {
                         }
                         nodes1.add(node);
                         weightedRoundRobinScheduler.addNode(node);
+                        break;
                     }
-                    case UPDATE -> {
+                    case UPDATE : {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
                         NodeHeartbeatInfo deserializable = null;
                         if (StrUtil.isNotEmpty(data)) {
@@ -151,8 +152,9 @@ public class DefaultServerNode implements ServerNode {
                                 weightedRoundRobinScheduler.updateWeight(newHost, deserializable.getWeight());
                             }
                         }
+                        break;
                     }
-                    case REMOVE -> {
+                    case REMOVE : {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
                         Iterator<Node> iterator = nodes1.iterator();
                         while (iterator.hasNext()) {
@@ -163,6 +165,7 @@ public class DefaultServerNode implements ServerNode {
                                 iterator.remove();
                             }
                         }
+                        break;
                     }
                 }
             });
@@ -189,8 +192,9 @@ public class DefaultServerNode implements ServerNode {
     public Node selectNodeByServerName(String serverName, LbType lbType) {
         List<Node> nodesByServerName = getNodesByServerName(serverName);
         if (CollUtil.isEmpty(nodesByServerName)) return null;
-        return switch (lbType) {
-            case ROUND_ROBIN -> {
+        Node re = null;
+        switch (lbType) {
+            case ROUND_ROBIN : {
                 // 轮询中简单用下权重,权重高的多轮询几次
                 List<Node> nodesNew = extractByWeight(nodesByServerName);
                 if (nodesNew.isEmpty()) {
@@ -199,32 +203,39 @@ public class DefaultServerNode implements ServerNode {
                 Integer i = roundRobin.get(serverName);
                 if (i == null || i >= (nodesNew.size() - 1)) {
                     roundRobin.put(serverName, 0);
-                    yield nodesNew.get(0);
+                    re = nodesNew.get(0);
                 } else {
                     i++;
                     int min = Math.min(i, nodesNew.size() - 1);
                     roundRobin.put(serverName, min);
-                    yield nodesNew.get(min);
+                    re =  nodesNew.get(min);
                 }
+                break;
             }
-            case WEIGHT_ROUND_BING, PERFORMANCE_BASED -> {
+            case WEIGHT_ROUND_BING:{
+
+            }
+            case PERFORMANCE_BASED : {
                 WeightedRoundRobinScheduler weightedRoundRobinScheduler = roundRobinWeight.get(serverName);
-                yield weightedRoundRobinScheduler.select();
+                re =  weightedRoundRobinScheduler.select();
+                break;
             }
-            case RANDOM -> {
+            case RANDOM : {
                 int i = RandomUtil.randomInt(nodesByServerName.size());
-                yield nodesByServerName.get(i);
+                re =  nodesByServerName.get(i);
+                break;
             }
-            case LEAST_CONNECTIONS -> {
+            case LEAST_CONNECTIONS : {
                 // has delay
                 nodesByServerName.sort((o1, o2) -> {
                     Integer conn1 = o1.getNodeHeartbeatInfo().getConn();
                     Integer conn2 = o2.getNodeHeartbeatInfo().getConn();
                     return conn2.compareTo(conn1);
                 });
-                yield nodesByServerName.get(0);
+                re =  nodesByServerName.get(0);
             }
         };
+        return re;
     }
 
     private List<Node> extractByWeight(List<Node> nodesByServerName) {

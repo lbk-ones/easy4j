@@ -21,6 +21,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.DBFieldEscapeChecker;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import lombok.var;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;

@@ -123,23 +123,40 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
         try {
             DatabaseMetaData metaData = connection.getMetaData();
             String databaseProductName = metaData.getDatabaseProductName();
-            return switch (databaseProductName) {
-                case "H2" -> "h2";
-                case "MySQL" -> "mysql";
-                case "Oracle" -> "oracle";
-                case "PostgreSQL" -> "postgresql";
-                case "Microsoft SQL Server" -> "sqlserver";
-                default -> {
-                    if (databaseProductName.startsWith("DB2")) {
-                        yield "db2";
-                    }
-                    yield null;
-                }
-            };
+            return getDatabaseType(databaseProductName);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public String getDatabaseType(String databaseProductName) {
+        String dbType = null;
+        // 传统switch语句（Java8支持）
+        switch (databaseProductName) {
+            case "H2":
+                dbType = "h2";
+                break; // 必须break避免分支穿透
+            case "MySQL":
+                dbType = "mysql";
+                break;
+            case "Oracle":
+                dbType = "oracle";
+                break;
+            case "PostgreSQL":
+                dbType = "postgresql";
+                break;
+            case "Microsoft SQL Server":
+                dbType = "sqlserver";
+                break;
+            default:
+                // 原yield逻辑转换为普通赋值，增加null判断避免NPE
+                if (databaseProductName.startsWith("DB2")) {
+                    dbType = "db2";
+                }
+                break;
+        }
+        return dbType;
     }
 
     /**
@@ -222,7 +239,7 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                                 sb.append(buffer, 0, length);
                             }
                         }
-                        if (!sb.isEmpty()) {
+                        if (sb.length()>0) {
                             DDlExe.execDDL(connection, sb.toString(), null, false);
                             log.info("easy4j rpc sql script successful instanced");
                         }

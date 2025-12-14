@@ -69,4 +69,15 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 ### 移除
 
 
+## [1.0.1] - 2025-11-18
 
+### 新增
+- 将依赖模块从modules模块抽离
+- 新增可独立运行的RPC调用模块
+- 优化权限session刷新流程
+- 新增根据数据库名称、模式名称、表名和表类型检索表/视图信息的api接口
+
+### 修复
+- 修复quartzJob出现异常无限重试的问题
+- 修复自动执行sql脚本sqlserver和postgresql找不到的问题
+### 移除

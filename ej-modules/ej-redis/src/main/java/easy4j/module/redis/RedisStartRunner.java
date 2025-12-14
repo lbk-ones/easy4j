@@ -7,7 +7,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 
 @Slf4j

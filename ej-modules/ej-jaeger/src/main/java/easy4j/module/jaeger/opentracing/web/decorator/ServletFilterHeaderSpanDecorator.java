@@ -18,8 +18,8 @@ import easy4j.module.jaeger.opentracing.web.ServletFilterSpanDecorator;
 import io.opentracing.Span;
 import io.opentracing.tag.StringTag;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.List;

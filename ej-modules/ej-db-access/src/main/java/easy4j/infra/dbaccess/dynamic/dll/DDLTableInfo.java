@@ -7,7 +7,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import jakarta.persistence.Index;
+import javax.persistence.Index;
 
 import java.util.List;
 

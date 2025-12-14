@@ -22,9 +22,9 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Lob;
 
 import java.lang.reflect.Field;
 import java.util.*;

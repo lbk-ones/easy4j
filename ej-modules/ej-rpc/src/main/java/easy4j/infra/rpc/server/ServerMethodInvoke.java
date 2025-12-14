@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 /**
@@ -68,18 +69,49 @@ public class ServerMethodInvoke {
 
     public static Class<?> getClassByClassIdentify(String classIdentify) {
         if (StrUtil.isBlank(classIdentify)) return null;
-        Class<?> re = switch (classIdentify) {
-            case "int" -> int.class;
-            case "byte" -> byte.class;
-            case "short" -> short.class;
-            case "double" -> double.class;
-            case "float" -> float.class;
-            case "boolean" -> boolean.class;
-            case "long" -> long.class;
-            case "char" -> char.class;
-            case "void" -> void.class;
-            default -> null;
-        };
+        Class<?> re = null;
+        switch (classIdentify) {
+            case "int": {
+                re = int.class;
+                break;
+            }
+            case "byte": {
+                re = byte.class;
+                break;
+            }
+            case "short": {
+                re = short.class;
+                break;
+            }
+            case "double": {
+                re = double.class;
+                break;
+            }
+            case "float": {
+                re = float.class;
+                break;
+            }
+            case "boolean": {
+                re = boolean.class;
+                break;
+            }
+            case "long": {
+                re = long.class;
+                break;
+            }
+            case "char": {
+                re = char.class;
+                break;
+            }
+            case "void": {
+                re = void.class;
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        ;
         if (re != null) return re;
         return cacheClass.computeIfAbsent(classIdentify, e ->
                 {
@@ -99,7 +131,7 @@ public class ServerMethodInvoke {
             throw new ClassNotFoundException();
         }
         String methodName = request.getMethodName();
-        parameterTypes = Arrays.stream(request.getParameterTypes()).map(ServerMethodInvoke::getClassByClassIdentify).toList().toArray(new Class[]{});
+        parameterTypes = Arrays.stream(request.getParameterTypes()).map(ServerMethodInvoke::getClassByClassIdentify).collect(Collectors.toList()).toArray(new Class[]{});
         if (Arrays.stream(parameterTypes).anyMatch(Objects::isNull)) {
             throw new RpcException("There is an unknown type in the parameterTypes parameter");
         }

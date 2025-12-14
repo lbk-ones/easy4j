@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 
 import java.sql.Connection;
 

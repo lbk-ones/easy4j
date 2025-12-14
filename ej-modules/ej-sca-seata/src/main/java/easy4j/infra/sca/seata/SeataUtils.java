@@ -14,10 +14,10 @@
  */
 package easy4j.infra.sca.seata;
 
-import org.apache.seata.core.context.RootContext;
-import org.apache.seata.core.exception.TransactionException;
-import org.apache.seata.core.model.GlobalStatus;
-import org.apache.seata.tm.api.GlobalTransactionContext;
+import io.seata.core.context.RootContext;
+import io.seata.core.exception.TransactionException;
+import io.seata.core.model.GlobalStatus;
+import io.seata.tm.api.GlobalTransactionContext;
 
 /**
  * SeataUtils
