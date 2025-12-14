@@ -1,0 +1,58 @@
+package easy4j.infra.rpc.integrated.spring;
+
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.rpc.config.E4jRpcConfig;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
+import easy4j.infra.rpc.integrated.config.AbstractRpcConfig;
+import easy4j.infra.rpc.integrated.config.DefaultRpcConfig;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
+
+/**
+ * 整合spring的配置
+ *
+ * @since 2.0.1
+ */
+public class SpringE4jRpcConfig extends AbstractRpcConfig implements ApplicationContextAware, BeanNameAware {
+
+    String beanName;
+
+    ApplicationContext context;
+
+    @Override
+    public void setBeanName(String name) {
+        beanName = name;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = applicationContext;
+
+    }
+
+    @Override
+    public E4jRpcConfig getConfig() {
+        Environment environment = context.getEnvironment();
+        Binder binder = Binder.get(environment);
+        BindResult<E4jRpcConfig> bind = binder.bind("easy4j.rpc", E4jRpcConfig.class);
+        if (bind.isBound()) {
+            return bind.get();
+        } else {
+            return new E4jRpcConfig();
+        }
+    }
+
+    @Override
+    public String defaultGet(String key) {
+        String property1 = context.getEnvironment().getProperty(key);
+        if(StrUtil.isBlank(property1)){
+            property1 =  DefaultRpcConfig.fileProperties.getProperty(key);
+        }
+        return property1;
+    }
+}

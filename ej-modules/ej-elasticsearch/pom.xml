@@ -12,19 +12,26 @@
 
     <name>ej-elasticsearch</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j es access module</description>
+    <description>easy4j infra elasticsearch</description>
 
+    <dependencyManagement>
+        <dependencies>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
 
@@ -34,22 +41,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

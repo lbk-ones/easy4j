@@ -60,7 +60,7 @@ class DynamicTableQueryTest {
     }
 
     @Test
-    void test2(){
+    void test2() {
         String str1 = "这是(测试)字符串";
         String str2 = "这个字符串没有括号";
         String str3 = "带(多个)括号(的)例子";

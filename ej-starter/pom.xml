@@ -19,9 +19,10 @@
     </modules>
     <name>ej-starter</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j starter parent pom</description>
+    <description>easy4j starters parent pom</description>
     <properties>
     </properties>
     <dependencies>
     </dependencies>
+
 </project>

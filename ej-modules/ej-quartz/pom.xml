@@ -12,29 +12,35 @@
 
     <name>ej-quartz</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j quartz module</description>
+    <description>easy4j infra quartz schedule</description>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sactuator</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-db-access</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         
@@ -50,23 +56,4 @@
         </dependency>
         
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

@@ -442,7 +442,7 @@ public class EjSysProperties {
      * 认证时会话口令集合集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
      */
     @SpringVs(
-            desc = "认证时会话口令集合集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取"
+            desc = "认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取"
     )
     private List<AccessToken> simpleAuthAccessTokens;
 

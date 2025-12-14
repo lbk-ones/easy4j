@@ -6,19 +6,13 @@
         <artifactId>ej-starter</artifactId>
         <version>${revision}</version>
     </parent>
+
     <artifactId>knife4j-nacos-aggregation-starter</artifactId>
     <packaging>jar</packaging>
 
     <name>knife4j-nacos-aggregation-starter</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j knife4j nacos aggregation service starter</description>
-
-    <properties>
-        <java.version>1.8</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
-    </properties>
+    <description>easy4j knife4j-nacos-aggregation-starter</description>
 
     <dependencies>
         <dependency>
@@ -27,7 +21,5 @@
             <version>${revision}</version>
         </dependency>
     </dependencies>
-
-
 
 </project>

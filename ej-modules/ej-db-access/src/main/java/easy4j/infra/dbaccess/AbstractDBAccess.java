@@ -47,8 +47,10 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
+
 import javax.sql.DataSource;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -828,12 +830,12 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
 
     @Override
     public long countByCondition(WhereBuild whereBuilder, String tableName) {
-        CheckUtils.notNull(tableName,"tableName");
+        CheckUtils.notNull(tableName, "tableName");
         Connection connection = getConnection();
         DialectV2 select = DialectFactory.get(connection);
         List<TableMetadata> tableInfos = select.getTableInfos(tableName);
-        if(CollUtil.isEmpty(tableInfos)){
-            throw EasyException.wrap(BusCode.A00060,tableName);
+        if (CollUtil.isEmpty(tableInfos)) {
+            throw EasyException.wrap(BusCode.A00060, tableName);
         }
         whereBuilder.bind(connection);
         List<Object> objects = new ArrayList<>();

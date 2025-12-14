@@ -4,20 +4,19 @@
 
     <groupId>io.github.lbk-ones</groupId>
     <artifactId>easy4j</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
+    <version>${revision}</version>
     <modules>
         <module>ej-modules</module>
         <module>ej-starter</module>
-        <!--跳过这两个module-->
         <!--<module>ej-test</module>-->
         <!--<module>ej-texample</module>-->
     </modules>
     <name>easy4j</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j infra</description>
+    <description>easy4j parent pom</description>
     <properties>
-        <revision>1.0.0</revision>
+        <revision>1.0.1-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -43,10 +42,6 @@
         <developerConnection>scm:git:ssh://git@github.com/lbk-ones/easy4j.git</developerConnection>
         <url>https://github.com/lbk-ones/easy4j.git</url>
     </scm>
-
-    <dependencies>
-
-    </dependencies>
 
     <build>
         <plugins>
@@ -76,6 +71,29 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <ignoredDependencies>
+                                <ignoredDependency>org.springframework*</ignoredDependency>
+                                <ignoredUsedUndeclaredDependencies>org.springframework*</ignoredUsedUndeclaredDependencies>
+                                <ignoredDependency>io.github.lbk-ones*</ignoredDependency>
+                                <ignoredUsedUndeclaredDependencies>io.github.lbk-ones*</ignoredUsedUndeclaredDependencies>
+                            </ignoredDependencies>
+                            <ignoreNonCompile>true</ignoreNonCompile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
+
         </plugins>
     </build>
 
@@ -231,10 +249,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.2</version>
+                        <version>3.8.1</version>
                         <configuration>
-                            <source>1.8</source>
-                            <target>1.8</target>
+                            <source>${maven.compiler.source}</source>
+                            <target>${maven.compiler.target}</target>
+                            <encoding>${project.build.sourceEncoding}</encoding>
                         </configuration>
                     </plugin>
                     <!--   javadoc插件 -->
@@ -243,6 +262,13 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>3.3.0</version>
                         <configuration>
+                            <tags>
+                                <tag>
+                                    <name>date</name> <!-- 标签名称（不带@） -->
+                                    <placement>a</placement> <!-- 适用位置：a=所有元素（类、方法、字段等），c=类，m=方法，f=字段 -->
+                                    <head>Date</head> <!-- 文档中该标签的标题（如“Date: 2023-10-01”） -->
+                                </tag>
+                            </tags>
                             <!-- 1. 源文件编码（必须与代码文件的实际编码一致，如UTF-8） -->
                             <encoding>UTF-8</encoding>
                             <!-- 2. 生成的Javadoc文档（如HTML）的编码 -->
@@ -283,5 +309,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

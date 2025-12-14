@@ -13,7 +13,7 @@
  */
 package easy4j.module.jaeger.spring.autoconfig;
 
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
+import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.module.jaeger.opentracing.jdbc.TracingDataSource;
@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;

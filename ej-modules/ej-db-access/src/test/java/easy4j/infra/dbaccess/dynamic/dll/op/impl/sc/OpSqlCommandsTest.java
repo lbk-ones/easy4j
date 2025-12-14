@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -60,7 +61,7 @@ class OpSqlCommandsTest {
         List<Map<String, Object>> objects = ListTs.newList();
         for (int i = 0; i < 10; i++) {
             MetaJobDefinition metaJobDefinition = new MetaJobDefinition();
-            metaJobDefinition.setJobName("测测试"+i);
+            metaJobDefinition.setJobName("测测试" + i);
             metaJobDefinition.setJobDescription("bk's test");
             metaJobDefinition.setExecutionPlan("");
             metaJobDefinition.setClassificationCode("");
@@ -83,14 +84,14 @@ class OpSqlCommandsTest {
 
         int iwt = 0;
         for (Map<String, Object> object : objects) {
-            object.put("jobName","改"+iwt);
+            object.put("jobName", "改" + iwt);
             iwt++;
         }
         System.out.println(psResult.getSql());
         System.out.println(psResult.getCostTime());
         System.out.println(psResult.getEffectRows());
         System.out.println("----------------------------------------");
-        PsResult psResult2 = dialectV2.jdbcUpdate(objects, "ssc_meta_job_definition", null, true,true,true,ListTs.asList("jobDefinitionId"));
+        PsResult psResult2 = dialectV2.jdbcUpdate(objects, "ssc_meta_job_definition", null, true, true, true, ListTs.asList("jobDefinitionId"));
         System.out.println(psResult2.toString());
         connection.close();
     }
@@ -103,7 +104,7 @@ class OpSqlCommandsTest {
         System.out.println(JacksonUtil.toJson(columns));
     }
 
-    public DataSource getOracle19cDataSource(){
+    public DataSource getOracle19cDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl("jdbc:oracle:thin:@//10.0.71.45:36181/ORCLPDB1");
         String jdbcUrl = hikariConfig.getJdbcUrl();
@@ -112,7 +113,7 @@ class OpSqlCommandsTest {
         hikariConfig.setUsername("EMR_NURSE");
         hikariConfig.setPassword("EMR_NURSE");
         hikariConfig.setMaximumPoolSize(20); // 最大连接数
-        hikariConfig.setMinimumIdle(20/2);             // 最小空闲连接数
+        hikariConfig.setMinimumIdle(20 / 2);             // 最小空闲连接数
         hikariConfig.setIdleTimeout(600000);         // 空闲超时 10 分钟
         hikariConfig.setMaxLifetime(1800000);        // 连接最大生命周期 30 分钟
         hikariConfig.setConnectionTimeout(30000);    // 获取连接超时 3 秒

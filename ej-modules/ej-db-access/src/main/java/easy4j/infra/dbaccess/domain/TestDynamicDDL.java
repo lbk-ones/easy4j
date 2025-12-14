@@ -8,7 +8,8 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,13 +24,13 @@ import java.util.Date;
 @Data
 @Schema(description = "测试动态DDL生成的表")
 @DDLTable(indexes = {
-        @DDLIndex(keys = {"backField1","backField2"}),
+        @DDLIndex(keys = {"backField1", "backField2"}),
         @DDLIndex(keys = {"backField3"}),
 })
 public class TestDynamicDDL {
 
-    @JdbcColumn(name = "id", isPrimaryKey = true,autoIncrement = true)
-    @DDLField(comment = "主键",isAutoIncrement = true)
+    @JdbcColumn(name = "id", isPrimaryKey = true, autoIncrement = true)
+    @DDLField(comment = "主键", isAutoIncrement = true)
     private Long id;
 
     /**
@@ -100,13 +101,13 @@ public class TestDynamicDDL {
     @DDLField(comment = "backField14")
     private Float backField14;
 
-    @DDLField(comment = "测试unique的字段",dataLength = 25,isUnique = true)
+    @DDLField(comment = "测试unique的字段", dataLength = 25, isUnique = true)
     private String testUnique;
 
-    @DDLField(comment = "测试unique的字段",dataLength = 25,check = "test_check in (0,1)")
+    @DDLField(comment = "测试unique的字段", dataLength = 25, check = "test_check in (0,1)")
     private byte testCheck;
 
-    @DDLField(comment = "测试check的字段2",dataLength = 25,check = "test_check2 in (2,3)")
+    @DDLField(comment = "测试check的字段2", dataLength = 25, check = "test_check2 in (2,3)")
     private int testCheck2;
 
     private transient String testTransientSymbol;
@@ -116,19 +117,19 @@ public class TestDynamicDDL {
 
     private final String testFinal = "";
 
-    @DDLField(dataType = "jsonb",comment = "测试json")
+    @DDLField(dataType = "jsonb", comment = "测试json")
     private String json;
 
-    @DDLField(dataType = "jsonb",comment = "测试json2")
+    @DDLField(dataType = "jsonb", comment = "测试json2")
     private String json2;
 
-    @DDLField(dataType = "enum",dataTypeAttr = {"0","1","2","3"},comment = "测试enum")
+    @DDLField(dataType = "enum", dataTypeAttr = {"0", "1", "2", "3"}, comment = "测试enum")
     private String testEnum;
 
     /**
      * 执行时间
      */
-    @DDLField(defTime = true,isNotNull = true,comment = "执行时间")
+    @DDLField(defTime = true, isNotNull = true, comment = "执行时间")
     private Date exeDate;
 
 

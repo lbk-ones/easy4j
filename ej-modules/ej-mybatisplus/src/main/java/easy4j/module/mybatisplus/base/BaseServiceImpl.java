@@ -45,7 +45,8 @@ import easy4j.module.mybatisplus.audit.AutoAudit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
+
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -242,7 +243,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         Map<String, Object> betweenMap = Maps.newHashMap();
         Map<String, Object> inMap = Maps.newHashMap();
         if (CollUtil.isNotEmpty(keys)) {
-            try{
+            try {
                 for (List<Object> key : keys) {
                     Object name = ListTs.get(key, 0);
                     Object symbol = ListTs.get(key, 1);
@@ -308,7 +309,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         }
                     }
                 }
-            }catch (DateException dateException){
+            } catch (DateException dateException) {
                 throw EasyException.wrap(BusCode.A00057, dateException.getMessage());
             }
 
@@ -338,6 +339,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         copyOptions.setIgnoreProperties(auditParams);
         BeanUtil.copyProperties(source, target, copyOptions);
     }
+
     public void copyObjIgnoreAuditNotIgnoreNull(Object source, Object target) {
         if (null == source || null == target) return;
         String[] auditParams = getAuditParams();

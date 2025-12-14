@@ -19,7 +19,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -31,17 +31,17 @@ import javax.servlet.http.HttpServletRequest;
 @Setter
 public abstract class BaseController {
 
-	public BaseController(){
-	}
-	
-	private HttpServletRequest request;
+    public BaseController() {
+    }
 
-	public HttpServletRequest getRequest() {
-		RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+    private HttpServletRequest request;
+
+    public HttpServletRequest getRequest() {
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         this.setRequest(request);
-		return request;
-	}
+        return request;
+    }
 
 }

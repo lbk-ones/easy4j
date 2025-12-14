@@ -14,10 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class SecuritySessionTest {
 
 
-
-    DataSource getDataSource(){
-        return new TempDataSource("org.postgresql.Driver","jdbc:postgresql://10.0.32.19:30163/ds","drhi_user","drhi_password");
+    DataSource getDataSource() {
+        return new TempDataSource("org.postgresql.Driver", "jdbc:postgresql://10.0.32.19:30163/ds", "drhi_user", "drhi_password");
     }
+
     @Test
     void getUserId() {
         String s;

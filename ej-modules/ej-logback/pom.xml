@@ -11,126 +11,24 @@
 
     <name>ej-logback</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j logback module</description>
+    <description>easy4j infra logback</description>
+    <dependencyManagement>
+        <dependencies>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-bom-springboot</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>dev-snapshots</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-
-                <plugins>
-                    <!--deploy 到私仓-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.snapshotRepository.id}</repositoryId>
-                                    <url>${project.distributionManagement.snapshotRepository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!--发布到release-->
-        <profile>
-            <id>pro-release</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-                                    <url>${project.distributionManagement.repository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

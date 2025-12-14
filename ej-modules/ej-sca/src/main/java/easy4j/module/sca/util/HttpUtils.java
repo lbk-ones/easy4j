@@ -21,7 +21,8 @@ import jodd.util.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

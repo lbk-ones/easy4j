@@ -23,7 +23,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * 传统web服务 Spring Security 配置
@@ -40,7 +40,7 @@ public class OldSchoolSecurityConfig {
     public static final String LOG_OUT_URL = "/logout";
 
 
-    @Bean
+    /*@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests()
@@ -94,5 +94,5 @@ public class OldSchoolSecurityConfig {
                 //.csrf().disable()// 关闭csrf 前后端不分离的时候需要这个
 
                 .build();
-    }
+    }*/
 }

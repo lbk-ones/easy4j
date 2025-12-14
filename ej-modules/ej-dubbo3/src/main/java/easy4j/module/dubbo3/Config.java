@@ -14,6 +14,7 @@
  */
 package easy4j.module.dubbo3;
 
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.context.annotation.Configuration;
 
 /**

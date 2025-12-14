@@ -22,6 +22,7 @@ import easy4j.modules.ltl.transactional.LocalMessage;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.sql.DataSource;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;

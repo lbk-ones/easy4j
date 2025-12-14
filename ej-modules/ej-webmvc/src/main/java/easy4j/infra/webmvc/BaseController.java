@@ -23,7 +23,8 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,11 +92,8 @@ public class BaseController {
      * @return success result code
      */
     public EasyResult success(String msg) {
-        return EasyResult.parseFromI18n(0,msg);
+        return EasyResult.parseFromI18n(0, msg);
     }
-
-
-
 
 
 }

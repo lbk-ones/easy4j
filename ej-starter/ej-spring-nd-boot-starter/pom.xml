@@ -9,18 +9,17 @@
     </parent>
     <artifactId>ej-spring-nd-boot-starter</artifactId>
     <name>ej-spring-nd-boot-starter</name>
-    <description>ej-spring-boot-starter 无数据源版本</description>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j ej-spring-nd-boot-starter not have datasource</description>
     <properties>
-        <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <easy4j.infra.version>1.0.0</easy4j.infra.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -44,7 +43,7 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mapstruct</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -68,7 +67,7 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -92,7 +91,7 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-logback</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -116,19 +115,19 @@
         <!--        <dependency>-->
         <!--            <groupId>easy4j.module.h2</groupId>-->
         <!--            <artifactId>ej-h2</artifactId>-->
-        <!--             <version>${revision}</version>-->
+        <!--            <version>${revision}</version>-->
         <!--        </dependency>-->
 
 <!--        <dependency>-->
 <!--            <groupId>io.github.lbk-ones</groupId>-->
 <!--            <artifactId>ej-seed</artifactId>-->
-<!--             <version>${revision}</version>-->
+<!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sentinel</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -152,26 +151,26 @@
 <!--        <dependency>-->
 <!--            <groupId>io.github.lbk-ones</groupId>-->
 <!--            <artifactId>ej-idempotent</artifactId>-->
-<!--             <version>${revision}</version>-->
+<!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
 <!--        <dependency>-->
 <!--            <groupId>io.github.lbk-ones</groupId>-->
 <!--            <artifactId>ej-lock</artifactId>-->
-<!--             <version>${revision}</version>-->
+<!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
 <!--        <dependency>-->
 <!--            <groupId>io.github.lbk-ones</groupId>-->
 <!--            <artifactId>ej-log</artifactId>-->
-<!--             <version>${revision}</version>-->
+<!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
-             <version>${revision}</version>
+            <version>${revision}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -195,101 +194,10 @@
 <!--        <dependency>-->
 <!--            <groupId>io.github.lbk-ones</groupId>-->
 <!--            <artifactId>ej-knife4j</artifactId>-->
-<!--             <version>${revision}</version>-->
+<!--            <version>${revision}</version>-->
 <!--        </dependency>-->
 
     </dependencies>
-
-
-    <profiles>
-        <profile>
-            <id>dev-snapshots</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-
-                <plugins>
-                    <!--deploy 到私仓-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.snapshotRepository.id}</repositoryId>
-                                    <url>${project.distributionManagement.snapshotRepository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!--发布到release-->
-        <profile>
-            <id>pro-release</id>
-            <build>
-                <finalName>${project.artifactId}</finalName>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.7</version>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                                <!-- skip默认deploy插件的执行 -->
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-file</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-                                    <url>${project.distributionManagement.repository.url}</url>
-                                    <packaging>${project.packaging}</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}.${project.packaging}</file>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 
 </project>

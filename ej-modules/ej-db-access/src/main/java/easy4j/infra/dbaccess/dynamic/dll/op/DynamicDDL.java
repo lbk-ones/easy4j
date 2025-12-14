@@ -32,7 +32,9 @@ import lombok.Setter;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
+
+import jakarta.validation.constraints.NotNull;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -49,6 +51,7 @@ import java.sql.SQLException;
  * <p>
  * }
  * <p>
+ *
  * @author bokun.li
  * @date 2025/8/23
  */
@@ -114,8 +117,8 @@ public class DynamicDDL extends AbstractCombinationOp {
     }
 
     // parse from other db connection info
-    public DynamicDDL(String driverClassName,String url,String user,String password,String tableName) {
-        this.dataSource = new TempDataSource(driverClassName,url,user,password);
+    public DynamicDDL(String driverClassName, String url, String user, String password, String tableName) {
+        this.dataSource = new TempDataSource(driverClassName, url, user, password);
         this.ddlTableInfo = null;
         OpContext context = getContext();
         context.setTableName(tableName);
@@ -192,9 +195,9 @@ public class DynamicDDL extends AbstractCombinationOp {
     }
 
     @Override
-    public void close()  {
+    public void close() {
         OpContext context = getContext();
         Connection connection = context.getConnection();
-        DataSourceUtils.releaseConnection(connection,this.getDataSource());
+        DataSourceUtils.releaseConnection(connection, this.getDataSource());
     }
 }

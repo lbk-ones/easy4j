@@ -21,15 +21,14 @@ import easy4j.infra.dbaccess.dynamic.dll.op.DBFieldEscapeChecker;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import lombok.var;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDialectV2 extends CommonDBAccess implements DialectV2 {
@@ -49,15 +48,15 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
     // cache 30 minutes
     private static final WeakCache<Object, Object> dynamicColumnCache = new WeakCache<>(30 * 60 * 1000L);
 
-    public static Map<String, cn.hutool.db.sql.Wrapper> dbVsWrapper = Maps.newHashMap();
+    public static Map<String, Wrapper> dbVsWrapper = Maps.newHashMap();
 
     static {
         dynamicColumnCache.schedulePrune(30 * 60 * 1000L);
-        dbVsWrapper.put(DbType.MYSQL.getDb(), new cn.hutool.db.sql.Wrapper('`', '`'));
-        dbVsWrapper.put(DbType.ORACLE.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.H2.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new cn.hutool.db.sql.Wrapper('"', '"'));
-        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new cn.hutool.db.sql.Wrapper('[', ']'));
+        dbVsWrapper.put(DbType.MYSQL.getDb(), new Wrapper('`', '`'));
+        dbVsWrapper.put(DbType.ORACLE.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.H2.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new Wrapper('[', ']'));
         dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"', '"'));
         dbVsWrapper = Collections.unmodifiableMap(dbVsWrapper);
     }

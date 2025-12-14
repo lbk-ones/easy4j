@@ -5,6 +5,8 @@
 > - 拿取以easy4j.开头的系统参数统一使用Easy4j.getProperty("xxx") 或者 Easy4j.getEjSysProperties()
     来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
 >
+
+
 - **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度 (true|false)
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port
@@ -55,7 +57,7 @@
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用 (true|false)
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线 (default|new|reject|public|kick)
-- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
+- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭 (true|false)
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启 (true|false)
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M

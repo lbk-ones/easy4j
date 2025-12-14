@@ -23,8 +23,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
+
 import javax.sql.DataSource;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;

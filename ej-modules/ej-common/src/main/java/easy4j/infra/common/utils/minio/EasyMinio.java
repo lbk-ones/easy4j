@@ -9,7 +9,8 @@ import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * MinIO工具类
  * 单独运行这个类 程序可能会挂起 久久无法关闭 正常现象无需惊讶
+ *
  * @author bokun.li
  */
 @Slf4j
@@ -72,6 +74,7 @@ public class EasyMinio {
 
     /**
      * 检查存储桶是否存在
+     *
      * @param bucketName 存储桶名称
      * @return 是否存在
      */
@@ -83,6 +86,7 @@ public class EasyMinio {
     /**
      * 为桶设置公开读策略
      * 允许匿名用户读取桶内所有对象，但禁止修改和删除
+     *
      * @param bucketName 桶名称
      */
     public void setBucketPublicReadPolicy(String bucketName) throws Exception {
@@ -119,6 +123,7 @@ public class EasyMinio {
 
     /**
      * 创建存储桶
+     *
      * @param bucketName 存储桶名称
      */
     public void createBucket(String bucketName) throws Exception {
@@ -130,8 +135,9 @@ public class EasyMinio {
 
     /**
      * 上传文件,检查存储桶是否存在，不存在则创建公开桶
+     *
      * @param bucketName 存储桶名称
-     * @param file 文件
+     * @param file       文件
      * @param objectName 存储在MinIO中的文件名
      * @return 上传结果
      */
@@ -148,14 +154,15 @@ public class EasyMinio {
                             .contentType(file.getContentType())
                             .build()
             );
-            return SP.SLASH+bucketName+SP.SLASH+objectName;
+            return SP.SLASH + bucketName + SP.SLASH + objectName;
         }
     }
 
     /**
      * 上传文件,检查存储桶是否存在，不存在则创建公开桶
+     *
      * @param bucketName 存储桶名称
-     * @param file 文件
+     * @param file       文件
      * @param objectName 存储在MinIO中的文件名
      * @return 上传结果
      */
@@ -171,15 +178,16 @@ public class EasyMinio {
                             .contentType(Files.probeContentType(Paths.get(file.getAbsolutePath())))
                             .build()
             );
-            return SP.SLASH+bucketName+SP.SLASH+objectName;
+            return SP.SLASH + bucketName + SP.SLASH + objectName;
         }
     }
 
     /**
      * 上传文件（ InputStream 方式）,检查存储桶是否存在，不存在则创建
-     * @param bucketName 存储桶名称
+     *
+     * @param bucketName  存储桶名称
      * @param inputStream 输入流
-     * @param objectName 存储在MinIO中的文件名
+     * @param objectName  存储在MinIO中的文件名
      * @param contentType 文件类型
      * @return 上传结果
      */
@@ -194,14 +202,15 @@ public class EasyMinio {
                         .contentType(contentType)
                         .build()
         );
-        return SP.SLASH+bucketName+SP.SLASH+objectName;
+        return SP.SLASH + bucketName + SP.SLASH + objectName;
     }
 
     /**
      * 下载文件（使用原始存储的文件名）
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
-     * @param response 响应对象
+     * @param response   响应对象
      */
     public void downloadFile(String bucketName, String objectName, HttpServletResponse response) throws Exception {
         downloadFile(bucketName, objectName, null, response);
@@ -209,9 +218,10 @@ public class EasyMinio {
 
     /**
      * 下载文件
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
-     * @param response 响应对象
+     * @param response   响应对象
      */
     public void downloadFile(String bucketName, String objectName, String fileName, HttpServletResponse response) throws Exception {
         // 检查文件是否存在
@@ -234,7 +244,7 @@ public class EasyMinio {
                     URLEncoder.encode(fileName, "UTF-8"));
             response.setContentType("application/octet-stream");
 
-            IoUtil.copy(stream,response.getOutputStream(),8092);
+            IoUtil.copy(stream, response.getOutputStream(), 8092);
 
         } catch (IOException e) {
             throw new Exception("文件下载失败");
@@ -243,6 +253,7 @@ public class EasyMinio {
 
     /**
      * 删除文件
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
      * @return 删除结果
@@ -263,6 +274,7 @@ public class EasyMinio {
 
     /**
      * 列出存储桶中的所有文件
+     *
      * @param bucketName 存储桶名称
      * @return 文件列表
      */
@@ -288,6 +300,7 @@ public class EasyMinio {
 
     /**
      * 获取文件详细信息
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
      * @return 文件信息
@@ -307,6 +320,7 @@ public class EasyMinio {
 
     /**
      * 检查文件是否存在
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
      * @return 是否存在
@@ -331,9 +345,10 @@ public class EasyMinio {
 
     /**
      * 获取私有桶下面的文件访问URL 最大七天
+     *
      * @param bucketName 存储桶名称
      * @param objectName 存储在MinIO中的文件名
-     * @param expires 过期时间（秒）
+     * @param expires    过期时间（秒）
      * @return 访问URL
      */
     public String getPrivateObjectUrl(String bucketName, String objectName, int expires) throws Exception {

@@ -47,15 +47,15 @@ public class JpaEnvironment extends AbstractEasy4jEnvironment {
     static {
         // 初始化映射表
         DIALECT_MAP.put(Database.DB2, DB2Dialect.class.getName());
-        DIALECT_MAP.put(Database.DERBY, DerbyTenSevenDialect.class.getName());
+        DIALECT_MAP.put(Database.DERBY, DerbyDialect.class.getName());
         DIALECT_MAP.put(Database.H2, H2Dialect.class.getName());
         DIALECT_MAP.put(Database.HSQL, HSQLDialect.class.getName());
-        DIALECT_MAP.put(Database.INFORMIX, InformixDialect.class.getName());
-        DIALECT_MAP.put(Database.MYSQL, MySQL8Dialect.class.getName());
-        DIALECT_MAP.put(Database.ORACLE, Oracle12cDialect.class.getName());
-        DIALECT_MAP.put(Database.POSTGRESQL, PostgreSQL10Dialect.class.getName());
-        DIALECT_MAP.put(Database.SQL_SERVER, SQLServer2016Dialect.class.getName());
-        DIALECT_MAP.put(Database.SYBASE, SybaseASE15Dialect.class.getName());
+        //DIALECT_MAP.put(Database.INFORMIX, InformixDialect.class.getName());
+        DIALECT_MAP.put(Database.MYSQL, MySQLDialect.class.getName());
+        DIALECT_MAP.put(Database.ORACLE, OracleDialect.class.getName());
+        DIALECT_MAP.put(Database.POSTGRESQL, PostgreSQLDialect.class.getName());
+        DIALECT_MAP.put(Database.SQL_SERVER, SQLServerDialect.class.getName());
+        DIALECT_MAP.put(Database.SYBASE, SybaseDialect.class.getName());
     }
 
 

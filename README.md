@@ -9,6 +9,7 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 
 ### 切换到springboot3分支 支持java17及其以上 springboot3.0 ~ springboot3.3.13
 
+
 ## 特性
 
 - **简单**：配置简化且文档丰富，易于扩展易于维护易于使用
@@ -117,38 +118,38 @@ Easy4J 框架包含以下核心模块：
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>dubbo3-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!--springboot封装 微服务(带数据源)-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!--springboot封装 微服务(不带数据源)-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-nd-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!--springboot jpa封装-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>jpa-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
-
-        <!--通过nacos聚合微服务文档-->
+      
+        <!--聚合文档相关-->
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
-            <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-            <version>1.0.0</version>
+          <groupId>io.github.lbk-ones</groupId>
+          <artifactId>knife4j-nacos-aggregation-starter</artifactId>
+          <version>1.0.1</version>
         </dependency>
-
-        <!-- 注释掉上面不需要的注释      -->
+      
+        <!--     注释掉上面不需要的注释      -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -363,7 +364,7 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.simple-auth-register-to-nacos**: 服务端是否将权限注册到nacos去远程调用 (true|false)
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线 (default|new|reject|public|kick)
-- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
+- **easy4j.simple-auth-access-tokens**: 认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭 (true|false)
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启 (true|false)
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M

@@ -24,9 +24,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.servlet.LocaleResolver;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Locale;
 
 /**
@@ -66,11 +67,11 @@ public class EasyLocaleResolver implements LocaleResolver, InitializingBean {
         String lang2 = httpServletRequest.getHeader("lang");
         String language = StrUtil.blankToDefault(lang1, lang2);
         //如果没有就使用默认的（根据主机的语言环境生成一个 Locale
-        if(StrUtil.isBlank(language)){
+        if (StrUtil.isBlank(language)) {
             language = Easy4j.getProperty(SysConstant.EASY4J_DEFAULT_I18N);
         }
         Locale locale = null;
-        try{
+        try {
             //如果请求的链接中携带了 国际化的参数
             if (!StrUtil.isEmpty(language)) {
                 //zh_CN
@@ -78,7 +79,7 @@ public class EasyLocaleResolver implements LocaleResolver, InitializingBean {
                 //国家，地区
                 locale = new Locale(s[0], s[1]);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             locale = Locale.getDefault();
         }
 

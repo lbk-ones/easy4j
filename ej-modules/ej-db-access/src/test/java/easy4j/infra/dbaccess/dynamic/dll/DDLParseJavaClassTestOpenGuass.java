@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -42,14 +43,14 @@ class DDLParseJavaClassTestOpenGuass {
 
     @Test
     void getDDLFragment() {
-        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class,dataSource,null);
+        DDLParseJavaClass ddlParseJavaClass = new DDLParseJavaClass(TestDynamicDDL.class, dataSource, null);
         System.out.println(ddlParseJavaClass.getCreateTableTxt());
         System.out.println("执行成功----------------");
     }
 
     @Test
     void dbDatabaseMetaInfo() throws SQLException {
-        try(Connection connection = dataSource.getConnection()){
+        try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
             int databaseMajorVersion = metaData.getDatabaseMajorVersion();
             System.out.println(databaseMajorVersion);
@@ -87,12 +88,13 @@ class DDLParseJavaClassTestOpenGuass {
         System.out.println(opDbMeta.getMajorVersion());
         System.out.println(opDbMeta.getMinorVersion());
         System.out.println(opDbMeta.getProductVersion());
-        System.out.println("table-info:"+JacksonUtil.toJson(opDbMeta.getTableInfos( "element_obs_exam_info")));
-        System.out.println("columns:"+JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "element_obs_exam_info")));
-        System.out.println("primary-keys:"+JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "element_obs_exam_info")));
-        System.out.println("index-infos:"+JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "element_obs_exam_info")));
+        System.out.println("table-info:" + JacksonUtil.toJson(opDbMeta.getTableInfos("element_obs_exam_info")));
+        System.out.println("columns:" + JacksonUtil.toJson(opDbMeta.getColumns(catalog, schema, "element_obs_exam_info")));
+        System.out.println("primary-keys:" + JacksonUtil.toJson(opDbMeta.getPrimaryKes(catalog, schema, "element_obs_exam_info")));
+        System.out.println("index-infos:" + JacksonUtil.toJson(opDbMeta.getIndexInfos(catalog, schema, "element_obs_exam_info")));
 
     }
+
     @Test
     void OpMetaTest2() {
 //        Connection connection = dataSource.getConnection();
@@ -117,7 +119,7 @@ class DDLParseJavaClassTestOpenGuass {
 
     @Test
     void OpMetaTest3() {
-        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource, null,TestDynamicDDL.class)) {
+        try (DynamicDDL sscElementTest = new DynamicDDL(dataSource, null, TestDynamicDDL.class)) {
             System.out.println(sscElementTest.getCreateTableDDL());
             System.out.println(sscElementTest.getCreateTableComments().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
             System.out.println(sscElementTest.getIndexList().stream().collect(Collectors.joining(SP.SEMICOLON + SP.NEWLINE)));
