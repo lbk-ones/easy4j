@@ -137,4 +137,9 @@ public class OpDbMeta implements IOpMeta {
     public String getDbType() {
         return dialectV2.getDbType();
     }
+
+    @Override
+    public List<TableMetadata> getAllTableInfo(String catLog, String schema, String tableNamePattern, boolean isCache, String[] tableType) {
+        return dialectV2.getAllTableInfo(catLog,schema,tableNamePattern,isCache,tableType);
+    }
 }
