@@ -5,7 +5,7 @@
 
     <groupId>easy4j.sca.test</groupId>
     <artifactId>ej-sca-storage</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>ej-sca-storage</name>
@@ -17,9 +17,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>easy4j.boot</groupId>
             <artifactId>sca-spring-boot-starter</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

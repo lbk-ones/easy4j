@@ -4,7 +4,7 @@
 
     <!--easy4模块的基础依赖-->
     <parent>
-        <groupId>io.github.lbk-ones</groupId>
+        <groupId>easy4j.boot</groupId>
         <artifactId>easy4j</artifactId>
         <version>${revision}</version>
     </parent>

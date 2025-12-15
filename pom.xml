@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.lbk-ones</groupId>
+    <groupId>easy4j.boot</groupId>
     <artifactId>easy4j</artifactId>
     <packaging>pom</packaging>
     <version>${revision}</version>
@@ -16,7 +16,7 @@
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j parent pom</description>
     <properties>
-        <revision>1.0.1-SNAPSHOT</revision>
+        <revision>1.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -214,6 +214,22 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!--ssc私服-->
+        <profile>
+            <id>ssc</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven-nethosp-release</id>
+                    <name>Nexus Release Repository</name>
+                    <url>https://nexus.ssc-hn.com/repository/maven-nethosp-release/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>maven-nethosp-snapshot</id>
+                    <url>https://nexus.ssc-hn.com/repository/maven-nethosp-snapshot/</url>
+                </snapshotRepository>
+            </distributionManagement>
         </profile>
 
         <!--发布到中央仓库-->

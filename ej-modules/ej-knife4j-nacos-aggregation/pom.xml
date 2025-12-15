@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>io.github.lbk-ones</groupId>
+        <groupId>easy4j.boot</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -16,7 +16,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.github.lbk-ones</groupId>
+                <groupId>easy4j.boot</groupId>
                 <artifactId>ej-bom-springboot</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
@@ -26,17 +26,17 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>easy4j.boot</groupId>
             <artifactId>ej-webmvc</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>easy4j.boot</groupId>
             <artifactId>ej-sadmin</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>easy4j.boot</groupId>
             <artifactId>ej-sactuator</artifactId>
         </dependency>
 
