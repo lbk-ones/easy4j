@@ -9,6 +9,7 @@ import easy4j.infra.rpc.serializable.kryo.KryoSerializable;
 import easy4j.infra.rpc.server.ServerMethodInvoke;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
@@ -19,6 +20,8 @@ public class RpcProxyFactory {
 
     public static <T> T getProxy(Class<T> tClass, FilterAttributes filterAttributes) {
         Object o = Proxy.newProxyInstance(tClass.getClassLoader(), new Class[]{tClass}, (proxy, method, args) -> {
+            Object method1 = checkObject(proxy, method, args);
+            if (method1 != null) return method1;
             filterAttributes.setProxy(proxy);
             filterAttributes.setProxyMethod(method);
             filterAttributes.setProxyMethodArgs(args);
@@ -67,6 +70,8 @@ public class RpcProxyFactory {
      */
     public static GeneralizedInvoke getGeneralizedProxy() {
         Object o = Proxy.newProxyInstance(GeneralizedInvoke.class.getClassLoader(), new Class[]{GeneralizedInvoke.class}, (proxy, method, args) -> {
+            Object method1 = checkObject(proxy, method, args);
+            if (method1 != null) return method1;
             FilterAttributes filterAttributes = new FilterAttributes();
             filterAttributes.setGeneralizedInvoke(true);
             filterAttributes.setProxy(proxy);
@@ -79,5 +84,22 @@ public class RpcProxyFactory {
             return deserializableObj(returnType,result);
         });
         return ((GeneralizedInvoke) o);
+    }
+
+    private static Object checkObject(Object proxy, Method method, Object[] args) {
+        // 过滤Object类的通用方法，执行默认逻辑
+        if (method.getDeclaringClass() == Object.class) {
+            switch (method.getName()) {
+                case "toString":
+                    // 自定义toString，避免触发RPC
+                    return "RPCProxy[" + method.getDeclaringClass().getName() + "]";
+                case "hashCode":
+                    return System.identityHashCode(proxy);
+
+                case "equals":
+                    return proxy == args[0];
+            }
+        }
+        return null;
     }
 }

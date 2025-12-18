@@ -212,6 +212,19 @@ public class RetryableQueueConsumer<T> {
         log.info("The queue processor【{}】 has gracefully shut down", Thread.currentThread().getName());
     }
 
+    /**
+     * 优雅关闭队列处理器
+     *
+     * @throws InterruptedException 中断异常
+     */
+    public void shutdownNow() throws InterruptedException {
+        isShutdown = true;
+        // 关闭线程池，不再接受新任务
+        consumerExecutor.shutdown();
+        queue.clear();
+        log.info("The queue processor【{}】 has gracefully shut down", Thread.currentThread().getName());
+    }
+
 
     // 测试示例
     public static void main(String[] args) throws InterruptedException {

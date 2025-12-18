@@ -26,8 +26,9 @@
         <sentinel.version>1.8.6</sentinel.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
         <log4j.version>2.17.2</log4j.version>
-        <mplus.version>3.5.4</mplus.version>
-        <mplus.gen.version>3.5.12</mplus.gen.version>
+        <mybatis-plus.version>3.5.4</mybatis-plus.version>
+        <mybatis-plus-dynamicdatasource.version>4.3.1</mybatis-plus-dynamicdatasource.version>
+        <mybatis-plus.gen.version>3.5.12</mybatis-plus.gen.version>
         <hutool.version>5.8.22</hutool.version>
         <alibaba.ttl.version>2.11.4</alibaba.ttl.version>
         <flyway2.version>5.2.1</flyway2.version>
@@ -182,17 +183,24 @@
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mplus.version}</version>
+                <version>${mybatis-plus.version}</version>
             </dependency>
+
+            <!--<dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+                <version>${mybatis-plus-dynamicdatasource.version}</version>
+            </dependency>-->
+            
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-annotation</artifactId>
-                <version>${mplus.version}</version>
+                <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-generator</artifactId>
-                <version>${mplus.gen.version}</version>
+                <version>${mybatis-plus.gen.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
