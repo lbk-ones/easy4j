@@ -92,7 +92,7 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
         if (StrUtil.isNotBlank(url)) host = new Host(url);
         if (host == null) {
             Map<String, E4jRpcConfig.ReferenceUrl> reference = IntegratedFactory.getConfig().getReference();
-            String serviceName = rpcRequest.getServiceName();
+            String serviceName = rpcRequest == null ? null : rpcRequest.getServiceName();
             host = Optional.ofNullable(serviceName)
                     .map(e -> reference)
                     .map(e -> e.get(serviceName))

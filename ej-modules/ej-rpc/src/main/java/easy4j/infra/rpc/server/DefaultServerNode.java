@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class DefaultServerNode implements ServerNode {
 
     private static final Cache<String, List<Node>> HOST_CACHE = Caffeine.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES) // 写入后 30 分钟过期
+            .expireAfterWrite(RandomUtil.randomInt(40,60), TimeUnit.MINUTES) // 写入后 30 分钟过期
             .maximumSize(10_000) // 最大缓存容量 10000 条（超量后触发淘汰）
             .build();
 
@@ -93,8 +93,11 @@ public class DefaultServerNode implements ServerNode {
                 }
             }).filter(Objects::nonNull).toList();
         });
-        nodes = nodes.stream().filter(Node::isEnabled).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(nodes)) {
+            assert nodes != null;
+            nodes = nodes.stream()
+                    .filter(Node::isEnabled)
+                    .collect(Collectors.toList());
             roundRobinWeight.putIfAbsent(serverName, new WeightedRoundRobinScheduler(nodes));
             subscribe(serverName, s);
         }
@@ -130,6 +133,7 @@ public class DefaultServerNode implements ServerNode {
                 switch (type) {
                     case ADD -> {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
+                        assert nodes1 != null;
                         Node node = new Node(newHost, true);
                         if (StrUtil.isNotEmpty(data)) {
                             NodeHeartbeatInfo deserializable = jackson.deserializable(data.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
@@ -137,9 +141,11 @@ public class DefaultServerNode implements ServerNode {
                         }
                         nodes1.add(node);
                         weightedRoundRobinScheduler.addNode(node);
+                        log.info("e4j rpc {} subscribe detect new host {}",serverName, newHost);
                     }
                     case UPDATE -> {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
+                        assert nodes1 != null;
                         NodeHeartbeatInfo deserializable = null;
                         if (StrUtil.isNotEmpty(data)) {
                             deserializable = jackson.deserializable(data.getBytes(StandardCharsets.UTF_8), NodeHeartbeatInfo.class);
@@ -151,9 +157,11 @@ public class DefaultServerNode implements ServerNode {
                                 weightedRoundRobinScheduler.updateWeight(newHost, deserializable.getWeight());
                             }
                         }
+                        log.info("e4j rpc {} subscribe host update {}",serverName, newHost);
                     }
                     case REMOVE -> {
                         List<Node> nodes1 = HOST_CACHE.get(serverName, (e2) -> new CopyOnWriteArrayList<>());
+                        assert nodes1 != null;
                         Iterator<Node> iterator = nodes1.iterator();
                         while (iterator.hasNext()) {
                             Node next = iterator.next();
@@ -163,6 +171,9 @@ public class DefaultServerNode implements ServerNode {
                                 iterator.remove();
                             }
                         }
+                        log.info("e4j rpc {} subscribe host has been remove {}",serverName, newHost);
+
+                        break;
                     }
                 }
             });
@@ -299,9 +310,12 @@ public class DefaultServerNode implements ServerNode {
                     registry.delete(string);
                 }
             }
+            if (!registerDataKeys.isEmpty()) {
+                log.info("e4j rpc service "+Arrays.toString(registerDataKeys.toArray()) + " un registry success!!");
+            }
             registerDataKeys.clear();
         } catch (Exception e) {
-            log.error("un registry appear error :" + e.getMessage());
+            log.error("e4j rpc service un registry appear error :" + e.getMessage());
         }
     }
 }

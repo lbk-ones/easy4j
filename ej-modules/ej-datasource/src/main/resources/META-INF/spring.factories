@@ -4,4 +4,5 @@ easy4j.module.datasource.DataSourceEnvironment
 
 
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-easy4j.module.datasource.Config
+easy4j.module.datasource.Config,\
+easy4j.module.datasource.dynamic.DataSourceConfig

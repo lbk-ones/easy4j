@@ -702,7 +702,7 @@ public class ListTs {
 
     }
 
-    public static <T> void addAll(List<T> res, Collection<T> objs) {
+    public static <T> void addAll(Collection<T> res, Collection<T> objs) {
         if (ObjectUtil.isNotEmpty(objs) && res != null) {
             List<T> collect = objs.stream().filter(Objects::nonNull).collect(Collectors.toList());
             if (isNotEmpty(collect)) res.addAll(collect);

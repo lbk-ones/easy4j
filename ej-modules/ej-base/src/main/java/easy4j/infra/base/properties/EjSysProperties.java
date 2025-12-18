@@ -24,6 +24,7 @@ import easy4j.infra.common.utils.SysConstant;
 import jodd.util.StringPool;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -680,6 +681,13 @@ public class EjSysProperties {
 
     @SpringVs(desc = "knife4j要聚合的路由信息，和nacos整合")
     private List<Knife4jRouter> knife4jNacosRouters;
+
+    /**
+     * 动态数据源
+     */
+    @SpringVs(desc = "动态数据源")
+    @NestedConfigurationProperty
+    private DynamicDataSourceProperties dynamicDataSource;
 
     /**
      * 根据常量获取 对应的springboot变量

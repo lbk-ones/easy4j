@@ -38,9 +38,14 @@ public class E4jServerConfig {
     private Integer weight = 1;
 
     /**
-     * 心跳上报间隔时间，默认两分钟
+     * 心跳上报间隔时间，默认5秒
      */
-    private Long heartInfoReportFixRateMilli = 1000 * 60 * 2L;
+    private Long heartInfoReportFixRateMilli = 5 * 1000L;
+
+    /**
+     * 心跳死亡时间
+     */
+    private Long heartDeathFixRateMilli;
 
     public String getServerName() {
         if(StrUtil.isBlank(serverName)){

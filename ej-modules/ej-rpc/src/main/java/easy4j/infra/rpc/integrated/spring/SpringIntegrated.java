@@ -42,7 +42,6 @@ import org.springframework.core.io.ClassPathResource;
 import javax.sql.DataSource;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -63,6 +62,8 @@ import java.util.concurrent.Executors;
 public class SpringIntegrated implements ApplicationListener<ContextRefreshedEvent>, ApplicationContextAware, BeanPostProcessor, DisposableBean {
 
     boolean isInit = false;
+
+    private static volatile boolean isClear = false;
 
     Set<String> serverName = new HashSet<>();
 
@@ -100,6 +101,8 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
 
             isInit = true;
 
+            shutDownHook();
+
             registerIntegrated(applicationContext);
 
             E4jRpcConfig config = IntegratedFactory.getConfig();
@@ -111,6 +114,11 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
             startServer(config);
 
         }
+    }
+
+    private void shutDownHook() {
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(this::clear,"clear-shutdown-hook"));
     }
 
     /**
@@ -294,9 +302,20 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
 
     @Override
     public void destroy() throws Exception {
-        RpcClient client = RpcClientFactory.getClient();
-        if (null != client) client.close();
-        RegistryFactory.get().close();
-        DefaultServerNode.INSTANCE.unRegistry();
+        clear();
+    }
+
+    public synchronized void clear(){
+        if(!isClear){
+            isClear = true;
+            RpcClient client = RpcClientFactory.getClient();
+            if (null != client) client.close();
+            try {
+                RegistryFactory.get().close();
+            } catch (IOException ignored) {
+            }
+            DefaultServerNode.INSTANCE.unRegistry();
+        }
+
     }
 }

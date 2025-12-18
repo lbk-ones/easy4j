@@ -36,6 +36,7 @@
         <log4j.version>2.23.1</log4j.version> <!-- 安全更新 -->
         <mplus.version>3.5.14</mplus.version> <!-- MyBatis-Plus支持Spring Boot 3 -->
         <mplus.gen.version>3.5.14</mplus.gen.version> <!-- 对应MP版本 -->
+        <mybatis-plus-dynamicdatasource.version>4.3.1</mybatis-plus-dynamicdatasource.version>
         <hutool.version>5.8.26</hutool.version> <!-- 兼容Java 17 -->
         <alibaba.ttl.version>2.14.1</alibaba.ttl.version> <!-- 最新稳定版 -->
         <flyway2.version>10.15.0</flyway2.version> <!-- 升级大版本，支持Jakarta -->

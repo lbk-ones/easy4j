@@ -1,5 +1,6 @@
 package easy4j.infra.rpc.heart;
 
+import cn.hutool.core.date.SystemClock;
 import cn.hutool.core.net.NetUtil;
 import easy4j.infra.rpc.config.E4jRpcConfig;
 import easy4j.infra.rpc.enums.LbType;
@@ -37,24 +38,24 @@ public class NodeHeartbeatManager {
 
     public boolean isOverload(SystemMetrics systemMetrics) {
         if (systemMetrics.getSystemCpuUsagePercentage() > maxSystemCpuUsagePercentageThresholds) {
-            log.info(
+            log.debug(
                     "OverLoad: the system cpu usage: {} is over then the maxSystemCpuUsagePercentageThresholds {}",
                     systemMetrics.getSystemCpuUsagePercentage(), maxSystemCpuUsagePercentageThresholds);
             return true;
         }
         if (systemMetrics.getJvmCpuUsagePercentage() > maxJvmCpuUsagePercentageThresholds) {
-            log.info(
+            log.debug(
                     "OverLoad: the jvm cpu usage: {} is over then the maxJvmCpuUsagePercentageThresholds {}",
                     systemMetrics.getJvmCpuUsagePercentage(), maxJvmCpuUsagePercentageThresholds);
             return true;
         }
         if (systemMetrics.getDiskUsedPercentage() > maxDiskUsagePercentageThresholds) {
-            log.info("OverLoad: the DiskUsedPercentage: {} is over then the maxDiskUsagePercentageThresholds {}",
+            log.debug("OverLoad: the DiskUsedPercentage: {} is over then the maxDiskUsagePercentageThresholds {}",
                     systemMetrics.getDiskUsedPercentage(), maxDiskUsagePercentageThresholds);
             return true;
         }
         if (systemMetrics.getSystemMemoryUsedPercentage() > maxSystemMemoryUsagePercentageThresholds) {
-            log.info(
+            log.debug(
                     "OverLoad: the SystemMemoryUsedPercentage: {} is over then the maxSystemMemoryUsagePercentageThresholds {}",
                     systemMetrics.getSystemMemoryUsedPercentage(), maxSystemMemoryUsagePercentageThresholds);
             return true;
@@ -63,7 +64,7 @@ public class NodeHeartbeatManager {
     }
 
     public NodeHeartbeatInfo buildHeart() {
-        long l = System.currentTimeMillis();
+        long l = SystemClock.now();
         if (last != null && lastRefresh > 0 && (l - lastRefresh < lastRefreshIntervalTime)) {
             return last;
         }

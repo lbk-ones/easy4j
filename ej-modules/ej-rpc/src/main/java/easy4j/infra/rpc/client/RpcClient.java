@@ -184,7 +184,7 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
                 if (workerGroup != null) {
                     this.workerGroup.shutdownGracefully();
                 }
-                this.requestRetryableQueueConsumer.shutdown(1,TimeUnit.SECONDS);
+                this.requestRetryableQueueConsumer.shutdownNow();
                 log.info("netty client auto closed");
             } catch (Exception ex) {
                 log.error("netty client close exception", ex);
