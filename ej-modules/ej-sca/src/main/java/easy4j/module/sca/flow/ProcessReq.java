@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Schema(description = "流程sdk请求体")
@@ -41,17 +42,17 @@ public class ProcessReq  implements Serializable {
     String processKey;
 
     /**
-     * 业务key,由业务方定，用来关联流程引擎实例的
+     * 业务key,由业务方定，用来关联流程引擎实例和动态表单的，如果传了formData那么这个是必填的，对应申请方的表单申请唯一单号
      */
-    @Schema(description = "业务key,由业务方定，用来关联流程引擎实例的")
+    @Schema(description = "业务key,由业务方定，用来关联流程引擎实例和动态表单的，如果传了formData那么这个是必填的，对应申请方的表单申请唯一单号")
     String businessKey;
 
 
     /**
-     * 审批开始提交的表单内容，没使用动态表单则忽略
+     * 审批开始提交的表单内容，没使用动态表单则忽略，字段值全部传字符串（二进制类型除外）
      */
-    @Schema(description = "审批开始提交的表单内容，没使用动态表单则忽略")
-    EasyMap<String, Object> fromData;
+    @Schema(description = "审批开始提交的表单内容，没使用动态表单则忽略，字段值全部传字符串（二进制类型除外）超长字符使用largeTextValue")
+    List<FormData> formData;
 
     /**
      * 定义任务变量，完成任务的时候传入

@@ -18,6 +18,7 @@ package easy4j.module.mybatisplus.base;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateException;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -42,13 +43,16 @@ import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.module.mybatisplus.audit.AutoAudit;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.Id;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * service层父类
@@ -60,6 +64,14 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Data
+    public static class FieldInfo {
+        private Field field;
+        private String fieldName;
+        private Class<?> fieldType;
+    }
+
+    public static final Map<Class<?>, FieldInfo> idCache = new ConcurrentHashMap<>();
 
     /**
      * 获取lambda表达式的字段名称
@@ -481,6 +493,51 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             return (UserContext) o;
         }
         return null;
+    }
+
+
+    public FieldInfo getPrimaryKeyName(Class<?> clazz) {
+        FieldInfo fieldInfo1 = idCache.computeIfAbsent(clazz, e -> {
+            Field[] fields = ReflectUtil.getFields(clazz);
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(TableId.class)) {
+                    FieldInfo fieldInfo = new FieldInfo();
+                    fieldInfo.setField(field);
+                    fieldInfo.setFieldName(field.getName());
+                    fieldInfo.setFieldType(field.getType());
+                    return fieldInfo;
+                }
+            }
+            return null;
+        });
+        if (fieldInfo1 == null) throw new RuntimeException("the table no primary key :" + clazz.getName());
+        return fieldInfo1;
+    }
+
+
+    public String getIdValueToStr(Object object) {
+        Class<?> aClass = object.getClass();
+        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
+        Field fieldName = primaryKeyName.getField();
+        Object fieldValue = ReflectUtil.getFieldValue(object, fieldName);
+        return Convert.toStr(fieldValue);
+    }
+
+    public void clearId(Object object) {
+        Class<?> aClass = object.getClass();
+        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
+        Field fieldName = primaryKeyName.getField();
+        ReflectUtil.setFieldValue(object, fieldName,null);
+    }
+
+    public List<Object> convertPrimaryKey(List<? extends Serializable> list, FieldInfo fieldInfo) {
+        List<Object> objects = new ArrayList<>();
+        for (Serializable serializable : list) {
+            if(serializable == null) continue;
+            Object convert = Convert.convert(fieldInfo.getFieldType(), serializable);
+            objects.add(convert);
+        }
+        return objects;
     }
 
 }
