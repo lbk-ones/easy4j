@@ -4,11 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import ${parentPackageName}.controller.req.${domainName}ControllerReq;
-import ${parentPackageName}.domains.${entityName};
-import ${parentPackageName}.dto.${entityName}Dto;
-import ${parentPackageName}.mapper.${entityName}Mapper;
-import ${parentPackageName}.service.I${domainName}Service;
+import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
+import ${parentPackageName}.${entityPackageName}.${entityName};
+import ${parentPackageName}.${dtoPackageName}.${entityName}Dto;
+import ${parentPackageName}.${mapperPackageName}.${entityName}Mapper;
+import ${parentPackageName}.${serviceInterfacePackageName}.I${domainName}Service;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.mybatisplus.base.BaseServiceImpl;
@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ReflectUtil;
 
 /**
  * ${headerDesc}
@@ -66,9 +68,15 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
 
     @Override
     public List<${entityName}Dto> getAllEnableNotDelete() {
-        LambdaQueryWrapper<${entityName}> query = new LambdaQueryWrapper<>(${entityName}.class);
-        query.eq(${entityName}::getIsEnabled, 1);
-        query.eq(${entityName}::getIsDeleted, 0);
+        EQueryWrapper<${entityName}> query = new EQueryWrapper<>(${entityName}.class);
+        boolean b = ReflectUtil.hasField(${entityName}.class, "isEnabled");
+        boolean b2 = ReflectUtil.hasField(${entityName}.class, "isDeleted");
+        if(b){
+            query.eq("is_enabled", 1);
+        }
+        if(b2){
+            query.eq("is_deleted", 0);
+        }
         List<${entityName}> flowProcDefs = this.getBaseMapper().selectList(query);
         return list${entityName}ToDto(flowProcDefs);
     }
@@ -115,14 +123,21 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> delete${domainName}s(List<String> ids) {
         CheckUtils.checkParamNotNull(ids,"ids");
-        List<${entityName}Dto> flowDefinitionByIds = get${domainName}ByIds(ids);
-        if (ListTs.isNotEmpty(flowDefinitionByIds)) {
-            for (${entityName}Dto flowDefinitionById : flowDefinitionByIds) {
-                flowDefinitionById.setIsDeleted((short) 1);
+        List<${entityName}Dto> queryResList = get${domainName}ByIds(ids);
+        if (ListTs.isNotEmpty(queryResList)) {
+            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), "isDeleted");
+            if(b){
+                for (${entityName}Dto dtoItem : queryResList) {
+                    ReflectUtil.setFieldValue(dtoItem, "isDeleted",1);
+                }
+                ${domainName}ControllerReq req = new ${domainName}ControllerReq();
+                req.set${entityName}Dtos(queryResList);
+                return batchUpdate${domainName}(req);
+            }else{
+                for (${entityName}Dto item : queryResList) {
+                    this.getBaseMapper().deleteById(item);
+                }
             }
-            ${domainName}ControllerReq req = new ${domainName}ControllerReq();
-            req.set${entityName}Dtos(flowDefinitionByIds);
-            return batchUpdate${domainName}(req);
         }
         return ListTs.newList();
     }
@@ -167,19 +182,22 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
         List<${entityName}Dto> flowProcDefDtos = req.get${entityName}Dtos();
         List<String> collect = flowProcDefDtos.stream().map(this::getIdValueToStr).collect(Collectors.toList());
-        List<${entityName}Dto> flowDefinitionByIds = get${domainName}ByIds(collect);
-        if (ListTs.isNotEmpty(flowDefinitionByIds)) {
-            for (${entityName}Dto flowDefinitionById : flowDefinitionByIds) {
-                Short isEnabled = flowDefinitionById.getIsEnabled();
-                if(isEnabled == 1){
-                    flowDefinitionById.setIsEnabled((short) 0);
-                }else if(isEnabled == 0){
-                    flowDefinitionById.setIsEnabled((short) 1);
+        List<${entityName}Dto> queryResList = get${domainName}ByIds(collect);
+        if (ListTs.isNotEmpty(queryResList)) {
+            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), "isEnabled");
+            if(b){
+                for (${entityName}Dto item : queryResList) {
+                    int isEnabled = Convert.toInt(ReflectUtil.getFieldValue(item, "isEnabled"));
+                    if(isEnabled == 1){
+                        ReflectUtil.setFieldValue(item, "isEnabled",0);
+                    }else if(isEnabled == 0){
+                        ReflectUtil.setFieldValue(item, "isEnabled",1);
+                    }
                 }
+                ${domainName}ControllerReq newReq = new ${domainName}ControllerReq();
+                newReq.set${entityName}Dtos(queryResList);
+                return batchUpdate${domainName}(newReq);
             }
-            ${domainName}ControllerReq newReq = new ${domainName}ControllerReq();
-            newReq.set${entityName}Dtos(flowDefinitionByIds);
-            return batchUpdate${domainName}(newReq);
         }
         return ListTs.newList();
     }

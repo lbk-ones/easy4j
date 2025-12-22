@@ -1,4 +1,4 @@
-package easy4j.infra.context.codegen;
+package easy4j.module.mybatisplus.codegen;
 
 public interface CodeGen {
 
