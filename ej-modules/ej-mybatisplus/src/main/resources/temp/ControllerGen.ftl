@@ -1,9 +1,9 @@
 package ${parentPackageName}.controller;
 import cn.hutool.core.util.EscapeUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import ${parentPackageName}.controller.req.${domainName}ControllerReq;
-import ${parentPackageName}.dto.${returnDtoName};
-import ${parentPackageName}.service.I${domainName}Service;
+import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
+import ${parentPackageName}.${dtoPackageName}.${returnDtoName};
+import ${parentPackageName}.${serviceInterfacePackageName}.I${domainName}Service;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;

@@ -1,5 +1,5 @@
-package ${parentPackageName}.controller.req;
-import ${parentPackageName}.dto.${returnDtoName};
+package ${parentPackageName}.${controllerReqPackageName};
+import ${parentPackageName}.${dtoPackageName}.${returnDtoName};
 import easy4j.module.mybatisplus.base.PageDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

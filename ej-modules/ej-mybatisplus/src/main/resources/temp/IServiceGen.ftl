@@ -1,9 +1,9 @@
 package ${parentPackageName}.${serviceInterfacePackageName};
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import ${parentPackageName}.controller.req.${domainName}ControllerReq;
-import ${parentPackageName}.domains.${entityName};
-import ${parentPackageName}.dto.${entityName}Dto;
+import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
+import ${parentPackageName}.${entityPackageName}.${entityName};
+import ${parentPackageName}.${dtoPackageName}.${entityName}Dto;
 import easy4j.module.mybatisplus.base.EasyPageRes;
 import java.util.List;
 /**
