@@ -1,7 +1,6 @@
-package easy4j.module.mybatisplus.codegen.entity;
+package easy4j.module.mybatisplus.codegen.db;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 

@@ -2,7 +2,6 @@ package ${parentPackageName}.${serviceImplPackageName};
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
 import ${parentPackageName}.${entityPackageName}.${entityName};

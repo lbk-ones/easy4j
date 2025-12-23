@@ -4,8 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.mybatisplus.codegen.controller.ControllerGen;
 import easy4j.module.mybatisplus.codegen.controller.ControllerReqGen;
-import easy4j.module.mybatisplus.codegen.entity.EntityConfig;
-import easy4j.module.mybatisplus.codegen.entity.EntityGen;
+import easy4j.module.mybatisplus.codegen.db.DbGenSetting;
+import easy4j.module.mybatisplus.codegen.db.DbGen;
 import easy4j.module.mybatisplus.codegen.mybatis.MapperGen;
 import easy4j.module.mybatisplus.codegen.service.IServiceGen;
 import easy4j.module.mybatisplus.codegen.service.ServiceImplGen;
@@ -107,23 +107,23 @@ public class AutoGen {
         return this;
     }
 
-    public AutoGen fromDbGen(EntityConfig entityConfig) {
+    public AutoGen fromDbGen(DbGenSetting dbGenSetting) {
         GenDto genDto1 = ListTs.get(genDto, 0);
         if (genDto1 == null) {
             throw new IllegalArgumentException("请在build方法中传入配置");
         }
-        EntityGen controllerGen1 = new EntityGen(entityConfig);
+        DbGen controllerGen1 = new DbGen(dbGenSetting);
         BeanUtil.copyProperties(genDto1, controllerGen1);
         genList.add(controllerGen1);
         return this;
     }
 
-    public AutoGen fromDbGen(EntityConfig entityConfig, boolean deleteIfExists) {
+    public AutoGen fromDbGen(DbGenSetting dbGenSetting, boolean deleteIfExists) {
         GenDto genDto1 = ListTs.get(genDto, 0);
         if (genDto1 == null) {
             throw new IllegalArgumentException("请在build方法中传入配置");
         }
-        EntityGen controllerGen1 = new EntityGen(entityConfig);
+        DbGen controllerGen1 = new DbGen(dbGenSetting);
         BeanUtil.copyProperties(genDto1, controllerGen1);
         controllerGen1.setDeleteIfExists(deleteIfExists);
         genList.add(controllerGen1);
@@ -198,22 +198,22 @@ public class AutoGen {
                                 "Copy-FlowSpCopyDto-审批流程抄送-FlowSpCopy",
                                 "SpContent-FlowSpContentDto-审批内容配置-FlowSpContent"
                         ))
-                .fromDbGen(new EntityConfig()
+                .fromDbGen(new DbGenSetting()
                         .setUrl("jdbc:postgresql://10.0.32.19:30163/ds")
                         .setUsername("drhi_user")
                         .setPassword("drhi_password")
-                        .setTablePrefix("ssc_meta_%")
-                        .setRemoveTablePrefix("ssc_meta_")
+                        .setTablePrefix("ssc_flow_%")
+                        .setRemoveTablePrefix("ssc_")
                         .setGenEntity(true)
                         .setGenMapperXml(true)
                         .setGenMapper(true)
                         .setGenDto(true)
-                        .setGenService(true)
-                        .setGenServiceImpl(true)
-                        .setGenController(true)
-                        .setGenControllerReq(true)
+//                        .setGenService(true)
+//                        .setGenServiceImpl(true)
+//                        .setGenController(true)
+//                        .setGenControllerReq(true)
                 )
-//                .genMapper()
+//                .genMapper() // 外围的这几个是配合multiGen使用的
 //                .genController()
 //                .genControllerReq()
 //                .genIService()
