@@ -1,4 +1,4 @@
-package easy4j.module.mybatisplus.codegen.entity;
+package easy4j.module.mybatisplus.codegen.db;
 
 import cn.hutool.core.util.RandomUtil;
 import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
@@ -16,7 +16,6 @@ import java.util.Set;
 @Accessors(chain = true)
 public class EntityInfo extends GlobalGenConfig implements Serializable {
 
-    public String entityPackageName = "";
     private String tableName = "";
 
     /**
@@ -39,6 +38,9 @@ public class EntityInfo extends GlobalGenConfig implements Serializable {
 
     String serialVersionId = String.valueOf(RandomUtil.randomLong());
 
+    private boolean sameTableField;
+
+    private boolean sameSchema;
 
 
     // 在 easy4j.module.mybatisplus.codegen.entity.EntityGen 生成的时候 适配 GenDto
@@ -66,7 +68,7 @@ public class EntityInfo extends GlobalGenConfig implements Serializable {
         private boolean hasAutoincrement;
         private boolean hasTableField;
         private String mybatisJdbcType;
+        private boolean sameTableField;
+        private boolean sameSchema;
     }
-
-
 }

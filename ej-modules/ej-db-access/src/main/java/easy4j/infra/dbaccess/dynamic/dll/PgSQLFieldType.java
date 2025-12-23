@@ -72,7 +72,8 @@ public enum PgSQLFieldType {
     JSONB("JSONB", "", "9.4+", "二进制JSON类型，验证语法+优化存储/查询（支持索引，PostgreSQL 推荐JSON类型）", String.class),
     UUID("UUID", "", "8.3+", "存储UUID（通用唯一识别码），格式'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'，自动校验格式", String.class),
     INET("INET", "", "", "存储IPv4/IPv6地址（如'192.168.1.1'），支持网络相关函数（PostgreSQL 特色）", String.class),
-    CIDR("CIDR", "", "", "存储无类域间路由地址（如'192.168.1.0/24'），PostgreSQL 特色", String.class);
+    CIDR("CIDR", "", "", "存储无类域间路由地址（如'192.168.1.0/24'），PostgreSQL 特色", String.class),
+    MONEY("MONEY", "", "", "钱，PostgreSQL 特色", BigDecimal.class);
 
     private final String fieldType;          // PostgreSQL 字段类型名称（标准名）
     private final String fieldTypeTemplate;  // 字段类型模板（带参数占位符，如 VARCHAR({0})）

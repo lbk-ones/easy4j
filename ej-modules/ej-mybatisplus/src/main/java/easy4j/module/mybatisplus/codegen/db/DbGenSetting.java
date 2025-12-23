@@ -1,4 +1,4 @@
-package easy4j.module.mybatisplus.codegen.entity;
+package easy4j.module.mybatisplus.codegen.db;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,18 +11,29 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class EntityConfig implements Serializable {
+public class DbGenSetting implements Serializable {
 
+    /**
+     * jdbc url
+     */
     private String url;
+    /**
+     * 用户名
+     */
     private String username;
+    /**
+     * 密码
+     */
     private String password;
 
     /**
-     * 如果想以xxx_开头
-     * ps: xxx_%
+     * 要扫描的表前缀 例如： xxx_% 百分号需要保留
      */
     private String tablePrefix;
 
+    /**
+     * 排除一些表
+     */
     private List<String> exclude;
 
     /**
