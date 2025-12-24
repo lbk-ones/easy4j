@@ -7,6 +7,6 @@ public interface CodeGen {
     /**
      * 返回生成文件详细路径
      */
-    String gen();
+    String gen(boolean isPreview, boolean isServer);
 
 }

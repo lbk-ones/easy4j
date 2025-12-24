@@ -86,4 +86,47 @@ public class StandRes {
     // 所有的表
     private List<String> allTables;
 
+
+    /**
+     * 是否生成mybatis mapper xml文件
+     */
+    private boolean genMapperXml = false;
+
+    /**
+     * 是否生成mybatis mapper 接口文件
+     */
+    private boolean genMapper = false;
+
+    /**
+     * 是否生成 实体
+     */
+    private boolean genEntity = false;
+
+
+    /**
+     * 是否生成 业务接口
+     */
+    private boolean genService = false;
+
+    /**
+     * 是否生成 业务实现
+     */
+    private boolean genServiceImpl = false;
+
+    /**
+     * 是否生成 接口
+     */
+    private boolean genController = false;
+
+    /**
+     * 是否生成 接口传参
+     */
+    private boolean genControllerReq = false;
+
+    /**
+     * 是否生成 to
+     */
+    private boolean genDto = false;
+
+
 }

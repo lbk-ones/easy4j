@@ -1,0 +1,243 @@
+/* 全局重置和基础样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+/* 布局样式 */
+.app-layout {
+  height: 100vh;
+}
+
+/* 头部样式 */
+.app-header {
+  background-color: #ffffff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  height: 64px;
+  line-height: 64px;
+}
+
+.header-title {
+  margin: 0 !important;
+  color: #1890ff !important;
+  font-size: 18px !important;
+}
+
+/* 内容区域样式 */
+.app-content {
+  display: flex;
+  flex: auto;
+  flex-flow: row nowrap;
+  padding: 24px;
+  overflow: auto;
+  box-sizing: border-box;
+  background-color: #f0f2f5;
+}
+
+/* 卡片样式 */
+.form-card {
+  width: 100%;
+  height: 100%;
+
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+.standard-form{
+  width: 100%;
+  display: flex;
+  flex: auto;
+  flex-flow: column nowrap;
+  overflow: auto;
+  background-color: white;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.output-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+
+/* 字段容器样式 */
+.fields-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field-item {
+  padding: 12px;
+  background-color: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.field-item:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+/* 代码编辑器样式 */
+.code-editor-container {
+  height: calc(100% - 54px);
+  display: flex;
+  flex-direction: column;
+}
+
+.code-editor {
+  flex: 1;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #fafafa;
+  color: #333;
+  resize: none;
+  overflow-y: auto;
+}
+
+.code-editor:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* 按钮区域样式 */
+.button-section {
+  margin-top: 24px;
+}
+
+/* 页脚样式 */
+.app-footer {
+  background-color: #ffffff;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #e8e8e8;
+}
+
+.tag-line{
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  border-left: 4px solid #1677FF;
+  background-color: #F0F2F5;
+  padding-left: 10px;
+  margin: 20px 0;
+}
+
+/* 响应式调整 */
+/*@media (max-width: 768px) {*/
+/*  .app-header {*/
+/*    padding: 0 16px;*/
+/*    height: 56px;*/
+/*    line-height: 56px;*/
+/*  }*/
+/*  */
+/*  .header-title {*/
+/*    font-size: 16px !important;*/
+/*  }*/
+/*  */
+/*  .header-desc {*/
+/*    display: none;*/
+/*  }*/
+/*  */
+/*  .app-content {*/
+
+/*    padding: 16px;*/
+/*  }*/
+/*  */
+/*  .form-card {*/
+/*    margin-bottom: 16px;*/
+/*  }*/
+/*  */
+/*  .field-item {*/
+/*    padding: 10px;*/
+/*  }*/
+/*  */
+/*  .code-editor {*/
+/*    font-size: 13px;*/
+/*    padding: 12px;*/
+/*  }*/
+/*}*/
+
+/* 滚动条样式 */
+.code-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.code-editor::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.code-editor::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.code-editor::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* 确保Ant Design组件样式覆盖 */
+.ant-card-head {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: #333;
+}
+
+.ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.ant-checkbox:hover .ant-checkbox-inner,
+.ant-checkbox:focus .ant-checkbox-inner {
+  border-color: #1890ff;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.ant-divider {
+  margin: 16px 0;
+}
+
+.ant-divider-vertical {
+  margin: 0 8px;
+}

@@ -3,7 +3,6 @@ package easy4j.module.mybatisplus.codegen.controller;
 import easy4j.module.mybatisplus.codegen.AbstractGen;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
 
 import java.io.File;
 
@@ -17,10 +16,10 @@ public class ControllerReqGen extends AbstractGen {
         return this.getProjectAbsolutePath()+"/src/main/java"+File.separator+ collect+File.separator+parsePackage(getControllerReqPackageName())+File.separator+this.getDomainName()+"ControllerReq.java";
     }
 
-    public String gen(){
+    public String gen(boolean isPreview, boolean isServer){
         notNull(this.getDomainName(),"domainName");
         String filePath = this.getFilePath();
-        return loadTemplate(filePath, "temp","ControllerReqGen.ftl", this);
+        return loadTemplate(filePath, "temp","ControllerReqGen.ftl", this, isPreview);
     }
 
 

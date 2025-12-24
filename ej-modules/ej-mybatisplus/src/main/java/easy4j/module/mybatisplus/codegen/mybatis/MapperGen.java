@@ -21,12 +21,12 @@ public class MapperGen extends AbstractGen {
                 , this.getEntityName() + "Mapper.java");
     }
 
-    public String gen() {
+    public String gen(boolean isPreview, boolean isServer) {
         notNull(this.getEntityName(),"entityName");
         notNull(this.getCnDesc(),"cnDesc");
         String filePath = this.getFilePath();
         this.schema = this.getEntityName();
         this.description = this.getCnDesc();
-        return loadTemplate(filePath, "temp", "MapperGen.ftl", this);
+        return loadTemplate(filePath, "temp", "MapperGen.ftl", this, false);
     }
 }

@@ -46,7 +46,7 @@ public class DbGen extends AbstractGen {
         return this.getProjectAbsolutePath();
     }
 
-    public String gen() {
+    public String gen(boolean isPreview, boolean isServer) {
         String tablePrefix = this.dbGenSetting.getTablePrefix();
         notNull(this.dbGenSetting, "entityDto");
         //notNull(tablePrefix, "tablePrefix");
@@ -63,7 +63,7 @@ public class DbGen extends AbstractGen {
                         && !dbGenSetting.isGenControllerReq()
                         && !dbGenSetting.isGenDto()
         ) {
-            return "skip gen file from db!";
+            return null;
         }
         TempDataSource tempDataSource = new TempDataSource(
                 SqlType.getDriverClassNameByUrl(this.dbGenSetting.getUrl()),
@@ -71,6 +71,7 @@ public class DbGen extends AbstractGen {
                 this.dbGenSetting.getUsername(),
                 this.dbGenSetting.getPassword());
         Connection quietConnection = tempDataSource.getQuietConnection();
+        List<String> finalList = ListTs.newList();
         try {
             System.out.println("successful estable complete connection");
             DialectV2 dialectV2 = DialectFactory.get(quietConnection);
@@ -200,18 +201,25 @@ public class DbGen extends AbstractGen {
             }
             String packageNamePath = parsePackage(this.getParentPackageName());
             String filePath_ = this.getFilePath();
+            List<String> finalLine1 = ListTs.newList();
+            List<String> finalLine2 = ListTs.newList();
+            List<String> finalLine3 = ListTs.newList();
+            List<String> finalLine4 = ListTs.newList();
+            List<String> finalLine5 = ListTs.newList();
+            List<String> finalLine6 = ListTs.newList();
+            List<String> finalLine7 = ListTs.newList();
             for (EntityInfo entityInfo : entityInfos) {
                 String tableName = entityInfo.getTableName();
                 if (dbGenSetting.isGenEntity()) {
                     String filePath = filePath_ + File.separator + SRC_MAIN_JAVA + File.separator + packageNamePath + File.separator + getEntityPackageName() + File.separator + entityInfo.getSchema() + ".java";
-                    String s = loadTemplate(filePath, "temp", "EntityGen.ftl", entityInfo);
-                    System.out.println("【gen entity】" + s);
+                    String s = loadTemplate(filePath, "temp", "EntityGen.ftl", entityInfo, isPreview);
+                    finalLine1.add(s);
                 }
 
                 if (dbGenSetting.isGenMapperXml()) {
                     String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + this.getMapperXmlPackageName() + File.separator + dbType + File.separator + entityInfo.getSchema() + "Mapper.xml";
-                    String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo);
-                    System.out.println("【gen mapper xml】" + s);
+                    String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo, isPreview);
+                    finalLine2.add(s);
                 }
 
                 if (dbGenSetting.isGenMapper()) {
@@ -219,8 +227,8 @@ public class DbGen extends AbstractGen {
                             , packageNamePath
                             , parsePackage(this.getMapperPackageName())
                             , entityInfo.getSchema() + "Mapper.java");
-                    String s = loadTemplate(s1, "temp", "MapperGen.ftl", entityInfo);
-                    System.out.println("【gen mapper】" + s);
+                    String s = loadTemplate(s1, "temp", "MapperGen.ftl", entityInfo, isPreview);
+                    finalLine3.add(s);
                 }
 
                 if (dbGenSetting.isGenService()) {
@@ -235,8 +243,8 @@ public class DbGen extends AbstractGen {
                             , "I" + entityInfo1.getDomainName() + "Service.java");
 
 
-                    String s = loadTemplate(s1, "temp", "IServiceGen.ftl", entityInfo1);
-                    System.out.println("【gen service】" + s);
+                    String s = loadTemplate(s1, "temp", "IServiceGen.ftl", entityInfo1, isPreview);
+                    finalLine4.add(s);
                 }
 
                 if (dbGenSetting.isGenServiceImpl()) {
@@ -251,8 +259,8 @@ public class DbGen extends AbstractGen {
                             , entityInfo1.getDomainName() + "ServiceImpl.java");
 
 
-                    String s = loadTemplate(s1, "temp", "ServiceImplGen.ftl", entityInfo1);
-                    System.out.println("【gen service impl】" + s);
+                    String s = loadTemplate(s1, "temp", "ServiceImplGen.ftl", entityInfo1, isPreview);
+                    finalLine5.add(s);
                 }
 
                 if (dbGenSetting.isGenController()) {
@@ -268,8 +276,8 @@ public class DbGen extends AbstractGen {
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
 
-                    String s = loadTemplate(s1, "temp", "ControllerGen.ftl", entityInfo1);
-                    System.out.println("【gen controller】" + s);
+                    String s = loadTemplate(s1, "temp", "ControllerGen.ftl", entityInfo1, isPreview);
+                    finalLine6.add(s);
                 }
 
                 if (dbGenSetting.isGenControllerReq()) {
@@ -284,8 +292,8 @@ public class DbGen extends AbstractGen {
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
 
-                    String s = loadTemplate(s1, "temp", "ControllerReqGen.ftl", entityInfo1);
-                    System.out.println("【gen controlle req】" + s);
+                    String s = loadTemplate(s1, "temp", "ControllerReqGen.ftl", entityInfo1, isPreview);
+                    finalLine7.add(s);
                 }
 
                 if (dbGenSetting.isGenDto()) {
@@ -301,19 +309,28 @@ public class DbGen extends AbstractGen {
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema());
                     entityInfo1.setDomainName(entityInfo.getSchema());
-                    String s = loadTemplate(s1, "temp", "DtoGen.ftl", entityInfo1);
-                    System.out.println("【gen dto】" + s);
+                    String s = loadTemplate(s1, "temp", "DtoGen.ftl", entityInfo1, isPreview);
+                    finalLine7.add(s);
                 }
+
+                ListTs.addAll(finalList,finalLine1);
+                ListTs.addAll(finalList,finalLine2);
+                ListTs.addAll(finalList,finalLine3);
+                ListTs.addAll(finalList,finalLine4);
+                ListTs.addAll(finalList,finalLine5);
+                ListTs.addAll(finalList,finalLine6);
+                ListTs.addAll(finalList,finalLine7);
 
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             JdbcUtils.closeConnection(quietConnection);
-            GlobalPruneTimer.INSTANCE.shutdown();
+            if(!isServer){
+                GlobalPruneTimer.INSTANCE.shutdown();
+            }
         }
-        System.out.println("entity-gen successfull------>");
-        return null;
+        return String.join("\n",finalList);
     }
 
 

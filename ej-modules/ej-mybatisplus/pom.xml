@@ -69,4 +69,19 @@
         </dependency>
     </dependencies>
 
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include> <!-- 先包含所有 -->
+                </includes>
+                <excludes>
+                    <exclude>support/**/*</exclude> <!-- 再排除指定目录 -->
+                </excludes>
+            </resource>
+        </resources>
+    </build>
+
 </project>

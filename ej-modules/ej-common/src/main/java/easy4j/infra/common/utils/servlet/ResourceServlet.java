@@ -1,9 +1,12 @@
 package easy4j.infra.common.utils.servlet;
 
+import cn.hutool.core.exceptions.InvocationTargetRuntimeException;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.json.JacksonUtil;
+import jodd.exception.ExceptionUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -12,10 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 从 ClassPath 加载静态资源的 Servlet
@@ -172,6 +172,7 @@ public class ResourceServlet extends HttpServlet {
 
     /**
      * 调用 handler
+     * 先匹配handler再匹配静态资源
      *
      * @param request  req
      * @param response res
@@ -185,6 +186,7 @@ public class ResourceServlet extends HttpServlet {
         List<Object> args = ListTs.newList();
         Object targetObject = null;
         Method method_ = null;
+        UrlMap annotation = null;
         lbk:
         for (Class<?> aClazz : aClazz_) {
             Boolean b = CLASS_MAP_BOOL.get(reqMethod + aClazz.getName() + path);
@@ -206,24 +208,23 @@ public class ResourceServlet extends HttpServlet {
                                 !Modifier.isStatic(method.getModifiers())
                 ) {
 
-                    Enumeration<String> parameterNames = request.getParameterNames();
-                    Map<String, String> params = Maps.newHashMap();
-                    while (parameterNames.hasMoreElements()) {
-                        String s = parameterNames.nextElement();
-                        String parameter = request.getParameter(s);
-                        params.put(s, parameter);
-                    }
-                    ServletHandler servletHandler = new ServletHandler();
-                    servletHandler.setFormDataMap(params);
-                    servletHandler.setRequest(request);
-                    servletHandler.setResponse(response);
-
-                    UrlMap annotation = method.getAnnotation(UrlMap.class);
+                    annotation = method.getAnnotation(UrlMap.class);
                     MethodType method2 = annotation.method();
                     String url = annotation.url();
                     String name = method2.name();
                     if (StrUtil.equalsIgnoreCase(reqMethod, name) && StrUtil.equals(url, path)) {
                         method_ = method;
+                        Enumeration<String> parameterNames = request.getParameterNames();
+                        Map<String, String> params = Maps.newHashMap();
+                        while (parameterNames.hasMoreElements()) {
+                            String s = parameterNames.nextElement();
+                            String parameter = request.getParameter(s);
+                            params.put(s, parameter);
+                        }
+                        ServletHandler servletHandler = new ServletHandler();
+                        servletHandler.setFormDataMap(params);
+                        servletHandler.setRequest(request);
+                        servletHandler.setResponse(response);
                         servletHandler.setMethod(method);
                         servletHandler.setUrl(path);
                         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -233,7 +234,7 @@ public class ResourceServlet extends HttpServlet {
                                     args.add(request);
                                 } else if (HttpServletResponse.class.isAssignableFrom(parameterType)) {
                                     args.add(response);
-                                } else if (HttpServletResponse.class.isAssignableFrom(parameterType)) {
+                                } else if (ServletHandler.class.isAssignableFrom(parameterType)) {
                                     args.add(servletHandler);
                                 } else {
                                     args.add(null);
@@ -247,14 +248,51 @@ public class ResourceServlet extends HttpServlet {
             CLASS_MAP_BOOL.put(reqMethod + aClazz.getName() + path, false);
         }
         if (targetObject != null && method_ != null) {
-            if (args.isEmpty()) {
-                ReflectUtil.invoke(targetObject, method_);
-            } else {
-                ReflectUtil.invoke(targetObject, method_, args.toArray(new Object[]{}));
+            try {
+                Object invokeRes = null;
+                if (args.isEmpty()) {
+                    invokeRes = ReflectUtil.invoke(targetObject, method_);
+                } else {
+                    invokeRes = ReflectUtil.invoke(targetObject, method_, args.toArray(new Object[]{}));
+                }
+                if (invokeRes != null) {
+                    if (!Objects.equals(invokeRes.getClass().getName(), Object.class.getName())) {
+                        response.setContentType(annotation.returnContentType());
+                        PrintWriter writer = response.getWriter();
+                        if (invokeRes instanceof CharSequence) {
+                            String resString = invokeRes.toString();
+                            writer.write(resString, 0, resString.length());
+                        } else {
+                            String resString = JacksonUtil.toJson(invokeRes);
+                            writer.write(resString, 0, resString.length());
+                        }
+                        writer.flush();
+                    }
+                }
+            } catch (InvocationTargetRuntimeException e) {
+                response.setContentType(annotation.returnContentType());
+                Throwable cause = e;
+                while (cause.getCause()!=null){
+                    cause = cause.getCause();
+                }
+                String message = ExceptionUtil.exceptionChainToString(cause);
+                response(response,JacksonUtil.toJson(SRes.error(message)));
             }
+
         } else {
             super.service(request, response);
         }
 
+    }
+
+    public void response(HttpServletResponse response,String data){
+        PrintWriter writer = null;
+        try {
+            writer = response.getWriter();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        writer.write(data, 0, data.length());
+        writer.flush();
     }
 }
