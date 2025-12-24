@@ -13,10 +13,7 @@ import jodd.util.StringPool;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -44,26 +41,29 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
     public abstract String getFilePath();
 
     // 加载template
-    public String loadTemplate(String absoluteFilePath, String templatePath, String templateName, Object params) {
-        File file = new File(absoluteFilePath);
-        if (file.exists()) {
-            if (!deleteIfExists && !forceDelete) {
-                return "skip the file because the file is exists::::" + absoluteFilePath;
-            } else {
-                boolean delete = file.delete();
-                if (!delete || forceDelete) {
-                    if (!delete) {
-                        return "the file delete error";
-                    } else {
-                        return "clear the file" + absoluteFilePath;
+    public String loadTemplate(String absoluteFilePath, String templatePath, String templateName, Object params, boolean isPreview) {
+        if(!isPreview){
+            File file = new File(absoluteFilePath);
+            if (file.exists()) {
+                if (!deleteIfExists && !forceDelete) {
+                    return "skip the file because the file is exists::::" + absoluteFilePath;
+                } else {
+                    boolean delete = file.delete();
+                    if (!delete || forceDelete) {
+                        if (!delete) {
+                            return "the file delete error";
+                        } else {
+                            return "clear the file" + absoluteFilePath;
+                        }
                     }
                 }
             }
+            File file1 = new File(file.getParent());
+            if (!file1.exists()) {
+                if (!file1.mkdirs()) throw new RuntimeException(file1.getPath() + " dir create error!!");
+            }
         }
-        File file1 = new File(file.getParent());
-        if (!file1.exists()) {
-            if (!file1.mkdirs()) throw new RuntimeException(file1.getPath() + " dir create error!!");
-        }
+
         Class<?> aClass = params.getClass();
         Field[] fields = ReflectUtil.getFields(aClass);
         Map<String, Object> params_ = Maps.newHashMap();
@@ -72,24 +72,35 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
             Object fieldValue = ReflectUtil.getFieldValue(params, field);
             params_.putIfAbsent(name, fieldValue);
         }
-        notNull(this.getDomainName(), "domainName");
+        //notNull(this.getDomainName(), "domainName");
         notNull(this.getParentPackageName(), "parentPackageName");
 
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
         cfg.setTemplateLoader(new ClassTemplateLoader(ControllerGen.class, StringPool.SLASH + templatePath));
-        try {
-            Template template = cfg.getTemplate(templateName);
+
+        if(isPreview){
+            try (Writer writer = new StringWriter()) {
+                // 加载模板
+                Template template = cfg.getTemplate(templateName);
+                // 渲染模板到字符流
+                template.process(params_, writer);
+                // 转换为字符串并返回
+                return writer.toString();
+            } catch (TemplateException e) {
+                throw new RuntimeException("模板渲染失败：" + e.getMessage(), e);
+            } catch (Exception e) {
+                throw new RuntimeException("模板加载/IO 异常：" + e.getMessage(), e);
+            }
+        }else{
             try (Writer out = new FileWriter(absoluteFilePath)) {
+                Template template = cfg.getTemplate(templateName);
                 template.process(params_, out);
                 out.flush();
             } catch (IOException | TemplateException e) {
-                System.exit(1);
                 throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return "gen successful 【"+StrUtil.replaceLast(templateName,"Gen.ftl","")+"】--> " + absoluteFilePath;
         }
-        return "gen successful --> " + absoluteFilePath;
     }
 
     public String parsePackage(String packageName) {

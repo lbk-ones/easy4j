@@ -117,4 +117,10 @@ public class GenDto extends GlobalGenConfig {
         super.setServiceImplPackageName(serviceImplPackageName);
         return this;
     }
+
+    @Override
+    public GenDto setMapperXmlPackageName(String mapperXmlPackageName) {
+        super.setMapperXmlPackageName(mapperXmlPackageName);
+        return this;
+    }
 }

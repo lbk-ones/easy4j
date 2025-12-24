@@ -1,6 +1,7 @@
 package easy4j.module.mybatisplus.codegen;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.mybatisplus.codegen.controller.ControllerGen;
 import easy4j.module.mybatisplus.codegen.controller.ControllerReqGen;
@@ -152,9 +153,43 @@ public class AutoGen {
 
     public void gen() {
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen();
-            if (gen != null) System.out.println(gen);
+            String gen = codeGen.gen(false, false);
+            if (StrUtil.isNotBlank(gen)) System.out.println(gen);
         }
+    }
+
+    public String preview() {
+        List<String> lineList = ListTs.newList();
+        for (CodeGen codeGen : genList) {
+            String gen = codeGen.gen(true, false);
+            if (StrUtil.isNotBlank(gen)) lineList.add(gen);
+        }
+        return String.join("\n",lineList);
+    }
+
+    public void gen(boolean isServer) {
+        for (CodeGen codeGen : genList) {
+            String gen = codeGen.gen(false, isServer);
+            if (StrUtil.isNotBlank(gen)) System.out.println(gen);
+        }
+    }
+
+    public String preview(boolean isServer) {
+        List<String> lineList = ListTs.newList();
+        for (CodeGen codeGen : genList) {
+            String gen = codeGen.gen(true, isServer);
+            if (StrUtil.isNotBlank(gen)) lineList.add(gen);
+        }
+        return String.join("\n",lineList);
+    }
+
+    public String auto(boolean isPreview,boolean isServer) {
+        List<String> lineList = ListTs.newList();
+        for (CodeGen codeGen : genList) {
+            String gen = codeGen.gen(isPreview, isServer);
+            if (StrUtil.isNotBlank(gen)) lineList.add(gen);
+        }
+        return String.join("\n-----------------------------------------------------------\n",lineList);
     }
 
     public AutoGen clearAllExistsFiles() {
@@ -208,10 +243,10 @@ public class AutoGen {
                         .setGenMapperXml(true)
                         .setGenMapper(true)
                         .setGenDto(true)
-//                        .setGenService(true)
-//                        .setGenServiceImpl(true)
-//                        .setGenController(true)
-//                        .setGenControllerReq(true)
+                        .setGenService(true)
+                        .setGenServiceImpl(true)
+                        .setGenController(true)
+                        .setGenControllerReq(true)
                 )
 //                .genMapper() // 外围的这几个是配合multiGen使用的
 //                .genController()

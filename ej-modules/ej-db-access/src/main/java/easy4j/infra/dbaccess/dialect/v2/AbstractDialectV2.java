@@ -235,6 +235,10 @@ public abstract class AbstractDialectV2 extends CommonDBAccess implements Dialec
                 MapListHandler mapListHandler = new MapListHandler();
                 List<Map<String, Object>> handle = mapListHandler.handle(tables);
                 List<TableMetadata> map = ListTs.map(handle, e -> BeanUtil.mapToBean(e, TableMetadata.class, true, CopyOptions.create().ignoreCase().ignoreNullValue()));
+                map.forEach(m -> {
+                    if (StrUtil.isNotBlank(finalCatLog)) m.setTableCat(finalCatLog);
+                    if (StrUtil.isNotBlank(finalSchema)) m.setTableSchem(finalSchema);
+                });
                 handlerTableMetaData(map);
                 map = ListTs.distinct(map, TableMetadata::getTableName);
                 return map;

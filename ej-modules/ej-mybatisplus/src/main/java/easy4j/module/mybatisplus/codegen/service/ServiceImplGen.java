@@ -1,11 +1,8 @@
 package easy4j.module.mybatisplus.codegen.service;
 
-import cn.hutool.core.util.StrUtil;
 import easy4j.module.mybatisplus.codegen.AbstractGen;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,12 +16,12 @@ public class ServiceImplGen extends AbstractGen {
                 , this.getDomainName() + "ServiceImpl.java");
     }
 
-    public String gen() {
+    public String gen(boolean isPreview, boolean isServer) {
         notNull(this.getEntityName(),"entityName");
         notNull(this.getServiceImplPackageName(),"iServiceImplPackageName");
 
         String filePath = this.getFilePath();
-        return loadTemplate(filePath, "temp", "ServiceImplGen.ftl", this);
+        return loadTemplate(filePath, "temp", "ServiceImplGen.ftl", this, false);
     }
 
 

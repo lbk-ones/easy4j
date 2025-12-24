@@ -1,5 +1,6 @@
 package easy4j.infra.common.utils.servlet;
 
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import lombok.Data;
 
@@ -9,6 +10,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 public class ServletHandler {
@@ -42,6 +44,13 @@ public class ServletHandler {
         return null;
     }
 
+    public <T> Optional<T> getFormOrQuery(Class<T> tClass){
+        if(ListTs.isNotEmpty(formDataMap)){
+            return Optional.ofNullable(JacksonUtil.toObject(JacksonUtil.toJson(formDataMap),tClass));
+        }
+        return Optional.empty();
+    }
+
     /**
      * 返回json
      * @param object 传参
@@ -54,6 +63,7 @@ public class ServletHandler {
         }else{
             json = JacksonUtil.toJsonContainNull(object);;
         }
+        response.setContentType("application/json;charset=UTF-8");
         PrintWriter writer;
         try {
             writer = response.getWriter();
