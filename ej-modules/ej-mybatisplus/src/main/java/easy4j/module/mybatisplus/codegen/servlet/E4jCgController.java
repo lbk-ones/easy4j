@@ -4,12 +4,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Lists;
 
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.PackageScanner;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.servlet.MethodType;
 import easy4j.infra.common.utils.servlet.SRes;
@@ -27,6 +30,7 @@ import easy4j.module.mybatisplus.codegen.db.DbGenSetting;
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class E4jCgController {
@@ -82,10 +86,12 @@ public class E4jCgController {
 
     private void genOrPreview(ServletHandler servletHandler, boolean isPreview) {
         Optional<StandRes> formOrQuery = servletHandler.getFormOrQuery(StandRes.class);
-        checkNotNullR(servletHandler,
+        if (checkNotNullR(servletHandler,
                 servletHandler.getFormDataMap(),
                 ListTs.asList("url", "username", "password")
-        );
+        )) {
+            return;
+        }
         formOrQuery.ifPresent(standRes -> {
             String url = standRes.getUrl();
             String username = standRes.getUsername();
@@ -161,16 +167,17 @@ public class E4jCgController {
         }
     }
 
-    private void checkNotNullR(ServletHandler servletHandler, Map<String, String> formDataMap, List<String> nameList) {
+    private boolean checkNotNullR(ServletHandler servletHandler, Map<String, String> formDataMap, List<String> nameList) {
         if (formDataMap != null) {
             for (String s : nameList) {
                 String s2 = formDataMap.get(s);
                 if (StrUtil.isBlank(s2)) {
                     servletHandler.responseJson(SRes.error(s + " is not null "));
-                    break;
+                    return true;
                 }
             }
         }
+        return false;
 
     }
 
@@ -183,6 +190,121 @@ public class E4jCgController {
     public void gen(ServletHandler servletHandler) {
         genOrPreview(servletHandler, false);
     }
+
+    /**
+     * 包扫描
+     *
+     * @param servletHandler handler
+     */
+    @UrlMap(url = "/db/scanPackage", method = MethodType.POST)
+    public PackageRes scanPackage(ServletHandler servletHandler) {
+        PackageRes packageRes = new PackageRes();
+        Map<String, String> formDataMap = servletHandler.getFormDataMap();
+        String parentPackageName = formDataMap.get("parentPackageName");
+        if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
+        String dtoPackageName = formDataMap.get("dtoPackageName");
+        String entityPackageName = formDataMap.get("entityPackageName");
+        if (StrUtil.isNotBlank(dtoPackageName)) {
+            String dtoPackage = String.join(".", ListTs.asList(
+                    parentPackageName,
+                    dtoPackageName
+            ));
+            try {
+                Set<Class<?>> classes = PackageScanner.scanPackage(dtoPackage);
+                List<String> collect = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                packageRes.setAllDtos(collect);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (StrUtil.isNotBlank(entityPackageName)) {
+            String entityPackage = String.join(".", ListTs.asList(
+                    parentPackageName,
+                    entityPackageName
+            ));
+            try {
+                Set<Class<?>> classes = PackageScanner.scanPackage(entityPackage);
+                List<String> collect = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                packageRes.setAllEntitys(collect);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return packageRes;
+    }
+
+
+    /**
+     * 自定义生成代码
+     *
+     * @param servletHandler handler
+     */
+    @UrlMap(url = "/custom/gen", method = MethodType.POST)
+    public PreviewRes customGen(ServletHandler servletHandler) {
+        Map<String, String> formDataMap = servletHandler.getFormDataMap();
+        if (checkNotNullR(servletHandler,
+                formDataMap,
+                ListTs.asList("domainName","cnDesc","returnDtoName","entityName")
+        )) {
+            return null;
+        }
+        String domainName = formDataMap.get("domainName");
+        String parentPackageName = formDataMap.get("parentPackageName");
+        String projectAbsolutePath = formDataMap.get("projectAbsolutePath");
+        String urlPrefix = formDataMap.get("urlPrefix");
+        boolean deleteIfExists = "true".equals(formDataMap.get("deleteIfExists"));
+        String cnDesc = formDataMap.get("cnDesc");
+        String returnDtoName = formDataMap.get("returnDtoName");
+        String entityName = formDataMap.get("entityName");
+        boolean isPreview = "true".equals(formDataMap.get("isPreview"));
+        String entityPackageName = formDataMap.get("entityPackageName");
+        String controllerPackageName = formDataMap.get("controllerPackageName");
+        String controllerReqPackageName = formDataMap.get("controllerReqPackageName");
+        String dtoPackageName = formDataMap.get("dtoPackageName");
+        String mapperPackageName = formDataMap.get("mapperPackageName");
+        String mapperXmlPackageName = formDataMap.get("mapperXmlPackageName");
+        String serviceInterfacePackageName = formDataMap.get("serviceInterfacePackageName");
+        String serviceImplPackageName = formDataMap.get("serviceImplPackageName");
+        String author = formDataMap.get("author");
+        String headerDesc = formDataMap.get("headerDesc");
+        AutoGen build = AutoGen.build(MultiGenDto.build(
+                        new GlobalGenConfig()
+                                .setAuthor(author)
+                                .setHeaderDesc(headerDesc)
+                                .setParentPackageName(parentPackageName)
+                                .setProjectAbsolutePath(projectAbsolutePath)
+                                .setUrlPrefix(urlPrefix)
+                                .setDeleteIfExists(deleteIfExists)
+                                .setEntityPackageName(entityPackageName)
+                                .setControllerPackageName(controllerPackageName)
+                                .setControllerReqPackageName(controllerReqPackageName)
+                                .setDtoPackageName(dtoPackageName)
+                                .setMapperPackageName(mapperPackageName)
+                                .setMapperXmlPackageName(mapperXmlPackageName)
+                                .setServiceInterfacePackageName(serviceInterfacePackageName)
+                                .setServiceImplPackageName(serviceImplPackageName)
+                )
+                .multiGen(
+                        domainName+"-"+returnDtoName+"-"+cnDesc+"-"+entityName
+                ));
+        boolean genMapper = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenMapper)));
+        boolean isGenController = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenController)));
+        boolean isGenControllerReq = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenControllerReq)));
+        boolean isGenService = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenService)));
+        boolean isGenServiceImpl = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenServiceImpl)));
+        if (genMapper) build.genMapper(); // 外围的这几个是配合multiGen使用的
+        if (isGenController) build.genController();
+        if (isGenControllerReq) build.genControllerReq();
+        if (isGenService) build.genIService();
+        if (isGenServiceImpl) build.genServiceImpl();
+        PreviewRes previewRes = new PreviewRes();
+        if(!build.genList.isEmpty()) {
+            previewRes = build.custom(isPreview, true);
+        }
+        return previewRes;
+    }
+
+
 
 
 }

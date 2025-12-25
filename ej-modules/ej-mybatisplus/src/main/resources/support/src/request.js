@@ -70,7 +70,6 @@ instance.interceptors.response.use(function (response) {
     const { config, data } = response;
     // 隐藏 Loading
     hideLoading(config);
-    console.log('response',response)
     if (data.status !== 1) {
         let newVar = data?.message || '请求失败';
         message.error(newVar)
@@ -81,7 +80,6 @@ instance.interceptors.response.use(function (response) {
 }, function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
-    console.log('error--->',error)
     const { response } = error;
     hideLoading(error.config);
     let errMsg = '请求失败';
