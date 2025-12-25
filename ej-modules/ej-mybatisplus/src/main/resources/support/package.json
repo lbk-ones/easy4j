@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
     "antd": "^6.1.1",
     "axios": "^1.13.2",
+    "lodash-es": "^4.17.22",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-syntax-highlighter": "^16.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,16 +1,21 @@
 import {useState, useEffect, useRef} from 'react'
 import {
-    Layout, Card, Form, Input, Checkbox, Button, Select, Tabs,
-    Table, Space, Typography, Divider, Row, Col, Drawer
+    Layout, Card, message, Form, Input, Checkbox, Button, Select, Tabs,
+    Table, Space, Typography, Divider, Row, Col, Drawer, Modal, List, Flex
 } from 'antd'
-import {PlusOutlined, DeleteOutlined, CopyOutlined, ClearOutlined} from '@ant-design/icons'
+import {CopyOutlined, WarningOutlined} from '@ant-design/icons'
 import './App.css'
 import {post} from "./request.js";
-import {useForm} from "antd/es/form/Form.js";
+import {isEmpty} from "lodash-es";
+
+// 导入 highlight.js 核心
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {vs} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
 
 const {Header, Content, Footer} = Layout
 const {Title, Text} = Typography
 const {Option} = Select
+
 const {TabPane} = Tabs
 
 function App() {
@@ -19,6 +24,7 @@ function App() {
 
     // 选项卡状态
     const [activeTab, setActiveTab] = useState('standard')
+    const [activeTab2, setActiveTab2] = useState('')
 
     // 生成类型状态（与包路径配置对应）
     const [generateTypes, setGenerateTypes] = useState({
@@ -68,9 +74,15 @@ function App() {
         genServiceImpl: false
     })
 
-    const [previewText, setPreviewText] = useState("")
+    const [previewText, setPreviewText] = useState({})
+
+    const [currentItem, setCurrentItem] = useState({})
 
     const [open, setOpen] = useState(false);
+
+    // 1. 创建 ref 指向代码块 DOM
+    const codeRef = useRef(null);
+
     const showDrawer = () => {
         setOpen(true);
     };
@@ -82,6 +94,7 @@ function App() {
             setInitData(res)
             form.setFieldsValue(res); // 动态赋值
         })
+
         // 可选：清理逻辑（按需添加）
         return () => {
             // 清理代码
@@ -94,32 +107,53 @@ function App() {
 
     // 更新生成类型
     const handleUpdateGenerateType = (type, value) => {
-        if(type === 'genController' || type === 'genControllerReq'){
-            setInitData(prev => ({...initData, genController: value,genControllerReq:value}))
-        }else{
+        if (type === 'genController' || type === 'genControllerReq') {
+            setInitData(prev => ({...initData, genController: value, genControllerReq: value}))
+        } else {
             setInitData(prev => ({...initData, [type]: value}))
         }
 
 
     }
 
-    // 生成Java代码（模拟接口调用）
-    const handleGenerate = async () => {
-        setIsGenerating(true)
+    const waringGen = () => {
+        return new Promise((resolve, reject) => {
+            Modal.confirm({
+                title: '提示',
+                icon: <WarningOutlined/>,
+                content: '该操作会写入本地文件，请确认!',
+                okText: '继续',
+                cancelText: '中断',
+                onOk() {
+                    resolve(true);
+                },
+                onCancel() {
+                    resolve(false);
+                },
+            });
+        })
+    }
 
-        try {
-            // 获取表单值
-            const formValues = await form.validateFields()
-
-            // 模拟API请求生成代码
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
-        } catch (error) {
-            console.error('生成代码失败:', error)
-            setOutputCode('// 生成代码失败，请检查配置后重试')
-        } finally {
-            setIsGenerating(false)
-        }
+    const waring = (data = {}) => {
+        return new Promise((resolve, reject) => {
+            if (isEmpty(data.tablePrefix)) {
+                Modal.confirm({
+                    title: '提示',
+                    icon: <WarningOutlined/>,
+                    content: '如果不设置表前缀，可能会导致表太多而生成失败!',
+                    okText: '继续',
+                    cancelText: '中断',
+                    onOk() {
+                        resolve(true);
+                    },
+                    onCancel() {
+                        resolve(false);
+                    },
+                });
+            } else {
+                resolve(true);
+            }
+        })
     }
     return (
         <Layout className="app-layout">
@@ -139,9 +173,34 @@ function App() {
                 <div className="standard-form" style={{display: activeTab === "standard" ? "block" : "none"}}>
                     <span>
                         <Space>
+                            <Button
+                                type="primary"
+                                size="middle"
+                                onClick={async e => {
+                                    const formValues = await form.validateFields()
+                                    let parse = JSON.parse(JSON.stringify({
+                                        ...initData,
+                                        ...formValues
+                                    }));
+                                    delete parse.allTables;
+                                    delete parse.exclude;
+                                    let res = await waring(parse);
+                                    if (res) {
+                                        post("/db/preview", parse, {loadingText: "正在生成预览"}).then(res => {
+                                            setPreviewText(res);
+                                            setActiveTab2(res?.infoList?.[0]?.tagName)
+                                            setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                            showDrawer();
+                                        })
+                                    }
+
+                                }}
+                            >
+                          预览代码
+                      </Button>
                              <Button
                                  type="primary"
-                                 size="large"
+                                 size="middle"
                                  loading={isGenerating}
                                  onClick={async e => {
                                      const formValues = await form.validateFields()
@@ -151,33 +210,24 @@ function App() {
                                      }));
                                      delete parse.allTables;
                                      delete parse.exclude;
-                                     post("/db/gen", parse,{loadingText:"正在生成，生成之后会写入文件"}).then(res => {
-                                         setPreviewText(res);
-                                         showDrawer();
-                                     })
+                                     let res = await waring(parse);
+                                     if (res) {
+                                         let gen = await waringGen();
+                                         if (gen) {
+                                             post("/db/gen", parse, {loadingText: "正在生成，生成之后会写入文件"}).then(res => {
+                                                 setPreviewText(res);
+                                                 setActiveTab2(res?.infoList?.[0]?.tagName)
+                                                 setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                                 showDrawer();
+                                             })
+                                         }
+
+                                     }
                                  }}
                              >
                               生成代码
                           </Button>
-                            <Button
-                                type="primary"
-                                size="large"
-                                onClick={async e => {
-                                    const formValues = await form.validateFields()
-                                    let parse = JSON.parse(JSON.stringify({
-                                        ...initData,
-                                        ...formValues
-                                    }));
-                                    delete parse.allTables;
-                                    delete parse.exclude;
-                                    post("/db/preview", parse,{loadingText:"正在生成预览"}).then(res => {
-                                        setPreviewText(res);
-                                        showDrawer();
-                                    })
-                                }}
-                            >
-                          预览代码
-                      </Button>
+
                         </Space>
 
                       </span>
@@ -193,7 +243,15 @@ function App() {
                             <div className={"tag-line"}>
                                 <Space>
                                     <Checkbox
-                                        checked={initData.genEntity}
+                                        checked={initData.genController ||
+                                            initData.genControllerReq ||
+                                            initData.genDto ||
+                                            initData.genEntity ||
+                                            initData.genMapper ||
+                                            initData.genMapperXml ||
+                                            initData.genService ||
+                                            initData.genServiceImpl
+                                        }
                                         onChange={(e) => {
                                             if (e.target.checked === true) {
                                                 setInitData({
@@ -206,7 +264,7 @@ function App() {
                                                     genService: true,
                                                     genServiceImpl: true
                                                 })
-                                            }else {
+                                            } else {
                                                 setInitData({
                                                     genController: false,
                                                     genControllerReq: false,
@@ -222,7 +280,7 @@ function App() {
                                         }}
                                     >
                                     </Checkbox>
-                                    <span>生成类型</span>
+                                    <span>生成类型（不勾选则无法生成）</span>
                                 </Space>
 
                             </div>
@@ -352,12 +410,13 @@ function App() {
                                         mode="multiple"
                                         placeholder="选择要排除的表"
                                         style={{width: '100%'}}
+                                        disabled={true}
                                     >
-                                        {
-                                            initData?.allTables?.map(e => {
-                                                return <Option key={e}>{e}</Option>
-                                            })
-                                        }
+                                        {/*{*/}
+                                        {/*    initData?.allTables?.map(e => {*/}
+                                        {/*        return <Option key={e}>{e}</Option>*/}
+                                        {/*    })*/}
+                                        {/*}*/}
                                     </Select>
                                 </Form.Item>
                             </Col>
@@ -382,6 +441,7 @@ function App() {
                                 <Form.Item
                                     name="projectAbsolutePath"
                                     label="项目所在绝对路径"
+                                    rules={[{required: true, message: '请输入项目所在绝对路径'}]}
                                 >
                                     <Input placeholder="请输入项目绝对路径"/>
                                 </Form.Item>
@@ -427,6 +487,7 @@ function App() {
                                 <Form.Item
                                     name="entityPackageName"
                                     label="domains 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="domains 路径"/>
                                 </Form.Item>
@@ -435,6 +496,7 @@ function App() {
                                 <Form.Item
                                     name="controllerPackageName"
                                     label="controller 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="controller 路径"/>
                                 </Form.Item>
@@ -443,6 +505,7 @@ function App() {
                                 <Form.Item
                                     name="controllerReqPackageName"
                                     label="controller.req 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="controller.req 路径"/>
                                 </Form.Item>
@@ -451,6 +514,7 @@ function App() {
                                 <Form.Item
                                     name="dtoPackageName"
                                     label="dto 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="dto 路径"/>
                                 </Form.Item>
@@ -462,6 +526,7 @@ function App() {
                                 <Form.Item
                                     name="mapperPackageName"
                                     label="mapper 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="mapper 路径"/>
                                 </Form.Item>
@@ -470,6 +535,7 @@ function App() {
                                 <Form.Item
                                     name="mapperXmlPackageName"
                                     label="xml路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="xml路径"/>
                                 </Form.Item>
@@ -478,6 +544,7 @@ function App() {
                                 <Form.Item
                                     name="serviceInterfacePackageName"
                                     label="service 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="service 路径"/>
                                 </Form.Item>
@@ -486,6 +553,7 @@ function App() {
                                 <Form.Item
                                     name="serviceImplPackageName"
                                     label="service.impl 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="service.impl 路径"/>
                                 </Form.Item>
@@ -506,12 +574,69 @@ function App() {
                 title="预览"
                 closable={{'aria-label': 'Close Button'}}
                 onClose={onClose}
-                width={"60%"}
+                width={"80%"}
                 open={open}
             >
-                <pre>
-                {previewText}
-                </pre>
+                <Tabs activeKey={activeTab2} onChange={e=>{
+                    setActiveTab2(e);
+                    let filterElement = previewText?.infoList?.filter(e2=>e2.tagName === e)?.[0]?.itemList?.[0];
+                    setCurrentItem(filterElement)
+                }} tabPlacement={"top"}
+                      tabBarStyle={{backgroundColor: "white"}}>
+                    {
+                        previewText?.infoList?.map((item, index) => {
+                            return (
+                                <TabPane tab={item.tagName} key={item.tagName} children={null}>
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: 15
+                                    }}>
+                                        <List
+                                            bordered={false}
+                                            dataSource={item.itemList}
+                                            renderItem={item => (
+                                                <List.Item style={{
+                                                    color: currentItem?.fileName === item.fileName ? '#16A4FF' : '#000',
+                                                    width: '200px',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    textWrap: 'nowrap'
+                                                }} onClick={() => {
+                                                    setCurrentItem(item)
+                                                }} title={item.fileName}>
+                                                    <Space>
+                                                        <CopyOutlined onClick={async () => {
+                                                            // 核心：复制文本到剪贴板
+                                                            await navigator.clipboard.writeText(item.preview);
+                                                            message.info('复制成功！');
+                                                        }}/>
+                                                        {item.fileName}
+                                                    </Space>
+
+                                                </List.Item>
+                                            )}
+                                        />
+                                        <div style={{width: '100%'}}>
+                                            <SyntaxHighlighter
+                                                language="java" // 指定语言（支持 js/ts/html/css/python 等）
+                                                style={vs}    // 主题样式
+                                                showLineNumbers={true} // 显示行号
+                                                lineNumberStyle={{color: '#999', fontSize: 12}} // 行号样式
+                                            >
+                                                {currentItem?.preview}
+                                            </SyntaxHighlighter>
+                                        </div>
+
+                                    </div>
+
+
+                                </TabPane>
+                            )
+                        })
+                    }
+                </Tabs>
+
             </Drawer>
         </Layout>
     )

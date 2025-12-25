@@ -136,7 +136,7 @@ public class E4jCgController {
                     .setMapperXmlPackageName(mapperXmlPackageName)
                     .setServiceInterfacePackageName(serviceInterfacePackageName)
                     .setServiceImplPackageName(serviceImplPackageName);
-            String preview = AutoGen.build(globalGenConfig1)
+            PreviewRes res = AutoGen.build(globalGenConfig1)
                     .fromDbGen(new DbGenSetting()
                             .setUrl(url)
                             .setUsername(username)
@@ -154,7 +154,7 @@ public class E4jCgController {
                             .setExclude(exclude)
                     )
                     .auto(isPreview, true);
-            servletHandler.responseJson(SRes.success(preview));
+            servletHandler.responseJson(SRes.success(res));
         });
         if (!formOrQuery.isPresent()) {
             servletHandler.responseJson(SRes.error("no query"));

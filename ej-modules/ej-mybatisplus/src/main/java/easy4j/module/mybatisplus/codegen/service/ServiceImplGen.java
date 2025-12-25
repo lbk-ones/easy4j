@@ -1,6 +1,7 @@
 package easy4j.module.mybatisplus.codegen.service;
 
 import easy4j.module.mybatisplus.codegen.AbstractGen;
+import easy4j.module.mybatisplus.codegen.ObjectValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,7 +17,7 @@ public class ServiceImplGen extends AbstractGen {
                 , this.getDomainName() + "ServiceImpl.java");
     }
 
-    public String gen(boolean isPreview, boolean isServer) {
+    public String gen(boolean isPreview, boolean isServer, ObjectValue objectValue) {
         notNull(this.getEntityName(),"entityName");
         notNull(this.getServiceImplPackageName(),"iServiceImplPackageName");
 
