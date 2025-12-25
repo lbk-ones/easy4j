@@ -2,6 +2,7 @@ package easy4j.module.mybatisplus.codegen.service;
 
 import easy4j.module.mybatisplus.codegen.AbstractGen;
 import easy4j.module.mybatisplus.codegen.ObjectValue;
+import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,11 +19,18 @@ public class ServiceImplGen extends AbstractGen {
     }
 
     public String gen(boolean isPreview, boolean isServer, ObjectValue objectValue) {
-        notNull(this.getEntityName(),"entityName");
-        notNull(this.getServiceImplPackageName(),"iServiceImplPackageName");
+        notNull(this.getEntityName(), "entityName");
+        notNull(this.getServiceImplPackageName(), "iServiceImplPackageName");
 
         String filePath = this.getFilePath();
-        return loadTemplate(filePath, "temp", "ServiceImplGen.ftl", this, false);
+        String res = loadTemplate(filePath, "temp", "ServiceImplGen.ftl", this, isPreview);
+        PreviewRes previewRes = new PreviewRes();
+        PreviewRes.PInfo pInfo = new PreviewRes.PInfo("ServiceImpl");
+        String fName = this.getDomainName() + "ServiceImpl.java";
+        pInfo.add(fName, res);
+        previewRes.add(pInfo);
+        objectValue.setObject(previewRes);
+        return res;
     }
 
 

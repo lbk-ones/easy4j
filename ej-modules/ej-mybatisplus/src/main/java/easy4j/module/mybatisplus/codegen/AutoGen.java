@@ -19,7 +19,7 @@ import java.util.List;
 
 public class AutoGen {
 
-    List<CodeGen> genList = new ArrayList<>();
+    public List<CodeGen> genList = new ArrayList<>();
 
     GenDto[] genDto;
 
@@ -159,13 +159,28 @@ public class AutoGen {
         }
     }
 
+    public PreviewRes custom(boolean isPreview, boolean isServer) {
+        PreviewRes res = new PreviewRes();
+        for (CodeGen codeGen : genList) {
+            ObjectValue objectValue = new ObjectValue();
+            String gen = codeGen.gen(isPreview, isServer, objectValue);
+            Object object = objectValue.getObject();
+            if (null != object) {
+                PreviewRes object1 = (PreviewRes) object;
+                ListTs.addAll(res.getInfoList(), object1.getInfoList());
+            }
+            if (StrUtil.isNotBlank(gen)) System.out.println(gen);
+        }
+        return res;
+    }
+
     public String preview() {
         List<String> lineList = ListTs.newList();
         for (CodeGen codeGen : genList) {
             String gen = codeGen.gen(true, false, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) lineList.add(gen);
         }
-        return String.join("\n",lineList);
+        return String.join("\n", lineList);
     }
 
     public void gen(boolean isServer) {
@@ -181,18 +196,18 @@ public class AutoGen {
             String gen = codeGen.gen(true, isServer, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) lineList.add(gen);
         }
-        return String.join("\n",lineList);
+        return String.join("\n", lineList);
     }
 
-    public PreviewRes auto(boolean isPreview,boolean isServer) {
+    public PreviewRes auto(boolean isPreview, boolean isServer) {
         ObjectValue objectValue = new ObjectValue();
         for (CodeGen codeGen : genList) {
-            if(codeGen instanceof DbGen){
+            if (codeGen instanceof DbGen) {
                 codeGen.gen(isPreview, isServer, objectValue);
                 break;
             }
         }
-        return (PreviewRes)objectValue.getObject();
+        return (PreviewRes) objectValue.getObject();
     }
 
     public AutoGen clearAllExistsFiles() {
@@ -204,7 +219,7 @@ public class AutoGen {
 
     public static void main(String[] args) {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        System.out.println("pid "+Integer.parseInt(runtimeMXBean.getName().split("@")[0]));
+        System.out.println("pid " + Integer.parseInt(runtimeMXBean.getName().split("@")[0]));
         GenDto genDto1 = new GenDto()
                 .setAuthor("bokun")
                 .setParentPackageName("com.ssc.dataspace.approval2")

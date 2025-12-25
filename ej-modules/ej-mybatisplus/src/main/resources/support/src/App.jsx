@@ -11,7 +11,6 @@ import {isEmpty} from "lodash-es";
 // 导入 highlight.js 核心
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vs} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
-
 const {Header, Content, Footer} = Layout
 const {Title, Text} = Typography
 const {Option} = Select
@@ -83,6 +82,11 @@ function App() {
     // 1. 创建 ref 指向代码块 DOM
     const codeRef = useRef(null);
 
+    const [scanPackages, setScanPackages] = useState({
+        allDtos: [],
+        allEntitys: []
+    });
+
     const showDrawer = () => {
         setOpen(true);
     };
@@ -136,6 +140,10 @@ function App() {
 
     const waring = (data = {}) => {
         return new Promise((resolve, reject) => {
+            if (activeTab === 'custom') {
+                resolve(true);
+                return;
+            }
             if (isEmpty(data.tablePrefix)) {
                 Modal.confirm({
                     title: '提示',
@@ -155,6 +163,17 @@ function App() {
             }
         })
     }
+
+    const checkData = (data) => {
+        if (data.genController || data.genControllerReq) {
+            if (isEmpty(data.urlPrefix)) {
+
+                message.error("请输入生成controller中的url前缀")
+                return false;
+            }
+        }
+        return true;
+    }
     return (
         <Layout className="app-layout">
             <Header className="app-header">
@@ -162,7 +181,29 @@ function App() {
             </Header>
 
             <Content className="app-content">
-                <Tabs activeKey={activeTab} onChange={setActiveTab} tabPlacement={"start"}
+                <Tabs activeKey={activeTab} onChange={e => {
+                    setActiveTab(e);
+                    if (e === "custom") {
+                        post("/db/scanPackage", {
+                            parentPackageName: initData.parentPackageName,
+                            dtoPackageName: initData.dtoPackageName,
+                            entityPackageName: initData.entityPackageName,
+                        }).then(res => {
+                            setInitData({
+                                ...initData,
+                                genController: false,
+                                genControllerReq: false,
+                                genDto: false,
+                                genEntity: false,
+                                genMapper: false,
+                                genMapperXml: false,
+                                genService: false,
+                                genServiceImpl: false
+                            })
+                            setScanPackages(res);
+                        })
+                    }
+                }} tabPlacement={"start"}
                       tabBarStyle={{backgroundColor: "white"}}>
                     <TabPane tab="从数据库中生成" key="standard" children={null}>
                     </TabPane>
@@ -170,7 +211,7 @@ function App() {
                     </TabPane>
                 </Tabs>
 
-                <div className="standard-form" style={{display: activeTab === "standard" ? "block" : "none"}}>
+                <div className="standard-form">
                     <span>
                         <Space>
                             <Button
@@ -184,14 +225,30 @@ function App() {
                                     }));
                                     delete parse.allTables;
                                     delete parse.exclude;
+                                    if (!checkData(parse)) {
+                                        return;
+                                    }
                                     let res = await waring(parse);
                                     if (res) {
-                                        post("/db/preview", parse, {loadingText: "正在生成预览"}).then(res => {
-                                            setPreviewText(res);
-                                            setActiveTab2(res?.infoList?.[0]?.tagName)
-                                            setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
-                                            showDrawer();
-                                        })
+                                        if (activeTab === "custom") {
+                                            post("/custom/gen", {
+                                                ...parse,
+                                                isPreview: true
+                                            }, {loadingText: "正在自定义生成预览"}).then(res => {
+                                                setPreviewText(res);
+                                                setActiveTab2(res?.infoList?.[0]?.tagName)
+                                                setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                                showDrawer();
+                                            })
+                                        } else {
+                                            post("/db/preview", parse, {loadingText: "正在生成预览"}).then(res => {
+                                                setPreviewText(res);
+                                                setActiveTab2(res?.infoList?.[0]?.tagName)
+                                                setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                                showDrawer();
+                                            })
+                                        }
+
                                     }
 
                                 }}
@@ -210,16 +267,32 @@ function App() {
                                      }));
                                      delete parse.allTables;
                                      delete parse.exclude;
+                                     if (!checkData(parse)) {
+                                         return;
+                                     }
                                      let res = await waring(parse);
                                      if (res) {
                                          let gen = await waringGen();
                                          if (gen) {
-                                             post("/db/gen", parse, {loadingText: "正在生成，生成之后会写入文件"}).then(res => {
-                                                 setPreviewText(res);
-                                                 setActiveTab2(res?.infoList?.[0]?.tagName)
-                                                 setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
-                                                 showDrawer();
-                                             })
+                                             if (activeTab === "custom") {
+                                                 post("/custom/gen", {
+                                                     ...parse,
+                                                     isPreview: false
+                                                 }, {loadingText: "正在自定义生成预览"}).then(res => {
+                                                     setPreviewText(res);
+                                                     setActiveTab2(res?.infoList?.[0]?.tagName)
+                                                     setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                                     showDrawer();
+                                                 })
+                                             } else {
+                                                 post("/db/gen", parse, {loadingText: "正在生成，生成之后会写入文件"}).then(res => {
+                                                     setPreviewText(res);
+                                                     setActiveTab2(res?.infoList?.[0]?.tagName)
+                                                     setCurrentItem(res?.infoList?.[0]?.itemList?.[0]);
+                                                     showDrawer();
+                                                 })
+                                             }
+
                                          }
 
                                      }
@@ -255,17 +328,19 @@ function App() {
                                         onChange={(e) => {
                                             if (e.target.checked === true) {
                                                 setInitData({
+                                                    ...initData,
                                                     genController: true,
                                                     genControllerReq: true,
-                                                    genDto: true,
-                                                    genEntity: true,
+                                                    genDto: activeTab !== "custom",
+                                                    genEntity: activeTab !== "custom",
                                                     genMapper: true,
-                                                    genMapperXml: true,
+                                                    genMapperXml: activeTab !== "custom",
                                                     genService: true,
                                                     genServiceImpl: true
                                                 })
                                             } else {
                                                 setInitData({
+                                                    ...initData,
                                                     genController: false,
                                                     genControllerReq: false,
                                                     genDto: false,
@@ -289,6 +364,7 @@ function App() {
                         <Row gutter={[16, 8]}>
                             <Col xs={12} md={6}>
                                 <Checkbox
+                                    disabled={activeTab === "custom"}
                                     checked={initData.genEntity}
                                     onChange={(e) => handleUpdateGenerateType('genEntity', e.target.checked)}
                                 >
@@ -314,6 +390,7 @@ function App() {
                             </Col>
                             <Col xs={12} md={6}>
                                 <Checkbox
+                                    disabled={activeTab === "custom"}
                                     checked={initData.genDto}
                                     onChange={(e) => handleUpdateGenerateType('genDto', e.target.checked)}
                                 >
@@ -330,6 +407,7 @@ function App() {
                             </Col>
                             <Col xs={12} md={6}>
                                 <Checkbox
+                                    disabled={activeTab === "custom"}
                                     checked={initData.genMapperXml}
                                     onChange={(e) => handleUpdateGenerateType('genMapperXml', e.target.checked)}
                                 >
@@ -354,74 +432,165 @@ function App() {
                             </Col>
                         </Row>
 
-                        <Row>
-                            <div className={"tag-line"}> 数据库配置</div>
-                        </Row>
-                        <Row gutter={[16, 8]}>
-                            <Col xs={24} md={6}>
-                                <Form.Item
-                                    name="url"
-                                    label="jdbc url"
-                                >
-                                    <Input placeholder="jdbc:mysql://localhost:3306/test"/>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={6}>
-                                <Form.Item
-                                    name="username"
-                                    label="用户名"
-                                >
-                                    <Input placeholder="数据库用户名"/>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={6}>
-                                <Form.Item
-                                    name="password"
-                                    label="密码"
-                                >
-                                    <Input.Password placeholder="数据库密码"/>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={6}>
-                                <Form.Item
-                                    name="tablePrefix"
-                                    label="表前缀"
-                                >
-                                    <Input placeholder="要扫描的表前缀，例如：xxx_%"/>
-                                </Form.Item>
-                            </Col>
-                        </Row>
 
-                        <Row gutter={[16, 8]}>
-                            <Col xs={24} md={6}>
-                                <Form.Item
-                                    name="removeTablePrefix"
-                                    label="去除表格前缀"
-                                >
-                                    <Input placeholder="去除的表格前缀"/>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={18}>
-                                <Form.Item
-                                    name="exclude"
-                                    label="排除表"
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        placeholder="选择要排除的表"
-                                        style={{width: '100%'}}
-                                        disabled={true}
+                        <div style={{display: activeTab === "standard" ? "block" : "none"}}>
+                            <Row>
+                                <div className={"tag-line"}> 数据库配置</div>
+                            </Row>
+                            <Row gutter={[16, 8]}>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="url"
+                                        label="jdbc url"
                                     >
-                                        {/*{*/}
-                                        {/*    initData?.allTables?.map(e => {*/}
-                                        {/*        return <Option key={e}>{e}</Option>*/}
-                                        {/*    })*/}
-                                        {/*}*/}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                                        <Input placeholder="jdbc:mysql://localhost:3306/test"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="username"
+                                        label="用户名"
+                                    >
+                                        <Input placeholder="数据库用户名"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="password"
+                                        label="密码"
+                                    >
+                                        <Input.Password placeholder="数据库密码"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="tablePrefix"
+                                        label="表前缀（以%结尾，和写sql一样）"
+                                    >
+                                        <Input placeholder="要扫描的表前缀，例如：xxx_%"/>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
 
+                            <Row gutter={[16, 8]}>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="removeTablePrefix"
+                                        label="去除表格前缀"
+                                    >
+                                        <Input placeholder="去除的表格前缀"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={18}>
+                                    <Form.Item
+                                        name="exclude"
+                                        label="排除表(暂时禁用)"
+                                    >
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="选择要排除的表"
+                                            style={{width: '100%'}}
+                                            disabled={true}
+                                        >
+                                            {/*{*/}
+                                            {/*    initData?.allTables?.map(e => {*/}
+                                            {/*        return <Option key={e}>{e}</Option>*/}
+                                            {/*    })*/}
+                                            {/*}*/}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </div>
+
+                        {/*
+                            // 实体名称 驼峰 帕斯卡命名发 必须是大写
+                            String domainName;
+                            // 中文描述
+                            String cnDesc;
+                            // 返回的dto名称
+                            String returnDtoName;
+                            // 数据库实体类名称
+                            String entityName;
+                        */}
+
+                        {/*custom*/}
+                        <div style={{display: activeTab === "custom" ? "block" : "none"}}>
+                            <Row>
+                                <div className={"tag-line"}>自定义属性</div>
+                            </Row>
+                            <Row gutter={[16, 8]}>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="domainName"
+                                        label="实体名称"
+                                        rules={[{required: true, message: '请输入实体名称'}]}
+                                    >
+                                        <Input placeholder="实体名称 驼峰 帕斯卡命名发 首字母必须是大写"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="cnDesc"
+                                        label="中文描述"
+                                        rules={[{required: true, message: '请输入中文描述'}]}
+                                    >
+                                        <Input placeholder="请输入简短的中文描述"/>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="returnDtoName"
+                                        label="DTO的名称(自动扫描已有的)"
+                                        rules={[{required: true, message: '请选择关联的DTO'}]}
+                                    >
+                                        {/*scanPackages*/}
+                                        <Select
+                                            //mode="multiple"
+                                            placeholder="选择DTO"
+                                            style={{width: '100%'}}
+                                            showSearch
+                                            onSelect={e => {
+                                                if (e.replace) {
+                                                    let replace = e.replace("Dto", "");
+                                                    let find = scanPackages?.allEntitys?.find(e=>e === replace);
+                                                    if(find) {
+                                                        form.setFieldValue("entityName",find);
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {
+                                                scanPackages?.allDtos?.map(e => {
+                                                    return <Option key={e}>{e}</Option>
+                                                })
+                                            }
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={6}>
+                                    <Form.Item
+                                        name="entityName"
+                                        label="数据库实体名称(自动扫描已有的)"
+                                        rules={[{required: true, message: '请选择关联的数据库实体'}]}
+                                    >
+                                        <Select
+                                            //mode="multiple"
+                                            placeholder="选择数据库实体"
+                                            style={{width: '100%'}}
+                                            showSearch
+                                        >
+                                            {
+                                                scanPackages?.allEntitys?.map(e => {
+                                                    return <Option key={e}>{e}</Option>
+                                                })
+                                            }
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                        </div>
 
                         <Row>
                             <div className={"tag-line"}>全局配置</div>
@@ -577,9 +746,9 @@ function App() {
                 width={"80%"}
                 open={open}
             >
-                <Tabs activeKey={activeTab2} onChange={e=>{
+                <Tabs activeKey={activeTab2} onChange={e => {
                     setActiveTab2(e);
-                    let filterElement = previewText?.infoList?.filter(e2=>e2.tagName === e)?.[0]?.itemList?.[0];
+                    let filterElement = previewText?.infoList?.filter(e2 => e2.tagName === e)?.[0]?.itemList?.[0];
                     setCurrentItem(filterElement)
                 }} tabPlacement={"top"}
                       tabBarStyle={{backgroundColor: "white"}}>

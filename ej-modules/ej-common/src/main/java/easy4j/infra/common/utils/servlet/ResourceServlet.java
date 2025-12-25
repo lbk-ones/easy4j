@@ -263,7 +263,7 @@ public class ResourceServlet extends HttpServlet {
                             String resString = invokeRes.toString();
                             writer.write(resString, 0, resString.length());
                         } else {
-                            String resString = JacksonUtil.toJson(invokeRes);
+                            String resString = JacksonUtil.toJson(SRes.success(invokeRes));
                             writer.write(resString, 0, resString.length());
                         }
                         writer.flush();

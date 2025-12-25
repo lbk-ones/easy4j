@@ -2,6 +2,7 @@ package easy4j.module.mybatisplus.codegen.mybatis;
 
 import easy4j.module.mybatisplus.codegen.AbstractGen;
 import easy4j.module.mybatisplus.codegen.ObjectValue;
+import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -28,6 +29,13 @@ public class MapperGen extends AbstractGen {
         String filePath = this.getFilePath();
         this.schema = this.getEntityName();
         this.description = this.getCnDesc();
-        return loadTemplate(filePath, "temp", "MapperGen.ftl", this, false);
+        String res = loadTemplate(filePath, "temp", "MapperGen.ftl", this, isPreview);
+        PreviewRes previewRes = new PreviewRes();
+        PreviewRes.PInfo pInfo = new PreviewRes.PInfo("Mapper");
+        String fName = this.getEntityName() + "Mapper.java";
+        pInfo.add(fName,res);
+        previewRes.add(pInfo);
+        objectValue.setObject(previewRes);
+        return res;
     }
 }
