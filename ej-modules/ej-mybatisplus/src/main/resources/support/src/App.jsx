@@ -515,82 +515,87 @@ function App() {
                         */}
 
                         {/*custom*/}
-                        <div style={{display: activeTab === "custom" ? "block" : "none"}}>
-                            <Row>
-                                <div className={"tag-line"}>自定义属性</div>
-                            </Row>
-                            <Row gutter={[16, 8]}>
-                                <Col xs={24} md={6}>
-                                    <Form.Item
-                                        name="domainName"
-                                        label="实体名称"
-                                        rules={[{required: true, message: '请输入实体名称'}]}
-                                    >
-                                        <Input placeholder="实体名称 驼峰 帕斯卡命名发 首字母必须是大写"/>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} md={6}>
-                                    <Form.Item
-                                        name="cnDesc"
-                                        label="中文描述"
-                                        rules={[{required: true, message: '请输入中文描述'}]}
-                                    >
-                                        <Input placeholder="请输入简短的中文描述"/>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} md={6}>
-                                    <Form.Item
-                                        name="returnDtoName"
-                                        label="DTO的名称(自动扫描已有的)"
-                                        rules={[{required: true, message: '请选择关联的DTO'}]}
-                                    >
-                                        {/*scanPackages*/}
-                                        <Select
-                                            //mode="multiple"
-                                            placeholder="选择DTO"
-                                            style={{width: '100%'}}
-                                            showSearch
-                                            onSelect={e => {
-                                                if (e.replace) {
-                                                    let replace = e.replace("Dto", "");
-                                                    let find = scanPackages?.allEntitys?.find(e=>e === replace);
-                                                    if(find) {
-                                                        form.setFieldValue("entityName",find);
+                        {
+                            activeTab === "custom" && (
+                                <div>
+                                    <Row>
+                                        <div className={"tag-line"}>自定义属性</div>
+                                    </Row>
+                                    <Row gutter={[16, 8]}>
+                                        <Col xs={24} md={6}>
+                                            <Form.Item
+                                                name="domainName"
+                                                label="实体名称"
+                                                rules={[{required: true, message: '请输入实体名称'}]}
+                                            >
+                                                <Input placeholder="实体名称 驼峰 帕斯卡命名发 首字母必须是大写"/>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} md={6}>
+                                            <Form.Item
+                                                name="cnDesc"
+                                                label="中文描述"
+                                                rules={[{required: true, message: '请输入中文描述'}]}
+                                            >
+                                                <Input placeholder="请输入简短的中文描述"/>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} md={6}>
+                                            <Form.Item
+                                                name="returnDtoName"
+                                                label="DTO的名称(自动扫描已有的)"
+                                                rules={[{required: true, message: '请选择关联的DTO'}]}
+                                            >
+                                                {/*scanPackages*/}
+                                                <Select
+                                                    //mode="multiple"
+                                                    placeholder="选择DTO"
+                                                    style={{width: '100%'}}
+                                                    showSearch
+                                                    onSelect={e => {
+                                                        if (e.replace) {
+                                                            let replace = e.replace("Dto", "");
+                                                            let find = scanPackages?.allEntitys?.find(e=>e === replace);
+                                                            if(find) {
+                                                                form.setFieldValue("entityName",find);
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    {
+                                                        scanPackages?.allDtos?.map(e => {
+                                                            return <Option key={e}>{e}</Option>
+                                                        })
                                                     }
-                                                }
-                                            }}
-                                        >
-                                            {
-                                                scanPackages?.allDtos?.map(e => {
-                                                    return <Option key={e}>{e}</Option>
-                                                })
-                                            }
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} md={6}>
-                                    <Form.Item
-                                        name="entityName"
-                                        label="数据库实体名称(自动扫描已有的)"
-                                        rules={[{required: true, message: '请选择关联的数据库实体'}]}
-                                    >
-                                        <Select
-                                            //mode="multiple"
-                                            placeholder="选择数据库实体"
-                                            style={{width: '100%'}}
-                                            showSearch
-                                        >
-                                            {
-                                                scanPackages?.allEntitys?.map(e => {
-                                                    return <Option key={e}>{e}</Option>
-                                                })
-                                            }
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col xs={24} md={6}>
+                                            <Form.Item
+                                                name="entityName"
+                                                label="数据库实体名称(自动扫描已有的)"
+                                                rules={[{required: true, message: '请选择关联的数据库实体'}]}
+                                            >
+                                                <Select
+                                                    //mode="multiple"
+                                                    placeholder="选择数据库实体"
+                                                    style={{width: '100%'}}
+                                                    showSearch
+                                                >
+                                                    {
+                                                        scanPackages?.allEntitys?.map(e => {
+                                                            return <Option key={e}>{e}</Option>
+                                                        })
+                                                    }
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
 
-                        </div>
+                                </div>
+                            )
+                        }
+
 
                         <Row>
                             <div className={"tag-line"}>全局配置</div>
