@@ -1,6 +1,7 @@
 package easy4j.module.mybatisplus.codegen.controller;
 
 import easy4j.module.mybatisplus.codegen.AbstractGen;
+import easy4j.module.mybatisplus.codegen.ObjectValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,7 +20,7 @@ public class ControllerGen extends AbstractGen {
     }
 
     @Override
-    public String gen(boolean isPreview, boolean isServer) {
+    public String gen(boolean isPreview, boolean isServer, ObjectValue objectValue) {
         notNull(this.getDomainName(),"domainName");
         String filePath = this.getFilePath();
         return loadTemplate(filePath, "temp","ControllerGen.ftl", this, isPreview);

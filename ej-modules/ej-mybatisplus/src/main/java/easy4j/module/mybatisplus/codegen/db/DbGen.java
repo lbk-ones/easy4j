@@ -18,6 +18,8 @@ import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.module.mybatisplus.audit.AutoAudit;
 import easy4j.module.mybatisplus.codegen.AbstractGen;
+import easy4j.module.mybatisplus.codegen.ObjectValue;
+import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,6 +30,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static easy4j.module.mybatisplus.codegen.db.FieldNameValidator.validateAndCorrect;
@@ -46,7 +49,7 @@ public class DbGen extends AbstractGen {
         return this.getProjectAbsolutePath();
     }
 
-    public String gen(boolean isPreview, boolean isServer) {
+    public String gen(boolean isPreview, boolean isServer, ObjectValue objectValue) {
         String tablePrefix = this.dbGenSetting.getTablePrefix();
         notNull(this.dbGenSetting, "entityDto");
         //notNull(tablePrefix, "tablePrefix");
@@ -65,6 +68,7 @@ public class DbGen extends AbstractGen {
         ) {
             return null;
         }
+        PreviewRes previewRes = new PreviewRes();
         TempDataSource tempDataSource = new TempDataSource(
                 SqlType.getDriverClassNameByUrl(this.dbGenSetting.getUrl()),
                 this.dbGenSetting.getUrl(),
@@ -92,7 +96,7 @@ public class DbGen extends AbstractGen {
                 Set<String> importList = Sets.newHashSet();
                 List<EntityInfo.EFieldInfo> fields = ListTs.newList();
                 String tableName = tableMetadata.getTableName();
-                if(StrUtil.isNotBlank(tablePrefix)){
+                if (StrUtil.isNotBlank(tablePrefix)) {
                     boolean b = !StrUtil.endWith(tablePrefix, "%") && !StrUtil.startWith(tablePrefix, "%");
                     if (b && !StrUtil.equals(tableName, tablePrefix)) {
                         continue;
@@ -128,7 +132,7 @@ public class DbGen extends AbstractGen {
                     }
                     Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName());
                     if (javaClassByTypeNameAndDbType == null) {
-                        System.err.println("the 【"+tableName1+"】-> field " + databaseColumnMetadata.getColumnName() + " vs java class is null！");
+                        System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() + " vs java class is null！");
                         continue;
                     }
                     boolean needImport = false;
@@ -201,136 +205,157 @@ public class DbGen extends AbstractGen {
             }
             String packageNamePath = parsePackage(this.getParentPackageName());
             String filePath_ = this.getFilePath();
-            List<String> finalLine1 = ListTs.newList();
-            List<String> finalLine2 = ListTs.newList();
-            List<String> finalLine3 = ListTs.newList();
-            List<String> finalLine4 = ListTs.newList();
+            List<String> entityLines = ListTs.newList();
+            List<String> mapperXmlLines = ListTs.newList();
+            List<String> mapperLines = ListTs.newList();
+            List<String> serviceLines = ListTs.newList();
             List<String> finalLine5 = ListTs.newList();
             List<String> finalLine6 = ListTs.newList();
             List<String> finalLine7 = ListTs.newList();
+            List<String> finalLine8 = ListTs.newList();
+            PreviewRes.PInfo EntityPInfo = new PreviewRes.PInfo("Entity");
+            PreviewRes.PInfo MapperXmlPInfo = new PreviewRes.PInfo("MapperXml");
+            PreviewRes.PInfo MapperPInfo = new PreviewRes.PInfo("Mapper");
+            PreviewRes.PInfo ServicePInfo = new PreviewRes.PInfo("Service");
+            PreviewRes.PInfo ServiceImplPInfo = new PreviewRes.PInfo("ServiceImpl");
+            PreviewRes.PInfo ControllerPInfo = new PreviewRes.PInfo("Controller");
+            PreviewRes.PInfo ControllerReqPInfo = new PreviewRes.PInfo("ControllerReq");
+            PreviewRes.PInfo DtoPInfo = new PreviewRes.PInfo("Dto");
             for (EntityInfo entityInfo : entityInfos) {
                 String tableName = entityInfo.getTableName();
                 if (dbGenSetting.isGenEntity()) {
-                    String filePath = filePath_ + File.separator + SRC_MAIN_JAVA + File.separator + packageNamePath + File.separator + getEntityPackageName() + File.separator + entityInfo.getSchema() + ".java";
+                    String fileName = entityInfo.getSchema() + ".java";
+                    String filePath = filePath_ + File.separator + SRC_MAIN_JAVA + File.separator + packageNamePath + File.separator + getEntityPackageName() + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "EntityGen.ftl", entityInfo, isPreview);
-                    finalLine1.add(s);
+                    entityLines.add(s);
+                    EntityPInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenMapperXml()) {
-                    String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + this.getMapperXmlPackageName() + File.separator + dbType + File.separator + entityInfo.getSchema() + "Mapper.xml";
+                    String fileName = entityInfo.getSchema() + "Mapper.xml";
+                    String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + this.getMapperXmlPackageName() + File.separator + dbType + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo, isPreview);
-                    finalLine2.add(s);
+                    mapperXmlLines.add(s);
+                    MapperXmlPInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenMapper()) {
+                    String fileName = entityInfo.getSchema() + "Mapper.java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(this.getMapperPackageName())
-                            , entityInfo.getSchema() + "Mapper.java");
+                            , fileName);
                     String s = loadTemplate(s1, "temp", "MapperGen.ftl", entityInfo, isPreview);
-                    finalLine3.add(s);
+                    mapperLines.add(s);
+                    MapperPInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenService()) {
                     EntityInfo entityInfo1 = BeanUtil.copyProperties(entityInfo, EntityInfo.class);
                     entityInfo1.setCnDesc(entityInfo.getDescription());
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
+                    String fileName = "I" + entityInfo1.getDomainName() + "Service.java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(getServiceInterfacePackageName())
-                            , "I" + entityInfo1.getDomainName() + "Service.java");
-
-
+                            , fileName);
                     String s = loadTemplate(s1, "temp", "IServiceGen.ftl", entityInfo1, isPreview);
-                    finalLine4.add(s);
+                    serviceLines.add(s);
+                    ServicePInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenServiceImpl()) {
                     EntityInfo entityInfo1 = BeanUtil.copyProperties(entityInfo, EntityInfo.class);
                     entityInfo1.setCnDesc(entityInfo.getDescription());
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
+                    String fileName = entityInfo1.getDomainName() + "ServiceImpl.java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(getServiceImplPackageName())
-                            , entityInfo1.getDomainName() + "ServiceImpl.java");
-
-
+                            , fileName);
                     String s = loadTemplate(s1, "temp", "ServiceImplGen.ftl", entityInfo1, isPreview);
                     finalLine5.add(s);
+                    ServiceImplPInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenController()) {
                     EntityInfo entityInfo1 = BeanUtil.copyProperties(entityInfo, EntityInfo.class);
+                    String fileName = entityInfo1.getSchema() + "Controller.java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(this.getControllerPackageName())
-                            , entityInfo1.getSchema() + "Controller.java");
-
-
-                    entityInfo1.setCnDesc(StrUtil.blankToDefault(entityInfo.getDescription(),tableName));
+                            , fileName);
+                    entityInfo1.setCnDesc(StrUtil.blankToDefault(entityInfo.getDescription(), tableName));
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
 
                     String s = loadTemplate(s1, "temp", "ControllerGen.ftl", entityInfo1, isPreview);
                     finalLine6.add(s);
+                    ControllerPInfo.add(fileName, s);
                 }
-
                 if (dbGenSetting.isGenControllerReq()) {
                     EntityInfo entityInfo1 = BeanUtil.copyProperties(entityInfo, EntityInfo.class);
+                    String fileName = entityInfo1.getSchema() + "ControllerReq.java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(this.getControllerReqPackageName())
-                            , entityInfo1.getSchema() + "ControllerReq.java");
+                            , fileName);
 
-                    entityInfo1.setCnDesc(StrUtil.blankToDefault(entityInfo.getDescription(),tableName));
+                    entityInfo1.setCnDesc(StrUtil.blankToDefault(entityInfo.getDescription(), tableName));
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema() + "Dto");
                     entityInfo1.setDomainName(entityInfo.getSchema());
 
                     String s = loadTemplate(s1, "temp", "ControllerReqGen.ftl", entityInfo1, isPreview);
                     finalLine7.add(s);
+                    ControllerReqPInfo.add(fileName, s);
                 }
 
                 if (dbGenSetting.isGenDto()) {
                     EntityInfo entityInfo1 = BeanUtil.copyProperties(entityInfo, EntityInfo.class);
 
                     entityInfo1.setSchema(entityInfo.getSchema() + "Dto");
+                    String fileName = entityInfo1.getSchema() + ".java";
                     String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
                             , packageNamePath
                             , parsePackage(this.getDtoPackageName())
-                            , entityInfo1.getSchema() + ".java");
+                            , fileName);
 
                     entityInfo1.setCnDesc(entityInfo.getDescription());
                     entityInfo1.setEntityName(entityInfo.getSchema());
                     entityInfo1.setReturnDtoName(entityInfo.getSchema());
                     entityInfo1.setDomainName(entityInfo.getSchema());
                     String s = loadTemplate(s1, "temp", "DtoGen.ftl", entityInfo1, isPreview);
-                    finalLine7.add(s);
+                    finalLine8.add(s);
+                    DtoPInfo.add(fileName, s);
                 }
-
-                ListTs.addAll(finalList,finalLine1);
-                ListTs.addAll(finalList,finalLine2);
-                ListTs.addAll(finalList,finalLine3);
-                ListTs.addAll(finalList,finalLine4);
-                ListTs.addAll(finalList,finalLine5);
-                ListTs.addAll(finalList,finalLine6);
-                ListTs.addAll(finalList,finalLine7);
-
+                ListTs.addAll(finalList, entityLines);
+                ListTs.addAll(finalList, mapperXmlLines);
+                ListTs.addAll(finalList, mapperLines);
+                ListTs.addAll(finalList, serviceLines);
+                ListTs.addAll(finalList, finalLine5);
+                ListTs.addAll(finalList, finalLine6);
+                ListTs.addAll(finalList, finalLine7);
+                ListTs.addAll(finalList, finalLine8);
             }
+            previewRes.add(EntityPInfo);
+            previewRes.add(MapperXmlPInfo);
+            previewRes.add(MapperPInfo);
+            previewRes.add(ServicePInfo);
+            previewRes.add(ServiceImplPInfo);
+            previewRes.add(ControllerPInfo);
+            previewRes.add(ControllerReqPInfo);
+            previewRes.add(DtoPInfo);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             JdbcUtils.closeConnection(quietConnection);
-            if(!isServer){
+            if (!isServer) {
                 GlobalPruneTimer.INSTANCE.shutdown();
             }
         }
-        return String.join("\n",finalList);
+        if (objectValue != null) objectValue.setObject(previewRes);
+        return String.join("\n", finalList);
     }
 
 

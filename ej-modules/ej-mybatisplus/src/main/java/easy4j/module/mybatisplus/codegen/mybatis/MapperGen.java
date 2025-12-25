@@ -1,6 +1,7 @@
 package easy4j.module.mybatisplus.codegen.mybatis;
 
 import easy4j.module.mybatisplus.codegen.AbstractGen;
+import easy4j.module.mybatisplus.codegen.ObjectValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,7 +22,7 @@ public class MapperGen extends AbstractGen {
                 , this.getEntityName() + "Mapper.java");
     }
 
-    public String gen(boolean isPreview, boolean isServer) {
+    public String gen(boolean isPreview, boolean isServer, ObjectValue objectValue) {
         notNull(this.getEntityName(),"entityName");
         notNull(this.getCnDesc(),"cnDesc");
         String filePath = this.getFilePath();

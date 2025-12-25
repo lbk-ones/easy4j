@@ -10,6 +10,7 @@ import easy4j.module.mybatisplus.codegen.db.DbGen;
 import easy4j.module.mybatisplus.codegen.mybatis.MapperGen;
 import easy4j.module.mybatisplus.codegen.service.IServiceGen;
 import easy4j.module.mybatisplus.codegen.service.ServiceImplGen;
+import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -153,7 +154,7 @@ public class AutoGen {
 
     public void gen() {
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen(false, false);
+            String gen = codeGen.gen(false, false, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) System.out.println(gen);
         }
     }
@@ -161,7 +162,7 @@ public class AutoGen {
     public String preview() {
         List<String> lineList = ListTs.newList();
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen(true, false);
+            String gen = codeGen.gen(true, false, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) lineList.add(gen);
         }
         return String.join("\n",lineList);
@@ -169,7 +170,7 @@ public class AutoGen {
 
     public void gen(boolean isServer) {
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen(false, isServer);
+            String gen = codeGen.gen(false, isServer, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) System.out.println(gen);
         }
     }
@@ -177,19 +178,21 @@ public class AutoGen {
     public String preview(boolean isServer) {
         List<String> lineList = ListTs.newList();
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen(true, isServer);
+            String gen = codeGen.gen(true, isServer, new ObjectValue());
             if (StrUtil.isNotBlank(gen)) lineList.add(gen);
         }
         return String.join("\n",lineList);
     }
 
-    public String auto(boolean isPreview,boolean isServer) {
-        List<String> lineList = ListTs.newList();
+    public PreviewRes auto(boolean isPreview,boolean isServer) {
+        ObjectValue objectValue = new ObjectValue();
         for (CodeGen codeGen : genList) {
-            String gen = codeGen.gen(isPreview, isServer);
-            if (StrUtil.isNotBlank(gen)) lineList.add(gen);
+            if(codeGen instanceof DbGen){
+                codeGen.gen(isPreview, isServer, objectValue);
+                break;
+            }
         }
-        return String.join("\n-----------------------------------------------------------\n",lineList);
+        return (PreviewRes)objectValue.getObject();
     }
 
     public AutoGen clearAllExistsFiles() {
