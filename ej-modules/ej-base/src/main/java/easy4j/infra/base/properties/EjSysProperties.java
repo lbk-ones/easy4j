@@ -690,6 +690,13 @@ public class EjSysProperties {
     private DynamicDataSourceProperties dynamicDataSource;
 
     /**
+     * 动态数据源
+     */
+    @SpringVs(desc = "代码生成相关配置")
+    @NestedConfigurationProperty
+    private CodeGenProperties codeGen;
+
+    /**
      * 根据常量获取 对应的springboot变量
      *
      * @param constant

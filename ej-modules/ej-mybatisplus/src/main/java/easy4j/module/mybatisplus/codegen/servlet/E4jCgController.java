@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import cn.hutool.core.lang.func.LambdaUtil;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Lists;
@@ -14,10 +13,10 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.PackageScanner;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.common.utils.servlet.MethodType;
-import easy4j.infra.common.utils.servlet.SRes;
-import easy4j.infra.common.utils.servlet.ServletHandler;
-import easy4j.infra.common.utils.servlet.UrlMap;
+import easy4j.infra.common.utils.servletmvc.MethodType;
+import easy4j.infra.common.utils.servletmvc.SRes;
+import easy4j.infra.common.utils.servletmvc.ServletHandler;
+import easy4j.infra.common.utils.servletmvc.UrlMap;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -197,7 +196,7 @@ public class E4jCgController {
      * @param servletHandler handler
      */
     @UrlMap(url = "/db/scanPackage", method = MethodType.POST)
-    public PackageRes scanPackage(ServletHandler servletHandler) {
+    public SRes scanPackage(ServletHandler servletHandler) {
         PackageRes packageRes = new PackageRes();
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         String parentPackageName = formDataMap.get("parentPackageName");
@@ -230,7 +229,7 @@ public class E4jCgController {
                 throw new RuntimeException(e);
             }
         }
-        return packageRes;
+        return SRes.success(packageRes);
     }
 
 
@@ -240,7 +239,7 @@ public class E4jCgController {
      * @param servletHandler handler
      */
     @UrlMap(url = "/custom/gen", method = MethodType.POST)
-    public PreviewRes customGen(ServletHandler servletHandler) {
+    public SRes customGen(ServletHandler servletHandler) {
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         if (checkNotNullR(servletHandler,
                 formDataMap,
@@ -301,7 +300,7 @@ public class E4jCgController {
         if(!build.genList.isEmpty()) {
             previewRes = build.custom(isPreview, true);
         }
-        return previewRes;
+        return SRes.success(previewRes);
     }
 
 
