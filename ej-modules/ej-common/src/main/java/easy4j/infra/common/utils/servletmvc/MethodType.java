@@ -1,4 +1,4 @@
-package easy4j.infra.common.utils.servlet;
+package easy4j.infra.common.utils.servletmvc;
 
 public enum MethodType {
 

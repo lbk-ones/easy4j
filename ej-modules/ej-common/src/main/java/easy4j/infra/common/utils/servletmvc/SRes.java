@@ -1,6 +1,7 @@
-package easy4j.infra.common.utils.servlet;
+package easy4j.infra.common.utils.servletmvc;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -33,5 +34,10 @@ public class SRes implements Serializable {
         sRes.setMessage(StrUtil.blankToDefault(data,"系统错误"));
         sRes.setStatus(0);
         return sRes;
+    }
+
+    @Override
+    public String toString() {
+        return JacksonUtil.toJsonContainNull(this);
     }
 }

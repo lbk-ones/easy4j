@@ -1,7 +1,4 @@
-package easy4j.infra.common.utils.servlet;
-
-import cn.hutool.http.ContentType;
-import org.apache.poi.openxml4j.opc.ContentTypes;
+package easy4j.infra.common.utils.servletmvc;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -25,9 +22,8 @@ public @interface UrlMap {
 
     /**
      * 返回content-type 默认 json
-     * @return
      */
-    String returnContentType() default "application/json;charset=UTF-8";
+    MimeType returnContentType() default MimeType.APPLICATION_JSON;
 
 
 
