@@ -146,7 +146,7 @@ public class Easy4jServlet extends HttpServlet {
      * @return boolean
      */
     public boolean intercept(HttpServletRequest request, HttpServletResponse response) {
-        return false;
+        return true;
     }
 
     public void crossOrigin(HttpServletRequest request, HttpServletResponse response) {
@@ -166,8 +166,9 @@ public class Easy4jServlet extends HttpServlet {
     private void sendUnauthorizedResponse(HttpServletResponse resp) {
         try {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.setContentType(MimeType.TEXT_HTML.getFullMimeTypeWithUtf8());
             resp.setHeader("WWW-Authenticate", "Basic realm=\"" + REALM + "\"");
-            resp.getWriter().write("<h1>401 Unauthorized：请输入正确的用户名密码</h1>");
+            resp.getWriter().write("<h1 style=\"color:red\">请输入正确的用户名密码!</h1>");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -220,7 +221,7 @@ public class Easy4jServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         try {
-            if (intercept(request, response)) return;
+            if (!intercept(request, response)) return;
 
             crossOrigin(request, response);
 
