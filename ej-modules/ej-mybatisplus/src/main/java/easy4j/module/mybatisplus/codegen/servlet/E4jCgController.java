@@ -1,8 +1,9 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 
 import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.StrUtil;
@@ -12,6 +13,7 @@ import com.google.common.collect.Lists;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.PackageScanner;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.servletmvc.MethodType;
 import easy4j.infra.common.utils.servletmvc.SRes;
@@ -27,9 +29,6 @@ import easy4j.module.mybatisplus.codegen.MultiGenDto;
 import easy4j.module.mybatisplus.codegen.db.DbGenSetting;
 
 import javax.sql.DataSource;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class E4jCgController {
@@ -49,7 +48,7 @@ public class E4jCgController {
         standRes.setUrl(dbUrl);
         standRes.setUsername(userName);
         standRes.setPassword(password);
-        standRes.setExclude(Lists.newArrayList());
+        standRes.setExclude("");
         standRes.setParentPackageName(Easy4j.mainClassPath);
         standRes.setProjectAbsolutePath(System.getProperty("user.dir"));
         standRes.setDeleteIfExists(false);
@@ -96,7 +95,7 @@ public class E4jCgController {
             String username = standRes.getUsername();
             String password = standRes.getPassword();
             String tablePrefix = standRes.getTablePrefix();
-            List<String> exclude = standRes.getExclude();
+            List<String> exclude = ListTs.asList(standRes.getExclude().split(SP.COMMA));
             String removeTablePrefix = standRes.getRemoveTablePrefix();
             String parentPackageName = standRes.getParentPackageName();
             String projectAbsolutePath = standRes.getProjectAbsolutePath();
@@ -200,20 +199,34 @@ public class E4jCgController {
         PackageRes packageRes = new PackageRes();
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         String parentPackageName = formDataMap.get("parentPackageName");
+        String projectAbsolutePath = formDataMap.get("projectAbsolutePath");
         if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
         String dtoPackageName = formDataMap.get("dtoPackageName");
         String entityPackageName = formDataMap.get("entityPackageName");
+        String abPath = projectAbsolutePath + SP.SLASH + "src/main/java";
         if (StrUtil.isNotBlank(dtoPackageName)) {
             String dtoPackage = String.join(".", ListTs.asList(
                     parentPackageName,
                     dtoPackageName
             ));
-            try {
-                Set<Class<?>> classes = PackageScanner.scanPackage(dtoPackage);
-                List<String> collect = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
-                packageRes.setAllDtos(collect);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            String filePath = abPath + SP.SLASH + (String.join(SP.SLASH, ListTs.asList(dtoPackage.split("\\."))));
+            List<String> allDtos = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allDtos = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+            }
+            if (allDtos.isEmpty()) {
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(dtoPackage, false);
+                    allDtos = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                    packageRes.setAllDtos(allDtos);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                packageRes.setAllDtos(allDtos);
             }
         }
         if (StrUtil.isNotBlank(entityPackageName)) {
@@ -221,15 +234,33 @@ public class E4jCgController {
                     parentPackageName,
                     entityPackageName
             ));
-            try {
-                Set<Class<?>> classes = PackageScanner.scanPackage(entityPackage);
-                List<String> collect = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
-                packageRes.setAllEntitys(collect);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            String filePath = abPath + SP.SLASH + (String.join(SP.SLASH, ListTs.asList(entityPackage.split("\\."))));
+            List<String> allEntitys = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allEntitys = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
             }
+            if (allEntitys.isEmpty()) {
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(entityPackage, false);
+                    allEntitys = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                    packageRes.setAllEntitys(allEntitys);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                packageRes.setAllEntitys(allEntitys);
+            }
+
         }
         return SRes.success(packageRes);
+    }
+
+    public static void main(String[] args) {
+        String wt = "afgaga";
+        System.out.println(wt.substring(0, wt.lastIndexOf(".") < 0 ? wt.length() : wt.lastIndexOf(".")));
     }
 
 
@@ -243,7 +274,7 @@ public class E4jCgController {
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         if (checkNotNullR(servletHandler,
                 formDataMap,
-                ListTs.asList("domainName","cnDesc","returnDtoName","entityName")
+                ListTs.asList("domainName", "cnDesc", "returnDtoName", "entityName")
         )) {
             return null;
         }
@@ -284,7 +315,7 @@ public class E4jCgController {
                                 .setServiceImplPackageName(serviceImplPackageName)
                 )
                 .multiGen(
-                        domainName+"-"+returnDtoName+"-"+cnDesc+"-"+entityName
+                        domainName + "-" + returnDtoName + "-" + cnDesc + "-" + entityName
                 ));
         boolean genMapper = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenMapper)));
         boolean isGenController = "true".equals(formDataMap.get(LambdaUtil.getFieldName(StandRes::isGenController)));
@@ -297,13 +328,11 @@ public class E4jCgController {
         if (isGenService) build.genIService();
         if (isGenServiceImpl) build.genServiceImpl();
         PreviewRes previewRes = new PreviewRes();
-        if(!build.genList.isEmpty()) {
+        if (!build.genList.isEmpty()) {
             previewRes = build.custom(isPreview, true);
         }
         return SRes.success(previewRes);
     }
-
-
 
 
 }

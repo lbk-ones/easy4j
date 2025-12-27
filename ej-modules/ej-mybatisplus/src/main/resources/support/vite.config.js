@@ -12,7 +12,7 @@ export default defineConfig((conf) => {
             proxy: {
                 // with options
                 '/api': {
-                    target: 'http://127.0.0.1:9214/e4j/cg',
+                    target: 'http://127.0.0.1:8082/e4j/cg',
                     changeOrigin: true,
                     rewrite: path => path.replace(/^\/api/, '')
                 }

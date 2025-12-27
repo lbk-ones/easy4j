@@ -694,7 +694,7 @@ public class EjSysProperties {
      */
     @SpringVs(desc = "代码生成相关配置")
     @NestedConfigurationProperty
-    private CodeGenProperties codeGen;
+    private CodeGenProperties codeGen = new CodeGenProperties();
 
     /**
      * 根据常量获取 对应的springboot变量
