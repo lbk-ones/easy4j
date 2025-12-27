@@ -19,12 +19,13 @@
     <properties>
         <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
         <!-- 核心框架升级 -->
-        <spring-boot.version>3.3.13</spring-boot.version>
+        <spring-boot.version>3.5.9</spring-boot.version>
         <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
         <!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
-        <spring-cloud.version>2023.0.3</spring-cloud.version>
-        <!-- Spring Cloud Alibaba 对应Spring Boot 3.x的2023.x版本线 -->
-        <spring-cloud-alibaba.version>2023.0.3.4</spring-cloud-alibaba.version>
+        <!--升级至2025版本-->
+        <spring-cloud.version>2025.0.1</spring-cloud.version>
+        <!--升级至2025版本 2025.0.x 分支对应的是 Spring Cloud 2025.0.x 与 Spring Boot 3.5.x，最低支持 JDK 17。 -->
+        <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
 
         <!-- 中间件及工具依赖升级 -->
         <dubbo.version>3.3.0</dubbo.version> <!-- 适配Spring Boot 3.x -->

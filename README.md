@@ -6,8 +6,8 @@ API 和丰富的扩展点，帮助开发者快速搭建高质量、易维护的�
 ## 支持
 
 - **java 17及其以上**
-- **springboot 3.0 ~ springboot 3.3.x**
-- springboot 3.0 版本
+- **springboot 3.0 ~ springboot 3.5.x**
+- springboot 3.X 版本
 
 ## 特性
 
@@ -95,7 +95,7 @@ Easy4J 框架包含以下核心模块：
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.13</version>
+        <version>3.5.9</version>
         <relativePath/>
     </parent>
 

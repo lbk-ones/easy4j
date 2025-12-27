@@ -3,7 +3,7 @@ package easy4j.infra.dbaccess.dialect.v2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.sql.SQLException;
 import java.util.List;
 

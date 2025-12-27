@@ -2,7 +2,7 @@ package easy4j.module.datasource.dynamic;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
+import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import easy4j.infra.base.properties.DataSourceProperties;
 import easy4j.infra.base.properties.DynamicDataSourceProperties;
 import easy4j.infra.base.properties.EjSysProperties;
