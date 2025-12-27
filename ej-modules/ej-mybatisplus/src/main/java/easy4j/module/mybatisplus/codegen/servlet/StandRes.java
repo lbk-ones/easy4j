@@ -30,7 +30,7 @@ public class StandRes {
     /**
      * 排除一些表
      */
-    private List<String> exclude;
+    private String exclude = "";
 
     /**
      * 去除表格前缀

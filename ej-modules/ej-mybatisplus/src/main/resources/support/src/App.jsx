@@ -6,11 +6,12 @@ import {
 import {CopyOutlined, WarningOutlined} from '@ant-design/icons'
 import './App.css'
 import {post} from "./request.js";
-import {isEmpty} from "lodash-es";
+import {cloneDeep, isEmpty} from "lodash-es";
 
 // 导入 highlight.js 核心
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vs} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
+
 const {Header, Content, Footer} = Layout
 const {Title, Text} = Typography
 const {Option} = Select
@@ -25,25 +26,12 @@ function App() {
     const [activeTab, setActiveTab] = useState('standard')
     const [activeTab2, setActiveTab2] = useState('')
 
-    // 生成类型状态（与包路径配置对应）
-    const [generateTypes, setGenerateTypes] = useState({
-        entity: true,
-        controller: true,
-        controllerReq: true,
-        dto: true,
-        mapper: true,
-        service: true,
-        serviceImpl: true
-    })
-
     const [initData, setInitData] = useState({
         url: "",
         username: "",
         password: "",
         tablePrefix: "",
-        exclude: [
-            ""
-        ],
+        exclude: [],
         removeTablePrefix: "",
         parentPackageName: "",
         projectAbsolutePath: "",
@@ -78,6 +66,8 @@ function App() {
     const [currentItem, setCurrentItem] = useState({})
 
     const [open, setOpen] = useState(false);
+    const [displayTables, setDisplayTables] = useState(false);
+    const [urlPrefixRequired, setUrlPrefixRequired] = useState(false);
 
     // 1. 创建 ref 指向代码块 DOM
     const codeRef = useRef(null);
@@ -95,6 +85,7 @@ function App() {
     };
     useEffect(() => {
         post("/init", {}).then(res => {
+            res.exclude = []
             setInitData(res)
             form.setFieldsValue(res); // 动态赋值
         })
@@ -112,12 +103,18 @@ function App() {
     // 更新生成类型
     const handleUpdateGenerateType = (type, value) => {
         if (type === 'genController' || type === 'genControllerReq') {
-            setInitData(prev => ({...initData, genController: value, genControllerReq: value}))
+            let newD = {...initData, genController: value, genControllerReq: value}
+            setInitData(prev => (newD))
+            if (value === true) {
+                setUrlPrefixRequired(true)
+            }
+            if (newD.genController === false && newD.genControllerReq === false) {
+                setUrlPrefixRequired(false);
+                form.resetFields(["urlPrefix"]);
+            }
         } else {
             setInitData(prev => ({...initData, [type]: value}))
         }
-
-
     }
 
     const waringGen = () => {
@@ -164,16 +161,6 @@ function App() {
         })
     }
 
-    const checkData = (data) => {
-        if (data.genController || data.genControllerReq) {
-            if (isEmpty(data.urlPrefix)) {
-
-                message.error("请输入生成controller中的url前缀")
-                return false;
-            }
-        }
-        return true;
-    }
     return (
         <Layout className="app-layout">
             <Header className="app-header">
@@ -185,6 +172,7 @@ function App() {
                     setActiveTab(e);
                     if (e === "custom") {
                         post("/db/scanPackage", {
+                            projectAbsolutePath: initData.projectAbsolutePath,
                             parentPackageName: initData.parentPackageName,
                             dtoPackageName: initData.dtoPackageName,
                             entityPackageName: initData.entityPackageName,
@@ -203,6 +191,7 @@ function App() {
                             setScanPackages(res);
                         })
                     }
+                    form.resetFields();
                 }} tabPlacement={"start"}
                       tabBarStyle={{backgroundColor: "white"}}>
                     <TabPane tab="从数据库中生成" key="standard" children={null}>
@@ -219,15 +208,12 @@ function App() {
                                 size="middle"
                                 onClick={async e => {
                                     const formValues = await form.validateFields()
-                                    let parse = JSON.parse(JSON.stringify({
+                                    let parse = cloneDeep({
                                         ...initData,
                                         ...formValues
-                                    }));
-                                    delete parse.allTables;
-                                    delete parse.exclude;
-                                    if (!checkData(parse)) {
-                                        return;
-                                    }
+                                    });
+                                    parse.allTables = null;
+                                    parse.exclude = parse?.exclude?.map(e => e.value)?.join(",");
                                     let res = await waring(parse);
                                     if (res) {
                                         if (activeTab === "custom") {
@@ -261,15 +247,12 @@ function App() {
                                  loading={isGenerating}
                                  onClick={async e => {
                                      const formValues = await form.validateFields()
-                                     let parse = JSON.parse(JSON.stringify({
+                                     let parse = cloneDeep({
                                          ...initData,
                                          ...formValues
-                                     }));
-                                     delete parse.allTables;
-                                     delete parse.exclude;
-                                     if (!checkData(parse)) {
-                                         return;
-                                     }
+                                     });
+                                     parse.allTables = null;
+                                     parse.exclude = parse?.exclude?.map(e => e.value)?.join(",");
                                      let res = await waring(parse);
                                      if (res) {
                                          let gen = await waringGen();
@@ -338,6 +321,7 @@ function App() {
                                                     genService: true,
                                                     genServiceImpl: true
                                                 })
+                                                setUrlPrefixRequired(true)
                                             } else {
                                                 setInitData({
                                                     ...initData,
@@ -350,6 +334,9 @@ function App() {
                                                     genService: false,
                                                     genServiceImpl: false
                                                 })
+                                                setUrlPrefixRequired(false)
+
+                                                form.resetFields(["urlPrefix"]);
                                             }
 
                                         }}
@@ -481,39 +468,45 @@ function App() {
                                         <Input placeholder="去除的表格前缀"/>
                                     </Form.Item>
                                 </Col>
-                                <Col xs={24} md={18}>
+                                <Col xs={24} md={16}>
                                     <Form.Item
                                         name="exclude"
-                                        label="排除表(暂时禁用)"
+                                        label="排除表"
                                     >
                                         <Select
                                             mode="multiple"
                                             placeholder="选择要排除的表"
                                             style={{width: '100%'}}
-                                            disabled={true}
+                                            disabled={!displayTables}
+                                            labelInValue={true}
                                         >
-                                            {/*{*/}
-                                            {/*    initData?.allTables?.map(e => {*/}
-                                            {/*        return <Option key={e}>{e}</Option>*/}
-                                            {/*    })*/}
-                                            {/*}*/}
+                                            {
+                                                displayTables && initData?.allTables?.map(e => {
+                                                    return <Option key={e}>{e}</Option>
+                                                })
+                                            }
                                         </Select>
                                     </Form.Item>
                                 </Col>
+                                {/*懒得构造子组件去传递props 直接拉出来*/}
+                                <Col xs={24} md={2} style={{
+                                    height: 'inherit',
+                                    display: 'flex',
+                                    paddingTop: '30px',
+                                    boxSizing: 'border-box',
+                                    justifyContent: 'center',
+                                }}>
+                                    <Button onClick={() => {
+                                        if (displayTables === false) {
+                                            setDisplayTables(true)
+                                        } else {
+                                            form.setFieldValue("exclude", [])
+                                            setDisplayTables(false)
+                                        }
+                                    }}>{displayTables ? "隐藏" : "显示"}表集合</Button>
+                                </Col>
                             </Row>
                         </div>
-
-                        {/*
-                            // 实体名称 驼峰 帕斯卡命名发 必须是大写
-                            String domainName;
-                            // 中文描述
-                            String cnDesc;
-                            // 返回的dto名称
-                            String returnDtoName;
-                            // 数据库实体类名称
-                            String entityName;
-                        */}
-
                         {/*custom*/}
                         {
                             activeTab === "custom" && (
@@ -555,9 +548,9 @@ function App() {
                                                     onSelect={e => {
                                                         if (e.replace) {
                                                             let replace = e.replace("Dto", "");
-                                                            let find = scanPackages?.allEntitys?.find(e=>e === replace);
-                                                            if(find) {
-                                                                form.setFieldValue("entityName",find);
+                                                            let find = scanPackages?.allEntitys?.find(e => e === replace);
+                                                            if (find) {
+                                                                form.setFieldValue("entityName", find);
                                                             }
                                                         }
                                                     }}
@@ -624,6 +617,7 @@ function App() {
                                 <Form.Item
                                     name="urlPrefix"
                                     label="生成controller中的url前缀"
+                                    rules={[{required: urlPrefixRequired, message: '请输入生成controller中的url前缀'}]}
                                 >
                                     <Input placeholder="格式为 xxx/xxx，后面的地址自动生成"/>
                                 </Form.Item>
@@ -647,7 +641,13 @@ function App() {
                                     <Input placeholder="作者名称"/>
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={6}>
+                            <Col xs={24} md={6} style={{
+                                height: 'inherit',
+                                display: 'flex',
+                                paddingTop: '22px',
+                                boxSizing: 'border-box',
+                                // justifyContent: 'center',
+                            }}>
                                 <div style={{marginTop: 8}}>
                                     <Form.Item name="deleteIfExists" valuePropName="checked" noStyle>
                                         <Checkbox>存在则删除</Checkbox>

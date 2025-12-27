@@ -1,6 +1,7 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.properties.CodeGenProperties;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -23,8 +24,14 @@ public class Config {
         servletRegistrationBean.setServlet(new E4jCgServlet());
         servletRegistrationBean.addInitParameter("enableCrossOrigin",codeGen.isEnableCrossOrigin()+"");
         servletRegistrationBean.addInitParameter("enableBasicAuth",codeGen.isEnableBasicAuth()+"");
-        servletRegistrationBean.addInitParameter("username",codeGen.getUsername());
-        servletRegistrationBean.addInitParameter("password",codeGen.getPassword());
+        String username = codeGen.getUsername();
+        if(StrUtil.isNotBlank(username)){
+            servletRegistrationBean.addInitParameter("username",username);
+        }
+        String password = codeGen.getPassword();
+        if(StrUtil.isNotBlank(password)){
+            servletRegistrationBean.addInitParameter("password", password);
+        }
         return servletRegistrationBean;
     }
 }
