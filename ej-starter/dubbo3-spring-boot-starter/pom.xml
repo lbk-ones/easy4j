@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-starter</artifactId>
         <version>${revision}</version>
     </parent>
@@ -17,98 +17,98 @@
 
     <dependencies>
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>
         <!--DNS-->
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-dnspom</artifactId>
             <version>${revision}</version>
             <type>pom</type>
         </dependency>
         <!--datasource-->
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-datasource</artifactId>
             <version>${revision}</version>
         </dependency>
         <!--jaeger-->
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-jaeger</artifactId>
             <version>${revision}</version>
         </dependency>
         <!--mapstruct-->
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mapstruct</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-flyway</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sadmin</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mybatisplus</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-logback</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-seed</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-sentinel</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-idempotent</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-lock</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-log</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-knife4j</artifactId>
             <version>${revision}</version>
         </dependency>

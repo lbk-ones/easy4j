@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <!--All dependencies here are related to Spring Boot, as well as dependencies that rely on the Spring Boot version-->
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-bom</artifactId>
         <version>${revision}</version>
     </parent>

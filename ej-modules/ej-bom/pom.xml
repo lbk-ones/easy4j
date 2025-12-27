@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -259,196 +259,196 @@
             <!--======================easy4j modules version controller======================-->
             <!--ej-base-->
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-base</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!--ej-db-access-->
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-db-access</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!--ej-webmvc-->
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-webmvc</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!--ej-context-->
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-context</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-common</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-datasource</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-dnspom</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-dubbo3</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-elasticsearch</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-flyway</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-h2</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-idempotent</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-jaeger</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-jpa</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-knife4j</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-knife4j-nacos-aggregation</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-lock</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-log</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-logback</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-ltl-transactional</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-mapstruct</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-mybatisplus</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-nacos-dubbo3</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-quartz</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-redis</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-rpc</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sactuator</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sadmin</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sauth</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sca</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sca-gateway</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sca-seata</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-scache</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-security</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-seed</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sentinel</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sentinel-dubbo3</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-xxl-job</artifactId>
                 <version>${revision}</version>
             </dependency>

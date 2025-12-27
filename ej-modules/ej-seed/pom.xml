@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>easy4j.boot</groupId>
+        <groupId>io.github.lbk-ones</groupId>
         <artifactId>ej-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -16,7 +16,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>easy4j.boot</groupId>
+                <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-bom-springboot</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
@@ -26,12 +26,12 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>easy4j.boot</groupId>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-db-access</artifactId>
         </dependency>
 
