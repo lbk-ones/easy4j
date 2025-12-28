@@ -55,10 +55,16 @@ public class GlobalGenConfig {
     // service 路径
     private String serviceImplPackageName = "service.impl";
 
+    // mapstruct 路径
+    private String mapperStructPackageName = "mapstruct";
+
+    // mapstruct 类的名称
+    private String mapperStructClassSimpleName = "MapperStruct";
+
 
     public GlobalGenConfig setUrlPrefix(String urlPrefix) {
-        if(StrUtil.endWith(urlPrefix, SP.SLASH)){
-            urlPrefix = StrUtil.replaceLast(urlPrefix,SP.SLASH,"");
+        if (StrUtil.endWith(urlPrefix, SP.SLASH)) {
+            urlPrefix = StrUtil.replaceLast(urlPrefix, SP.SLASH, "");
         }
         this.urlPrefix = urlPrefix;
         return this;

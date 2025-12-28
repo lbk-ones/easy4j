@@ -1,13 +1,16 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
+import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class StandRes {
+public class StandRes extends GlobalGenConfig {
 
     /**
      * jdbc url
@@ -37,51 +40,6 @@ public class StandRes {
      */
     private String removeTablePrefix;
 
-
-    // 父包名称
-    String parentPackageName;
-
-    // 项目所在绝对路径
-    String projectAbsolutePath;
-
-    // 生成controller中的url前缀 格式为  xxx/xxx  后面的地址根据domainName转小写自动生成
-    String urlPrefix;
-
-    // 存在则删除
-    boolean deleteIfExists;
-
-    // 类文件头注释
-    String headerDesc = "no desc";
-
-    // 作者
-    String author = "bokun.li";
-
-    // 只删除
-    boolean forceDelete = false;
-
-    // domains 路径
-    private String entityPackageName = "domains";
-
-    // controller 路径
-    private String controllerPackageName = "controller";
-
-    // controller.req 路径
-    private String controllerReqPackageName = "controller.req";
-
-    // dto 路径
-    private String dtoPackageName = "dto";
-
-    // mapper 路径
-    private String mapperPackageName = "mapper";
-
-    // xml路径
-    private String mapperXmlPackageName = "mappers";
-
-    // service 路径
-    private String serviceInterfacePackageName = "service";
-
-    // service 路径
-    private String serviceImplPackageName = "service.impl";
 
     // 所有的表
     private List<String> allTables;
@@ -129,4 +87,110 @@ public class StandRes {
     private boolean genDto = false;
 
 
+    /**
+     * 是否生成 mapstruct
+     */
+    private boolean genMapStruct = false;
+
+    @Override
+    public StandRes setParentPackageName(String parentPackageName) {
+        super.setParentPackageName(parentPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setProjectAbsolutePath(String projectAbsolutePath) {
+        super.setProjectAbsolutePath(projectAbsolutePath);
+        return this;
+    }
+
+    @Override
+    public StandRes setDeleteIfExists(boolean deleteIfExists) {
+        super.setDeleteIfExists(deleteIfExists);
+        return this;
+    }
+
+    @Override
+    public StandRes setHeaderDesc(String headerDesc) {
+        super.setHeaderDesc(headerDesc);
+        return this;
+    }
+
+    @Override
+    public StandRes setAuthor(String author) {
+        super.setAuthor(author);
+        return this;
+    }
+
+    @Override
+    public StandRes setForceDelete(boolean forceDelete) {
+        super.setForceDelete(forceDelete);
+        return this;
+    }
+
+    @Override
+    public StandRes setEntityPackageName(String entityPackageName) {
+        super.setEntityPackageName(entityPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setControllerPackageName(String controllerPackageName) {
+        super.setControllerPackageName(controllerPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setControllerReqPackageName(String controllerReqPackageName) {
+        super.setControllerReqPackageName(controllerReqPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setDtoPackageName(String dtoPackageName) {
+        super.setDtoPackageName(dtoPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setMapperPackageName(String mapperPackageName) {
+        super.setMapperPackageName(mapperPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setMapperXmlPackageName(String mapperXmlPackageName) {
+        super.setMapperXmlPackageName(mapperXmlPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setServiceInterfacePackageName(String serviceInterfacePackageName) {
+        super.setServiceInterfacePackageName(serviceInterfacePackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setServiceImplPackageName(String serviceImplPackageName) {
+        super.setServiceImplPackageName(serviceImplPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setMapperStructPackageName(String mapperStructPackageName) {
+        super.setMapperStructPackageName(mapperStructPackageName);
+        return this;
+    }
+
+    @Override
+    public StandRes setMapperStructClassSimpleName(String mapperStructClassSimpleName) {
+        super.setMapperStructClassSimpleName(mapperStructClassSimpleName);
+        return this;
+    }
+
+    @Override
+    public StandRes setUrlPrefix(String urlPrefix) {
+        super.setUrlPrefix(urlPrefix);
+        return this;
+    }
 }

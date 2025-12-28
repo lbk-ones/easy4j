@@ -123,4 +123,16 @@ public class GenDto extends GlobalGenConfig {
         super.setMapperXmlPackageName(mapperXmlPackageName);
         return this;
     }
+
+    @Override
+    public GenDto setMapperStructPackageName(String mapperStructPackageName) {
+        super.setMapperStructPackageName(mapperStructPackageName);
+        return this;
+    }
+
+    @Override
+    public GenDto setMapperStructClassSimpleName(String mapperStructClassSimpleName) {
+        super.setMapperStructClassSimpleName(mapperStructClassSimpleName);
+        return this;
+    }
 }

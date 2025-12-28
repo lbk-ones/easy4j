@@ -120,6 +120,7 @@ public class E4jCgController {
             boolean isGenServiceImpl = standRes.isGenServiceImpl();
             boolean isGenController = standRes.isGenController();
             boolean isGenControllerReq = standRes.isGenControllerReq();
+            boolean isGenMapStruct = standRes.isGenMapStruct();
             boolean isGenDto = standRes.isGenDto();
             if (isGenController && StrUtil.isBlank(urlPrefix)) {
                 servletHandler.responseJson(SRes.error("urlPrefix is not null "));
@@ -139,6 +140,8 @@ public class E4jCgController {
                     .setMapperPackageName(mapperPackageName)
                     .setMapperXmlPackageName(mapperXmlPackageName)
                     .setServiceInterfacePackageName(serviceInterfacePackageName)
+                    .setMapperStructClassSimpleName(standRes.getMapperStructClassSimpleName())
+                    .setMapperStructPackageName(standRes.getMapperStructPackageName())
                     .setServiceImplPackageName(serviceImplPackageName);
             PreviewRes res = AutoGen.build(globalGenConfig1)
                     .fromDbGen(new DbGenSetting()
@@ -155,6 +158,7 @@ public class E4jCgController {
                             .setGenServiceImpl(isGenServiceImpl)
                             .setGenController(isGenController)
                             .setGenControllerReq(isGenControllerReq)
+                            .setGenMapStruct(isGenMapStruct)
                             .setExclude(exclude)
                     )
                     .auto(isPreview, true);
@@ -215,7 +219,7 @@ public class E4jCgController {
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files == null) files = new File[]{};
-                allDtos = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                allDtos = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
             }
             if (allDtos.isEmpty()) {
                 try {
@@ -240,7 +244,7 @@ public class E4jCgController {
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files == null) files = new File[]{};
-                allEntitys = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
             }
             if (allEntitys.isEmpty()) {
                 try {
@@ -256,11 +260,6 @@ public class E4jCgController {
 
         }
         return SRes.success(packageRes);
-    }
-
-    public static void main(String[] args) {
-        String wt = "afgaga";
-        System.out.println(wt.substring(0, wt.lastIndexOf(".") < 0 ? wt.length() : wt.lastIndexOf(".")));
     }
 
 

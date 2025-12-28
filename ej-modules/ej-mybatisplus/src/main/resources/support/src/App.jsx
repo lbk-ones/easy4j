@@ -58,7 +58,8 @@ function App() {
         genMapper: false,
         genMapperXml: false,
         genService: false,
-        genServiceImpl: false
+        genServiceImpl: false,
+        genMapStruct: false
     })
 
     const [previewText, setPreviewText] = useState({})
@@ -112,6 +113,9 @@ function App() {
                 setUrlPrefixRequired(false);
                 form.resetFields(["urlPrefix"]);
             }
+        } else if (type === 'genMapStruct' && value === true) {
+            let newD = {...initData, genMapStruct: true, genDto: true, genEntity: true}
+            setInitData(prev => (newD))
         } else {
             setInitData(prev => ({...initData, [type]: value}))
         }
@@ -160,7 +164,31 @@ function App() {
             }
         })
     }
-
+    const scanPackageFunc = () => {
+        post("/db/scanPackage", {
+            projectAbsolutePath: initData.projectAbsolutePath,
+            parentPackageName: initData.parentPackageName,
+            dtoPackageName: initData.dtoPackageName,
+            entityPackageName: initData.entityPackageName,
+        }).then(res => {
+            clearAllCheckBox()
+            setScanPackages(res);
+        })
+    }
+    const clearAllCheckBox = () => {
+        setInitData({
+            ...initData,
+            genController: false,
+            genControllerReq: false,
+            genDto: false,
+            genEntity: false,
+            genMapper: false,
+            genMapperXml: false,
+            genService: false,
+            genServiceImpl: false,
+            genMapStruct: false,
+        })
+    }
     return (
         <Layout className="app-layout">
             <Header className="app-header">
@@ -171,25 +199,7 @@ function App() {
                 <Tabs activeKey={activeTab} onChange={e => {
                     setActiveTab(e);
                     if (e === "custom") {
-                        post("/db/scanPackage", {
-                            projectAbsolutePath: initData.projectAbsolutePath,
-                            parentPackageName: initData.parentPackageName,
-                            dtoPackageName: initData.dtoPackageName,
-                            entityPackageName: initData.entityPackageName,
-                        }).then(res => {
-                            setInitData({
-                                ...initData,
-                                genController: false,
-                                genControllerReq: false,
-                                genDto: false,
-                                genEntity: false,
-                                genMapper: false,
-                                genMapperXml: false,
-                                genService: false,
-                                genServiceImpl: false
-                            })
-                            setScanPackages(res);
-                        })
+                        scanPackageFunc();
                     }
                     form.resetFields();
                 }} tabPlacement={"start"}
@@ -306,7 +316,8 @@ function App() {
                                             initData.genMapper ||
                                             initData.genMapperXml ||
                                             initData.genService ||
-                                            initData.genServiceImpl
+                                            initData.genServiceImpl ||
+                                            initData.genMapStruct
                                         }
                                         onChange={(e) => {
                                             if (e.target.checked === true) {
@@ -319,21 +330,12 @@ function App() {
                                                     genMapper: true,
                                                     genMapperXml: activeTab !== "custom",
                                                     genService: true,
-                                                    genServiceImpl: true
+                                                    genServiceImpl: true,
+                                                    genMapStruct: activeTab !== "custom",
                                                 })
                                                 setUrlPrefixRequired(true)
                                             } else {
-                                                setInitData({
-                                                    ...initData,
-                                                    genController: false,
-                                                    genControllerReq: false,
-                                                    genDto: false,
-                                                    genEntity: false,
-                                                    genMapper: false,
-                                                    genMapperXml: false,
-                                                    genService: false,
-                                                    genServiceImpl: false
-                                                })
+                                                clearAllCheckBox();
                                                 setUrlPrefixRequired(false)
 
                                                 form.resetFields(["urlPrefix"]);
@@ -349,7 +351,7 @@ function App() {
                         </Row>
 
                         <Row gutter={[16, 8]}>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     disabled={activeTab === "custom"}
                                     checked={initData.genEntity}
@@ -358,7 +360,7 @@ function App() {
                                     实体类 (Entity)
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     checked={initData.genController}
                                     onChange={(e) => handleUpdateGenerateType('genController', e.target.checked)}
@@ -367,7 +369,7 @@ function App() {
                                 </Checkbox>
                             </Col>
 
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     checked={initData.genControllerReq}
                                     onChange={(e) => handleUpdateGenerateType('genControllerReq', e.target.checked)}
@@ -375,7 +377,7 @@ function App() {
                                     Controller.Req
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     disabled={activeTab === "custom"}
                                     checked={initData.genDto}
@@ -384,7 +386,7 @@ function App() {
                                     DTO
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     checked={initData.genMapper}
                                     onChange={(e) => handleUpdateGenerateType('genMapper', e.target.checked)}
@@ -392,7 +394,7 @@ function App() {
                                     Mapper
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     disabled={activeTab === "custom"}
                                     checked={initData.genMapperXml}
@@ -401,7 +403,7 @@ function App() {
                                     MapperXML
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     checked={initData.genService}
                                     onChange={(e) => handleUpdateGenerateType('genService', e.target.checked)}
@@ -409,12 +411,21 @@ function App() {
                                     Service
                                 </Checkbox>
                             </Col>
-                            <Col xs={12} md={6}>
+                            <Col xs={12} md={4}>
                                 <Checkbox
                                     checked={initData.genServiceImpl}
                                     onChange={(e) => handleUpdateGenerateType('genServiceImpl', e.target.checked)}
                                 >
                                     Service.Impl
+                                </Checkbox>
+                            </Col>
+                            <Col xs={12} md={4}>
+                                <Checkbox
+                                    disabled={activeTab === "custom"}
+                                    checked={initData.genMapStruct}
+                                    onChange={(e) => handleUpdateGenerateType('genMapStruct', e.target.checked)}
+                                >
+                                    MapStruct
                                 </Checkbox>
                             </Col>
                         </Row>
@@ -533,7 +544,7 @@ function App() {
                                                 <Input placeholder="请输入简短的中文描述"/>
                                             </Form.Item>
                                         </Col>
-                                        <Col xs={24} md={6}>
+                                        <Col xs={24} md={5}>
                                             <Form.Item
                                                 name="returnDtoName"
                                                 label="DTO的名称(自动扫描已有的)"
@@ -563,7 +574,7 @@ function App() {
                                                 </Select>
                                             </Form.Item>
                                         </Col>
-                                        <Col xs={24} md={6}>
+                                        <Col xs={24} md={5}>
                                             <Form.Item
                                                 name="entityName"
                                                 label="数据库实体名称(自动扫描已有的)"
@@ -582,6 +593,18 @@ function App() {
                                                     }
                                                 </Select>
                                             </Form.Item>
+                                        </Col>
+
+                                        <Col xs={24} md={2} style={{
+                                            height: 'inherit',
+                                            display: 'flex',
+                                            paddingTop: '30px',
+                                            boxSizing: 'border-box',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <Button onClick={() => {
+                                                scanPackageFunc();
+                                            }}>重新扫描DTO和实体</Button>
                                         </Col>
                                     </Row>
 
@@ -730,6 +753,24 @@ function App() {
                                     rules={[{required: true, message: '请输入路径'}]}
                                 >
                                     <Input placeholder="service.impl 路径"/>
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={6}>
+                                <Form.Item
+                                    name="mapperStructPackageName"
+                                    label="MapStruct 路径"
+                                    rules={[{required: true, message: '请输入路径'}]}
+                                >
+                                    <Input placeholder="MapStruct 路径"/>
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={6}>
+                                <Form.Item
+                                    name="mapperStructClassSimpleName"
+                                    label="MapStruct类名"
+                                    rules={[{required: true, message: '请输入路径'}]}
+                                >
+                                    <Input placeholder="MapStruct 路径，不要以.java结尾"/>
                                 </Form.Item>
                             </Col>
                         </Row>
