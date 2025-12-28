@@ -351,7 +351,10 @@ public class DbGen extends AbstractGen {
                                 , packageNamePath
                                 , parsePackage(this.getMapperStructPackageName())
                                 , fileName);
+                        boolean deleteIfExists = this.isDeleteIfExists();
+                        this.setDeleteIfExists(true);
                         String s = loadTemplate(s1, "temp", "mapstruct2.ftl", params, isPreview);
+                        this.setDeleteIfExists(deleteIfExists);
                         finalList.add(s);
                         MapStruct.add(fileName, s);
                     }
