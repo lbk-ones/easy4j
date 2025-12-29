@@ -10,6 +10,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.PackageScanner;
 import easy4j.infra.context.api.gen.JavaBaseMethod;
 import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
+import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 import lombok.Data;
 
 import java.io.File;
@@ -36,7 +37,7 @@ public class MSGen {
         this.entityInfos = entityInfos_;
     }
 
-    public Map<String, Object> getParams() throws Exception {
+    public Map<String, Object> getParams(PreviewRes.PInfo EntityPInfo) throws Exception {
         boolean genDto = dbGenSetting.isGenDto();
         boolean genEntity = dbGenSetting.isGenEntity();
 
@@ -67,6 +68,23 @@ public class MSGen {
                         allClassInfo.add(classInfo);
                     }
 
+                }
+            }
+        }
+        // fix bug
+        if (EntityPInfo != null) {
+            List<PreviewRes.PItem> itemList = EntityPInfo.getItemList();
+            for (PreviewRes.PItem pItem : itemList) {
+                String fileName = pItem.getFileName();
+                int i = fileName.indexOf(".");
+                if (i > 0) {
+                    fileName = fileName.substring(0, i);
+                }
+                ClassInfo classInfo = new ClassInfo();
+                classInfo.setSimpleName(fileName);
+                classInfo.setName(parentPackageName + "." + globalGenConfig.getEntityPackageName() + "." + fileName);
+                if (!allClassInfo.contains(classInfo)) {
+                    allClassInfo.add(classInfo);
                 }
             }
         }

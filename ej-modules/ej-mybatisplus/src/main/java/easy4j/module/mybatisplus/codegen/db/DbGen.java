@@ -97,6 +97,7 @@ public class DbGen extends AbstractGen {
                 Set<String> importList = Sets.newHashSet();
                 List<EntityInfo.EFieldInfo> fields = ListTs.newList();
                 String tableName = tableMetadata.getTableName();
+                tableMetadata.setRemarks(StrUtil.replace(tableMetadata.getRemarks(), "\n", ""));
                 if (StrUtil.isNotBlank(tablePrefix)) {
                     boolean b = !StrUtil.endWith(tablePrefix, "%") && !StrUtil.startWith(tablePrefix, "%");
                     if (b && !StrUtil.equals(tableName, tablePrefix)) {
@@ -157,6 +158,9 @@ public class DbGen extends AbstractGen {
                             importList.add(name);
                         }
                     }
+                    String remarks = databaseColumnMetadata.getRemarks();
+                    remarks = StrUtil.replace(remarks, "\n", "");
+                    databaseColumnMetadata.setRemarks(remarks);
                     String columnName = databaseColumnMetadata.getColumnName();
                     String tc = tableName1 + columnName;
                     PrimaryKeyMetadata primaryKeyMetadata = map.get(tc);
@@ -169,7 +173,7 @@ public class DbGen extends AbstractGen {
                     eFieldInfo.setDbName(columnName);
                     eFieldInfo.setSameTableField(sameTableField);
                     eFieldInfo.setSameSchema(sameSchema);
-                    eFieldInfo.setDescription(StrUtil.blankToDefault(databaseColumnMetadata.getRemarks(), columnName));
+                    eFieldInfo.setDescription(StrUtil.blankToDefault(remarks, columnName));
                     eFieldInfo.setType(javaClassByTypeNameAndDbType.getSimpleName());
                     eFieldInfo.setHasAutoincrement("YES".equalsIgnoreCase(databaseColumnMetadata.getIsAutoincrement()));
                     String name = JdbcType.forCode(databaseColumnMetadata.getDataType()).name();
@@ -344,7 +348,7 @@ public class DbGen extends AbstractGen {
             if (!entityInfos.isEmpty()) {
                 if (dbGenSetting.isGenMapStruct()) {
                     Map<String, Object> params = new MSGen(this, dbGenSetting, entityInfos)
-                            .getParams();
+                            .getParams(EntityPInfo);
                     if (params != null) {
                         String fileName = this.getMapperStructClassSimpleName() + ".java";
                         String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
