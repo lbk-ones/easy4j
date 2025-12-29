@@ -1,6 +1,5 @@
 package ${parentPackageName}.${serviceImplPackageName};
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
@@ -8,6 +7,7 @@ import ${parentPackageName}.${entityPackageName}.${entityName};
 import ${parentPackageName}.${dtoPackageName}.${entityName}Dto;
 import ${parentPackageName}.${mapperPackageName}.${entityName}Mapper;
 import ${parentPackageName}.${serviceInterfacePackageName}.I${domainName}Service;
+import ${parentPackageName}.${mapperStructPackageName}.${mapperStructClassSimpleName};
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.module.mybatisplus.base.BaseServiceImpl;
@@ -48,21 +48,15 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     }
 
     public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list) {
-        return list.stream().map(flowProcDefDto -> {
-            // TODO ${entityName} to ${entityName}Dto
-            ${entityName}Dto flowProcDef = new ${entityName}Dto();
-            BeanUtil.copyProperties(flowProcDefDto, flowProcDef);
-            return flowProcDef;
-        }).collect(Collectors.toList());
+            return list.stream()
+            .map(MapperStruct.instance::to${entityName}Dto)
+            .collect(Collectors.toList());
     }
 
     public List<${entityName}> list${entityName}DtoToDomain(List<${entityName}Dto> list) {
-        // TODO ${entityName} to ${entityName}Dto
-        return list.stream().map(e -> {
-            ${entityName} flowProcDef = new ${entityName}();
-            BeanUtil.copyProperties(e, flowProcDef);
-            return flowProcDef;
-        }).collect(Collectors.toList());
+                return list.stream()
+                .map(MapperStruct.instance::to${entityName})
+                .collect(Collectors.toList());
     }
 
     @Override

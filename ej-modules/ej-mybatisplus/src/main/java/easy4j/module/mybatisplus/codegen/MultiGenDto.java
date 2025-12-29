@@ -36,13 +36,13 @@ public class MultiGenDto {
             String returnDtoName = ListTs.get(split, 1);
             String cnDesc = ListTs.get(split, 2);
             String entityName = ListTs.get(split, 3);
-            GenDto genDto = new GenDto()
-                    .setDomainName(domainName)
+            GenDto genDto = new GenDto();
+            BeanUtil.copyProperties(globalGenConfig,genDto);
+            genDto.setDomainName(domainName)
                     .setReturnDtoName(returnDtoName)
                     .setCnDesc(cnDesc)
                     .setHeaderDesc(cnDesc)
                     .setEntityName(entityName);
-            BeanUtil.copyProperties(globalGenConfig,genDto);
             genDtos[i] = genDto;
             i++;
         }

@@ -24,29 +24,5 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* 确保链接样式与Ant Design一致 */
-a {
-  color: #1890ff;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-a:hover {
-  color: #40a9ff;
-}
 
 /* 移除按钮样式，使用Ant Design的按钮样式 */
-button {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-button:focus {
-  outline: none;
-}

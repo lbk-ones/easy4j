@@ -1,9 +1,9 @@
 import {useState, useEffect, useRef} from 'react'
 import {
     Layout, Card, message, Form, Input, Checkbox, Button, Select, Tabs,
-    Table, Space, Typography, Divider, Row, Col, Drawer, Modal, List, Flex
+    Table, Space, Typography, Divider, Row, Col, Drawer, Modal, List, Flex, Alert, ColorPicker, ConfigProvider
 } from 'antd'
-import {CopyOutlined, WarningOutlined} from '@ant-design/icons'
+import {CopyOutlined, QuestionCircleOutlined, WarningOutlined} from '@ant-design/icons'
 import './App.css'
 import {post} from "./request.js";
 import {cloneDeep, isEmpty} from "lodash-es";
@@ -11,6 +11,7 @@ import {cloneDeep, isEmpty} from "lodash-es";
 // 导入 highlight.js 核心
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vs} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
+import {useColor} from "./color.jsx";
 
 const {Header, Content, Footer} = Layout
 const {Title, Text} = Typography
@@ -19,9 +20,10 @@ const {Option} = Select
 const {TabPane} = Tabs
 
 function App() {
+    let {primaryColor, setPrimaryColor} = useColor();
     // 表单实例
     const [form] = Form.useForm()
-
+    const [modal, contextHolder] = Modal.useModal();
     // 选项卡状态
     const [activeTab, setActiveTab] = useState('standard')
     const [activeTab2, setActiveTab2] = useState('')
@@ -116,6 +118,9 @@ function App() {
         } else if (type === 'genMapStruct' && value === true) {
             let newD = {...initData, genMapStruct: true, genDto: true, genEntity: true}
             setInitData(prev => (newD))
+        } else if (type === 'genServiceImpl' && value === true && activeTab !== 'custom') {
+            let newD = {...initData, genServiceImpl: true, genDto: true, genEntity: true, genMapStruct: true}
+            setInitData(prev => (newD))
         } else {
             setInitData(prev => ({...initData, [type]: value}))
         }
@@ -123,7 +128,7 @@ function App() {
 
     const waringGen = () => {
         return new Promise((resolve, reject) => {
-            Modal.confirm({
+            modal.confirm({
                 title: '提示',
                 icon: <WarningOutlined/>,
                 content: '该操作会写入本地文件，请确认!',
@@ -146,7 +151,7 @@ function App() {
                 return;
             }
             if (isEmpty(data.tablePrefix)) {
-                Modal.confirm({
+                modal.confirm({
                     title: '提示',
                     icon: <WarningOutlined/>,
                     content: '如果不设置表前缀，可能会导致表太多而生成失败!',
@@ -191,8 +196,17 @@ function App() {
     }
     return (
         <Layout className="app-layout">
+            {contextHolder}
             <Header className="app-header">
                 <Title level={2} className="header-title">Easy4j底座代码生成工具</Title>
+
+                <span style={{display: 'flex', alignItems: 'center', gap: 5}}>
+                    主题色:<ColorPicker value={primaryColor}
+                                        onChange={e => {
+                                            setPrimaryColor(e.toHexString());
+                                        }}/>
+                </span>
+
             </Header>
 
             <Content className="app-content">
@@ -252,7 +266,7 @@ function App() {
                           预览代码
                       </Button>
                              <Button
-                                 type="primary"
+                                 type={"primary"}
                                  size="middle"
                                  loading={isGenerating}
                                  onClick={async e => {
@@ -425,7 +439,8 @@ function App() {
                                     checked={initData.genMapStruct}
                                     onChange={(e) => handleUpdateGenerateType('genMapStruct', e.target.checked)}
                                 >
-                                    MapStruct
+                                    MapStruct&nbsp;<QuestionCircleOutlined
+                                    title={"(增量写入)不受存在则删除影响，只要勾选了就会重新写入"}/>
                                 </Checkbox>
                             </Col>
                         </Row>
@@ -482,7 +497,7 @@ function App() {
                                 <Col xs={24} md={16}>
                                     <Form.Item
                                         name="exclude"
-                                        label="排除表"
+                                        label={`排除表（该数据源共${initData?.allTables?.length ?? 0}张表）`}
                                     >
                                         <Select
                                             mode="multiple"
@@ -507,7 +522,7 @@ function App() {
                                     boxSizing: 'border-box',
                                     justifyContent: 'center',
                                 }}>
-                                    <Button onClick={() => {
+                                    <Button type={'primary'} onClick={() => {
                                         if (displayTables === false) {
                                             setDisplayTables(true)
                                         } else {
@@ -523,9 +538,17 @@ function App() {
                             activeTab === "custom" && (
                                 <div>
                                     <Row>
-                                        <div className={"tag-line"}>自定义属性</div>
+                                        <div className={"tag-line"}>
+                                            <span>自定义属性&nbsp;&nbsp;【自定义生成之前需要提前从数据库中生成 Entity、Dto、MapperXml、MapStruct，不然代码会爆红】</span>
+
+                                            <span>
+                                               <Button type={'primary'} size={"small"} onClick={() => {
+                                                   scanPackageFunc();
+                                               }}>重新扫描DTO和实体</Button>
+                                            </span>
+                                        </div>
                                     </Row>
-                                    <Row gutter={[16, 8]}>
+                                    <Row gutter={[16, 8]} wrap={true}>
                                         <Col xs={24} md={6}>
                                             <Form.Item
                                                 name="domainName"
@@ -544,7 +567,7 @@ function App() {
                                                 <Input placeholder="请输入简短的中文描述"/>
                                             </Form.Item>
                                         </Col>
-                                        <Col xs={24} md={5}>
+                                        <Col xs={24} md={6}>
                                             <Form.Item
                                                 name="returnDtoName"
                                                 label="DTO的名称(自动扫描已有的)"
@@ -574,7 +597,7 @@ function App() {
                                                 </Select>
                                             </Form.Item>
                                         </Col>
-                                        <Col xs={24} md={5}>
+                                        <Col xs={24} md={6}>
                                             <Form.Item
                                                 name="entityName"
                                                 label="数据库实体名称(自动扫描已有的)"
@@ -595,7 +618,7 @@ function App() {
                                             </Form.Item>
                                         </Col>
 
-                                        <Col xs={24} md={2} style={{
+                                        {/* <Col xs={24} md={2} style={{
                                             height: 'inherit',
                                             display: 'flex',
                                             paddingTop: '30px',
@@ -605,7 +628,7 @@ function App() {
                                             <Button onClick={() => {
                                                 scanPackageFunc();
                                             }}>重新扫描DTO和实体</Button>
-                                        </Col>
+                                        </Col>*/}
                                     </Row>
 
                                 </div>
@@ -782,7 +805,7 @@ function App() {
             </Content>
 
             <Footer className="app-footer">
-                <Text>© 2025 Easy4j底座代码生成工具</Text>
+                © 2025 Easy4j底座代码生成工具
             </Footer>
 
             <Drawer
