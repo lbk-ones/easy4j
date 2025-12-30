@@ -137,7 +137,7 @@ public class ${domainName}Controller {
         return EasyResult.ok(i${domainName}Service.publish${domainName}s(${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq));
     }
 
-    @Operation(summary = "${cnDesc}批量删除", description = "批量删除${cnDesc}，不需要该功能则不理会")
+    @Operation(summary = "${cnDesc}批量删除", description = "批量删除${cnDesc}，用英文逗号分割，不需要该功能则不理会")
     @RequestLog
     @WebIdempotent
     @DeleteMapping("delete${domainName}/{id}")

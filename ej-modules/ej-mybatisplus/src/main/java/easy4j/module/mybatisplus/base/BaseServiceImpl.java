@@ -71,7 +71,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         private Class<?> fieldType;
     }
 
-    public static final Map<Class<?>, FieldInfo> idCache = new ConcurrentHashMap<>();
+    public static final Map<Class<?>, List<FieldInfo>> idCache = new ConcurrentHashMap<>();
 
     /**
      * 获取lambda表达式的字段名称
@@ -496,44 +496,46 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
     }
 
 
-    public FieldInfo getPrimaryKeyName(Class<?> clazz) {
-        FieldInfo fieldInfo1 = idCache.computeIfAbsent(clazz, e -> {
+    public List<FieldInfo> getPrimaryKeyName(Class<?> clazz) {
+        return idCache.computeIfAbsent(clazz, e -> {
             Field[] fields = ReflectUtil.getFields(clazz);
+            List<FieldInfo> fieldInfos = new ArrayList<>();
             for (Field field : fields) {
                 if (field.isAnnotationPresent(TableId.class)) {
                     FieldInfo fieldInfo = new FieldInfo();
                     fieldInfo.setField(field);
                     fieldInfo.setFieldName(field.getName());
                     fieldInfo.setFieldType(field.getType());
-                    return fieldInfo;
+                    fieldInfos.add(fieldInfo);
                 }
             }
-            return null;
+            return fieldInfos;
         });
-        if (fieldInfo1 == null) throw new RuntimeException("the table no primary key :" + clazz.getName());
-        return fieldInfo1;
     }
 
 
     public String getIdValueToStr(Object object) {
         Class<?> aClass = object.getClass();
-        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
-        Field fieldName = primaryKeyName.getField();
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(aClass);
+        FieldInfo fieldInfo = ListTs.get(primaryKeyName, 0);
+        Field fieldName = fieldInfo != null ? fieldInfo.getField() : null;
         Object fieldValue = ReflectUtil.getFieldValue(object, fieldName);
         return Convert.toStr(fieldValue);
     }
 
     public void clearId(Object object) {
         Class<?> aClass = object.getClass();
-        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
-        Field fieldName = primaryKeyName.getField();
-        ReflectUtil.setFieldValue(object, fieldName,null);
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(aClass);
+        for (FieldInfo fieldInfo : primaryKeyName) {
+            ReflectUtil.setFieldValue(object, fieldInfo.getField(), null);
+        }
     }
 
     public List<Object> convertPrimaryKey(List<? extends Serializable> list, FieldInfo fieldInfo) {
         List<Object> objects = new ArrayList<>();
+        if (list == null) return objects;
         for (Serializable serializable : list) {
-            if(serializable == null) continue;
+            if (serializable == null) continue;
             Object convert = Convert.convert(fieldInfo.getFieldType(), serializable);
             objects.add(convert);
         }

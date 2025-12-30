@@ -43,8 +43,8 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         Page<${entityName}> page = page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()));
         EasyPageRes from = EasyPageRes.from(page);
         List<${entityName}> records = from.getRecords(${entityName}.class);
-        List<${entityName}Dto> flowProcDefDtos = list${entityName}ToDto(records);
-        return from.setRecords(flowProcDefDtos);
+        List<${entityName}Dto> dtos = list${entityName}ToDto(records);
+        return from.setRecords(dtos);
     }
 
     public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list) {
@@ -70,19 +70,19 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         if(b2){
             query.eq("is_deleted", 0);
         }
-        List<${entityName}> flowProcDefs = this.getBaseMapper().selectList(query);
-        return list${entityName}ToDto(flowProcDefs);
+        List<${entityName}> domainList = this.getBaseMapper().selectList(query);
+        return list${entityName}ToDto(domainList);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> save${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req, ${domainName}ControllerReq::get${entityName}Dtos);
-        List<${entityName}Dto> flowProcDefs = req.get${entityName}Dtos();
-        List<${entityName}> newInsert = list${entityName}DtoToDomain(flowProcDefs);
+        List<${entityName}Dto> dtoList = req.get${entityName}Dtos();
+        List<${entityName}> newInsert = list${entityName}DtoToDomain(dtoList);
 
         if (!newInsert.isEmpty()) {
-            CheckUtils.checkInsert(saveBatch(newInsert));
+            CheckUtils.checkInsert(!saveBatch(newInsert),"${domainName}");
         }
         return list${entityName}ToDto(newInsert);
     }
@@ -92,17 +92,23 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     public List<${entityName}Dto> get${domainName}ByIds(List<String> strings) {
         if (ListTs.isEmpty(strings)) return new ArrayList<>();
         List<List<String>> partition = ListTs.partition(strings, 100);
-        List<${entityName}> flowProcDefs = ListTs.newList();
+        List<${entityName}> domainList = ListTs.newList();
+        boolean b2 = ReflectUtil.hasField(${entityName}.class, "isDeleted");
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(${entityName}.class);
         for (List<String> pList : partition) {
             EQueryWrapper<${entityName}> query = new EQueryWrapper<>(${entityName}.class);
-            FieldInfo primaryKeyName = getPrimaryKeyName(${entityName}.class);
-            List<Object> inList = convertPrimaryKey(pList, primaryKeyName);
-            query.in(StrUtil.toUnderlineCase(primaryKeyName.getFieldName()), inList);
-            query.eq("is_deleted", 0);
-            List<${entityName}> queryList = this.getBaseMapper().selectList(query);
-            ListTs.addAll(flowProcDefs, queryList);
+            if (primaryKeyName != null && !primaryKeyName.isEmpty()) {
+                FieldInfo fieldInfo = primaryKeyName.get(0);
+                List<Object> inList = convertPrimaryKey(pList, fieldInfo);
+                if(inList != null && !inList.isEmpty()){
+                    query.in(StrUtil.toUnderlineCase(fieldInfo.getFieldName()), inList);
+                    if(b2) query.eq("is_deleted", 0);
+                    List<${entityName}> queryList = this.getBaseMapper().selectList(query);
+                    ListTs.addAll(domainList, queryList);
+                }
+            }
         }
-        return list${entityName}ToDto(flowProcDefs);
+        return list${entityName}ToDto(domainList);
     }
 
     @Override
@@ -139,14 +145,14 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> batchUpdate${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
-        List<${entityName}Dto> flowProcDefDtos = req.get${entityName}Dtos();
-        List<${entityName}> flowProcDefs = list${entityName}DtoToDomain(flowProcDefDtos);
+        List<${entityName}Dto> dtos = req.get${entityName}Dtos();
+        List<${entityName}> domainList = list${entityName}DtoToDomain(dtos);
         ${entityName}Mapper baseMapper1 = this.getBaseMapper();
         List<String> ids = ListTs.newList();
-        for (${entityName} flowProcDef : flowProcDefs) {
-            clearAudit(flowProcDef);
-            baseMapper1.updateById(flowProcDef);
-            String id = getIdValueToStr(flowProcDef);
+        for (${entityName} domain : domainList) {
+            clearAudit(domain);
+            baseMapper1.updateById(domain);
+            String id = getIdValueToStr(domain);
             if(StrUtil.isNotBlank(id)){
                 ids.add(id);
             }
@@ -158,12 +164,13 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> copy${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
-        List<${entityName}Dto> flowProcDefDtos = req.get${entityName}Dtos();
-        List<${entityName}> flowProcDefs = list${entityName}DtoToDomain(flowProcDefDtos);
+        List<${entityName}Dto> domainDtos = req.get${entityName}Dtos();
+        List<${entityName}> domainList = list${entityName}DtoToDomain(domainDtos);
         List<${entityName}> objects = new ArrayList<>();
-        for (${entityName} flowProcDef : flowProcDefs) {
-            clearId(flowProcDef);
-            objects.add(flowProcDef);
+        for (${entityName} domain : domainList) {
+            clearId(domain);
+            // 如果不是自增主键 那么这里还需要手动生成主键
+            objects.add(domain);
         }
         req.set${entityName}Dtos(list${entityName}ToDto(objects));
         return save${domainName}(req);
@@ -173,8 +180,8 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> enableOrDisable${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
-        List<${entityName}Dto> flowProcDefDtos = req.get${entityName}Dtos();
-        List<String> collect = flowProcDefDtos.stream().map(this::getIdValueToStr).collect(Collectors.toList());
+        List<${entityName}Dto> dtos = req.get${entityName}Dtos();
+        List<String> collect = dtos.stream().map(this::getIdValueToStr).collect(Collectors.toList());
         List<${entityName}Dto> queryResList = get${domainName}ByIds(collect);
         if (ListTs.isNotEmpty(queryResList)) {
             boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), "isEnabled");
