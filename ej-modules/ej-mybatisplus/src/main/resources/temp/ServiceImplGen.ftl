@@ -39,8 +39,18 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<List<Object>> keys = pageQuery.getKeys();
         EQueryWrapper<${entityName}> objectEQueryWrapper = new EQueryWrapper<>();
         parseKeysToQuery(keys, objectEQueryWrapper);
+        boolean b = ReflectUtil.hasField(${entityName}.class, "create_time");
+        if(b){
+            objectEQueryWrapper.orderByDesc("create_time");
+        } else{
+            List<FieldInfo> primaryKeyName = getPrimaryKeyName(${entityName}.class);
+            FieldInfo fieldInfo = ListTs.get(primaryKeyName, 0);
+            if(null != fieldInfo){
+                objectEQueryWrapper.orderByDesc(fieldInfo.getFieldName());
+            }
+        }
         objectEQueryWrapper.orderByDesc("create_time");
-        Page<${entityName}> page = page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()));
+        Page<${entityName}> page = page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()),objectEQueryWrapper);
         EasyPageRes from = EasyPageRes.from(page);
         List<${entityName}> records = from.getRecords(${entityName}.class);
         List<${entityName}Dto> dtos = list${entityName}ToDto(records);
@@ -82,7 +92,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<${entityName}> newInsert = list${entityName}DtoToDomain(dtoList);
 
         if (!newInsert.isEmpty()) {
-            CheckUtils.checkInsert(!saveBatch(newInsert),"${domainName}");
+            CheckUtils.checkInsert(saveBatch(newInsert),"${domainName}");
         }
         return list${entityName}ToDto(newInsert);
     }

@@ -28,6 +28,7 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -39,6 +40,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.context.api.seed.MybatisPlusSnowSeed;
 import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
@@ -364,8 +366,11 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
     public void clearAudit(Object source) {
         if (source == null) return;
         String[] auditParams = getAuditParams();
+        Class<?> aClass1 = source.getClass();
         for (String auditParam : auditParams) {
-            ReflectUtil.setFieldValue(source, auditParam, null);
+            if (ReflectUtil.hasField(aClass1, auditParam)) {
+                ReflectUtil.setFieldValue(source, auditParam, null);
+            }
         }
     }
 
@@ -540,6 +545,43 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             objects.add(convert);
         }
         return objects;
+    }
+
+    /**
+     * 主键填充值
+     *
+     * @param domainList
+     * @param tClass
+     * @param <T2>
+     */
+    public <T2> void patchPrimaryKeys(List<T2> domainList, Class<T2> tClass) {
+        if (ListTs.isEmpty(domainList)) return;
+        MybatisPlusSnowSeed idSeed = Easy4j.getContext().get(MybatisPlusSnowSeed.class);
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(tClass);
+        for (FieldInfo fieldInfo : primaryKeyName) {
+            Field field = fieldInfo.getField();
+            if (field.isAnnotationPresent(TableId.class)) {
+                Class<?> fieldType = fieldInfo.getFieldType();
+                if (fieldType == Long.class || fieldType == long.class) {
+                    TableId annotation = field.getAnnotation(TableId.class);
+                    if (annotation.type() == IdType.NONE || annotation.type() == IdType.INPUT) {
+                        for (T2 employees : domainList) {
+                            Object fieldValue = ReflectUtil.getFieldValue(employees, field);
+                            if (fieldValue == null) {
+                                ReflectUtil.setFieldValue(employees, field, idSeed.nextIdLong());
+                            }
+                        }
+                    }
+                } else if (fieldType == String.class) {
+                    for (T2 employees : domainList) {
+                        Object fieldValue = ReflectUtil.getFieldValue(employees, field);
+                        if (fieldValue == null) {
+                            ReflectUtil.setFieldValue(employees, field, idSeed.nextIdStr());
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
