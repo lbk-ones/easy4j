@@ -39,7 +39,11 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<List<Object>> keys = pageQuery.getKeys();
         EQueryWrapper<${entityName}> objectEQueryWrapper = new EQueryWrapper<>();
         parseKeysToQuery(keys, objectEQueryWrapper);
-        boolean b = ReflectUtil.hasField(${entityName}.class, "create_time");
+        boolean isDeleted = ReflectUtil.hasField(${entityName}.class, "isDeleted");
+        if(isDeleted){
+            objectEQueryWrapper.eq("isDeleted",0);
+        }
+        boolean b = ReflectUtil.hasField(${entityName}.class, "createTime");
         if(b){
             objectEQueryWrapper.orderByDesc("create_time");
         } else{
@@ -175,14 +179,15 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     public List<${entityName}Dto> copy${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
         List<${entityName}Dto> domainDtos = req.get${entityName}Dtos();
+        List<String> ids = list${entityName}DtoToDomain(domainDtos)
+                 .stream()
+                 .map(this::getIdValueToStr)
+                 .collect(Collectors.toList());
+        domainDtos = getDefByIds(collect);
         List<${entityName}> domainList = list${entityName}DtoToDomain(domainDtos);
-        List<${entityName}> objects = new ArrayList<>();
-        for (${entityName} domain : domainList) {
-            clearId(domain);
-            // 如果不是自增主键 那么这里还需要手动生成主键
-            objects.add(domain);
-        }
-        req.set${entityName}Dtos(list${entityName}ToDto(objects));
+        domainList.forEach(this::clearId);
+        this.patchPrimaryKeys(domainList,${entityName}.class);
+        req.set${entityName}Dtos(list${entityName}ToDto(domainList));
         return save${domainName}(req);
     }
 

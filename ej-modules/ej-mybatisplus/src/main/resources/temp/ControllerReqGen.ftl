@@ -15,7 +15,7 @@ import java.util.List;
 @Schema(description = "${cnDesc}接口传参")
 public class ${domainName}ControllerReq implements Serializable {
 
-    @Schema(description = "${cnDesc}集合",implementation = ${returnDtoName}.class)
+    @Schema(description = "${cnDesc}集合")
     List<${returnDtoName}> ${(returnDtoName?substring(0,1))?lower_case + (returnDtoName?substring(1))}s;
 
     @Schema(description = "${cnDesc}信息 分页查询信息，分页查询的时候传入",implementation = PageDto.class)
