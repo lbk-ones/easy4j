@@ -12,6 +12,7 @@ import {cloneDeep, isEmpty} from "lodash-es";
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {vs} from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
 import {useColor} from "./color.jsx";
+import Vue3ArcoSupertable from "./Vue3ArcoSupertable.jsx";
 
 const {Header, Content, Footer} = Layout
 const {Title, Text} = Typography
@@ -69,6 +70,7 @@ function App() {
     const [currentItem, setCurrentItem] = useState({})
 
     const [open, setOpen] = useState(false);
+    const [superTableVisible, setSuperTableVisible] = useState(false);
     const [displayTables, setDisplayTables] = useState(false);
     const [urlPrefixRequired, setUrlPrefixRequired] = useState(false);
 
@@ -306,6 +308,13 @@ function App() {
                                  }}
                              >
                               生成代码
+                          </Button>
+                          <Button
+                              type="default"
+                              size="middle"
+                              onClick={() => setSuperTableVisible(true)}
+                          >
+                              生成前端界面
                           </Button>
 
                         </Space>
@@ -876,6 +885,7 @@ function App() {
                 </Tabs>
 
             </Drawer>
+            <Vue3ArcoSupertable open={superTableVisible} onClose={() => setSuperTableVisible(false)} />
         </Layout>
     )
 }
