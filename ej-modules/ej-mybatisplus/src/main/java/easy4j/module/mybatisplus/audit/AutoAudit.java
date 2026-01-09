@@ -17,6 +17,7 @@ package easy4j.module.mybatisplus.audit;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -35,27 +36,33 @@ public class AutoAudit implements Serializable {
     // 创建人
     @DDLField(dataLength = 20)
     @TableField(value="create_by",fill = FieldFill.INSERT)
+    @Schema(description = "创建人用户代码")
     private String createBy;
 
     @DDLField(dataLength = 150)
     @TableField(value="create_name",fill = FieldFill.INSERT)
+    @Schema(description = "创建人姓名")
     private String createName;
 
     // 创建时间
     @TableField(value="create_time",fill = FieldFill.INSERT)
+    @Schema(description = "创建时间")
     private Date createTime;
 
     // 更新人
     @DDLField(dataLength = 20)
     @TableField(value="update_by",fill = FieldFill.INSERT_UPDATE)
+    @Schema(description = "跟新人代码")
     private String updateBy;
 
     @DDLField(dataLength = 150)
     @TableField(value="update_name",fill = FieldFill.INSERT_UPDATE)
+    @Schema(description = "跟新人姓名")
     private String updateName;
 
     // 更新时间
     @TableField(value="last_update_time",fill = FieldFill.INSERT_UPDATE)
+    @Schema(description = "更新时间")
     private Date lastUpdateTime;
 
 

@@ -31,6 +31,13 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.25.10</version>
+        </dependency>
+
         <!--MYBATIS PLUS-->
         <dependency>
             <groupId>com.baomidou</groupId>

@@ -352,6 +352,12 @@ public class CheckUtils {
         }
     }
 
+
+    public static void checkRuntimeNotNull(Object obj, String name) {
+        if (ObjectUtil.isEmpty(obj)) {
+            throw new RuntimeException("the parameter "+name+" is not null!");
+        }
+    }
     public static <T> T convertRpcRes(EasyResult<Object> securitySessionEasyResult, Class<T> securitySessionClass) {
         Object data = securitySessionEasyResult.getData();
         if (ObjectUtil.isNotEmpty(data)) {

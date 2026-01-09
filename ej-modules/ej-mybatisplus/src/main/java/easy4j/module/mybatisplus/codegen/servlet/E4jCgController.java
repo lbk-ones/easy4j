@@ -1,16 +1,21 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.google.common.collect.Lists;
 
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.PackageScanner;
 import easy4j.infra.common.utils.SP;
@@ -27,6 +32,14 @@ import easy4j.module.mybatisplus.codegen.GenDto;
 import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
 import easy4j.module.mybatisplus.codegen.MultiGenDto;
 import easy4j.module.mybatisplus.codegen.db.DbGenSetting;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassApi;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassField;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassParseResult;
+import easy4j.module.mybatisplus.codegen.servlet.ast.JavaClassParser;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
 import java.util.stream.Collectors;
@@ -333,5 +346,144 @@ public class E4jCgController {
         return SRes.success(previewRes);
     }
 
+
+    @UrlMap(url = "/pageGenInit")
+    public PageViewRes pageGenInit(ServletHandler servletHandler) {
+        PageViewRes pageViewRes = new PageViewRes();
+        Map<String, String> formDataMap = servletHandler.getFormDataMap();
+        String parentPackageName = formDataMap.get("parentPackageName");
+        String controllerPackageName = formDataMap.get("controllerPackageName");
+        String projectAbsolutePath = formDataMap.get("projectAbsolutePath");
+        if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
+        String dtoPackageName = formDataMap.get("dtoPackageName");
+        String entityPackageName = formDataMap.get("entityPackageName");
+        String dtoName_ = formDataMap.get("dtoName");
+        String domainName_ = formDataMap.get("domainName");
+        CheckUtils.checkRuntimeNotNull(dtoName_, "dtoName");
+        CheckUtils.checkRuntimeNotNull(domainName_, "domainName");
+        String abPath = projectAbsolutePath +
+                File.separator +
+                String.join(File.separator, ListTs.asList("src", "main", "java")) +
+                File.separator +
+                String.join(File.separator, parentPackageName.split("\\."));
+        String dtoAb = abPath + File.separator + dtoPackageName;
+        String domainAb = abPath + File.separator + entityPackageName;
+        String dtoName = dtoAb + File.separator + dtoName_ + ".java";
+        String domainName = domainAb + File.separator + domainName_ + ".java";
+        try {
+            ClassParseResult dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
+            ClassParseResult domainParse = JavaClassParser.INSTANCE.parse(domainName);
+            pageViewRes.setUniqueId(StrUtil.blankToDefault(domainParse.getTableName(), StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
+            pageViewRes.setCnDesc(domainParse.getSchemaDesc());
+            pageViewRes.setRowKey(domainParse.getTableIdFieldName());
+            // scan all apis
+            scanAllApi(abPath, parentPackageName, controllerPackageName, pageViewRes);
+
+            List<ClassField> fields = dtoParse.getFields();
+            List<PageViewRes.ColumnInfo> objects = Lists.newArrayList();
+            for (ClassField field : fields) {
+                PageViewRes.ColumnInfo columnInfo = new PageViewRes.ColumnInfo();
+                columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
+                columnInfo.setDataIndex(field.getFieldName());
+                String fieldType = field.getFieldType();
+                if (ListTs.asList("Date", "LocalDateTime", "LocalDate").contains(fieldType)) {
+                    columnInfo.setType("date");
+                } else if (ListTs.asList("String", "char", "Character").contains(fieldType)) {
+                    columnInfo.setType("input");
+                } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal").contains(fieldType)) {
+                    columnInfo.setType("number");
+                } else if (ListTs.asList("boolean", "Boolean").contains(fieldType)) {
+                    columnInfo.setType("switch");
+                }
+                objects.add(columnInfo);
+            }
+            pageViewRes.setColumns(objects);
+        } catch (Exception e) {
+            throw new RuntimeException("出现异常:" + e.getMessage());
+        }
+        return pageViewRes;
+    }
+
+    private static void scanAllApi(String abPath, String parentPackageName, String controllerPackageName, PageViewRes pageViewRes) {
+        Set<String> allUrls = new HashSet<>();
+        if (StrUtil.isNotBlank(controllerPackageName)) {
+            String filePath = abPath + File.separator + controllerPackageName;
+            List<String> allEntitys = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.exists() && file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                for (String allEntity : allEntitys) {
+                    // ast parse
+                    List<ClassApi> classApis = JavaClassParser.INSTANCE.parseApi(abPath + File.separator + allEntity + ".java");
+                    for (ClassApi classApi : classApis) {
+                        String url = classApi.getUrl();
+                        allUrls.add(url);
+                    }
+                }
+            }
+            // jar 环境
+            if (allEntitys.isEmpty()) {
+                String cp = String.join(".", ListTs.asList(
+                        parentPackageName,
+                        controllerPackageName
+                ));
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(cp, false);
+                    for (Class<?> aClass : classes) {
+                        if (!(aClass.isAnnotationPresent(Controller.class) || aClass.isAnnotationPresent(RestController.class))) {
+                            continue;
+                        }
+                        if (aClass.isAnnotationPresent(RequestMapping.class)) {
+                            RequestMapping annotation = aClass.getAnnotation(RequestMapping.class);
+                            String[] value = annotation.value();
+                            String[] path = annotation.path();
+                            String[] strings = ArrayUtil.addAll(value, path);
+                            String prefix = ListTs.get(strings, 0);
+                            Method[] methods = ReflectUtil.getMethods(aClass);
+                            for (Method method : methods) {
+                                List<Class<? extends Annotation>> list = ListTs.asList(RequestMapping.class, PostMapping.class, GetMapping.class, PutMapping.class, DeleteMapping.class);
+                                if (list.stream().noneMatch(method::isAnnotationPresent)) {
+                                    continue;
+                                }
+                                list.stream().filter(method::isAnnotationPresent).findFirst().ifPresent(e -> {
+                                    Annotation annotation1 = method.getAnnotation(e);
+                                    Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation1);
+                                    String[] path2 = (String[]) annotationAttributes.get("path");
+                                    String[] value2 = (String[]) annotationAttributes.get("value");
+                                    String url = ListTs.get(ArrayUtil.addAll(value2, path2), 0);
+                                    String allUrl = StrUtil.removeSuffix(
+                                            StrUtil.addPrefixIfNot(
+                                                    StrUtil.removeSuffix(
+                                                            prefix,
+                                                            "/"
+                                                    )
+                                                    , "/"
+                                            ),
+                                            "/"
+                                    ) + "/" + StrUtil.removePrefix(url, "/");
+                                    // 处理 /{id} 这种 如果 /{id}/xxx 这种可能会被误操作 但是先不管
+                                    allUrl = ListTs.asList(allUrl.split("/")).stream().map(e2 -> {
+                                        if (StrUtil.isWrap(e2, "{", "}")) {
+                                            return null;
+                                        }
+                                        return e2;
+                                    }).filter(Objects::nonNull).collect(Collectors.joining("/"));
+                                    allUrls.add(allUrl);
+                                });
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        }
+        ArrayList<String> strings = new ArrayList<>(allUrls);
+        strings.sort(Comparator.naturalOrder());
+        pageViewRes.setAllApiUrl(strings);
+    }
 
 }
