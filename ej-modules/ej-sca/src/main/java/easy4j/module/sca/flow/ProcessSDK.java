@@ -34,9 +34,26 @@ public interface ProcessSDK {
      * 完成任务
      *
      * @param taskId 任务ID
+     * @return 业务key: SDK会自动生成一个业务KEY来关联表单内容，就算没有传表单类容也会生成一个
      */
-    @Desc("完成任务")
-    void completeTask(String taskId, String processKey, EasyMap<String, Object> variables);
+    @Desc("完成任务,processKey可以不传会自动推算")
+    String completeTask(String taskId, String processKey, EasyMap<String, Object> variables);
+
+    /**
+     * 完成任务
+     * 不需要传入表单ID 自动反查
+     *
+     * @param taskId 任务ID
+     * @param processKey 流程定义ID 可以不传会自动推算
+     * @param result 审批结果
+     * @param comment 审批内容
+     * @param formId  表单Id 可以不传 不传会推算这个任务节点对应的审批操作ID
+     * @param formData 审批的时候动态表单对应的值
+     * @param variables 传递给任务节点的变量
+     * @return 业务key: SDK会自动生成一个业务KEY来关联表单内容，就算没有传表单类容也会生成一个
+     */
+    @Desc("完成任务,processKey可以不传会自动推算")
+    String completeTask(String taskId, String processKey, String result,String comment,String formId, List<FormData> formData,EasyMap<String, Object> variables);
 
     /**
      * 查询代办任务信息集合

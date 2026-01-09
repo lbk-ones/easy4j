@@ -47,6 +47,11 @@ public class ProcessReq  implements Serializable {
     @Schema(description = "业务key,由业务方定，用来关联流程引擎实例和动态表单的，如果传了formData那么这个是必填的，对应申请方的表单申请唯一单号")
     String businessKey;
 
+    /**
+     * 表单ID
+     */
+    @Schema(description = "表单ID")
+    private String formId;
 
     /**
      * 审批开始提交的表单内容，没使用动态表单则忽略，字段值全部传字符串（二进制类型除外）
