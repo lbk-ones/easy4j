@@ -2,7 +2,9 @@ package easy4j.module.mybatisplus.codegen.servlet;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -13,6 +15,8 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Lists;
 
 import easy4j.infra.base.starter.env.Easy4j;
@@ -38,6 +42,7 @@ import easy4j.module.mybatisplus.codegen.servlet.ast.ClassField;
 import easy4j.module.mybatisplus.codegen.servlet.ast.ClassParseResult;
 import easy4j.module.mybatisplus.codegen.servlet.ast.JavaClassParser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Controller;
@@ -377,7 +382,6 @@ public class E4jCgController {
         return SRes.success(previewRes);
     }
 
-
     /**
      * 前端配置生成前的初始化 基于 arco-design-vue3组件库的arco-vue3-supertable
      */
@@ -410,8 +414,20 @@ public class E4jCgController {
         String dtoName = dtoAb + File.separator + dtoName_ + ".java";
         String domainName = domainAb + File.separator + domainName_ + ".java";
         try {
-            ClassParseResult dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
-            ClassParseResult domainParse = JavaClassParser.INSTANCE.parse(domainName);
+            File file = new File(dtoName);
+            File file2 = new File(domainName);
+            ClassParseResult dtoParse;
+            ClassParseResult domainParse;
+            if (file.exists() && file2.exists()) {
+                dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
+                domainParse = JavaClassParser.INSTANCE.parse(domainName);
+            } else {
+                Class<?> dtoClass = Class.forName(parentPackageName + SP.DOT + dtoPackageName + SP.DOT + dtoName_);
+                Class<?> domainClass = Class.forName(parentPackageName + SP.DOT + entityPackageName + SP.DOT + domainName_);
+                dtoParse = clazzToClassParseResult(dtoClass);
+                domainParse = clazzToClassParseResult(domainClass);
+            }
+
             String tableName = domainParse.getTableName();
             pageViewRes.setUniqueId(RandomUtil.randomString(4) + "_" + StrUtil.blankToDefault(tableName, StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
 
@@ -469,6 +485,31 @@ public class E4jCgController {
             throw new RuntimeException("出现异常:" + e.getMessage());
         }
         return SRes.success(pageViewRes);
+    }
+
+    private ClassParseResult clazzToClassParseResult(Class<?> dtoClass) {
+        ClassParseResult classParseResult = new ClassParseResult();
+        classParseResult.setClassName(dtoClass.getName());
+        classParseResult.setTableName(Optional.ofNullable(dtoClass.getAnnotation(TableName.class)).map(TableName::value).orElseGet(() -> StrUtil.toUnderlineCase(dtoClass.getSimpleName())));
+        classParseResult.setSchemaDesc(Optional.ofNullable(dtoClass.getAnnotation(Schema.class)).map(Schema::description).orElse(dtoClass.getSimpleName()));
+        Field[] fields = ReflectUtil.getFields(dtoClass);
+        List<ClassField> collect = Arrays.stream(fields).map(field -> {
+            int modifiers = field.getModifiers();
+            if (Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+                return null;
+            }
+            if (field.isAnnotationPresent(TableId.class)) {
+                String tableIdFieldName = classParseResult.getTableIdFieldName();
+                if (StrUtil.isBlank(tableIdFieldName)) classParseResult.setTableIdFieldName(field.getName());
+            }
+            ClassField classField = new ClassField();
+            classField.setFieldName(field.getName());
+            classField.setFieldType(field.getType().getSimpleName());
+            classField.setCnDesc(Optional.ofNullable(field.getAnnotation(Schema.class)).map(Schema::description).orElseGet(field::getName));
+            return classField;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+        classParseResult.setFields(collect);
+        return classParseResult;
     }
 
     private void patchDefaultActions(PageViewRes pageViewRes) {
