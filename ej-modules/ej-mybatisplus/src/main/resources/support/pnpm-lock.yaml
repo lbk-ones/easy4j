@@ -17,7 +17,7 @@ importers:
       axios:
         specifier: ^1.13.2
         version: 1.13.2
-      lodash-es:
+      lodash-es: 
         specifier: ^4.17.22
         version: 4.17.22
       react:

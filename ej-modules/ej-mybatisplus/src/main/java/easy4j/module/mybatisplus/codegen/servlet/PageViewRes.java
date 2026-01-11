@@ -1,10 +1,13 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 传入dto 和 domain类型
@@ -23,25 +26,95 @@ public class PageViewRes implements Serializable {
     // 主键字段
     public String rowKey;
 
+    // 分页API
+    public String pageApiUrl;
+
+    // 添加APi
+    public String formAddApiUrl;
+
+    // 更新APi
+    public String formUpdateApiUrl;
+
+    // 删除
+    public String formDeleteApiUrl;
+
+    // controller.req 下面的传参名称
+    public String controllerReqDtoName;
+
     // 所有的api地址
-    public List<String> allApiUrl = new ArrayList<>();
+    public List<API> allApiUrl = new ArrayList<>();
+    public List<ACTION> actions = new ArrayList<>();
 
     // 字段信息
     public List<ColumnInfo> columns = new ArrayList<>();
 
     @Data
-    public static class ColumnInfo implements Serializable{
+    @Accessors(chain = true)
+    public static class ACTION {
+        public String key;
+        public String label;
+        public String message;
+        public String status;
+        public String type = "outline";
+        public String confirmMessage;
+        public boolean isFetchData = true;
+        public boolean needSelect = true;
 
-        private String title;
 
-        private String dataIndex;
-
-        // boolean 值则是 switch
-        // 数字 则是 number
-        private String type;
-
+        public ACTION(String key, String label) {
+            this.key = key;
+            this.label = label;
+        }
     }
 
+    @Data
+    public static class ColumnInfo implements Serializable {
+
+        private String title;
+        private String dataIndex;
+        private Integer width;
+        private Boolean ellipsis = true;
+
+        private Form form = new Form();
+
+        @Data
+        public static class Form {
+            // boolean 值则是 switch
+            // 数字 则是 number
+            private String type;
+            private boolean creatable = true;      // 新增时是否显示
+            private boolean editable = true;       // 编辑时是否显示
+            private boolean required = false;       // 是否必填
+            private String placeholder;
+            private Object defaultValue;    // 默认值
+            private String enterNext;     // 回车后跳转到的下一个字段名（提升录入体验）
+        }
+    }
+
+    @Data
+    public static class API {
+
+        public String url;
+
+        // 简单介绍
+        private String summary;
+
+        // 描述
+        private String description;
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (object == null || getClass() != object.getClass()) return false;
+            API api = (API) object;
+            return StrUtil.equals(url, api.url) && StrUtil.equals(summary, api.summary) && StrUtil.equals(description, api.description);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url, summary, description);
+        }
+    }
 
 
 }

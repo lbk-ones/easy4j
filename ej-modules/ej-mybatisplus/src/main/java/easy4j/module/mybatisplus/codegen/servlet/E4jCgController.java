@@ -36,6 +36,7 @@ import easy4j.module.mybatisplus.codegen.servlet.ast.ClassApi;
 import easy4j.module.mybatisplus.codegen.servlet.ast.ClassField;
 import easy4j.module.mybatisplus.codegen.servlet.ast.ClassParseResult;
 import easy4j.module.mybatisplus.codegen.servlet.ast.JavaClassParser;
+import io.swagger.v3.oas.annotations.Operation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Controller;
@@ -183,15 +184,16 @@ public class E4jCgController {
     }
 
     private boolean checkNotNullR(ServletHandler servletHandler, Map<String, String> formDataMap, List<String> nameList) {
+        Set<String> objects = new HashSet<>();
         if (formDataMap != null) {
             for (String s : nameList) {
                 String s2 = formDataMap.get(s);
                 if (StrUtil.isBlank(s2)) {
-                    servletHandler.responseJson(SRes.error(s + " is not null "));
-                    return true;
+                    objects.add(s2);
                 }
             }
         }
+        if (!objects.isEmpty()) servletHandler.responseJson(SRes.error(String.join(",", objects)) + " is not null ");
         return false;
 
     }
@@ -220,6 +222,7 @@ public class E4jCgController {
         if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
         String dtoPackageName = formDataMap.get("dtoPackageName");
         String entityPackageName = formDataMap.get("entityPackageName");
+        String controllerPackageName = formDataMap.get("controllerPackageName");
         String abPath = projectAbsolutePath + SP.SLASH + "src/main/java";
         if (StrUtil.isNotBlank(dtoPackageName)) {
             String dtoPackage = String.join(".", ListTs.asList(
@@ -269,6 +272,33 @@ public class E4jCgController {
                 }
             } else {
                 packageRes.setAllEntitys(allEntitys);
+            }
+
+        }
+        // 扫描controller文件
+        if (StrUtil.isNotBlank(controllerPackageName)) {
+            String packageName = String.join(".", ListTs.asList(
+                    parentPackageName,
+                    controllerPackageName
+            ));
+            String filePath = abPath + SP.SLASH + (String.join(SP.SLASH, ListTs.asList(packageName.split("\\."))));
+            List<String> allEntitys = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+            }
+            if (allEntitys.isEmpty()) {
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(packageName, false);
+                    allEntitys = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                    packageRes.setAllControllers(allEntitys);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                packageRes.setAllControllers(allEntitys);
             }
 
         }
@@ -347,8 +377,11 @@ public class E4jCgController {
     }
 
 
+    /**
+     * 前端配置生成前的初始化 基于 arco-design-vue3组件库的arco-vue3-supertable
+     */
     @UrlMap(url = "/pageGenInit")
-    public PageViewRes pageGenInit(ServletHandler servletHandler) {
+    public SRes pageGenInit(ServletHandler servletHandler) {
         PageViewRes pageViewRes = new PageViewRes();
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         String parentPackageName = formDataMap.get("parentPackageName");
@@ -359,8 +392,13 @@ public class E4jCgController {
         String entityPackageName = formDataMap.get("entityPackageName");
         String dtoName_ = formDataMap.get("dtoName");
         String domainName_ = formDataMap.get("domainName");
-        CheckUtils.checkRuntimeNotNull(dtoName_, "dtoName");
-        CheckUtils.checkRuntimeNotNull(domainName_, "domainName");
+        String controllerName = formDataMap.get("controllerName");
+        if (checkNotNullR(servletHandler,
+                formDataMap,
+                ListTs.asList("dtoName", "domainName", "controllerName")
+        )) {
+            return null;
+        }
         String abPath = projectAbsolutePath +
                 File.separator +
                 String.join(File.separator, ListTs.asList("src", "main", "java")) +
@@ -374,26 +412,46 @@ public class E4jCgController {
             ClassParseResult dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
             ClassParseResult domainParse = JavaClassParser.INSTANCE.parse(domainName);
             pageViewRes.setUniqueId(StrUtil.blankToDefault(domainParse.getTableName(), StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
-            pageViewRes.setCnDesc(domainParse.getSchemaDesc());
+            String schemaDesc = domainParse.getSchemaDesc();
+            if (StrUtil.endWith(schemaDesc, "表")) schemaDesc = StrUtil.replaceLast(schemaDesc, "表", "");
+            pageViewRes.setCnDesc(schemaDesc);
             pageViewRes.setRowKey(domainParse.getTableIdFieldName());
+            pageViewRes.setControllerReqDtoName(StrUtil.lowerFirst(dtoName_) + "s");
             // scan all apis
-            scanAllApi(abPath, parentPackageName, controllerPackageName, pageViewRes);
-
+            scanAllApi(abPath, parentPackageName, controllerPackageName, pageViewRes, controllerName);
+            // default actions
+            patchDefaultActions(pageViewRes);
             List<ClassField> fields = dtoParse.getFields();
             List<PageViewRes.ColumnInfo> objects = Lists.newArrayList();
-            for (ClassField field : fields) {
+            int size = fields.size();
+            for (int i = 0; i < size; i++) {
+                ClassField field = fields.get(i);
                 PageViewRes.ColumnInfo columnInfo = new PageViewRes.ColumnInfo();
                 columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
                 columnInfo.setDataIndex(field.getFieldName());
+                PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
                 String fieldType = field.getFieldType();
                 if (ListTs.asList("Date", "LocalDateTime", "LocalDate").contains(fieldType)) {
-                    columnInfo.setType("date");
+                    form.setType("date");
+                    form.setPlaceholder("请选择" + columnInfo.getTitle());
                 } else if (ListTs.asList("String", "char", "Character").contains(fieldType)) {
-                    columnInfo.setType("input");
-                } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal").contains(fieldType)) {
-                    columnInfo.setType("number");
+                    form.setType("input");
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
+                } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal", "Integer", "Double", "Short", "Long", "Float").contains(fieldType)) {
+                    form.setType("number");
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
                 } else if (ListTs.asList("boolean", "Boolean").contains(fieldType)) {
-                    columnInfo.setType("switch");
+                    form.setType("switch");
+                    form.setPlaceholder("请选择" + columnInfo.getTitle());
+                } else {
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
+                }
+                ClassField classField = ListTs.get(fields, i + 1);
+                if (null != classField) {
+                    form.setEnterNext(classField.getFieldName());
+                }
+                if (i < size - 1) {
+                    columnInfo.setWidth(160);
                 }
                 objects.add(columnInfo);
             }
@@ -401,11 +459,25 @@ public class E4jCgController {
         } catch (Exception e) {
             throw new RuntimeException("出现异常:" + e.getMessage());
         }
-        return pageViewRes;
+        return SRes.success(pageViewRes);
     }
 
-    private static void scanAllApi(String abPath, String parentPackageName, String controllerPackageName, PageViewRes pageViewRes) {
-        Set<String> allUrls = new HashSet<>();
+    private void patchDefaultActions(PageViewRes pageViewRes) {
+        List<PageViewRes.ACTION> actions = pageViewRes.getActions();
+        actions.add(new PageViewRes.ACTION("view", "查看")
+                .setMessage("查看成功"));
+        actions.add(new PageViewRes.ACTION("edit", "编辑")
+                .setMessage("编辑成功"));
+        actions.add(new PageViewRes.ACTION("delete", "删除")
+                .setStatus("danger")
+                .setType("confirm")
+                .setConfirmMessage("确定要删除选中的数据吗？")
+                .setMessage("删除成功")
+        );
+    }
+
+    private static void scanAllApi(String abPath, String parentPackageName, String controllerPackageName, PageViewRes pageViewRes, String controllerName) {
+        Set<PageViewRes.API> allUrls = new HashSet<>();
         if (StrUtil.isNotBlank(controllerPackageName)) {
             String filePath = abPath + File.separator + controllerPackageName;
             List<String> allEntitys = new ArrayList<>();
@@ -413,13 +485,21 @@ public class E4jCgController {
             if (file.exists() && file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files == null) files = new File[]{};
-                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                allEntitys = Arrays.stream(files)
+                        .filter(File::isFile)
+                        .map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf(".")))
+                        .collect(Collectors.toList());
                 for (String allEntity : allEntitys) {
+                    if (!StrUtil.equals(controllerName, allEntity)) continue;
                     // ast parse
-                    List<ClassApi> classApis = JavaClassParser.INSTANCE.parseApi(abPath + File.separator + allEntity + ".java");
+                    List<ClassApi> classApis = JavaClassParser.INSTANCE.parseApi(abPath + File.separator + controllerPackageName + File.separator + allEntity + ".java");
                     for (ClassApi classApi : classApis) {
                         String url = classApi.getUrl();
-                        allUrls.add(url);
+                        PageViewRes.API api = new PageViewRes.API();
+                        api.setUrl(url);
+                        api.setSummary(classApi.getSummary());
+                        api.setDescription(classApi.getDescription());
+                        allUrls.add(api);
                     }
                 }
             }
@@ -432,6 +512,8 @@ public class E4jCgController {
                 try {
                     Set<Class<?>> classes = PackageScanner.scanPackage(cp, false);
                     for (Class<?> aClass : classes) {
+                        String simpleName = aClass.getSimpleName();
+                        if (!StrUtil.equals(controllerName, simpleName)) continue;
                         if (!(aClass.isAnnotationPresent(Controller.class) || aClass.isAnnotationPresent(RestController.class))) {
                             continue;
                         }
@@ -447,6 +529,16 @@ public class E4jCgController {
                                 if (list.stream().noneMatch(method::isAnnotationPresent)) {
                                     continue;
                                 }
+                                boolean annotationPresent = method.isAnnotationPresent(Operation.class);
+                                String summary_ = "";
+                                String description_ = "";
+                                if (annotationPresent) {
+                                    Operation annotation1 = method.getAnnotation(Operation.class);
+                                    summary_ = annotation1.summary();
+                                    description_ = annotation1.description();
+                                }
+                                final String summary = summary_;
+                                final String description = description_;
                                 list.stream().filter(method::isAnnotationPresent).findFirst().ifPresent(e -> {
                                     Annotation annotation1 = method.getAnnotation(e);
                                     Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation1);
@@ -470,7 +562,11 @@ public class E4jCgController {
                                         }
                                         return e2;
                                     }).filter(Objects::nonNull).collect(Collectors.joining("/"));
-                                    allUrls.add(allUrl);
+                                    PageViewRes.API api = new PageViewRes.API();
+                                    api.setUrl(allUrl);
+                                    api.setSummary(summary);
+                                    api.setDescription(description);
+                                    allUrls.add(api);
                                 });
                             }
                         }
@@ -481,8 +577,24 @@ public class E4jCgController {
             }
 
         }
-        ArrayList<String> strings = new ArrayList<>(allUrls);
-        strings.sort(Comparator.naturalOrder());
+        String rL = StrUtil.replaceLast(controllerName, "Controller", "");
+        for (PageViewRes.API allUrl : allUrls) {
+            String url = allUrl.getUrl();
+            if (StrUtil.contains(url, "pageQuery" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getPageApiUrl())) pageViewRes.setPageApiUrl(url);
+            }
+            if (StrUtil.contains(url, "save" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormAddApiUrl())) pageViewRes.setFormAddApiUrl(url);
+            }
+            if (StrUtil.contains(url, "delete" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormDeleteApiUrl())) pageViewRes.setFormDeleteApiUrl(url);
+            }
+            if (StrUtil.contains(url, "update" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormUpdateApiUrl())) pageViewRes.setFormUpdateApiUrl(url);
+            }
+        }
+        List<PageViewRes.API> strings = new ArrayList<>(allUrls);
+        strings.sort(Comparator.comparing(PageViewRes.API::getUrl));
         pageViewRes.setAllApiUrl(strings);
     }
 

@@ -53,7 +53,6 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
                 objectEQueryWrapper.orderByDesc(fieldInfo.getFieldName());
             }
         }
-        objectEQueryWrapper.orderByDesc("create_time");
         Page<${entityName}> page = page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()),objectEQueryWrapper);
         EasyPageRes from = EasyPageRes.from(page);
         List<${entityName}> records = from.getRecords(${entityName}.class);
@@ -183,7 +182,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
                  .stream()
                  .map(this::getIdValueToStr)
                  .collect(Collectors.toList());
-        domainDtos = getDefByIds(collect);
+        domainDtos = get${domainName}ByIds(ids);
         List<${entityName}> domainList = list${entityName}DtoToDomain(domainDtos);
         domainList.forEach(this::clearId);
         this.patchPrimaryKeys(domainList,${entityName}.class);
