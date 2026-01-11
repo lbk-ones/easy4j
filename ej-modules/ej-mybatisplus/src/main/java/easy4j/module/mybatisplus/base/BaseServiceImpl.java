@@ -55,6 +55,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * service层父类
@@ -170,6 +171,9 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                     case "like":
                         queryWrapper.like(s, s3);
                         break;
+                    case "notLike":
+                        queryWrapper.notLike(s, s3);
+                        break;
                     case "likeLeft":
                         queryWrapper.likeLeft(s, s3);
                         break;
@@ -177,49 +181,53 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         queryWrapper.likeRight(s, s3);
                         break;
                     case "lt":
-                        queryWrapper.lt(false, s, s3);
+                        queryWrapper.lt(s, s3);
                         break;
-                    case "lte":
-                        queryWrapper.lt(true, s, s3);
+                    case "le":
+                        queryWrapper.le(s, s3);
                         break;
                     case "gt":
-                        queryWrapper.gt(false, s, s3);
+                        queryWrapper.gt(s, s3);
                         break;
-                    case "gte":
-                        queryWrapper.gt(true, s, s3);
+                    case "ge":
+                        queryWrapper.ge(s, s3);
                         break;
                     case "tgt":
-                        queryWrapper.gt(false, s, DateUtil.parse(s3.toString()));
+                        queryWrapper.gt(s, DateUtil.parse(s3.toString()));
                         break;
-                    case "tgte":
-                        queryWrapper.gt(true, s, DateUtil.parse(s3.toString()));
+                    case "tge":
+                        queryWrapper.ge(s, DateUtil.parse(s3.toString()));
                         break;
                     case "tlt":
-                        queryWrapper.lt(false, s, DateUtil.parse(s3.toString()));
+                        queryWrapper.lt(s, DateUtil.parse(s3.toString()));
                         break;
-                    case "tlte":
-                        queryWrapper.lt(true, s, DateUtil.parse(s3.toString()));
+                    case "tle":
+                        queryWrapper.le(s, DateUtil.parse(s3.toString()));
                         break;
                     case "between":
                         try {
-                            String v1 = StrUtil.trim(key.get(2).toString());
-                            String v2 = StrUtil.trim(key.get(3).toString());
+                            Object o = key.get(2);
+                            List<String> list = ListTs.objectToListT(o, String.class, Function.identity());
+                            String v1 = StrUtil.trim(list.get(0));
+                            String v2 = StrUtil.trim(list.get(1));
                             if (!StrUtil.hasBlank(v1, v2)) {
-                                queryWrapper.between(false, s, DateUtil.parse(v1), DateUtil.parse(v2));
+                                queryWrapper.between(s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!" + e.getMessage());
                         }
                         break;
                     case "betweene":
                         try {
-                            String v1 = StrUtil.trim(key.get(3).toString());
-                            String v2 = StrUtil.trim(key.get(4).toString());
+                            Object o = key.get(2);
+                            List<String> list = ListTs.objectToListT(o, String.class, Function.identity());
+                            String v1 = StrUtil.trim(list.get(0));
+                            String v2 = StrUtil.trim(list.get(1));
                             if (!StrUtil.hasBlank(v1, v2)) {
-                                queryWrapper.between(true, s, DateUtil.parse(v1), DateUtil.parse(v2));
+                                queryWrapper.notBetween(s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!" + e.getMessage());
                         }
                         break;
                     default:

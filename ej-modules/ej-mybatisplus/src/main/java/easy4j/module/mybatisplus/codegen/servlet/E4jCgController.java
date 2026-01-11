@@ -9,6 +9,7 @@ import java.util.*;
 
 import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -411,7 +412,9 @@ public class E4jCgController {
         try {
             ClassParseResult dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
             ClassParseResult domainParse = JavaClassParser.INSTANCE.parse(domainName);
-            pageViewRes.setUniqueId(StrUtil.blankToDefault(domainParse.getTableName(), StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
+            String tableName = domainParse.getTableName();
+            pageViewRes.setUniqueId(RandomUtil.randomString(4) + "_" + StrUtil.blankToDefault(tableName, StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
+
             String schemaDesc = domainParse.getSchemaDesc();
             if (StrUtil.endWith(schemaDesc, "表")) schemaDesc = StrUtil.replaceLast(schemaDesc, "表", "");
             pageViewRes.setCnDesc(schemaDesc);
@@ -431,8 +434,10 @@ public class E4jCgController {
                 columnInfo.setDataIndex(field.getFieldName());
                 PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
                 String fieldType = field.getFieldType();
+                boolean isDate = false;
                 if (ListTs.asList("Date", "LocalDateTime", "LocalDate").contains(fieldType)) {
                     form.setType("date");
+                    isDate = true;
                     form.setPlaceholder("请选择" + columnInfo.getTitle());
                 } else if (ListTs.asList("String", "char", "Character").contains(fieldType)) {
                     form.setType("input");
@@ -451,7 +456,11 @@ public class E4jCgController {
                     form.setEnterNext(classField.getFieldName());
                 }
                 if (i < size - 1) {
-                    columnInfo.setWidth(160);
+                    if (isDate) {
+                        columnInfo.setWidth(175);
+                    } else {
+                        columnInfo.setWidth(160);
+                    }
                 }
                 objects.add(columnInfo);
             }

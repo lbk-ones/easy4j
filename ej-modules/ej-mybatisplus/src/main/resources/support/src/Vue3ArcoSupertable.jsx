@@ -279,12 +279,18 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
         if (pageInitData.formAddApiUrl && next.formAddApiUrl !== pageInitData.formAddApiUrl) {
           next.formAddApiUrl = pageInitData.formAddApiUrl;
           hasChange = true;
-        } 
-        if (pageInitData.formUpdateApiUrl && next.formUpdateApiUrl !== pageInitData.formUpdateApiUrl) {
+        }
+        if (
+          pageInitData.formUpdateApiUrl &&
+          next.formUpdateApiUrl !== pageInitData.formUpdateApiUrl
+        ) {
           next.formUpdateApiUrl = pageInitData.formUpdateApiUrl;
           hasChange = true;
         }
-        if (pageInitData.formDeleteApiUrl && next.formDeleteApiUrl !== pageInitData.formDeleteApiUrl) {
+        if (
+          pageInitData.formDeleteApiUrl &&
+          next.formDeleteApiUrl !== pageInitData.formDeleteApiUrl
+        ) {
           next.formDeleteApiUrl = pageInitData.formDeleteApiUrl;
           hasChange = true;
         }
@@ -388,7 +394,7 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
         }
     },
     // API 请求（后端分页）
-    pageFetchData: async (url, params) => {
+    pageFetchData: async (url, params, searchFields) => {
         // url 为 apiUrl
         // params 为分页和搜索参数对象
         /**
@@ -409,7 +415,8 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
         ) {
             delete params.searchValues[key];
         } else {
-            keys.push([key, "eq", params.searchValues[key]]);
+            let findItem = searchFields?.find((item) => item.dataIndex === key);
+            keys.push([key, findItem?.condition || "eq", params.searchValues[key]]);
         }
         });
         loading.value = true;
@@ -487,6 +494,39 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
       message.success('配置已复制到剪贴板');
     });
   };
+  const copyCodeToClipboard = () => {
+    const jsonString = getTemplateResStr(config);
+    const prefix = `<script setup>
+// 未全局注册和引入则放开注释 
+//import { SuperTable } from "arco-vue3-supertable";
+//import "arco-vue3-supertable/dist/arco-vue3-supertable.css";
+import { ref, reactive } from "vue";
+import { post, put, del } from "./request.js";
+import { Message } from "@arco-design/web-vue";
+// 表格加载状态
+const loading = ref(false);
+// 数据
+const tableData = ref([]);
+// 选中数据
+const selectedKeys = ref([]);
+// columns 的字段的宽度最好不要每个都写死，留一个自动计算，不然fixed会有问题的`;
+    const jsString = `const config = reactive(${jsonString});`;
+    const suffix = `</script>
+<template>
+  <SuperTable
+    :config="config"
+    v-model:data="tableData"
+    v-model:loading="loading"
+    v-model:selectedKeys="selectedKeys"
+  >
+  </SuperTable>
+</template>
+<style scoped>
+</style>`;
+    navigator.clipboard.writeText(prefix + '\n' + jsString + '\n' + suffix).then(() => {
+      message.success('配置已复制到剪贴板');
+    });
+  };
 
   // --- Column Management ---
   const openColumnEditor = (record, index) => {
@@ -504,16 +544,34 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
     setColumnDrawerVisible(true);
   };
 
+  const addRowIndexCell = () => {
+    setConfig(prev => {
+      let next = { ...prev };
+      const index = next.columns.findIndex(i => i.dataIndex === '_rowIndex');
+      if (index !== -1) {
+        next.columns.splice(index, 1);
+      }
+      next.columns.unshift({
+        title: '序号',
+        dataIndex: '_rowIndex',
+        width: 70,
+        visible: true,
+        align: 'left',
+      });
+      return next;
+    });
+  };
+
   const toSearch = (record_, index) => {
     setConfig(prev => {
-      let record = JSON.parse(JSON.stringify(record_))
+      let record = JSON.parse(JSON.stringify(record_));
       record.type = record?.form?.type || 'input';
       record.placeholder = record?.form?.placeholder || '请输入';
       let next = { ...prev };
-      delete record.visible
-      delete record.width
-      delete record.ellipsis
-      delete record.form
+      delete record.visible;
+      delete record.width;
+      delete record.ellipsis;
+      delete record.form;
       next.searchFields = [...next.searchFields, record];
       return next;
     });
@@ -524,7 +582,7 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
       let next = { ...prev };
       next.columns[index].visible = e;
       return next;
-    }); 
+    });
   };
 
   const saveColumn = async () => {
@@ -974,14 +1032,20 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
               </TabPane>
 
               <TabPane tab={`列配置【${config.columns.length}】`} key='columns'>
-                <Button
-                  type='dashed'
-                  onClick={() => openColumnEditor({}, -1)}
-                  block
-                  icon={<PlusOutlined />}
-                >
-                  添加列
-                </Button>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between' }}>
+                  <Button
+                    type='dashed'
+                    onClick={() => openColumnEditor({}, -1)}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    添加列
+                  </Button>
+                  <Button type='dashed' onClick={() => addRowIndexCell()} icon={<PlusOutlined />}>
+                    添加序号列
+                  </Button>
+                </div>
+
                 <List
                   style={{ marginTop: 10 }}
                   bordered
@@ -989,7 +1053,23 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
                   renderItem={(item, index) => (
                     <List.Item
                       actions={[
-                        <label style={{display:'flex',alignItems:'center',gap:'5px'}}><span>是否显示:</span><Switch checked={config.columns[index].visible==void 0 ? true : config.columns[index].visible} onChange={(e) => toVisible(item, index,e)}/></label>,
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                          }}
+                        >
+                          <span>是否显示:</span>
+                          <Switch
+                            checked={
+                              config.columns[index].visible == void 0
+                                ? true
+                                : config.columns[index].visible
+                            }
+                            onChange={e => toVisible(item, index, e)}
+                          />
+                        </label>,
                         <Button
                           type='text'
                           disabled={config.searchFields?.some(
@@ -1136,9 +1216,14 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
             <Title level={4} style={{ margin: 0 }}>
               配置预览 (JSON)
             </Title>
-            <Button type='primary' icon={<CopyOutlined />} onClick={copyToClipboard}>
-              复制 JS 代码
-            </Button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Button type='primary' icon={<CopyOutlined />} onClick={copyToClipboard}>
+                复制 JS 配置
+              </Button>
+              <Button type='primary' icon={<CopyOutlined />} onClick={copyCodeToClipboard}>
+                复制代码
+              </Button>
+            </div>
           </div>
           <TextArea
             value={getTemplateResStr(config)}
@@ -1282,6 +1367,8 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
                       <Option value='select'>Select</Option>
                       <Option value='number'>Number</Option>
                       <Option value='date'>Date</Option>
+                      <Option value='time'>Time</Option>
+                      <Option value='datetime'>DateTime</Option>
                       <Option value='radio'>Radio</Option>
                       <Option value='switch'>Switch</Option>
                       <Option value='textarea'>Textarea</Option>
@@ -1420,6 +1507,27 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
               <Option value='date-range'>Date Range</Option>
               <Option value='number'>Number</Option>
               <Option value='slot'>Slot</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name='condition' label='条件' initialValue='eq'>
+            <Select>
+              <Option value='eq'>等于</Option>
+              <Option value='ne'>不等于</Option>
+              <Option value='in'>在范围内</Option>
+              <Option value='like'>模糊查询 (LIKE)</Option>
+              <Option value='notLike'>不相似（NOT LIKE）</Option>
+              <Option value='likeLeft'>左模糊查询 (LIKE LEFT)</Option>
+              <Option value='likeRight'>右模糊查询 (LIKE RIGHT)</Option>
+              <Option value='lt'>小于</Option>
+              <Option value='le'>小于等于</Option>
+              <Option value='gt'>大于</Option>
+              <Option value='ge'>大于等于</Option>
+              <Option value='tgt'>时间大于</Option>
+              <Option value='tge'>时间大于等于</Option>  
+              <Option value='tlt'>时间小于</Option>  
+              <Option value='tle'>时间小于等于</Option>  
+              <Option value='between'>时间范围</Option>     
+              <Option value='betweene'>时间不在这个范围</Option>     
             </Select>
           </Form.Item>
           <Form.Item name='slotName' label='自定义插槽'>

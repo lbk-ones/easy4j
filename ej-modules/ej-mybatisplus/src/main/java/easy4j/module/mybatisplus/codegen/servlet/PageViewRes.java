@@ -85,6 +85,7 @@ public class PageViewRes implements Serializable {
             private boolean creatable = true;      // 新增时是否显示
             private boolean editable = true;       // 编辑时是否显示
             private boolean required = false;       // 是否必填
+            private boolean oneRow = false;       // 大文本
             private String placeholder;
             private Object defaultValue;    // 默认值
             private String enterNext;     // 回车后跳转到的下一个字段名（提升录入体验）
