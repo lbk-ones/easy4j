@@ -294,6 +294,13 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
           next.formDeleteApiUrl = pageInitData.formDeleteApiUrl;
           hasChange = true;
         }
+        if (
+          pageInitData.enableOrDisabledUrl &&
+          next.enableOrDisabledUrl !== pageInitData.enableOrDisabledUrl
+        ) {
+          next.enableOrDisabledUrl = pageInitData.enableOrDisabledUrl;
+          hasChange = true;
+        }
         if (pageInitData.columns.length > 0) {
           next.columns = pageInitData.columns;
           hasChange = true;
@@ -393,9 +400,10 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
             }
         }else if(action.key == "enabled"){
             if (config.paginationType !== "frontend") {
+                let url = action.apiUrl || config.enableOrDisabledUrl;
                 // 启用/禁用 逻辑
-                await post(action.apiUrl || config.enableOrDisabledUrl, {
-                    ${pageInitData.controllerReqDtoName}: [data],
+                await post(url, {
+                    ${pageInitData.controllerReqDtoName}: params,
                 });
             }
         }
@@ -558,18 +566,22 @@ const selectedKeys = ref([]);
       if (index !== -1) {
         next.columns.splice(index, 1);
       }
+      let dataIndex = next.columns[0].dataIndex;
       next.columns.unshift({
         title: '序号',
         dataIndex: '_rowIndex',
         width: 70,
         visible: true,
         align: 'left',
+        form:{
+          enterNext:dataIndex
+        }
       });
       return next;
     });
   };
 
-    const addOperationsCell = () => {
+  const addOperationsCell = () => {
     setConfig(prev => {
       let next = { ...prev };
       const index = next.columns.findIndex(i => i.dataIndex === 'operations');
@@ -580,7 +592,7 @@ const selectedKeys = ref([]);
         title: '操作',
         dataIndex: 'operations',
         width: 220,
-        fixed: "right",
+        fixed: 'right',
         visible: true,
         align: 'center',
       });
@@ -675,6 +687,7 @@ const selectedKeys = ref([]);
       } else {
         newColumns.push(newColumn);
       }
+      columnForm.resetFields();
       setConfig({ ...config, columns: newColumns });
       setColumnDrawerVisible(false);
     } catch (e) {
@@ -700,6 +713,12 @@ const selectedKeys = ref([]);
       }
     }
     setConfig({ ...config, columns: newColumns, searchFields });
+  };
+
+  const updateColumn = (index, key, value) => {
+    const newColumns = [...config.columns];
+    newColumns[index] = { ...newColumns[index], [key]: value };
+    setConfig({ ...config, columns: newColumns });
   };
 
   // --- Search Field Management ---
@@ -729,6 +748,7 @@ const selectedKeys = ref([]);
         newSearchFields.push(newSearch);
       }
       setConfig({ ...config, searchFields: newSearchFields });
+      searchForm.resetFields();
       setSearchDrawerVisible(false);
     } catch (e) {
       console.error(e);
@@ -759,6 +779,7 @@ const selectedKeys = ref([]);
         newActions.push(values);
       }
       setConfig({ ...config, actions: newActions });
+      actionForm.resetFields();
       setActionDrawerVisible(false);
     } catch (e) {
       console.error(e);
@@ -1031,7 +1052,7 @@ const selectedKeys = ref([]);
                   ></Select>
                 </Form.Item>
 
-                 <Form.Item name='enableOrDisabledUrl' label='启用禁用 API'>
+                <Form.Item name='enableOrDisabledUrl' label='启用禁用 API'>
                   <Select
                     showSearch={true}
                     options={filteredApiUrls.map(item => ({
@@ -1137,10 +1158,38 @@ const selectedKeys = ref([]);
                       ]}
                     >
                       <List.Item.Meta
-                        title={item.title || '未命名列'}
-                        description={`Field: ${item.dataIndex} | Width: ${
-                          item.width || 'Auto'
-                        } | Form: ${item.form?.type || 'None'}`}
+                        title={
+                          <Input
+                            value={item.title}
+                            onChange={e => updateColumn(index, 'title', e.target.value)}
+                            placeholder='列标题'
+                            variant={'borderless'}
+                            onClick={e => e.stopPropagation()}
+                            style={{ padding: 0, fontWeight: 500, width: '50%' }}
+                          />
+                        }
+                        description={
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <span>Field: </span>
+                            <Input
+                              value={item.dataIndex}
+                              onChange={e => updateColumn(index, 'dataIndex', e.target.value)}
+                              placeholder='字段名'
+                              variant={'borderless'}
+                              onClick={e => e.stopPropagation()}
+                              style={{
+                                width: 120,
+                                padding: 0,
+                                marginLeft: 4,
+                                marginRight: 8,
+                                color: 'rgba(0, 0, 0, 0.45)',
+                              }}
+                            />
+                            <span>
+                              | Width: {item.width || 'Auto'} | Form: {item.form?.type || 'None'}
+                            </span>
+                          </div>
+                        }
                       />
                     </List.Item>
                   )}
@@ -1325,7 +1374,10 @@ const selectedKeys = ref([]);
       <Drawer
         title={currentColumnIndex > -1 ? '编辑列' : '添加列'}
         width={'50%'}
-        onClose={() => setColumnDrawerVisible(false)}
+        onClose={() => {
+          columnForm.resetFields();
+          setColumnDrawerVisible(false)
+        }}
         open={columnDrawerVisible}
         extra={
           <Button type='primary' onClick={saveColumn}>
@@ -1523,7 +1575,10 @@ const selectedKeys = ref([]);
       <Drawer
         title={currentSearchIndex > -1 ? '编辑搜索项' : '添加搜索项'}
         width={'70%'}
-        onClose={() => setSearchDrawerVisible(false)}
+        onClose={() => {
+          searchForm.resetFields();
+          setSearchDrawerVisible(false)
+        }}
         open={searchDrawerVisible}
         extra={
           <Button type='primary' onClick={saveSearch}>
@@ -1562,11 +1617,11 @@ const selectedKeys = ref([]);
               <Option value='gt'>大于</Option>
               <Option value='ge'>大于等于</Option>
               <Option value='tgt'>时间大于</Option>
-              <Option value='tge'>时间大于等于</Option>  
-              <Option value='tlt'>时间小于</Option>  
-              <Option value='tle'>时间小于等于</Option>  
-              <Option value='between'>时间范围</Option>     
-              <Option value='betweene'>时间不在这个范围</Option>     
+              <Option value='tge'>时间大于等于</Option>
+              <Option value='tlt'>时间小于</Option>
+              <Option value='tle'>时间小于等于</Option>
+              <Option value='between'>时间范围</Option>
+              <Option value='betweene'>时间不在这个范围</Option>
             </Select>
           </Form.Item>
           <Form.Item name='slotName' label='自定义插槽'>
@@ -1585,7 +1640,10 @@ const selectedKeys = ref([]);
       <Drawer
         title={currentActionIndex > -1 ? '编辑按钮' : '添加按钮'}
         width={'50%'}
-        onClose={() => setActionDrawerVisible(false)}
+        onClose={() => {
+          actionForm.resetFields();
+          setActionDrawerVisible(false);
+        }}
         open={actionDrawerVisible}
         extra={
           <Button type='primary' onClick={saveAction}>
@@ -1626,25 +1684,48 @@ const selectedKeys = ref([]);
           <Form.Item name='confirmMessage' label='确认提示语'>
             <Input />
           </Form.Item>
-          <Form.Item
-            name='isFetchData'
-            label='完成后刷新'
-            valuePropName='checked'
-            initialValue={true}
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item name='needSelect' label='需选中行' valuePropName='checked' initialValue={true}>
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            name='isClearSelect'
-            label='完成后清除选中'
-            valuePropName='checked'
-            initialValue={true}
-          >
-            <Switch />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={4}>
+              <Form.Item
+                name='isFetchData'
+                label='完成后刷新'
+                valuePropName='checked'
+                initialValue={true}
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name='visible'
+                label='是否在顶部可见'
+                valuePropName='checked'
+                initialValue={true}
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name='needSelect'
+                label='需选中行'
+                valuePropName='checked'
+                initialValue={true}
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name='isClearSelect'
+                label='完成后清除选中'
+                valuePropName='checked'
+                initialValue={true}
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Drawer>
     </Drawer>
