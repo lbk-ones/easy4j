@@ -162,7 +162,15 @@ public class E4jCgController {
                     .setServiceInterfacePackageName(serviceInterfacePackageName)
                     .setMapperStructClassSimpleName(standRes.getMapperStructClassSimpleName())
                     .setMapperStructPackageName(standRes.getMapperStructPackageName())
-                    .setServiceImplPackageName(serviceImplPackageName);
+                    .setServiceImplPackageName(serviceImplPackageName)
+                    .setCreateTimeName(standRes.getCreateTimeName())
+                    .setIsDeletedName(standRes.getIsDeletedName())
+                    .setIsEnabledName(standRes.getIsEnabledName())
+                    .setIsDeletedValid(standRes.getIsDeletedValid())
+                    .setIsDeletedNotValid(standRes.getIsDeletedNotValid())
+                    .setIsEnabledValid(standRes.getIsEnabledValid())
+                    .setIsEnabledNotValid(standRes.getIsEnabledNotValid());
+
             PreviewRes res = AutoGen.build(globalGenConfig1)
                     .fromDbGen(new DbGenSetting()
                             .setUrl(url)
@@ -195,11 +203,14 @@ public class E4jCgController {
             for (String s : nameList) {
                 String s2 = formDataMap.get(s);
                 if (StrUtil.isBlank(s2)) {
-                    objects.add(s2);
+                    objects.add(s);
                 }
             }
         }
-        if (!objects.isEmpty()) servletHandler.responseJson(SRes.error(String.join(",", objects)) + " is not null ");
+        if (!objects.isEmpty()) {
+            servletHandler.responseJson(SRes.error(String.join(",", objects) + " is not null "));
+            return true;
+        }
         return false;
 
     }
@@ -343,6 +354,13 @@ public class E4jCgController {
         String mapperXmlPackageName = formDataMap.get("mapperXmlPackageName");
         String serviceInterfacePackageName = formDataMap.get("serviceInterfacePackageName");
         String serviceImplPackageName = formDataMap.get("serviceImplPackageName");
+        String createTimeName = formDataMap.get("createTimeName");
+        String isDeletedName = formDataMap.get("isDeletedName");
+        String isEnabledName = formDataMap.get("isEnabledName");
+        String isDeletedValid = formDataMap.get("isDeletedValid");
+        String isDeletedNotValid = formDataMap.get("isDeletedNotValid");
+        String isEnabledValid = formDataMap.get("isEnabledValid");
+        String isEnabledNotValid = formDataMap.get("isEnabledNotValid");
         String author = formDataMap.get("author");
         String headerDesc = formDataMap.get("headerDesc");
         AutoGen build = AutoGen.build(MultiGenDto.build(
@@ -361,6 +379,13 @@ public class E4jCgController {
                                 .setMapperXmlPackageName(mapperXmlPackageName)
                                 .setServiceInterfacePackageName(serviceInterfacePackageName)
                                 .setServiceImplPackageName(serviceImplPackageName)
+                                .setCreateTimeName(createTimeName)
+                                .setIsDeletedName(isDeletedName)
+                                .setIsEnabledName(isEnabledName)
+                                .setIsDeletedValid(isDeletedValid)
+                                .setIsDeletedNotValid(isDeletedNotValid)
+                                .setIsEnabledValid(isEnabledValid)
+                                .setIsEnabledNotValid(isEnabledNotValid)
                 )
                 .multiGen(
                         domainName + "-" + returnDtoName + "-" + cnDesc + "-" + entityName
@@ -398,9 +423,10 @@ public class E4jCgController {
         String dtoName_ = formDataMap.get("dtoName");
         String domainName_ = formDataMap.get("domainName");
         String controllerName = formDataMap.get("controllerName");
+        String isEnabledName = formDataMap.get("isEnabledName");
         if (checkNotNullR(servletHandler,
                 formDataMap,
-                ListTs.asList("dtoName", "domainName", "controllerName")
+                ListTs.asList("dtoName", "domainName", "controllerName","isEnabledName")
         )) {
             return null;
         }
@@ -445,9 +471,17 @@ public class E4jCgController {
             int size = fields.size();
             for (int i = 0; i < size; i++) {
                 ClassField field = fields.get(i);
+                String fieldName = field.getFieldName();
+                if(StrUtil.equals(isEnabledName,fieldName) && StrUtil.isNotBlank(fieldName)){
+                    pageViewRes.getActions()
+                            .add(new PageViewRes.ACTION("enabled", "启用/禁用")
+                            .setType("confirm")
+                            .setConfirmMessage("确定要启用/禁用选中的数据吗？")
+                    );
+                }
                 PageViewRes.ColumnInfo columnInfo = new PageViewRes.ColumnInfo();
                 columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
-                columnInfo.setDataIndex(field.getFieldName());
+                columnInfo.setDataIndex(fieldName);
                 PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
                 String fieldType = field.getFieldType();
                 boolean isDate = false;
@@ -641,6 +675,9 @@ public class E4jCgController {
             }
             if (StrUtil.contains(url, "update" + rL)) {
                 if (StrUtil.isBlank(pageViewRes.getFormUpdateApiUrl())) pageViewRes.setFormUpdateApiUrl(url);
+            }
+            if (StrUtil.contains(url, "enableOrDisable" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getEnableOrDisabledUrl())) pageViewRes.setEnableOrDisabledUrl(url);
             }
         }
         List<PageViewRes.API> strings = new ArrayList<>(allUrls);

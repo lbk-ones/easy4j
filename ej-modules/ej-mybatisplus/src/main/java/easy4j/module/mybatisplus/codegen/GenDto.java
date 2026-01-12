@@ -135,4 +135,47 @@ public class GenDto extends GlobalGenConfig {
         super.setMapperStructClassSimpleName(mapperStructClassSimpleName);
         return this;
     }
+
+    @Override
+    public GenDto setCreateTimeName(String createTimeName) {
+        super.setCreateTimeName(createTimeName);
+        return this;
+    }
+
+    @Override
+    public GenDto setIsEnabledName(String isEnabledName) {
+        super.setIsEnabledName(isEnabledName);
+        return this;
+    }
+
+    @Override
+    public GenDto setIsDeletedName(String isDeletedName) {
+        super.setIsDeletedName(isDeletedName);
+        return this;
+    }
+
+
+    @Override
+    public GenDto setIsDeletedValid(String isDeletedValid) {
+        super.setIsDeletedValid(isDeletedValid);
+        return this;
+    }
+
+    @Override
+    public GenDto setIsDeletedNotValid(String isDeletedNotValid) {
+        super.setIsDeletedNotValid(isDeletedNotValid);
+        return this;
+    }
+
+    @Override
+    public GenDto setIsEnabledValid(String isEnabledValid) {
+        super.setIsEnabledValid(isEnabledValid);
+        return this;
+    }
+
+    @Override
+    public GenDto setIsEnabledNotValid(String isEnabledNotValid) {
+        super.setIsEnabledNotValid(isEnabledNotValid);
+        return this;
+    }
 }

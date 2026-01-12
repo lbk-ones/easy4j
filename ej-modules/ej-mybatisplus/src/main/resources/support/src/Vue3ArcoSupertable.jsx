@@ -391,6 +391,13 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
                     records?.map((r) => r[rowKeyName])?.join(",")
                 );
             }
+        }else if(action.key == "enabled"){
+            if (config.paginationType !== "frontend") {
+                // 启用/禁用 逻辑
+                await post(action.apiUrl || config.enableOrDisabledUrl, {
+                    ${pageInitData.controllerReqDtoName}: [data],
+                });
+            }
         }
     },
     // API 请求（后端分页）
@@ -557,6 +564,25 @@ const selectedKeys = ref([]);
         width: 70,
         visible: true,
         align: 'left',
+      });
+      return next;
+    });
+  };
+
+    const addOperationsCell = () => {
+    setConfig(prev => {
+      let next = { ...prev };
+      const index = next.columns.findIndex(i => i.dataIndex === 'operations');
+      if (index !== -1) {
+        next.columns.splice(index, 1);
+      }
+      next.columns.push({
+        title: '操作',
+        dataIndex: 'operations',
+        width: 220,
+        fixed: "right",
+        visible: true,
+        align: 'center',
       });
       return next;
     });
@@ -1004,6 +1030,16 @@ const selectedKeys = ref([]);
                     }))}
                   ></Select>
                 </Form.Item>
+
+                 <Form.Item name='enableOrDisabledUrl' label='启用禁用 API'>
+                  <Select
+                    showSearch={true}
+                    options={filteredApiUrls.map(item => ({
+                      value: item.url,
+                      label: `${item.url} 【${item.summary || ''}】-【${item.description || ''}】`,
+                    }))}
+                  ></Select>
+                </Form.Item>
               </TabPane>
 
               <TabPane tab='样式' key='style'>
@@ -1043,6 +1079,9 @@ const selectedKeys = ref([]);
                   </Button>
                   <Button type='dashed' onClick={() => addRowIndexCell()} icon={<PlusOutlined />}>
                     添加序号列
+                  </Button>
+                  <Button type='dashed' onClick={() => addOperationsCell()} icon={<PlusOutlined />}>
+                    添加操作列
                   </Button>
                 </div>
 

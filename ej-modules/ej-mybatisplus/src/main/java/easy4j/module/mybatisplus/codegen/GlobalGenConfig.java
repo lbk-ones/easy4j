@@ -61,6 +61,27 @@ public class GlobalGenConfig {
     // mapstruct 类的名称
     private String mapperStructClassSimpleName = "MapperStruct";
 
+    // 创建时间字段名称
+    private String createTimeName = "createTime";
+
+    // 是否启用字段名称
+    private String isEnabledName = "isEnabled";
+
+    // 是否删除字段名称
+    private String isDeletedName = "isDeleted";
+
+    // 已删除对应的值
+    private String isDeletedValid = "0";
+
+    // 未删除对应的值
+    private String isDeletedNotValid = "1";
+
+    // 已启用对应的值
+    private String isEnabledValid = "1";
+
+    // 未启用对应的值
+    private String isEnabledNotValid = "0";
+
 
     public GlobalGenConfig setUrlPrefix(String urlPrefix) {
         if (StrUtil.endWith(urlPrefix, SP.SLASH)) {

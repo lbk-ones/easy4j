@@ -193,4 +193,47 @@ public class StandRes extends GlobalGenConfig {
         super.setUrlPrefix(urlPrefix);
         return this;
     }
+
+
+    @Override
+    public StandRes setCreateTimeName(String createTimeName) {
+         super.setCreateTimeName(createTimeName);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsEnabledName(String isEnabledName) {
+         super.setIsEnabledName(isEnabledName);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsDeletedName(String isDeletedName) {
+         super.setIsDeletedName(isDeletedName);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsDeletedValid(String isDeletedValid) {
+         super.setIsDeletedValid(isDeletedValid);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsDeletedNotValid(String isDeletedNotValid) {
+         super.setIsDeletedNotValid(isDeletedNotValid);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsEnabledValid(String isEnabledValid) {
+         super.setIsEnabledValid(isEnabledValid);
+        return this;
+    }
+
+    @Override
+    public StandRes setIsEnabledNotValid(String isEnabledNotValid) {
+         super.setIsEnabledNotValid(isEnabledNotValid);
+        return this;
+    }
 }

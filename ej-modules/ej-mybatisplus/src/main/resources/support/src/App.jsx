@@ -33,6 +33,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism/index.js';
 import { useColor } from './color.jsx';
 import Vue3ArcoSupertable from './Vue3ArcoSupertable.jsx';
+import { Switch } from 'antd';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -234,6 +235,8 @@ function App() {
       dtoName: dtoName,
       domainName: domainName,
       controllerName: controllerName,
+      isEnabledName: form.getFieldValue('isEnabledName'),
+      isDeletedName: form.getFieldValue('isDeletedName'),
     };
     post('/pageGenInit', param).then(res => {
       setPageInitData(res);
@@ -256,6 +259,26 @@ function App() {
       genMapStruct: false,
     });
   };
+
+
+  const hanlderFieldNameIsStr = (obj)=>{
+    let isEnabledIsNumber = obj.isEnabledIsNumber;
+    let isDeletedIsNumber = obj.isDeletedIsNumber;
+    let isEnabledValid = obj.isEnabledValid;
+    let isEnabledNotValid = obj.isEnabledNotValid;
+      let isDeletedValid = obj.isDeletedValid;
+      let isDeletedNotValid = obj.isDeletedNotValid;
+      if(isEnabledIsNumber !== true){
+          obj.isEnabledValid = `"${isEnabledValid}"`;
+          obj.isEnabledNotValid = `"${isEnabledNotValid}"`;
+      }
+      if(isDeletedIsNumber !== true){
+          obj.isDeletedValid = `"${isDeletedValid}"`;
+          obj.isDeletedNotValid = `"${isDeletedNotValid}"`;
+      }
+  }
+
+
   return (
     <Layout className='app-layout'>
       {contextHolder}
@@ -308,6 +331,7 @@ function App() {
                   parse.exclude = parse?.exclude?.map(e => e.value)?.join(',');
                   let res = await waring(parse);
                   if (res) {
+                     hanlderFieldNameIsStr(parse);
                     if (activeTab === 'custom') {
                       post(
                         '/custom/gen',
@@ -351,6 +375,7 @@ function App() {
                   if (res) {
                     let gen = await waringGen();
                     if (gen) {
+                      hanlderFieldNameIsStr(parse);
                       if (activeTab === 'custom') {
                         post(
                           '/custom/gen',
@@ -869,6 +894,105 @@ function App() {
                   rules={[{ required: true, message: '请输入路径' }]}
                 >
                   <Input placeholder='MapStruct 路径，不要以.java结尾' />
+                </Form.Item>
+              </Col>
+
+             
+            </Row>
+            
+            <Row gutter={[16, 8]}>
+               <Col xs={24} md={24}>
+                <Form.Item
+                  name='createTimeName'
+                  label='创建时间字段名称'
+                  rules={[{ required: true, message: '请输入创建时间字段名称' }]}
+                >
+                  <Input placeholder='创建时间字段名称' />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isEnabledName'
+                  label='是否启用字段名称'
+                  rules={[{ required: true, message: '请输入是否启用字段名称' }]}
+                >
+                  <Input placeholder='是否启用字段名称' />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isEnabledValid'
+                  label='已启用对应的值'
+                  rules={[{ required: true, message: '请输入已启用对应的值' }]}
+                >
+                  <Input placeholder='已启用对应的值' />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isEnabledNotValid'
+                  label='未启用对应的值'
+                  rules={[{ required: true, message: '请输入未启用对应的值' }]}
+                >
+                  <Input placeholder='未启用对应的值' />  
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isEnabledIsNumber'
+                  label='是否启用字段是否为数字'
+                  rules={[{ required: true, message: '请输入是否启用字段是否为数字' }]}
+                  valuePropName='checked'
+                  initialValue={true}
+                >
+                  <Switch />  
+                </Form.Item>
+              </Col>
+              
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isDeletedName'
+                  label='是否删除字段名称'
+                  rules={[{ required: true, message: '请输入是否删除字段名称' }]}
+                >
+                  <Input placeholder='是否删除字段名称' />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isDeletedValid'
+                  label='已删除对应的值'
+                  rules={[{ required: true, message: '请输入已删除对应的值' }]}
+                >
+                  <Input placeholder='已删除对应的值' />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={6}>
+                <Form.Item
+                  name='isDeletedNotValid'
+                  label='未删除对应的值'
+                  rules={[{ required: true, message: '请输入未删除对应的值' }]}
+                >
+                  <Input placeholder='未删除对应的值' />
+                </Form.Item>
+              </Col>
+
+               <Col xs={24} md={6}>
+                <Form.Item
+                  name='isDeletedIsNumber'
+                  label='是否删除字段是否为数字'
+                  rules={[{ required: true, message: '请输入是否删除字段是否为数字' }]}
+                  valuePropName='checked'
+                  initialValue={true}
+                >
+                  <Switch />  
                 </Form.Item>
               </Col>
             </Row>

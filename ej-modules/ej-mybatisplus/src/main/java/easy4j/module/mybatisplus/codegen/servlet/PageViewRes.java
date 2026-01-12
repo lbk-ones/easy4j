@@ -38,11 +38,16 @@ public class PageViewRes implements Serializable {
     // 删除
     public String formDeleteApiUrl;
 
+    // 启用禁用
+    public String enableOrDisabledUrl;
+
     // controller.req 下面的传参名称
     public String controllerReqDtoName;
 
     // 所有的api地址
     public List<API> allApiUrl = new ArrayList<>();
+
+    // 操作按钮
     public List<ACTION> actions = new ArrayList<>();
 
     // 字段信息

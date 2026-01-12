@@ -52,12 +52,12 @@ public class AutoAudit implements Serializable {
     // 更新人
     @DDLField(dataLength = 20)
     @TableField(value="update_by",fill = FieldFill.INSERT_UPDATE)
-    @Schema(description = "跟新人代码")
+    @Schema(description = "更新人代码")
     private String updateBy;
 
     @DDLField(dataLength = 150)
     @TableField(value="update_name",fill = FieldFill.INSERT_UPDATE)
-    @Schema(description = "跟新人姓名")
+    @Schema(description = "更新人姓名")
     private String updateName;
 
     // 更新时间
