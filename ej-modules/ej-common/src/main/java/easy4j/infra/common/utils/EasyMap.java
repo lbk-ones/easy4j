@@ -106,8 +106,15 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
      *
      * @return
      */
+    @JsonIgnore
     public boolean isNotNull() {
         return !this.keySet().isEmpty();
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isEmpty() {
+        return super.isEmpty();
     }
 
     /**
@@ -131,6 +138,7 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
      *
      * @return
      */
+    @JsonIgnore
     public void isNullThrow(String code) {
         if (this.keySet().isEmpty()) {
             throw new EasyException(code);
