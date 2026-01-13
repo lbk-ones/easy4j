@@ -260,7 +260,6 @@ function App() {
     });
   };
 
-
   const hanlderFieldNameIsStr = (obj)=>{
     let isEnabledIsNumber = obj.isEnabledIsNumber;
     let isDeletedIsNumber = obj.isDeletedIsNumber;
@@ -276,6 +275,7 @@ function App() {
           obj.isDeletedValid = `"${isDeletedValid}"`;
           obj.isDeletedNotValid = `"${isDeletedNotValid}"`;
       }
+
   }
 
 
@@ -905,7 +905,9 @@ function App() {
                 <Form.Item
                   name='createTimeName'
                   label='创建时间字段名称'
-                  rules={[{ required: true, message: '请输入创建时间字段名称' }]}
+                  rules={[
+                    { required: true, message: '请输入创建时间字段名称' }
+                  ]}
                 >
                   <Input placeholder='创建时间字段名称' />
                 </Form.Item>
@@ -915,7 +917,9 @@ function App() {
                 <Form.Item
                   name='isEnabledName'
                   label='是否启用字段名称'
-                  rules={[{ required: true, message: '请输入是否启用字段名称' }]}
+                  rules={[
+                    { required: true, message: '请输入是否启用字段名称' }
+                  ]}
                 >
                   <Input placeholder='是否启用字段名称' />
                 </Form.Item>
@@ -958,7 +962,9 @@ function App() {
                 <Form.Item
                   name='isDeletedName'
                   label='是否删除字段名称'
-                  rules={[{ required: true, message: '请输入是否删除字段名称' }]}
+                  rules={[
+                    { required: true, message: '请输入是否删除字段名称' }
+                  ]}
                 >
                   <Input placeholder='是否删除字段名称' />
                 </Form.Item>

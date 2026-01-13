@@ -163,9 +163,9 @@ public class E4jCgController {
                     .setMapperStructClassSimpleName(standRes.getMapperStructClassSimpleName())
                     .setMapperStructPackageName(standRes.getMapperStructPackageName())
                     .setServiceImplPackageName(serviceImplPackageName)
-                    .setCreateTimeName(standRes.getCreateTimeName())
-                    .setIsDeletedName(standRes.getIsDeletedName())
-                    .setIsEnabledName(standRes.getIsEnabledName())
+                    .setCreateTimeName(StrUtil.toCamelCase(standRes.getCreateTimeName()))
+                    .setIsDeletedName(StrUtil.toCamelCase(standRes.getIsDeletedName()))
+                    .setIsEnabledName(StrUtil.toCamelCase(standRes.getIsEnabledName()))
                     .setIsDeletedValid(standRes.getIsDeletedValid())
                     .setIsDeletedNotValid(standRes.getIsDeletedNotValid())
                     .setIsEnabledValid(standRes.getIsEnabledValid())
@@ -354,9 +354,9 @@ public class E4jCgController {
         String mapperXmlPackageName = formDataMap.get("mapperXmlPackageName");
         String serviceInterfacePackageName = formDataMap.get("serviceInterfacePackageName");
         String serviceImplPackageName = formDataMap.get("serviceImplPackageName");
-        String createTimeName = formDataMap.get("createTimeName");
-        String isDeletedName = formDataMap.get("isDeletedName");
-        String isEnabledName = formDataMap.get("isEnabledName");
+        String createTimeName = StrUtil.toCamelCase(formDataMap.get("createTimeName"));
+        String isDeletedName = StrUtil.toCamelCase(formDataMap.get("isDeletedName"));
+        String isEnabledName = StrUtil.toCamelCase(formDataMap.get("isEnabledName"));
         String isDeletedValid = formDataMap.get("isDeletedValid");
         String isDeletedNotValid = formDataMap.get("isDeletedNotValid");
         String isEnabledValid = formDataMap.get("isEnabledValid");
@@ -423,10 +423,10 @@ public class E4jCgController {
         String dtoName_ = formDataMap.get("dtoName");
         String domainName_ = formDataMap.get("domainName");
         String controllerName = formDataMap.get("controllerName");
-        String isEnabledName = formDataMap.get("isEnabledName");
+        String isEnabledName = StrUtil.toCamelCase(formDataMap.get("isEnabledName"));
         if (checkNotNullR(servletHandler,
                 formDataMap,
-                ListTs.asList("dtoName", "domainName", "controllerName","isEnabledName")
+                ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName")
         )) {
             return null;
         }
@@ -472,12 +472,12 @@ public class E4jCgController {
             for (int i = 0; i < size; i++) {
                 ClassField field = fields.get(i);
                 String fieldName = field.getFieldName();
-                if(StrUtil.equals(isEnabledName,fieldName) && StrUtil.isNotBlank(fieldName)){
+                if (StrUtil.equals(isEnabledName, fieldName) && StrUtil.isNotBlank(fieldName)) {
                     pageViewRes.getActions()
                             .add(new PageViewRes.ACTION("enabled", "启用/禁用")
-                            .setType("confirm")
-                            .setConfirmMessage("确定要启用/禁用选中的数据吗？")
-                    );
+                                    .setType("confirm")
+                                    .setConfirmMessage("确定要启用/禁用选中的数据吗？")
+                            );
                 }
                 PageViewRes.ColumnInfo columnInfo = new PageViewRes.ColumnInfo();
                 columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
