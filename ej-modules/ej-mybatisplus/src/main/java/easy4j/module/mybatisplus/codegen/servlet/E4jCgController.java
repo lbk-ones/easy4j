@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -428,6 +429,7 @@ public class E4jCgController {
         String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
         String isEnabledValid = formDataMap.get("isEnabledValid");
         String isEnabledNotValid = formDataMap.get("isEnabledNotValid");
+        String isEnabledIsNumber = formDataMap.get("isEnabledIsNumber");
         if (checkNotNullR(servletHandler,
                 formDataMap,
                 ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName","isDeletedName","isEnabledValid","isEnabledNotValid")
@@ -498,6 +500,10 @@ public class E4jCgController {
                 if (auditFieldNames.contains(fieldName)) {
                     form.setCreatable(false);
                     form.setEditable(false);
+                    // 这俩一般不在页面显示
+                    if(ListTs.asList("createBy","updateBy").contains(fieldName)){
+                        columnInfo.setVisible(false);
+                    }
                 }
                 String fieldType = field.getFieldType();
                 boolean isDate = false;
@@ -519,9 +525,14 @@ public class E4jCgController {
                 }
                 if(StrUtil.equals(isEnabledName,fieldName)){
                     form.setType("switch");
-                    Map<String, String> attrs = form.getAttrs();
-                    attrs.put("checked-value",isEnabledValid);
-                    attrs.put("unchecked-value",isEnabledNotValid);
+                    Map<String, Object> attrs = form.getAttrs();
+                    if(StrUtil.equals(isEnabledIsNumber,"true")){
+                        attrs.put("checked-value", Convert.toInt(isEnabledValid));
+                        attrs.put("unchecked-value",Convert.toInt(isEnabledNotValid));
+                    }else{
+                        attrs.put("checked-value",isEnabledValid);
+                        attrs.put("unchecked-value",isEnabledNotValid);
+                    }
                 }
                 ClassField classField = ListTs.get(fields, i + 1);
                 if (null != classField) {

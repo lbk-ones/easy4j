@@ -562,7 +562,7 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
 //import { SuperTable } from "arco-vue3-supertable";
 //import "arco-vue3-supertable/dist/arco-vue3-supertable.css";
 import { ref, reactive } from "vue";
-import { post, put, del } from "./request.js";
+import { post, put, del } from "./request";
 import { Message } from "@arco-design/web-vue";
 // 表格加载状态
 const loading = ref(false);
@@ -593,8 +593,11 @@ defineExpose({
   </SuperTable>
 </template>
 <style scoped>
-.arco-modal-body{
+.arco-modal-wrapper .arco-modal-body{
   padding: 1.5rem 1.25rem !important;
+}
+:deep(.action-area){
+  color:#000 !important;
 }
 </style>`;
         copyFun(prefix + '\n' + jsString + '\n' + suffix).then(() => {
@@ -660,6 +663,7 @@ defineExpose({
             let record = JSON.parse(JSON.stringify(record_));
             record.type = record?.form?.type || 'input';
             record.placeholder = record?.form?.placeholder || '请输入';
+            record.attrs = record?.form?.attrs || {};
             let next = { ...prev };
             delete record.visible;
             delete record.width;
@@ -1220,7 +1224,7 @@ defineExpose({
                                                         placeholder='列标题'
                                                         variant={'borderless'}
                                                         onClick={e => e.stopPropagation()}
-                                                        style={{ padding: 0, fontWeight: 500, width: '50%' }}
+                                                        style={{ padding: 0, fontWeight: 500, width: '100%' }}
                                                     />
                                                 }
                                                 description={

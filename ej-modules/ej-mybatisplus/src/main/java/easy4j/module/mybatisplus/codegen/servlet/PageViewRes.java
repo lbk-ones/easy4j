@@ -77,7 +77,7 @@ public class PageViewRes implements Serializable {
         private String dataIndex;
         private Integer width;
         private Boolean ellipsis = true;
-
+        private Boolean visible = true;
         private Form form = new Form();
 
         @Data
@@ -93,7 +93,7 @@ public class PageViewRes implements Serializable {
             private Object defaultValue;    // 默认值
             private String enterNext;     // 回车后跳转到的下一个字段名（提升录入体验）
 
-            private Map<String,String> attrs = new HashMap<>();
+            private Map<String,Object> attrs = new HashMap<>();
         }
     }
 

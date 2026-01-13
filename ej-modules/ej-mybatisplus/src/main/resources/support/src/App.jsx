@@ -239,6 +239,7 @@ function App() {
       isDeletedName: form.getFieldValue('isDeletedName'),
       isEnabledValid: form.getFieldValue('isEnabledValid'),
       isEnabledNotValid: form.getFieldValue('isEnabledNotValid'),
+      isEnabledIsNumber: form.getFieldValue('isEnabledIsNumber'),
     };
     post('/pageGenInit', param).then(res => {
       setPageInitData(res);
