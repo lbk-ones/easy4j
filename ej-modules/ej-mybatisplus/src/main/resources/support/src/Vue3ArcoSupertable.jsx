@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Modal,
     Button,
@@ -32,11 +32,11 @@ import ReactMarkdown from 'react-markdown';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import dracula from 'react-syntax-highlighter/dist/cjs/styles/hljs/dracula';
 
-const {TabPane} = Tabs;
-const {TextArea} = Input;
-const {Option} = Select;
-const {Text, Title, Paragraph} = Typography;
-const {Panel} = Collapse;
+const { TabPane } = Tabs;
+const { TextArea } = Input;
+const { Option } = Select;
+const { Text, Title, Paragraph } = Typography;
+const { Panel } = Collapse;
 
 // Markdown content embedded directly to ensure availability
 const DOC_CONTENT = `
@@ -179,7 +179,7 @@ const defaultConfig = {
     showHeader: true,
     selection: true,
     showColumnConfig: true,
-    scroll: {x: 1200, y: null},
+    scroll: { x: 1200, y: null },
     contextMenuEnabled: true,
     showSearchBar: false,
     tableDisabled: false,
@@ -220,7 +220,7 @@ const defaultConfig = {
     actions: [],
 };
 
-const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
+const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
     const [config, setConfig] = useState(defaultConfig);
     const [activeTab, setActiveTab] = useState('columns');
     const [docVisible, setDocVisible] = useState(false);
@@ -254,7 +254,7 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
     useEffect(() => {
         if (open && pageInitData) {
             setConfig(prev => {
-                const next = {...prev};
+                const next = { ...prev };
                 let hasChange = false;
                 if (pageInitData.uniqueId && next.uniqueId !== pageInitData.uniqueId) {
                     next.uniqueId = pageInitData.uniqueId;
@@ -322,7 +322,7 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
 
     const handleValuesChange = (changedValues, allValues) => {
         // Handle nested scroll object separately if needed, or just merge
-        const newConfig = {...config, ...allValues};
+        const newConfig = { ...config, ...allValues };
 
         // Always consolidate scroll x/y from form values to config.scroll
         // This ensures config.scroll is always up to date and clean
@@ -340,16 +340,16 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
     };
 
     const getExportConfig = cfg => {
-        const newConfig = {...cfg};
+        const newConfig = { ...cfg };
         if (newConfig.bordered === true) {
-            newConfig.bordered = {cell: true};
+            newConfig.bordered = { cell: true };
         } else if (newConfig.bordered === false) {
             newConfig.bordered = null;
         }
 
         // Ensure scroll output format is clean and strictly matches requirements
         if (newConfig.scroll) {
-            const {x, y} = newConfig.scroll;
+            const { x, y } = newConfig.scroll;
             newConfig.scroll = {
                 x: x,
                 y: y === null || y === undefined ? 'auto' : y,
@@ -364,6 +364,9 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
             .trim()
             .split('\n')
             .map((item, index, arr) => {
+                if(item.includes('-')){
+                    return item;
+                }
                 let sl = item.replace('"', '').replace('"', '');
                 if (index == arr.length - 1) {
                     sl = sl + ',';
@@ -435,6 +438,7 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
         }
         });
         loading.value = true;
+        // 异步函数返回这种类型的 {records:[],total:100} 结构
         return post(url, {
             pageQuery: {
                 pageNo: params.pageNo,
@@ -502,10 +506,52 @@ const Vue3ArcoSupertable = ({pageInitData, open, onClose}) => {
         return temp.replace(/%temp%/g, tempStr);
     };
 
+    /**
+     * 兼容的复制文本到剪贴板方法
+     * @param {string} text 要复制的文本
+     * @returns {Promise<boolean>} 复制成功返回true，失败返回false
+     */
+    async function copyFun(text) {
+        // 方案1：使用现代的 Clipboard API（优先）
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                //console.warn('Clipboard API 调用失败，尝试降级方案:', err);
+            }
+        }
+
+        // 方案2：降级到传统方法（兼容HTTP/老旧浏览器）
+        // 1. 创建临时的textarea元素
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        // 2. 隐藏textarea（避免页面闪烁）
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = 0;
+        textarea.style.left = '-9999px';
+        // 3. 添加到文档中
+        document.body.appendChild(textarea);
+        // 4. 选中文本并执行复制
+        textarea.select();
+        textarea.setSelectionRange(0, text.length); // 兼容移动设备
+
+        try {
+            const success = document.execCommand('copy');
+            return success;
+        } catch (err) {
+            console.error('传统复制方法失败:', err);
+            return false;
+        } finally {
+            // 5. 移除临时元素
+            document.body.removeChild(textarea);
+        }
+    }
+
     const copyToClipboard = () => {
         const jsonString = getTemplateResStr(config);
         const jsString = `const config = reactive(${jsonString});`;
-        navigator.clipboard.writeText(jsString).then(() => {
+        copyFun(jsString).then(() => {
             message.success('配置已复制到剪贴板');
         });
     };
@@ -522,13 +568,23 @@ import { Message } from "@arco-design/web-vue";
 const loading = ref(false);
 // 数据
 const tableData = ref([]);
+// 表格引用
+const tableRef = ref(null);
 // 选中数据
 const selectedKeys = ref([]);
 // columns 的字段的宽度最好不要每个都写死，留一个自动计算，不然fixed会有问题的`;
         const jsString = `const config = reactive(${jsonString});`;
-        const suffix = `</script>
+        const suffix = `
+// expose fetchData func
+defineExpose({
+  fetchData:()=>{
+    tableRef?.value?.fetchData?.();
+  }
+})
+</script>
 <template>
   <SuperTable
+    ref="tableRef"
     :config="config"
     v-model:data="tableData"
     v-model:loading="loading"
@@ -537,8 +593,11 @@ const selectedKeys = ref([]);
   </SuperTable>
 </template>
 <style scoped>
+.arco-modal-body{
+  padding: 1.5rem 1.25rem !important;
+}
 </style>`;
-        navigator.clipboard.writeText(prefix + '\n' + jsString + '\n' + suffix).then(() => {
+        copyFun(prefix + '\n' + jsString + '\n' + suffix).then(() => {
             message.success('配置已复制到剪贴板');
         });
     };
@@ -561,7 +620,7 @@ const selectedKeys = ref([]);
 
     const addRowIndexCell = () => {
         setConfig(prev => {
-            let next = {...prev};
+            let next = { ...prev };
             const index = next.columns.findIndex(i => i.dataIndex === '_rowIndex');
             if (index !== -1) {
                 next.columns.splice(index, 1);
@@ -579,7 +638,7 @@ const selectedKeys = ref([]);
 
     const addOperationsCell = () => {
         setConfig(prev => {
-            let next = {...prev};
+            let next = { ...prev };
             const index = next.columns.findIndex(i => i.dataIndex === 'operations');
             if (index !== -1) {
                 next.columns.splice(index, 1);
@@ -601,7 +660,7 @@ const selectedKeys = ref([]);
             let record = JSON.parse(JSON.stringify(record_));
             record.type = record?.form?.type || 'input';
             record.placeholder = record?.form?.placeholder || '请输入';
-            let next = {...prev};
+            let next = { ...prev };
             delete record.visible;
             delete record.width;
             delete record.ellipsis;
@@ -613,7 +672,7 @@ const selectedKeys = ref([]);
 
     const toVisible = (record, index, e) => {
         setConfig(prev => {
-            let next = {...prev};
+            let next = { ...prev };
             next.columns[index].visible = e;
             return next;
         });
@@ -684,7 +743,7 @@ const selectedKeys = ref([]);
                 newColumns.push(newColumn);
             }
             columnForm.resetFields();
-            setConfig({...config, columns: newColumns});
+            setConfig({ ...config, columns: newColumns });
             setColumnDrawerVisible(false);
         } catch (e) {
             console.error(e);
@@ -708,13 +767,13 @@ const selectedKeys = ref([]);
                 pref.form.enterNext = newColumns[index].dataIndex;
             }
         }
-        setConfig({...config, columns: newColumns, searchFields});
+        setConfig({ ...config, columns: newColumns, searchFields });
     };
 
     const updateColumn = (index, key, value) => {
         const newColumns = [...config.columns];
-        newColumns[index] = {...newColumns[index], [key]: value};
-        setConfig({...config, columns: newColumns});
+        newColumns[index] = { ...newColumns[index], [key]: value };
+        setConfig({ ...config, columns: newColumns });
     };
 
     // --- Search Field Management ---
@@ -731,7 +790,7 @@ const selectedKeys = ref([]);
     const saveSearch = async () => {
         try {
             const values = await searchForm.validateFields();
-            const {searchOptions, ...rest} = values;
+            const { searchOptions, ...rest } = values;
             const newSearch = {
                 ...rest,
                 options: searchOptions ? JSON.parse(searchOptions) : undefined,
@@ -743,7 +802,7 @@ const selectedKeys = ref([]);
             } else {
                 newSearchFields.push(newSearch);
             }
-            setConfig({...config, searchFields: newSearchFields});
+            setConfig({ ...config, searchFields: newSearchFields });
             searchForm.resetFields();
             setSearchDrawerVisible(false);
         } catch (e) {
@@ -754,7 +813,7 @@ const selectedKeys = ref([]);
     const deleteSearch = index => {
         const newFields = [...config.searchFields];
         newFields.splice(index, 1);
-        setConfig({...config, searchFields: newFields});
+        setConfig({ ...config, searchFields: newFields });
     };
 
     // --- Action Management ---
@@ -774,7 +833,7 @@ const selectedKeys = ref([]);
             } else {
                 newActions.push(values);
             }
-            setConfig({...config, actions: newActions});
+            setConfig({ ...config, actions: newActions });
             actionForm.resetFields();
             setActionDrawerVisible(false);
         } catch (e) {
@@ -785,7 +844,7 @@ const selectedKeys = ref([]);
     const deleteAction = index => {
         const newActions = [...config.actions];
         newActions.splice(index, 1);
-        setConfig({...config, actions: newActions});
+        setConfig({ ...config, actions: newActions });
     };
 
     return (
@@ -794,11 +853,11 @@ const selectedKeys = ref([]);
             open={open}
             onClose={onClose}
             width='100%'
-            style={{top: 0, padding: 0}}
+            style={{ top: 0, padding: 0 }}
             //bodyStyle={{ height: 'calc(100vh - 110px)', overflow: 'hidden', padding: 0 }}
             footer={null}
         >
-            <div style={{display: 'flex', height: '100%'}}>
+            <div style={{ display: 'flex', height: '100%' }}>
                 {/* Left Panel: Configuration Form */}
                 <div
                     style={{
@@ -808,11 +867,11 @@ const selectedKeys = ref([]);
                         borderRight: '1px solid #f0f0f0',
                     }}
                 >
-                    <div style={{marginBottom: 16}}>
-                        <Button type='primary' onClick={() => setDocVisible(true)} icon={<EyeOutlined/>}>
+                    <div style={{ marginBottom: 16 }}>
+                        <Button type='primary' onClick={() => setDocVisible(true)} icon={<EyeOutlined />}>
                             查看使用文档
                         </Button>
-                        <Button style={{marginLeft: 8}} onClick={() => setConfig(defaultConfig)}>
+                        <Button style={{ marginLeft: 8 }} onClick={() => setConfig(defaultConfig)}>
                             重置配置
                         </Button>
                     </div>
@@ -828,7 +887,7 @@ const selectedKeys = ref([]);
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item name='cnDesc' label='表格标题'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -838,7 +897,7 @@ const selectedKeys = ref([]);
                                                 prev.enableLocalStorage !== current.enableLocalStorage
                                             }
                                         >
-                                            {({getFieldValue}) => (
+                                            {({ getFieldValue }) => (
                                                 <Form.Item
                                                     name='uniqueId'
                                                     label='唯一标识(LocalStorage)'
@@ -849,7 +908,7 @@ const selectedKeys = ref([]);
                                                         },
                                                     ]}
                                                 >
-                                                    <Input/>
+                                                    <Input />
                                                 </Form.Item>
                                             )}
                                         </Form.Item>
@@ -866,12 +925,12 @@ const selectedKeys = ref([]);
                                     </Col>
                                     <Col span={8}>
                                         <Form.Item name='rowKey' label='主键字段'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
                                         <Form.Item name='userCode' label='用户标识'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -879,37 +938,37 @@ const selectedKeys = ref([]);
                                 <Row gutter={16}>
                                     <Col span={6}>
                                         <Form.Item name='bordered' label='显示边框' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='stripe' label='斑马纹' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='hoverable' label='悬停效果' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='columnResizable' label='列宽拖拽' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='showHeader' label='显示表头' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='selection' label='显示多选' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='showColumnConfig' label='列设置按钮' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
@@ -918,22 +977,22 @@ const selectedKeys = ref([]);
                                             label='本地存储配置'
                                             valuePropName='checked'
                                         >
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='contextMenuEnabled' label='右键菜单' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='showSearchBar' label='总是显示搜索' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
                                         <Form.Item name='tableDisabled' label='禁用表格' valuePropName='checked'>
-                                            <Switch/>
+                                            <Switch />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -941,12 +1000,12 @@ const selectedKeys = ref([]);
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item name='scrollX' label='横向滚动(x)' initialValue={1200}>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name='scrollY' label='纵向滚动(y)' initialValue={null}>
-                                            <InputNumber style={{width: '100%'}} placeholder='Auto'/>
+                                            <InputNumber style={{ width: '100%' }} placeholder='Auto' />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -954,12 +1013,12 @@ const selectedKeys = ref([]);
 
                             <TabPane tab='表单配置' key='form'>
                                 <Form.Item name='showForm' label='启用内置CRUD表单' valuePropName='checked'>
-                                    <Switch/>
+                                    <Switch />
                                 </Form.Item>
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item name='modalWidth' label='弹窗宽度'>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -973,17 +1032,17 @@ const selectedKeys = ref([]);
                                     </Col>
                                     <Col span={8}>
                                         <Form.Item name='formColumns' label='每行列数'>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
                                         <Form.Item name='formColGap' label='列间距'>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
                                         <Form.Item name='formRowGap' label='行间距'>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -999,14 +1058,14 @@ const selectedKeys = ref([]);
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item name='pageSize' label='每页条数'>
-                                            <InputNumber style={{width: '100%'}}/>
+                                            <InputNumber style={{ width: '100%' }} />
                                         </Form.Item>
                                     </Col>
                                     {/* Simplified pageSizeOptions handling */}
                                 </Row>
                                 <Divider orientation='left'>API 地址</Divider>
                                 <Input
-                                    style={{width: '30%', margin: '10px 0'}}
+                                    style={{ width: '30%', margin: '10px 0' }}
                                     placeholder='请输入API地址前缀进行过滤'
                                     value={apiUrlPrefix}
                                     onChange={e => setApiUrlPrefix(e.target.value)}
@@ -1063,47 +1122,47 @@ const selectedKeys = ref([]);
                                 <Row gutter={16}>
                                     <Col span={12}>
                                         <Form.Item name='hoverColor' label='悬停背景色'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name='headerBgColor' label='表头背景色'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name='hoverFontColor' label='悬停文字色'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name='headerFontColor' label='表头文字色'>
-                                            <Input/>
+                                            <Input />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                             </TabPane>
 
                             <TabPane tab={`列配置【${config.columns.length}】`} key='columns'>
-                                <div style={{display: 'flex', gap: '10px', justifyContent: 'space-between'}}>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between' }}>
                                     <Button
                                         type='dashed'
                                         onClick={() => openColumnEditor({}, -1)}
                                         block
-                                        icon={<PlusOutlined/>}
+                                        icon={<PlusOutlined />}
                                     >
                                         添加列
                                     </Button>
-                                    <Button type='dashed' onClick={() => addRowIndexCell()} icon={<PlusOutlined/>}>
+                                    <Button type='dashed' onClick={() => addRowIndexCell()} icon={<PlusOutlined />}>
                                         添加序号列
                                     </Button>
-                                    <Button type='dashed' onClick={() => addOperationsCell()} icon={<PlusOutlined/>}>
+                                    <Button type='dashed' onClick={() => addOperationsCell()} icon={<PlusOutlined />}>
                                         添加操作列
                                     </Button>
                                 </div>
 
                                 <List
-                                    style={{marginTop: 10}}
+                                    style={{ marginTop: 10 }}
                                     bordered
                                     dataSource={config.columns}
                                     renderItem={(item, index) => (
@@ -1131,14 +1190,14 @@ const selectedKeys = ref([]);
                                                     disabled={config.searchFields?.some(
                                                         searchItem => searchItem.dataIndex === item.dataIndex
                                                     )}
-                                                    icon={<SearchOutlined/>}
+                                                    icon={<SearchOutlined />}
                                                     onClick={() => toSearch(item, index)}
                                                 >
                                                     设为搜索
                                                 </Button>,
                                                 <Button
                                                     type='text'
-                                                    icon={<SettingOutlined/>}
+                                                    icon={<SettingOutlined />}
                                                     onClick={() => openColumnEditor(item, index)}
                                                 >
                                                     编辑
@@ -1146,7 +1205,7 @@ const selectedKeys = ref([]);
                                                 <Button
                                                     type='text'
                                                     danger
-                                                    icon={<DeleteOutlined/>}
+                                                    icon={<DeleteOutlined />}
                                                     onClick={() => deleteColumn(index)}
                                                 >
                                                     删除
@@ -1161,11 +1220,11 @@ const selectedKeys = ref([]);
                                                         placeholder='列标题'
                                                         variant={'borderless'}
                                                         onClick={e => e.stopPropagation()}
-                                                        style={{padding: 0, fontWeight: 500, width: '50%'}}
+                                                        style={{ padding: 0, fontWeight: 500, width: '50%' }}
                                                     />
                                                 }
                                                 description={
-                                                    <div style={{display: 'flex', alignItems: 'center'}}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
                                                         <span>Field: </span>
                                                         <Input
                                                             value={item.dataIndex}
@@ -1182,8 +1241,8 @@ const selectedKeys = ref([]);
                                                             }}
                                                         />
                                                         <span>
-                              | Width: {item.width || 'Auto'} | Form: {item.form?.type || 'None'}
-                            </span>
+                                                            | Width: {item.width || 'Auto'} | Form: {item.form?.type || 'None'}
+                                                        </span>
                                                     </div>
                                                 }
                                             />
@@ -1197,12 +1256,12 @@ const selectedKeys = ref([]);
                                     type='dashed'
                                     onClick={() => openSearchEditor({}, -1)}
                                     block
-                                    icon={<PlusOutlined/>}
+                                    icon={<PlusOutlined />}
                                 >
                                     添加搜索项
                                 </Button>
                                 <List
-                                    style={{marginTop: 10}}
+                                    style={{ marginTop: 10 }}
                                     bordered
                                     dataSource={config.searchFields}
                                     renderItem={(item, index) => (
@@ -1210,7 +1269,7 @@ const selectedKeys = ref([]);
                                             actions={[
                                                 <Button
                                                     type='text'
-                                                    icon={<SettingOutlined/>}
+                                                    icon={<SettingOutlined />}
                                                     onClick={() => openSearchEditor(item, index)}
                                                 >
                                                     编辑
@@ -1218,7 +1277,7 @@ const selectedKeys = ref([]);
                                                 <Button
                                                     type='text'
                                                     danger
-                                                    icon={<DeleteOutlined/>}
+                                                    icon={<DeleteOutlined />}
                                                     onClick={() => deleteSearch(index)}
                                                 >
                                                     删除
@@ -1239,12 +1298,12 @@ const selectedKeys = ref([]);
                                     type='dashed'
                                     onClick={() => openActionEditor({}, -1)}
                                     block
-                                    icon={<PlusOutlined/>}
+                                    icon={<PlusOutlined />}
                                 >
                                     添加按钮
                                 </Button>
                                 <List
-                                    style={{marginTop: 10}}
+                                    style={{ marginTop: 10 }}
                                     bordered
                                     dataSource={config.actions}
                                     renderItem={(item, index) => (
@@ -1252,7 +1311,7 @@ const selectedKeys = ref([]);
                                             actions={[
                                                 <Button
                                                     type='text'
-                                                    icon={<SettingOutlined/>}
+                                                    icon={<SettingOutlined />}
                                                     onClick={() => openActionEditor(item, index)}
                                                 >
                                                     编辑
@@ -1260,7 +1319,7 @@ const selectedKeys = ref([]);
                                                 <Button
                                                     type='text'
                                                     danger
-                                                    icon={<DeleteOutlined/>}
+                                                    icon={<DeleteOutlined />}
                                                     onClick={() => deleteAction(index)}
                                                 >
                                                     删除
@@ -1297,14 +1356,14 @@ const selectedKeys = ref([]);
                             alignItems: 'center',
                         }}
                     >
-                        <Title level={4} style={{margin: 0}}>
+                        <Title level={4} style={{ margin: 0 }}>
                             配置预览 (JSON)
                         </Title>
-                        <div style={{display: 'flex', gap: '10px'}}>
-                            <Button type='primary' icon={<CopyOutlined/>} onClick={copyToClipboard}>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <Button type='primary' icon={<CopyOutlined />} onClick={copyToClipboard}>
                                 复制 JS 配置
                             </Button>
-                            <Button type='primary' icon={<CopyOutlined/>} onClick={copyCodeToClipboard}>
+                            <Button type='primary' icon={<CopyOutlined />} onClick={copyCodeToClipboard}>
                                 复制代码
                             </Button>
                         </div>
@@ -1347,7 +1406,7 @@ const selectedKeys = ref([]);
                     <ReactMarkdown
                         // 自定义代码块渲染（实现语法高亮）
                         components={{
-                            code({node, inline, className, children, ...props}) {
+                            code({ node, inline, className, children, ...props }) {
                                 const match = /language-(\w+)/.exec(className || '');
                                 return !inline && match ? (
                                     <SyntaxHighlighter style={dracula} language={match[1]} PreTag='div' {...props}>
@@ -1386,18 +1445,18 @@ const selectedKeys = ref([]);
                         <TabPane tab='列基础' key='col-basic'>
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Form.Item name='title' label='标题' rules={[{required: true}]}>
-                                        <Input/>
+                                    <Form.Item name='title' label='标题' rules={[{ required: true }]}>
+                                        <Input />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item name='dataIndex' label='字段名' rules={[{required: true}]}>
-                                        <Input/>
+                                    <Form.Item name='dataIndex' label='字段名' rules={[{ required: true }]}>
+                                        <Input />
                                     </Form.Item>
                                 </Col>
                                 <Col span={8}>
                                     <Form.Item name='width' label='宽度'>
-                                        <InputNumber style={{width: '100%'}}/>
+                                        <InputNumber style={{ width: '100%' }} />
                                     </Form.Item>
                                 </Col>
                                 <Col span={8}>
@@ -1424,20 +1483,20 @@ const selectedKeys = ref([]);
                                         valuePropName='checked'
                                         initialValue={true}
                                     >
-                                        <Switch/>
+                                        <Switch />
                                     </Form.Item>
                                 </Col>
                                 <Col span={6}>
                                     <Form.Item name='ellipsis' label='超出文本省略' valuePropName='checked'>
-                                        <Switch/>
+                                        <Switch />
                                     </Form.Item>
                                 </Col>
                                 <Form.Item noStyle shouldUpdate={(prev, current) => prev.type !== current.type}>
-                                    {({getFieldValue}) =>
+                                    {({ getFieldValue }) =>
                                         getFieldValue('type') !== 'table' ? (
                                             <Col span={12}>
                                                 <Form.Item name='slotName' label='自定义插槽'>
-                                                    <Input/>
+                                                    <Input />
                                                 </Form.Item>
                                             </Col>
                                         ) : null
@@ -1465,7 +1524,7 @@ const selectedKeys = ref([]);
                                     </Form.Item>
                                 </Col>
                                 <Form.Item noStyle shouldUpdate={(prev, current) => prev.type !== current.type}>
-                                    {({getFieldValue}) => {
+                                    {({ getFieldValue }) => {
                                         const isTable = getFieldValue('type') === 'table';
                                         return (
                                             <>
@@ -1474,7 +1533,7 @@ const selectedKeys = ref([]);
                                                         noStyle
                                                         shouldUpdate={(prev, current) => prev.type !== current.type}
                                                     >
-                                                        {({getFieldValue}) => (
+                                                        {({ getFieldValue }) => (
                                                             <Form.Item
                                                                 name='formSlotName'
                                                                 label='自定义表单插槽'
@@ -1485,14 +1544,14 @@ const selectedKeys = ref([]);
                                                                     },
                                                                 ]}
                                                             >
-                                                                <Input placeholder='输入插槽名称' disabled={isTable}/>
+                                                                <Input placeholder='输入插槽名称' disabled={isTable} />
                                                             </Form.Item>
                                                         )}
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={12}>
                                                     <Form.Item name='placeholder' label='占位符'>
-                                                        <Input disabled={isTable}/>
+                                                        <Input disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={6}>
@@ -1502,7 +1561,7 @@ const selectedKeys = ref([]);
                                                         valuePropName='checked'
                                                         initialValue={true}
                                                     >
-                                                        <Switch disabled={isTable}/>
+                                                        <Switch disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={6}>
@@ -1512,17 +1571,17 @@ const selectedKeys = ref([]);
                                                         valuePropName='checked'
                                                         initialValue={true}
                                                     >
-                                                        <Switch disabled={isTable}/>
+                                                        <Switch disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={6}>
                                                     <Form.Item name='required' label='必填' valuePropName='checked'>
-                                                        <Switch disabled={isTable}/>
+                                                        <Switch disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={6}>
                                                     <Form.Item name='oneRow' label='独占一行' valuePropName='checked'>
-                                                        <Switch disabled={isTable}/>
+                                                        <Switch disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={12}>
@@ -1540,12 +1599,12 @@ const selectedKeys = ref([]);
                                                 </Col>
                                                 <Col span={12}>
                                                     <Form.Item name='defaultValue' label='默认值'>
-                                                        <Input disabled={isTable}/>
+                                                        <Input disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={24}>
                                                     <Form.Item name='formOptions'
-                                                               label='选项 (JSON Array for Select/Radio)'>
+                                                        label='选项 (JSON Array for Select/Radio)'>
                                                         <TextArea
                                                             rows={3}
                                                             placeholder='[{"label":"A","value":1}]'
@@ -1555,8 +1614,8 @@ const selectedKeys = ref([]);
                                                 </Col>
                                                 <Col span={24}>
                                                     <Form.Item name='disabled' label='禁用 (Boolean)'
-                                                               valuePropName='checked'>
-                                                        <Switch disabled={isTable}/>
+                                                        valuePropName='checked'>
+                                                        <Switch disabled={isTable} />
                                                     </Form.Item>
                                                 </Col>
                                             </>
@@ -1585,11 +1644,11 @@ const selectedKeys = ref([]);
                 }
             >
                 <Form form={searchForm} layout='vertical'>
-                    <Form.Item name='title' label='标题' rules={[{required: true}]}>
-                        <Input/>
+                    <Form.Item name='title' label='标题' rules={[{ required: true }]}>
+                        <Input />
                     </Form.Item>
-                    <Form.Item name='dataIndex' label='字段名' rules={[{required: true}]}>
-                        <Input/>
+                    <Form.Item name='dataIndex' label='字段名' rules={[{ required: true }]}>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='type' label='类型' initialValue='input'>
                         <Select>
@@ -1623,13 +1682,13 @@ const selectedKeys = ref([]);
                         </Select>
                     </Form.Item>
                     <Form.Item name='slotName' label='自定义插槽'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='placeholder' label='占位符'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='searchOptions' label='选项 (JSON Array)'>
-                        <TextArea rows={3}/>
+                        <TextArea rows={3} />
                     </Form.Item>
                 </Form>
             </Drawer>
@@ -1650,14 +1709,14 @@ const selectedKeys = ref([]);
                 }
             >
                 <Form form={actionForm} layout='vertical'>
-                    <Form.Item name='key' label='唯一标识 (Key)' rules={[{required: true}]}>
-                        <Input/>
+                    <Form.Item name='key' label='唯一标识 (Key)' rules={[{ required: true }]}>
+                        <Input />
                     </Form.Item>
-                    <Form.Item name='label' label='按钮文本' rules={[{required: true}]}>
-                        <Input/>
+                    <Form.Item name='label' label='按钮文本' rules={[{ required: true }]}>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='slotName' label='自定义插槽 (可选)'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='type' label='类型' initialValue='secondary'>
                         <Select>
@@ -1677,10 +1736,10 @@ const selectedKeys = ref([]);
                         </Select>
                     </Form.Item>
                     <Form.Item name='icon' label='图标'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
                     <Form.Item name='confirmMessage' label='确认提示语'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
                     <Row gutter={16}>
                         <Col span={4}>
@@ -1690,7 +1749,7 @@ const selectedKeys = ref([]);
                                 valuePropName='checked'
                                 initialValue={true}
                             >
-                                <Switch/>
+                                <Switch />
                             </Form.Item>
                         </Col>
                         <Col span={4}>
@@ -1700,7 +1759,7 @@ const selectedKeys = ref([]);
                                 valuePropName='checked'
                                 initialValue={true}
                             >
-                                <Switch/>
+                                <Switch />
                             </Form.Item>
                         </Col>
                         <Col span={4}>
@@ -1710,7 +1769,7 @@ const selectedKeys = ref([]);
                                 valuePropName='checked'
                                 initialValue={true}
                             >
-                                <Switch/>
+                                <Switch />
                             </Form.Item>
                         </Col>
                         <Col span={4}>
@@ -1720,7 +1779,7 @@ const selectedKeys = ref([]);
                                 valuePropName='checked'
                                 initialValue={true}
                             >
-                                <Switch/>
+                                <Switch />
                             </Form.Item>
                         </Col>
                     </Row>

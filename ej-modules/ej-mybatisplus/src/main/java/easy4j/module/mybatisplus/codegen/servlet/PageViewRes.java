@@ -5,9 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 传入dto 和 domain类型
@@ -94,6 +92,8 @@ public class PageViewRes implements Serializable {
             private String placeholder;
             private Object defaultValue;    // 默认值
             private String enterNext;     // 回车后跳转到的下一个字段名（提升录入体验）
+
+            private Map<String,String> attrs = new HashMap<>();
         }
     }
 

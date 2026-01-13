@@ -32,6 +32,7 @@ import easy4j.infra.common.utils.servletmvc.UrlMap;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
+import easy4j.module.mybatisplus.audit.AutoAudit;
 import easy4j.module.mybatisplus.codegen.AutoGen;
 import easy4j.module.mybatisplus.codegen.GenDto;
 import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
@@ -163,9 +164,9 @@ public class E4jCgController {
                     .setMapperStructClassSimpleName(standRes.getMapperStructClassSimpleName())
                     .setMapperStructPackageName(standRes.getMapperStructPackageName())
                     .setServiceImplPackageName(serviceImplPackageName)
-                    .setCreateTimeName(StrUtil.toCamelCase(standRes.getCreateTimeName()))
-                    .setIsDeletedName(StrUtil.toCamelCase(standRes.getIsDeletedName()))
-                    .setIsEnabledName(StrUtil.toCamelCase(standRes.getIsEnabledName()))
+                    .setCreateTimeName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getCreateTimeName())))
+                    .setIsDeletedName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getIsDeletedName())))
+                    .setIsEnabledName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getIsEnabledName())))
                     .setIsDeletedValid(standRes.getIsDeletedValid())
                     .setIsDeletedNotValid(standRes.getIsDeletedNotValid())
                     .setIsEnabledValid(standRes.getIsEnabledValid())
@@ -354,9 +355,9 @@ public class E4jCgController {
         String mapperXmlPackageName = formDataMap.get("mapperXmlPackageName");
         String serviceInterfacePackageName = formDataMap.get("serviceInterfacePackageName");
         String serviceImplPackageName = formDataMap.get("serviceImplPackageName");
-        String createTimeName = StrUtil.toCamelCase(formDataMap.get("createTimeName"));
-        String isDeletedName = StrUtil.toCamelCase(formDataMap.get("isDeletedName"));
-        String isEnabledName = StrUtil.toCamelCase(formDataMap.get("isEnabledName"));
+        String createTimeName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("createTimeName")));
+        String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
+        String isEnabledName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isEnabledName")));
         String isDeletedValid = formDataMap.get("isDeletedValid");
         String isDeletedNotValid = formDataMap.get("isDeletedNotValid");
         String isEnabledValid = formDataMap.get("isEnabledValid");
@@ -423,10 +424,13 @@ public class E4jCgController {
         String dtoName_ = formDataMap.get("dtoName");
         String domainName_ = formDataMap.get("domainName");
         String controllerName = formDataMap.get("controllerName");
-        String isEnabledName = StrUtil.toCamelCase(formDataMap.get("isEnabledName"));
+        String isEnabledName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isEnabledName")));
+        String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
+        String isEnabledValid = formDataMap.get("isEnabledValid");
+        String isEnabledNotValid = formDataMap.get("isEnabledNotValid");
         if (checkNotNullR(servletHandler,
                 formDataMap,
-                ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName")
+                ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName","isDeletedName","isEnabledValid","isEnabledNotValid")
         )) {
             return null;
         }
@@ -468,10 +472,13 @@ public class E4jCgController {
             patchDefaultActions(pageViewRes);
             List<ClassField> fields = dtoParse.getFields();
             List<PageViewRes.ColumnInfo> objects = Lists.newArrayList();
+            Class<AutoAudit> autoAuditClass = AutoAudit.class;
+            List<String> auditFieldNames = Arrays.stream(ReflectUtil.getFields(autoAuditClass)).map(Field::getName).collect(Collectors.toList());
             int size = fields.size();
             for (int i = 0; i < size; i++) {
                 ClassField field = fields.get(i);
                 String fieldName = field.getFieldName();
+
                 if (StrUtil.equals(isEnabledName, fieldName) && StrUtil.isNotBlank(fieldName)) {
                     pageViewRes.getActions()
                             .add(new PageViewRes.ACTION("enabled", "启用/禁用")
@@ -483,6 +490,15 @@ public class E4jCgController {
                 columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
                 columnInfo.setDataIndex(fieldName);
                 PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
+                // 不要删除字段
+                if (StrUtil.equals(isDeletedName,fieldName)) {
+                    continue;
+                }
+                // 审计字段不能出现在动态表单中
+                if (auditFieldNames.contains(fieldName)) {
+                    form.setCreatable(false);
+                    form.setEditable(false);
+                }
                 String fieldType = field.getFieldType();
                 boolean isDate = false;
                 if (ListTs.asList("Date", "LocalDateTime", "LocalDate").contains(fieldType)) {
@@ -500,6 +516,12 @@ public class E4jCgController {
                     form.setPlaceholder("请选择" + columnInfo.getTitle());
                 } else {
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
+                }
+                if(StrUtil.equals(isEnabledName,fieldName)){
+                    form.setType("switch");
+                    Map<String, String> attrs = form.getAttrs();
+                    attrs.put("checked-value",isEnabledValid);
+                    attrs.put("unchecked-value",isEnabledNotValid);
                 }
                 ClassField classField = ListTs.get(fields, i + 1);
                 if (null != classField) {
