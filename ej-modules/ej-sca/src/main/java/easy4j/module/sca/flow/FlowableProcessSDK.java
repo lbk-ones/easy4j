@@ -39,6 +39,7 @@ public class FlowableProcessSDK implements ProcessSDK {
     public static final String QUERY_PENDING_TASKS = SP.SLASH + "queryPendingTasks";
     public static final String QUERY_TASK_HISTORY = SP.SLASH + "queryTaskHistory";
     public static final String QUERY_PROCESS_INSTANCE = SP.SLASH + "queryProcessInstance";
+    public static final String BATCH_QUERY_PROCESS_INSTANCE = SP.SLASH + "batchQueryProcessInstance";
 
     public static ProcessSDK get(String group, String serverName) {
         FlowableProcessSDK flowableProcessSDK = new FlowableProcessSDK();
@@ -142,7 +143,7 @@ public class FlowableProcessSDK implements ProcessSDK {
     }
 
     @Override
-    public String completeTask(String taskId, String processKey, String result, String comment,String formId, List<FormData> formData, EasyMap<String, Object> variables) {
+    public String completeTask(String taskId, String processKey, String result, String comment, String formId, List<FormData> formData, EasyMap<String, Object> variables) {
         ProcessReq processReq = new ProcessReq();
         processReq.setTaskId(taskId);
         processReq.setFormId(formId);
@@ -208,5 +209,19 @@ public class FlowableProcessSDK implements ProcessSDK {
         CheckUtils.checkRpcRes(objectEasyResult);
         Object data = objectEasyResult.getData();
         return JacksonUtil.toObject(JacksonUtil.toJson(data), ProcessInstanceRes.class);
+    }
+
+    @Override
+    public List<ProcessInstanceRes> batchQueryProcessInstance(List<String> processInstanceId) {
+        NacosInvokeDto build = NacosInvokeDto.builder()
+                .group(getGroup())
+                .serverName(getServerName())
+                .body(processInstanceId)
+                .path(getPath() + BATCH_QUERY_PROCESS_INSTANCE)
+                .build();
+        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
+        CheckUtils.checkRpcRes(objectEasyResult);
+        Object data = objectEasyResult.getData();
+        return JacksonUtil.toList(JacksonUtil.toJson(data), ProcessInstanceRes.class);
     }
 }

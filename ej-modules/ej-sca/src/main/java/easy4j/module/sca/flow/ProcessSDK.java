@@ -83,4 +83,13 @@ public interface ProcessSDK {
      */
     @Desc("查询流程实例的历史信息（是否结束）")
     ProcessInstanceRes queryProcessInstance(String processInstanceId);
+
+    /**
+     * 查询流程实例的历史信息（是否结束）
+     *
+     * @param processInstanceId 流程实例ID
+     * @return 历史流程实例 ProcessInstanceRes
+     */
+    @Desc("批量查询流程实例的历史信息（是否结束）")
+    List<ProcessInstanceRes> batchQueryProcessInstance(List<String> processInstanceId);
 }
