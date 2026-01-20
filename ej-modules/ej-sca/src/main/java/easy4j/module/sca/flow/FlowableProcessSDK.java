@@ -89,6 +89,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + START_PROCESS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -102,6 +103,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + START_PROCESS_AND_EXE_FIRST_TASK)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -119,6 +121,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + END_PROCESS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -135,6 +138,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + COMPLETE_TASK)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -155,6 +159,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + COMPLETE_TASK)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -171,6 +176,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + QUERY_PENDING_TASKS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -187,6 +193,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + QUERY_TASK_HISTORY)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -203,6 +210,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
+                .isJson(true)
                 .path(getPath() + QUERY_PROCESS_INSTANCE)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
@@ -217,6 +225,7 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processInstanceId)
+                .isJson(true)
                 .path(getPath() + BATCH_QUERY_PROCESS_INSTANCE)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);

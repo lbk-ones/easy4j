@@ -51,6 +51,9 @@ public class PageViewRes implements Serializable {
     // 字段信息
     public List<ColumnInfo> columns = new ArrayList<>();
 
+    // ts 类型
+    public String tsType;
+
     @Data
     @Accessors(chain = true)
     public static class ACTION {
