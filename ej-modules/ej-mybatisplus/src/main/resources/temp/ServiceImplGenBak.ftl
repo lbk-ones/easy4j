@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * ${headerDesc}
@@ -33,17 +31,6 @@ import java.util.Objects;
 @Service
 public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mapper, ${entityName}> implements I${domainName}Service {
 
-    // 创建时间
-    private static final String CREATE_TIME = "${createTimeName}";
-    // 是否启用
-    private static final String IS_ENABLED = "${isEnabledName}";
-    // 第一位有效，第二位无效
-    private static final Object[] IS_ENABLED_VALID = new Object[]{${isEnabledValid},${isEnabledNotValid}};
-    // 删除
-    private static final String IS_DELETED = "${isDeletedName}";
-    // 第一位有效，第二位无效
-    private static final Object[] IS_DELETED_VALID = new Object[]{${isDeletedValid},${isDeletedNotValid}};
-
 
     @Override
     public EasyPageRes pageQuery${domainName}(${domainName}ControllerReq req) {
@@ -52,13 +39,13 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<List<Object>> keys = pageQuery.getKeys();
         EQueryWrapper<${entityName}> objectEQueryWrapper = new EQueryWrapper<>();
         parseKeysToQuery(keys, objectEQueryWrapper);
-        boolean isDeleted = ReflectUtil.hasField(${entityName}.class, IS_DELETED);
+        boolean isDeleted = ReflectUtil.hasField(${entityName}.class, "isDeleted");
         if(isDeleted){
-            objectEQueryWrapper.eq(IS_DELETED,IS_DELETED_VALID[0]);
+            objectEQueryWrapper.eq("isDeleted",0);
         }
-        boolean b = ReflectUtil.hasField(${entityName}.class, CREATE_TIME);
+        boolean b = ReflectUtil.hasField(${entityName}.class, "createTime");
         if(b){
-            objectEQueryWrapper.orderByDesc(CREATE_TIME);
+            objectEQueryWrapper.orderByDesc("create_time");
         } else{
             List<FieldInfo> primaryKeyName = getPrimaryKeyName(${entityName}.class);
             FieldInfo fieldInfo = ListTs.get(primaryKeyName, 0);
@@ -88,13 +75,13 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Override
     public List<${entityName}Dto> getAllEnableNotDelete() {
         EQueryWrapper<${entityName}> query = new EQueryWrapper<>(${entityName}.class);
-        boolean b = ReflectUtil.hasField(${entityName}.class, IS_ENABLED);
-        boolean b2 = ReflectUtil.hasField(${entityName}.class, IS_DELETED);
-        if (b) {
-            query.eq(IS_ENABLED, IS_ENABLED_VALID[0]);
+        boolean b = ReflectUtil.hasField(${entityName}.class, "isEnabled");
+        boolean b2 = ReflectUtil.hasField(${entityName}.class, "isDeleted");
+        if(b){
+            query.eq("is_enabled", 1);
         }
-        if (b2) {
-            query.eq(IS_DELETED, IS_DELETED_VALID[0]);
+        if(b2){
+            query.eq("is_deleted", 0);
         }
         List<${entityName}> domainList = this.getBaseMapper().selectList(query);
         return list${entityName}ToDto(domainList);
@@ -119,7 +106,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         if (ListTs.isEmpty(strings)) return new ArrayList<>();
         List<List<String>> partition = ListTs.partition(strings, 100);
         List<${entityName}> domainList = ListTs.newList();
-        boolean b2 = ReflectUtil.hasField(${entityName}.class, IS_DELETED);
+        boolean b2 = ReflectUtil.hasField(${entityName}.class, "isDeleted");
         List<FieldInfo> primaryKeyName = getPrimaryKeyName(${entityName}.class);
         for (List<String> pList : partition) {
             EQueryWrapper<${entityName}> query = new EQueryWrapper<>(${entityName}.class);
@@ -128,7 +115,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
                 List<Object> inList = convertPrimaryKey(pList, fieldInfo);
                 if(inList != null && !inList.isEmpty()){
                     query.in(StrUtil.toUnderlineCase(fieldInfo.getFieldName()), inList);
-                    if(b2) query.eq(IS_DELETED, IS_DELETED_VALID[0]);
+                    if(b2) query.eq("is_deleted", 0);
                     List<${entityName}> queryList = this.getBaseMapper().selectList(query);
                     ListTs.addAll(domainList, queryList);
                 }
@@ -150,10 +137,10 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         CheckUtils.checkParamNotNull(ids,"ids");
         List<${entityName}Dto> queryResList = get${domainName}ByIds(ids);
         if (ListTs.isNotEmpty(queryResList)) {
-            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), IS_DELETED);
+            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), "isDeleted");
             if(b){
                 for (${entityName}Dto dtoItem : queryResList) {
-                    ReflectUtil.setFieldValue(dtoItem, IS_DELETED,IS_DELETED_VALID[1]);
+                    ReflectUtil.setFieldValue(dtoItem, "isDeleted",1);
                 }
                 ${domainName}ControllerReq req = new ${domainName}ControllerReq();
                 req.set${entityName}Dtos(queryResList);
@@ -211,13 +198,15 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<String> collect = dtos.stream().map(this::getIdValueToStr).collect(Collectors.toList());
         List<${entityName}Dto> queryResList = get${domainName}ByIds(collect);
         if (ListTs.isNotEmpty(queryResList)) {
-            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), IS_ENABLED);
+            boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), "isEnabled");
             if(b){
                 for (${entityName}Dto item : queryResList) {
-                    Arrays.stream(IS_ENABLED_VALID)
-                        .filter(e -> !Objects.equals(ReflectUtil.getFieldValue(item, IS_ENABLED), e))
-                        .findFirst()
-                        .ifPresent(o -> ReflectUtil.setFieldValue(item, IS_ENABLED, o));
+                    int isEnabled = Convert.toInt(ReflectUtil.getFieldValue(item, "isEnabled"));
+                    if(isEnabled == 1){
+                        ReflectUtil.setFieldValue(item, "isEnabled",0);
+                    }else if(isEnabled == 0){
+                        ReflectUtil.setFieldValue(item, "isEnabled",1);
+                    }
                 }
                 ${domainName}ControllerReq newReq = new ${domainName}ControllerReq();
                 newReq.set${entityName}Dtos(queryResList);

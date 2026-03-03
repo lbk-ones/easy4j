@@ -42,7 +42,7 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
 
     // 加载template
     public String loadTemplate(String absoluteFilePath, String templatePath, String templateName, Object params, boolean isPreview) {
-        if(!isPreview){
+        if (!isPreview) {
             File file = new File(absoluteFilePath);
             if (file.exists()) {
                 if (!deleteIfExists && !forceDelete) {
@@ -64,21 +64,26 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
             }
         }
 
-        Class<?> aClass = params.getClass();
-        Field[] fields = ReflectUtil.getFields(aClass);
         Map<String, Object> params_ = Maps.newHashMap();
-        for (Field field : fields) {
-            String name = field.getName();
-            Object fieldValue = ReflectUtil.getFieldValue(params, field);
-            params_.putIfAbsent(name, fieldValue);
+        if (params instanceof Map) {
+            params_ = (Map<String, Object>) params;
+        } else {
+            Class<?> aClass = params.getClass();
+            Field[] fields = ReflectUtil.getFields(aClass);
+            for (Field field : fields) {
+                String name = field.getName();
+                Object fieldValue = ReflectUtil.getFieldValue(params, field);
+                params_.putIfAbsent(name, fieldValue);
+            }
         }
+
         //notNull(this.getDomainName(), "domainName");
         notNull(this.getParentPackageName(), "parentPackageName");
 
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
         cfg.setTemplateLoader(new ClassTemplateLoader(ControllerGen.class, StringPool.SLASH + templatePath));
 
-        if(isPreview){
+        if (isPreview) {
             try (Writer writer = new StringWriter()) {
                 // 加载模板
                 Template template = cfg.getTemplate(templateName);
@@ -91,7 +96,7 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
             } catch (Exception e) {
                 throw new RuntimeException("模板加载/IO 异常：" + e.getMessage(), e);
             }
-        }else{
+        } else {
             try (Writer out = new FileWriter(absoluteFilePath)) {
                 Template template = cfg.getTemplate(templateName);
                 template.process(params_, out);
@@ -99,7 +104,7 @@ public abstract class AbstractGen extends GenDto implements CodeGen {
             } catch (IOException | TemplateException e) {
                 throw new RuntimeException(e);
             }
-            return "gen successful 【"+StrUtil.replaceLast(templateName,"Gen.ftl","")+"】--> " + absoluteFilePath;
+            return "gen successful 【" + StrUtil.replaceLast(templateName, "Gen.ftl", "") + "】--> " + absoluteFilePath;
         }
     }
 

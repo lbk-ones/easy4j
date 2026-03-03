@@ -60,25 +60,30 @@ public class DbGenSetting implements Serializable {
     /**
      * 是否生成 业务接口
      */
-    private boolean genService= false;
+    private boolean genService = false;
 
     /**
      * 是否生成 业务实现
      */
-    private boolean genServiceImpl= false;
+    private boolean genServiceImpl = false;
 
     /**
      * 是否生成 接口
      */
-    private boolean genController= false;
+    private boolean genController = false;
 
     /**
      * 是否生成 接口传参
      */
-    private boolean genControllerReq= false;
+    private boolean genControllerReq = false;
 
     /**
      * 是否生成 to
      */
-    private boolean genDto= false;
+    private boolean genDto = false;
+
+    /**
+     * 是否生成 mapstruct
+     */
+    private boolean genMapStruct = false;
 }

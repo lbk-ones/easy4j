@@ -28,6 +28,7 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -39,6 +40,7 @@ import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.context.api.seed.MybatisPlusSnowSeed;
 import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
@@ -53,6 +55,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * service层父类
@@ -71,7 +74,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         private Class<?> fieldType;
     }
 
-    public static final Map<Class<?>, FieldInfo> idCache = new ConcurrentHashMap<>();
+    public static final Map<Class<?>, List<FieldInfo>> idCache = new ConcurrentHashMap<>();
 
     /**
      * 获取lambda表达式的字段名称
@@ -168,6 +171,9 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                     case "like":
                         queryWrapper.like(s, s3);
                         break;
+                    case "notLike":
+                        queryWrapper.notLike(s, s3);
+                        break;
                     case "likeLeft":
                         queryWrapper.likeLeft(s, s3);
                         break;
@@ -175,49 +181,53 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         queryWrapper.likeRight(s, s3);
                         break;
                     case "lt":
-                        queryWrapper.lt(false, s, s3);
+                        queryWrapper.lt(s, s3);
                         break;
-                    case "lte":
-                        queryWrapper.lt(true, s, s3);
+                    case "le":
+                        queryWrapper.le(s, s3);
                         break;
                     case "gt":
-                        queryWrapper.gt(false, s, s3);
+                        queryWrapper.gt(s, s3);
                         break;
-                    case "gte":
-                        queryWrapper.gt(true, s, s3);
+                    case "ge":
+                        queryWrapper.ge(s, s3);
                         break;
                     case "tgt":
-                        queryWrapper.gt(false, s, DateUtil.parse(s3.toString()));
+                        queryWrapper.gt(s, DateUtil.parse(s3.toString()));
                         break;
-                    case "tgte":
-                        queryWrapper.gt(true, s, DateUtil.parse(s3.toString()));
+                    case "tge":
+                        queryWrapper.ge(s, DateUtil.parse(s3.toString()));
                         break;
                     case "tlt":
-                        queryWrapper.lt(false, s, DateUtil.parse(s3.toString()));
+                        queryWrapper.lt(s, DateUtil.parse(s3.toString()));
                         break;
-                    case "tlte":
-                        queryWrapper.lt(true, s, DateUtil.parse(s3.toString()));
+                    case "tle":
+                        queryWrapper.le(s, DateUtil.parse(s3.toString()));
                         break;
                     case "between":
                         try {
-                            String v1 = StrUtil.trim(key.get(2).toString());
-                            String v2 = StrUtil.trim(key.get(3).toString());
+                            Object o = key.get(2);
+                            List<String> list = ListTs.objectToListT(o, String.class, Function.identity());
+                            String v1 = StrUtil.trim(list.get(0));
+                            String v2 = StrUtil.trim(list.get(1));
                             if (!StrUtil.hasBlank(v1, v2)) {
-                                queryWrapper.between(false, s, DateUtil.parse(v1), DateUtil.parse(v2));
+                                queryWrapper.between(s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!" + e.getMessage());
                         }
                         break;
                     case "betweene":
                         try {
-                            String v1 = StrUtil.trim(key.get(3).toString());
-                            String v2 = StrUtil.trim(key.get(4).toString());
+                            Object o = key.get(2);
+                            List<String> list = ListTs.objectToListT(o, String.class, Function.identity());
+                            String v1 = StrUtil.trim(list.get(0));
+                            String v2 = StrUtil.trim(list.get(1));
                             if (!StrUtil.hasBlank(v1, v2)) {
-                                queryWrapper.between(true, s, DateUtil.parse(v1), DateUtil.parse(v2));
+                                queryWrapper.notBetween(s, DateUtil.parse(v1), DateUtil.parse(v2));
                             }
                         } catch (Throwable e) {
-                            throw EasyException.wrap(BusCode.A000031, "query between values is error!");
+                            throw EasyException.wrap(BusCode.A000031, "query between values is error!" + e.getMessage());
                         }
                         break;
                     default:
@@ -364,8 +374,11 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
     public void clearAudit(Object source) {
         if (source == null) return;
         String[] auditParams = getAuditParams();
+        Class<?> aClass1 = source.getClass();
         for (String auditParam : auditParams) {
-            ReflectUtil.setFieldValue(source, auditParam, null);
+            if (ReflectUtil.hasField(aClass1, auditParam)) {
+                ReflectUtil.setFieldValue(source, auditParam, null);
+            }
         }
     }
 
@@ -496,48 +509,87 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
     }
 
 
-    public FieldInfo getPrimaryKeyName(Class<?> clazz) {
-        FieldInfo fieldInfo1 = idCache.computeIfAbsent(clazz, e -> {
+    public List<FieldInfo> getPrimaryKeyName(Class<?> clazz) {
+        return idCache.computeIfAbsent(clazz, e -> {
             Field[] fields = ReflectUtil.getFields(clazz);
+            List<FieldInfo> fieldInfos = new ArrayList<>();
             for (Field field : fields) {
                 if (field.isAnnotationPresent(TableId.class)) {
                     FieldInfo fieldInfo = new FieldInfo();
                     fieldInfo.setField(field);
                     fieldInfo.setFieldName(field.getName());
                     fieldInfo.setFieldType(field.getType());
-                    return fieldInfo;
+                    fieldInfos.add(fieldInfo);
                 }
             }
-            return null;
+            return fieldInfos;
         });
-        if (fieldInfo1 == null) throw new RuntimeException("the table no primary key :" + clazz.getName());
-        return fieldInfo1;
     }
 
 
     public String getIdValueToStr(Object object) {
         Class<?> aClass = object.getClass();
-        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
-        Field fieldName = primaryKeyName.getField();
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(aClass);
+        FieldInfo fieldInfo = ListTs.get(primaryKeyName, 0);
+        Field fieldName = fieldInfo != null ? fieldInfo.getField() : null;
         Object fieldValue = ReflectUtil.getFieldValue(object, fieldName);
         return Convert.toStr(fieldValue);
     }
 
     public void clearId(Object object) {
         Class<?> aClass = object.getClass();
-        FieldInfo primaryKeyName = getPrimaryKeyName(aClass);
-        Field fieldName = primaryKeyName.getField();
-        ReflectUtil.setFieldValue(object, fieldName,null);
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(aClass);
+        for (FieldInfo fieldInfo : primaryKeyName) {
+            ReflectUtil.setFieldValue(object, fieldInfo.getField(), null);
+        }
     }
 
     public List<Object> convertPrimaryKey(List<? extends Serializable> list, FieldInfo fieldInfo) {
         List<Object> objects = new ArrayList<>();
+        if (list == null) return objects;
         for (Serializable serializable : list) {
-            if(serializable == null) continue;
+            if (serializable == null) continue;
             Object convert = Convert.convert(fieldInfo.getFieldType(), serializable);
             objects.add(convert);
         }
         return objects;
+    }
+
+    /**
+     * 主键填充值
+     *
+     * @param domainList
+     * @param tClass
+     * @param <T2>
+     */
+    public <T2> void patchPrimaryKeys(List<T2> domainList, Class<T2> tClass) {
+        if (ListTs.isEmpty(domainList)) return;
+        MybatisPlusSnowSeed idSeed = Easy4j.getContext().get(MybatisPlusSnowSeed.class);
+        List<FieldInfo> primaryKeyName = getPrimaryKeyName(tClass);
+        for (FieldInfo fieldInfo : primaryKeyName) {
+            Field field = fieldInfo.getField();
+            if (field.isAnnotationPresent(TableId.class)) {
+                Class<?> fieldType = fieldInfo.getFieldType();
+                if (fieldType == Long.class || fieldType == long.class) {
+                    TableId annotation = field.getAnnotation(TableId.class);
+                    if (annotation.type() == IdType.NONE || annotation.type() == IdType.INPUT) {
+                        for (T2 employees : domainList) {
+                            Object fieldValue = ReflectUtil.getFieldValue(employees, field);
+                            if (fieldValue == null) {
+                                ReflectUtil.setFieldValue(employees, field, idSeed.nextIdLong());
+                            }
+                        }
+                    }
+                } else if (fieldType == String.class) {
+                    for (T2 employees : domainList) {
+                        Object fieldValue = ReflectUtil.getFieldValue(employees, field);
+                        if (fieldValue == null) {
+                            ReflectUtil.setFieldValue(employees, field, idSeed.nextIdStr());
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

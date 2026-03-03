@@ -1,5 +1,4 @@
 package ${parentPackageName}.controller;
-import cn.hutool.core.util.EscapeUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
 import ${parentPackageName}.${dtoPackageName}.${returnDtoName};
@@ -56,7 +55,7 @@ public class ${domainName}Controller {
                     )
             )
     )
-    public EasyResult<EasyPageRes> pageQuery${domainName}(${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq){
+    public EasyResult<EasyPageRes> pageQuery${domainName}(@RequestBody ${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq){
         return EasyResult.ok(i${domainName}Service.pageQuery${domainName}(${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq));
     }
 
@@ -114,7 +113,7 @@ public class ${domainName}Controller {
             )
     )
     public EasyResult<List<${returnDtoName}>> get${domainName}ByIds(@PathVariable(name = "id") String ids) {
-        return EasyResult.ok(i${domainName}Service.get${domainName}ByIds(new ArrayList<>(ListTs.asList(ids.split(EscapeUtil.escape(SP.COMMA))))));
+        return EasyResult.ok(i${domainName}Service.get${domainName}ByIds(new ArrayList<>(ListTs.asList(ids.split(SP.COMMA)))));
     }
 
     @Operation(summary = "${cnDesc}发布", description = "批量发布${cnDesc}（发布后生效，不可随意修改）/ 可批量发布，返回集合，不需要发布则不理会")
@@ -137,7 +136,7 @@ public class ${domainName}Controller {
         return EasyResult.ok(i${domainName}Service.publish${domainName}s(${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq));
     }
 
-    @Operation(summary = "${cnDesc}批量删除", description = "批量删除${cnDesc}，不需要该功能则不理会")
+    @Operation(summary = "${cnDesc}批量删除", description = "批量删除${cnDesc}，用英文逗号分割，不需要该功能则不理会")
     @RequestLog
     @WebIdempotent
     @DeleteMapping("delete${domainName}/{id}")
@@ -154,7 +153,7 @@ public class ${domainName}Controller {
             )
     )
     public EasyResult<List<${returnDtoName}>> delete${domainName}s(@PathVariable(name = "id") String ids) {
-        return EasyResult.ok(i${domainName}Service.delete${domainName}s(new ArrayList<>(ListTs.asList(ids.split(EscapeUtil.escape(SP.COMMA))))));
+        return EasyResult.ok(i${domainName}Service.delete${domainName}s(new ArrayList<>(ListTs.asList(ids.split(SP.COMMA)))));
     }
 
 

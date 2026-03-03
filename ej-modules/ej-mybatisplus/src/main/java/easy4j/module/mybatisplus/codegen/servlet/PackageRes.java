@@ -10,4 +10,5 @@ public class PackageRes implements Serializable {
 
     private List<String> allDtos;
     private List<String> allEntitys;
+    private List<String> allControllers;
 }
