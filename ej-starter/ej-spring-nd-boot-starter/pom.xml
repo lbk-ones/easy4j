@@ -10,7 +10,7 @@
     <artifactId>ej-spring-nd-boot-starter</artifactId>
     <name>ej-spring-nd-boot-starter</name>
     <url>https://github.com/lbk-ones/easy4j</url>
-    <description>easy4j ej-spring-nd-boot-starter</description>
+    <description>easy4j ej-spring-nd-boot-starter not have datasource</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

@@ -19,11 +19,9 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.module.sauth.domain.SecuritySession;
+import javax.annotation.Resource;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-
-import jakarta.annotation.Resource;
-
 /**
  * RedisSessionStrategy
  *

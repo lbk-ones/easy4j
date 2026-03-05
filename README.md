@@ -288,9 +288,10 @@ public class AppTest {
 
 > 启动服务可以不用application.properties
 
-
 # git提交规则
+
 使用 Conventional Commits 规则
+
 ```text
 <类型>[可选作用域]: <描述>
 
@@ -311,6 +312,7 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 ```
 
 # 系统参数
+
 - **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度 (true|false)
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port

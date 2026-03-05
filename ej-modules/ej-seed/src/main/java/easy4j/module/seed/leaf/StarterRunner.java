@@ -20,7 +20,7 @@ import easy4j.module.seed.CommonKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 /**
  * StarterRunner

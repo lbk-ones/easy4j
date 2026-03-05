@@ -37,7 +37,7 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-db2</artifactId>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
 </project>

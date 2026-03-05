@@ -22,9 +22,7 @@
     <description>easy4j starters parent pom</description>
     <properties>
     </properties>
-
     <dependencies>
-
     </dependencies>
 
 </project>

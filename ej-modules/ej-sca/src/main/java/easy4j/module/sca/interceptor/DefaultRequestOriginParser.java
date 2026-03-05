@@ -15,11 +15,12 @@
 package easy4j.module.sca.interceptor;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
-import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.callback.RequestOriginParser;
+
+import com.alibaba.csp.sentinel.adapter.spring.webmvc.callback.RequestOriginParser;
 import easy4j.infra.webmvc.IpUtils;
 
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 【示例】sentinel ip和参数授权规则拦截器(黑名单白名单)

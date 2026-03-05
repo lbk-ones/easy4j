@@ -173,7 +173,8 @@ public class RetryableQueueConsumer<T> {
     public static String determineException(Throwable e) {
         boolean flag = false;
         Throwable cause = e.getCause();
-        if (e instanceof RpcException rpcException) {
+        if (e instanceof RpcException ) {
+            RpcException rpcException = (RpcException)e;
             return rpcException.isWillRetry() ? "throw exception to retry" : null;
         }
         if (

@@ -1,16 +1,27 @@
 package easy4j.module.mybatisplus.codegen.servlet;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Lists;
 
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.PackageScanner;
 import easy4j.infra.common.utils.SP;
@@ -22,11 +33,22 @@ import easy4j.infra.common.utils.servletmvc.UrlMap;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
+import easy4j.module.mybatisplus.audit.AutoAudit;
 import easy4j.module.mybatisplus.codegen.AutoGen;
 import easy4j.module.mybatisplus.codegen.GenDto;
 import easy4j.module.mybatisplus.codegen.GlobalGenConfig;
 import easy4j.module.mybatisplus.codegen.MultiGenDto;
 import easy4j.module.mybatisplus.codegen.db.DbGenSetting;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassApi;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassField;
+import easy4j.module.mybatisplus.codegen.servlet.ast.ClassParseResult;
+import easy4j.module.mybatisplus.codegen.servlet.ast.JavaClassParser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
 import java.util.stream.Collectors;
@@ -120,6 +142,7 @@ public class E4jCgController {
             boolean isGenServiceImpl = standRes.isGenServiceImpl();
             boolean isGenController = standRes.isGenController();
             boolean isGenControllerReq = standRes.isGenControllerReq();
+            boolean isGenMapStruct = standRes.isGenMapStruct();
             boolean isGenDto = standRes.isGenDto();
             if (isGenController && StrUtil.isBlank(urlPrefix)) {
                 servletHandler.responseJson(SRes.error("urlPrefix is not null "));
@@ -139,7 +162,17 @@ public class E4jCgController {
                     .setMapperPackageName(mapperPackageName)
                     .setMapperXmlPackageName(mapperXmlPackageName)
                     .setServiceInterfacePackageName(serviceInterfacePackageName)
-                    .setServiceImplPackageName(serviceImplPackageName);
+                    .setMapperStructClassSimpleName(standRes.getMapperStructClassSimpleName())
+                    .setMapperStructPackageName(standRes.getMapperStructPackageName())
+                    .setServiceImplPackageName(serviceImplPackageName)
+                    .setCreateTimeName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getCreateTimeName())))
+                    .setIsDeletedName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getIsDeletedName())))
+                    .setIsEnabledName(StrUtil.toCamelCase(StrUtil.toUnderlineCase(standRes.getIsEnabledName())))
+                    .setIsDeletedValid(standRes.getIsDeletedValid())
+                    .setIsDeletedNotValid(standRes.getIsDeletedNotValid())
+                    .setIsEnabledValid(standRes.getIsEnabledValid())
+                    .setIsEnabledNotValid(standRes.getIsEnabledNotValid());
+
             PreviewRes res = AutoGen.build(globalGenConfig1)
                     .fromDbGen(new DbGenSetting()
                             .setUrl(url)
@@ -155,6 +188,7 @@ public class E4jCgController {
                             .setGenServiceImpl(isGenServiceImpl)
                             .setGenController(isGenController)
                             .setGenControllerReq(isGenControllerReq)
+                            .setGenMapStruct(isGenMapStruct)
                             .setExclude(exclude)
                     )
                     .auto(isPreview, true);
@@ -166,14 +200,18 @@ public class E4jCgController {
     }
 
     private boolean checkNotNullR(ServletHandler servletHandler, Map<String, String> formDataMap, List<String> nameList) {
+        Set<String> objects = new HashSet<>();
         if (formDataMap != null) {
             for (String s : nameList) {
                 String s2 = formDataMap.get(s);
                 if (StrUtil.isBlank(s2)) {
-                    servletHandler.responseJson(SRes.error(s + " is not null "));
-                    return true;
+                    objects.add(s);
                 }
             }
+        }
+        if (!objects.isEmpty()) {
+            servletHandler.responseJson(SRes.error(String.join(",", objects) + " is not null "));
+            return true;
         }
         return false;
 
@@ -203,6 +241,7 @@ public class E4jCgController {
         if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
         String dtoPackageName = formDataMap.get("dtoPackageName");
         String entityPackageName = formDataMap.get("entityPackageName");
+        String controllerPackageName = formDataMap.get("controllerPackageName");
         String abPath = projectAbsolutePath + SP.SLASH + "src/main/java";
         if (StrUtil.isNotBlank(dtoPackageName)) {
             String dtoPackage = String.join(".", ListTs.asList(
@@ -215,7 +254,7 @@ public class E4jCgController {
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files == null) files = new File[]{};
-                allDtos = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                allDtos = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
             }
             if (allDtos.isEmpty()) {
                 try {
@@ -240,7 +279,7 @@ public class E4jCgController {
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files == null) files = new File[]{};
-                allEntitys = Arrays.stream(files).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
             }
             if (allEntitys.isEmpty()) {
                 try {
@@ -255,12 +294,34 @@ public class E4jCgController {
             }
 
         }
-        return SRes.success(packageRes);
-    }
+        // 扫描controller文件
+        if (StrUtil.isNotBlank(controllerPackageName)) {
+            String packageName = String.join(".", ListTs.asList(
+                    parentPackageName,
+                    controllerPackageName
+            ));
+            String filePath = abPath + SP.SLASH + (String.join(SP.SLASH, ListTs.asList(packageName.split("\\."))));
+            List<String> allEntitys = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allEntitys = Arrays.stream(files).filter(File::isFile).map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf("."))).collect(Collectors.toList());
+            }
+            if (allEntitys.isEmpty()) {
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(packageName, false);
+                    allEntitys = classes.stream().map(Class::getSimpleName).collect(Collectors.toList());
+                    packageRes.setAllControllers(allEntitys);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                packageRes.setAllControllers(allEntitys);
+            }
 
-    public static void main(String[] args) {
-        String wt = "afgaga";
-        System.out.println(wt.substring(0, wt.lastIndexOf(".") < 0 ? wt.length() : wt.lastIndexOf(".")));
+        }
+        return SRes.success(packageRes);
     }
 
 
@@ -295,6 +356,13 @@ public class E4jCgController {
         String mapperXmlPackageName = formDataMap.get("mapperXmlPackageName");
         String serviceInterfacePackageName = formDataMap.get("serviceInterfacePackageName");
         String serviceImplPackageName = formDataMap.get("serviceImplPackageName");
+        String createTimeName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("createTimeName")));
+        String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
+        String isEnabledName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isEnabledName")));
+        String isDeletedValid = formDataMap.get("isDeletedValid");
+        String isDeletedNotValid = formDataMap.get("isDeletedNotValid");
+        String isEnabledValid = formDataMap.get("isEnabledValid");
+        String isEnabledNotValid = formDataMap.get("isEnabledNotValid");
         String author = formDataMap.get("author");
         String headerDesc = formDataMap.get("headerDesc");
         AutoGen build = AutoGen.build(MultiGenDto.build(
@@ -313,6 +381,13 @@ public class E4jCgController {
                                 .setMapperXmlPackageName(mapperXmlPackageName)
                                 .setServiceInterfacePackageName(serviceInterfacePackageName)
                                 .setServiceImplPackageName(serviceImplPackageName)
+                                .setCreateTimeName(createTimeName)
+                                .setIsDeletedName(isDeletedName)
+                                .setIsEnabledName(isEnabledName)
+                                .setIsDeletedValid(isDeletedValid)
+                                .setIsDeletedNotValid(isDeletedNotValid)
+                                .setIsEnabledValid(isEnabledValid)
+                                .setIsEnabledNotValid(isEnabledNotValid)
                 )
                 .multiGen(
                         domainName + "-" + returnDtoName + "-" + cnDesc + "-" + entityName
@@ -334,5 +409,313 @@ public class E4jCgController {
         return SRes.success(previewRes);
     }
 
+    /**
+     * 前端配置生成前的初始化 基于 arco-design-vue3组件库的arco-vue3-supertable
+     */
+    @UrlMap(url = "/pageGenInit")
+    public SRes pageGenInit(ServletHandler servletHandler) {
+        PageViewRes pageViewRes = new PageViewRes();
+        Map<String, String> formDataMap = servletHandler.getFormDataMap();
+        String parentPackageName = formDataMap.get("parentPackageName");
+        String controllerPackageName = formDataMap.get("controllerPackageName");
+        String projectAbsolutePath = formDataMap.get("projectAbsolutePath");
+        if (StrUtil.isBlank(parentPackageName)) parentPackageName = Easy4j.mainClassPath;
+        String dtoPackageName = formDataMap.get("dtoPackageName");
+        String entityPackageName = formDataMap.get("entityPackageName");
+        String dtoName_ = formDataMap.get("dtoName");
+        String domainName_ = formDataMap.get("domainName");
+        String controllerName = formDataMap.get("controllerName");
+        String isEnabledName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isEnabledName")));
+        String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
+        String isEnabledValid = formDataMap.get("isEnabledValid");
+        String isEnabledNotValid = formDataMap.get("isEnabledNotValid");
+        String isEnabledIsNumber = formDataMap.get("isEnabledIsNumber");
+        if (checkNotNullR(servletHandler,
+                formDataMap,
+                ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName","isDeletedName","isEnabledValid","isEnabledNotValid")
+        )) {
+            return null;
+        }
+        String abPath = projectAbsolutePath +
+                File.separator +
+                String.join(File.separator, ListTs.asList("src", "main", "java")) +
+                File.separator +
+                String.join(File.separator, parentPackageName.split("\\."));
+        String dtoAb = abPath + File.separator + dtoPackageName;
+        String domainAb = abPath + File.separator + entityPackageName;
+        String dtoName = dtoAb + File.separator + dtoName_ + ".java";
+        String domainName = domainAb + File.separator + domainName_ + ".java";
+        try {
+            File file = new File(dtoName);
+            File file2 = new File(domainName);
+            ClassParseResult dtoParse;
+            ClassParseResult domainParse;
+            if (file.exists() && file2.exists()) {
+                dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
+                domainParse = JavaClassParser.INSTANCE.parse(domainName);
+            } else {
+                Class<?> dtoClass = Class.forName(parentPackageName + SP.DOT + dtoPackageName + SP.DOT + dtoName_);
+                Class<?> domainClass = Class.forName(parentPackageName + SP.DOT + entityPackageName + SP.DOT + domainName_);
+                dtoParse = clazzToClassParseResult(dtoClass);
+                domainParse = clazzToClassParseResult(domainClass);
+            }
+
+            String tableName = domainParse.getTableName();
+            pageViewRes.setUniqueId(RandomUtil.randomString(4) + "_" + StrUtil.blankToDefault(tableName, StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
+
+            String schemaDesc = domainParse.getSchemaDesc();
+            if (StrUtil.endWith(schemaDesc, "表")) schemaDesc = StrUtil.replaceLast(schemaDesc, "表", "");
+            pageViewRes.setCnDesc(schemaDesc);
+            pageViewRes.setRowKey(domainParse.getTableIdFieldName());
+            pageViewRes.setControllerReqDtoName(StrUtil.lowerFirst(dtoName_) + "s");
+            // scan all apis
+            scanAllApi(abPath, parentPackageName, controllerPackageName, pageViewRes, controllerName);
+            // default actions
+            patchDefaultActions(pageViewRes);
+            List<ClassField> fields = dtoParse.getFields();
+            List<PageViewRes.ColumnInfo> objects = Lists.newArrayList();
+            Class<AutoAudit> autoAuditClass = AutoAudit.class;
+            List<String> auditFieldNames = Arrays.stream(ReflectUtil.getFields(autoAuditClass)).map(Field::getName).collect(Collectors.toList());
+            int size = fields.size();
+            for (int i = 0; i < size; i++) {
+                ClassField field = fields.get(i);
+                String fieldName = field.getFieldName();
+
+                if (StrUtil.equals(isEnabledName, fieldName) && StrUtil.isNotBlank(fieldName)) {
+                    pageViewRes.getActions()
+                            .add(new PageViewRes.ACTION("enabled", "启用/禁用")
+                                    .setType("confirm")
+                                    .setConfirmMessage("确定要启用/禁用选中的数据吗？")
+                            );
+                }
+                PageViewRes.ColumnInfo columnInfo = new PageViewRes.ColumnInfo();
+                columnInfo.setTitle(StrUtil.blankToDefault(field.getCnDesc(), "-"));
+                columnInfo.setDataIndex(fieldName);
+                PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
+                // 不要删除字段
+                if (StrUtil.equals(isDeletedName,fieldName)) {
+                    continue;
+                }
+                // 审计字段不能出现在动态表单中
+                if (auditFieldNames.contains(fieldName)) {
+                    form.setCreatable(false);
+                    form.setEditable(false);
+                    // 这俩一般不在页面显示
+                    if(ListTs.asList("createBy","updateBy").contains(fieldName)){
+                        columnInfo.setVisible(false);
+                    }
+                }
+                String fieldType = field.getFieldType();
+                boolean isDate = false;
+                if (ListTs.asList("Date", "LocalDateTime", "LocalDate").contains(fieldType)) {
+                    form.setType("date");
+                    isDate = true;
+                    form.setPlaceholder("请选择" + columnInfo.getTitle());
+                } else if (ListTs.asList("String", "char", "Character").contains(fieldType)) {
+                    form.setType("input");
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
+                } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal", "Integer", "Double", "Short", "Long", "Float").contains(fieldType)) {
+                    form.setType("number");
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
+                } else if (ListTs.asList("boolean", "Boolean").contains(fieldType)) {
+                    form.setType("switch");
+                    form.setPlaceholder("请选择" + columnInfo.getTitle());
+                } else {
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
+                }
+                if(StrUtil.equals(isEnabledName,fieldName)){
+                    form.setType("switch");
+                    Map<String, Object> attrs = form.getAttrs();
+                    if(StrUtil.equals(isEnabledIsNumber,"true")){
+                        attrs.put("checked-value", Convert.toInt(isEnabledValid));
+                        attrs.put("unchecked-value",Convert.toInt(isEnabledNotValid));
+                    }else{
+                        attrs.put("checked-value",isEnabledValid);
+                        attrs.put("unchecked-value",isEnabledNotValid);
+                    }
+                }
+                ClassField classField = ListTs.get(fields, i + 1);
+                if (null != classField) {
+                    form.setEnterNext(classField.getFieldName());
+                }
+                if (i < size - 1) {
+                    if (isDate) {
+                        columnInfo.setWidth(175);
+                    } else {
+                        columnInfo.setWidth(160);
+                    }
+                }
+                objects.add(columnInfo);
+            }
+            pageViewRes.setColumns(objects);
+        } catch (Exception e) {
+            throw new RuntimeException("出现异常:" + e.getMessage());
+        }
+        return SRes.success(pageViewRes);
+    }
+
+    private ClassParseResult clazzToClassParseResult(Class<?> dtoClass) {
+        ClassParseResult classParseResult = new ClassParseResult();
+        classParseResult.setClassName(dtoClass.getName());
+        classParseResult.setTableName(Optional.ofNullable(dtoClass.getAnnotation(TableName.class)).map(TableName::value).orElseGet(() -> StrUtil.toUnderlineCase(dtoClass.getSimpleName())));
+        classParseResult.setSchemaDesc(Optional.ofNullable(dtoClass.getAnnotation(Schema.class)).map(Schema::description).orElse(dtoClass.getSimpleName()));
+        Field[] fields = ReflectUtil.getFields(dtoClass);
+        List<ClassField> collect = Arrays.stream(fields).map(field -> {
+            int modifiers = field.getModifiers();
+            if (Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+                return null;
+            }
+            if (field.isAnnotationPresent(TableId.class)) {
+                String tableIdFieldName = classParseResult.getTableIdFieldName();
+                if (StrUtil.isBlank(tableIdFieldName)) classParseResult.setTableIdFieldName(field.getName());
+            }
+            ClassField classField = new ClassField();
+            classField.setFieldName(field.getName());
+            classField.setFieldType(field.getType().getSimpleName());
+            classField.setCnDesc(Optional.ofNullable(field.getAnnotation(Schema.class)).map(Schema::description).orElseGet(field::getName));
+            return classField;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+        classParseResult.setFields(collect);
+        return classParseResult;
+    }
+
+    private void patchDefaultActions(PageViewRes pageViewRes) {
+        List<PageViewRes.ACTION> actions = pageViewRes.getActions();
+        actions.add(new PageViewRes.ACTION("view", "查看")
+                .setMessage("查看成功"));
+        actions.add(new PageViewRes.ACTION("edit", "编辑")
+                .setMessage("编辑成功"));
+        actions.add(new PageViewRes.ACTION("delete", "删除")
+                .setStatus("danger")
+                .setType("confirm")
+                .setConfirmMessage("确定要删除选中的数据吗？")
+                .setMessage("删除成功")
+        );
+    }
+
+    private static void scanAllApi(String abPath, String parentPackageName, String controllerPackageName, PageViewRes pageViewRes, String controllerName) {
+        Set<PageViewRes.API> allUrls = new HashSet<>();
+        if (StrUtil.isNotBlank(controllerPackageName)) {
+            String filePath = abPath + File.separator + controllerPackageName;
+            List<String> allEntitys = new ArrayList<>();
+            File file = new File(filePath);
+            if (file.exists() && file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files == null) files = new File[]{};
+                allEntitys = Arrays.stream(files)
+                        .filter(File::isFile)
+                        .map(e -> e.getName().substring(0, e.getName().lastIndexOf(".") < 0 ? e.getName().length() : e.getName().lastIndexOf(".")))
+                        .collect(Collectors.toList());
+                for (String allEntity : allEntitys) {
+                    if (!StrUtil.equals(controllerName, allEntity)) continue;
+                    // ast parse
+                    List<ClassApi> classApis = JavaClassParser.INSTANCE.parseApi(abPath + File.separator + controllerPackageName + File.separator + allEntity + ".java");
+                    for (ClassApi classApi : classApis) {
+                        String url = classApi.getUrl();
+                        PageViewRes.API api = new PageViewRes.API();
+                        api.setUrl(url);
+                        api.setSummary(classApi.getSummary());
+                        api.setDescription(classApi.getDescription());
+                        allUrls.add(api);
+                    }
+                }
+            }
+            // jar 环境
+            if (allEntitys.isEmpty()) {
+                String cp = String.join(".", ListTs.asList(
+                        parentPackageName,
+                        controllerPackageName
+                ));
+                try {
+                    Set<Class<?>> classes = PackageScanner.scanPackage(cp, false);
+                    for (Class<?> aClass : classes) {
+                        String simpleName = aClass.getSimpleName();
+                        if (!StrUtil.equals(controllerName, simpleName)) continue;
+                        if (!(aClass.isAnnotationPresent(Controller.class) || aClass.isAnnotationPresent(RestController.class))) {
+                            continue;
+                        }
+                        if (aClass.isAnnotationPresent(RequestMapping.class)) {
+                            RequestMapping annotation = aClass.getAnnotation(RequestMapping.class);
+                            String[] value = annotation.value();
+                            String[] path = annotation.path();
+                            String[] strings = ArrayUtil.addAll(value, path);
+                            String prefix = ListTs.get(strings, 0);
+                            Method[] methods = ReflectUtil.getMethods(aClass);
+                            for (Method method : methods) {
+                                List<Class<? extends Annotation>> list = ListTs.asList(RequestMapping.class, PostMapping.class, GetMapping.class, PutMapping.class, DeleteMapping.class);
+                                if (list.stream().noneMatch(method::isAnnotationPresent)) {
+                                    continue;
+                                }
+                                boolean annotationPresent = method.isAnnotationPresent(Operation.class);
+                                String summary_ = "";
+                                String description_ = "";
+                                if (annotationPresent) {
+                                    Operation annotation1 = method.getAnnotation(Operation.class);
+                                    summary_ = annotation1.summary();
+                                    description_ = annotation1.description();
+                                }
+                                final String summary = summary_;
+                                final String description = description_;
+                                list.stream().filter(method::isAnnotationPresent).findFirst().ifPresent(e -> {
+                                    Annotation annotation1 = method.getAnnotation(e);
+                                    Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation1);
+                                    String[] path2 = (String[]) annotationAttributes.get("path");
+                                    String[] value2 = (String[]) annotationAttributes.get("value");
+                                    String url = ListTs.get(ArrayUtil.addAll(value2, path2), 0);
+                                    String allUrl = StrUtil.removeSuffix(
+                                            StrUtil.addPrefixIfNot(
+                                                    StrUtil.removeSuffix(
+                                                            prefix,
+                                                            "/"
+                                                    )
+                                                    , "/"
+                                            ),
+                                            "/"
+                                    ) + "/" + StrUtil.removePrefix(url, "/");
+                                    // 处理 /{id} 这种 如果 /{id}/xxx 这种可能会被误操作 但是先不管
+                                    allUrl = ListTs.asList(allUrl.split("/")).stream().map(e2 -> {
+                                        if (StrUtil.isWrap(e2, "{", "}")) {
+                                            return null;
+                                        }
+                                        return e2;
+                                    }).filter(Objects::nonNull).collect(Collectors.joining("/"));
+                                    PageViewRes.API api = new PageViewRes.API();
+                                    api.setUrl(allUrl);
+                                    api.setSummary(summary);
+                                    api.setDescription(description);
+                                    allUrls.add(api);
+                                });
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        }
+        String rL = StrUtil.replaceLast(controllerName, "Controller", "");
+        for (PageViewRes.API allUrl : allUrls) {
+            String url = allUrl.getUrl();
+            if (StrUtil.contains(url, "pageQuery" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getPageApiUrl())) pageViewRes.setPageApiUrl(url);
+            }
+            if (StrUtil.contains(url, "save" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormAddApiUrl())) pageViewRes.setFormAddApiUrl(url);
+            }
+            if (StrUtil.contains(url, "delete" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormDeleteApiUrl())) pageViewRes.setFormDeleteApiUrl(url);
+            }
+            if (StrUtil.contains(url, "update" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getFormUpdateApiUrl())) pageViewRes.setFormUpdateApiUrl(url);
+            }
+            if (StrUtil.contains(url, "enableOrDisable" + rL)) {
+                if (StrUtil.isBlank(pageViewRes.getEnableOrDisabledUrl())) pageViewRes.setEnableOrDisabledUrl(url);
+            }
+        }
+        List<PageViewRes.API> strings = new ArrayList<>(allUrls);
+        strings.sort(Comparator.comparing(PageViewRes.API::getUrl));
+        pageViewRes.setAllApiUrl(strings);
+    }
 
 }

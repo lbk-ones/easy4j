@@ -23,7 +23,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import org.apache.commons.lang3.StringUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import java.text.MessageFormat;
 import java.util.HashMap;

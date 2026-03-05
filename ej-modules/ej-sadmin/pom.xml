@@ -29,7 +29,6 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-base</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>

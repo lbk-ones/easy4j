@@ -35,7 +35,8 @@ public class NettyHeartbeatHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent event) {
+        if (evt instanceof IdleStateEvent ) {
+            IdleStateEvent event = (IdleStateEvent)evt;
             IdleState state = event.state();
             switch (state) {
                 case READER_IDLE:

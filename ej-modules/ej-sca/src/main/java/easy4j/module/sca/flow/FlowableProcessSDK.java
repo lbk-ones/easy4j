@@ -1,6 +1,7 @@
 package easy4j.module.sca.flow;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
@@ -24,21 +25,35 @@ public class FlowableProcessSDK implements ProcessSDK {
     Easy4jNacosInvokerApi easy4jNacosInvokerApi;
     @Setter
     String serverName;
+
     @Setter
     String group;
-    public static final String PATH = "/flow/flowable";
-    public static final String START_PROCESS = PATH + SP.SLASH + "startProcess";
-    public static final String START_PROCESS_AND_EXE_FIRST_TASK = PATH + SP.SLASH + "startProcessAndExeFirstTask";
-    public static final String END_PROCESS = PATH + SP.SLASH + "endProcess";
-    public static final String COMPLETE_TASK = PATH + SP.SLASH + "completeTask";
-    public static final String QUERY_PENDING_TASKS = PATH + SP.SLASH + "queryPendingTasks";
-    public static final String QUERY_TASK_HISTORY = PATH + SP.SLASH + "queryTaskHistory";
-    public static final String QUERY_PROCESS_INSTANCE = PATH + SP.SLASH + "queryProcessInstance";
+
+    @Setter
+    String path = "/flow/flowable";
+
+    public static final String START_PROCESS = SP.SLASH + "startProcess";
+    public static final String START_PROCESS_AND_EXE_FIRST_TASK = SP.SLASH + "startProcessAndExeFirstTask";
+    public static final String END_PROCESS = SP.SLASH + "endProcess";
+    public static final String COMPLETE_TASK = SP.SLASH + "completeTask";
+    public static final String QUERY_PENDING_TASKS = SP.SLASH + "queryPendingTasks";
+    public static final String QUERY_TASK_HISTORY = SP.SLASH + "queryTaskHistory";
+    public static final String QUERY_PROCESS_INSTANCE = SP.SLASH + "queryProcessInstance";
+    public static final String BATCH_QUERY_PROCESS_INSTANCE = SP.SLASH + "batchQueryProcessInstance";
 
     public static ProcessSDK get(String group, String serverName) {
         FlowableProcessSDK flowableProcessSDK = new FlowableProcessSDK();
         flowableProcessSDK.setGroup(group);
         flowableProcessSDK.setServerName(serverName);
+        return flowableProcessSDK;
+    }
+
+    public static ProcessSDK get(String group, String serverName, String urlPrefix) {
+        FlowableProcessSDK flowableProcessSDK = new FlowableProcessSDK();
+        flowableProcessSDK.setGroup(group);
+        flowableProcessSDK.setServerName(serverName);
+        if (!StrUtil.startWith(urlPrefix, "/")) urlPrefix = "/" + urlPrefix;
+        flowableProcessSDK.setPath(urlPrefix);
         return flowableProcessSDK;
     }
 
@@ -56,6 +71,13 @@ public class FlowableProcessSDK implements ProcessSDK {
         return Easy4j.getRequiredProperty("easy4j.flow-server-name");
     }
 
+
+    public String getPath() {
+        String property = Easy4j.getProperty("easy4j.flow-server-prefix");
+        if (StrUtil.isNotBlank(property)) return property;
+        return path;
+    }
+
     public String getGroup() {
         if (this.group != null) return this.group;
         return Easy4j.getRequiredProperty("easy4j.flow-group-name");
@@ -67,7 +89,8 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(START_PROCESS)
+                .isJson(true)
+                .path(getPath() + START_PROCESS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
@@ -80,7 +103,8 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(START_PROCESS_AND_EXE_FIRST_TASK)
+                .isJson(true)
+                .path(getPath() + START_PROCESS_AND_EXE_FIRST_TASK)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
@@ -89,7 +113,7 @@ public class FlowableProcessSDK implements ProcessSDK {
     }
 
     @Override
-    public void endProcess(String processInstanceId,String endReason) {
+    public void endProcess(String processInstanceId, String endReason) {
         ProcessReq processReq = new ProcessReq();
         processReq.setInstanceId(processInstanceId);
         processReq.setEndInstanceReason(endReason);
@@ -97,14 +121,15 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(END_PROCESS)
+                .isJson(true)
+                .path(getPath() + END_PROCESS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
     }
 
     @Override
-    public void completeTask(String taskId, String processKey, EasyMap<String, Object> variables) {
+    public String completeTask(String taskId, String processKey, EasyMap<String, Object> variables) {
         ProcessReq processReq = new ProcessReq();
         processReq.setTaskId(taskId);
         processReq.setProcessKey(processKey);
@@ -113,10 +138,33 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(COMPLETE_TASK)
+                .isJson(true)
+                .path(getPath() + COMPLETE_TASK)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
+        return Convert.toStr(objectEasyResult.getData());
+    }
+
+    @Override
+    public String completeTask(String taskId, String processKey, String result, String comment, String formId, List<FormData> formData, EasyMap<String, Object> variables) {
+        ProcessReq processReq = new ProcessReq();
+        processReq.setTaskId(taskId);
+        processReq.setFormId(formId);
+        processReq.setProcessKey(processKey);
+        processReq.setTaskVariables(variables);
+        processReq.setApprovalResult(result);
+        processReq.setApprovalComment(comment);
+        NacosInvokeDto build = NacosInvokeDto.builder()
+                .group(getGroup())
+                .serverName(getServerName())
+                .body(processReq)
+                .isJson(true)
+                .path(getPath() + COMPLETE_TASK)
+                .build();
+        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
+        CheckUtils.checkRpcRes(objectEasyResult);
+        return Convert.toStr(objectEasyResult.getData());
     }
 
     @Override
@@ -128,7 +176,8 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(QUERY_PENDING_TASKS)
+                .isJson(true)
+                .path(getPath() + QUERY_PENDING_TASKS)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
@@ -144,7 +193,8 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(QUERY_TASK_HISTORY)
+                .isJson(true)
+                .path(getPath() + QUERY_TASK_HISTORY)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
@@ -160,11 +210,27 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .group(getGroup())
                 .serverName(getServerName())
                 .body(processReq)
-                .path(QUERY_PROCESS_INSTANCE)
+                .isJson(true)
+                .path(getPath() + QUERY_PROCESS_INSTANCE)
                 .build();
         EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
         CheckUtils.checkRpcRes(objectEasyResult);
         Object data = objectEasyResult.getData();
         return JacksonUtil.toObject(JacksonUtil.toJson(data), ProcessInstanceRes.class);
+    }
+
+    @Override
+    public List<ProcessInstanceRes> batchQueryProcessInstance(List<String> processInstanceId) {
+        NacosInvokeDto build = NacosInvokeDto.builder()
+                .group(getGroup())
+                .serverName(getServerName())
+                .body(processInstanceId)
+                .isJson(true)
+                .path(getPath() + BATCH_QUERY_PROCESS_INSTANCE)
+                .build();
+        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
+        CheckUtils.checkRpcRes(objectEasyResult);
+        Object data = objectEasyResult.getData();
+        return JacksonUtil.toList(JacksonUtil.toJson(data), ProcessInstanceRes.class);
     }
 }

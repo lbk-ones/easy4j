@@ -17,12 +17,12 @@ import easy4j.module.jaeger.TraceUtils;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 
-import jakarta.servlet.AsyncEvent;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.AsyncEvent;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.util.HashMap;
 import java.util.Map;

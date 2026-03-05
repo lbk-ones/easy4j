@@ -42,7 +42,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.sql.DataSource;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;

@@ -65,6 +65,7 @@ public class DbGen extends AbstractGen {
                         && !dbGenSetting.isGenController()
                         && !dbGenSetting.isGenControllerReq()
                         && !dbGenSetting.isGenDto()
+                        && !dbGenSetting.isGenMapStruct()
         ) {
             return null;
         }
@@ -96,6 +97,7 @@ public class DbGen extends AbstractGen {
                 Set<String> importList = Sets.newHashSet();
                 List<EntityInfo.EFieldInfo> fields = ListTs.newList();
                 String tableName = tableMetadata.getTableName();
+                tableMetadata.setRemarks(StrUtil.replace(tableMetadata.getRemarks(), "\n", ""));
                 if (StrUtil.isNotBlank(tablePrefix)) {
                     boolean b = !StrUtil.endWith(tablePrefix, "%") && !StrUtil.startWith(tablePrefix, "%");
                     if (b && !StrUtil.equals(tableName, tablePrefix)) {
@@ -156,6 +158,9 @@ public class DbGen extends AbstractGen {
                             importList.add(name);
                         }
                     }
+                    String remarks = databaseColumnMetadata.getRemarks();
+                    remarks = StrUtil.replace(remarks, "\n", "");
+                    databaseColumnMetadata.setRemarks(remarks);
                     String columnName = databaseColumnMetadata.getColumnName();
                     String tc = tableName1 + columnName;
                     PrimaryKeyMetadata primaryKeyMetadata = map.get(tc);
@@ -168,7 +173,7 @@ public class DbGen extends AbstractGen {
                     eFieldInfo.setDbName(columnName);
                     eFieldInfo.setSameTableField(sameTableField);
                     eFieldInfo.setSameSchema(sameSchema);
-                    eFieldInfo.setDescription(databaseColumnMetadata.getRemarks());
+                    eFieldInfo.setDescription(StrUtil.blankToDefault(remarks, columnName));
                     eFieldInfo.setType(javaClassByTypeNameAndDbType.getSimpleName());
                     eFieldInfo.setHasAutoincrement("YES".equalsIgnoreCase(databaseColumnMetadata.getIsAutoincrement()));
                     String name = JdbcType.forCode(databaseColumnMetadata.getDataType()).name();
@@ -189,7 +194,7 @@ public class DbGen extends AbstractGen {
                 }
 
                 EntityInfo entityInfo = new EntityInfo()
-                        .setDescription(StrUtil.blankToDefault(tableMetadata.getRemarks(), ""))
+                        .setDescription(StrUtil.blankToDefault(tableMetadata.getRemarks(), schema))
                         .setSchema(schema)
                         .setSameTableField(sameTableField)
                         .setSameSchema(sameSchema)
@@ -221,6 +226,7 @@ public class DbGen extends AbstractGen {
             PreviewRes.PInfo ControllerPInfo = new PreviewRes.PInfo("Controller");
             PreviewRes.PInfo ControllerReqPInfo = new PreviewRes.PInfo("ControllerReq");
             PreviewRes.PInfo DtoPInfo = new PreviewRes.PInfo("Dto");
+            PreviewRes.PInfo MapStruct = new PreviewRes.PInfo("MapStruct");
             for (EntityInfo entityInfo : entityInfos) {
                 String tableName = entityInfo.getTableName();
                 if (dbGenSetting.isGenEntity()) {
@@ -338,6 +344,28 @@ public class DbGen extends AbstractGen {
                 ListTs.addAll(finalList, finalLine7);
                 ListTs.addAll(finalList, finalLine8);
             }
+            // gen mapstruct
+            if (!entityInfos.isEmpty()) {
+                if (dbGenSetting.isGenMapStruct()) {
+                    Map<String, Object> params = new MSGen(this, dbGenSetting, entityInfos)
+                            .getParams(EntityPInfo);
+                    if (params != null) {
+                        String fileName = this.getMapperStructClassSimpleName() + ".java";
+                        String s1 = joinPath(this.getProjectAbsolutePath(), SRC_MAIN_JAVA
+                                , packageNamePath
+                                , parsePackage(this.getMapperStructPackageName())
+                                , fileName);
+                        boolean deleteIfExists = this.isDeleteIfExists();
+                        this.setDeleteIfExists(true);
+                        String s = loadTemplate(s1, "temp", "mapstruct2.ftl", params, isPreview);
+                        this.setDeleteIfExists(deleteIfExists);
+                        finalList.add(s);
+                        MapStruct.add(fileName, s);
+                    }
+                }
+            }
+
+
             previewRes.add(EntityPInfo);
             previewRes.add(MapperXmlPInfo);
             previewRes.add(MapperPInfo);
@@ -346,6 +374,7 @@ public class DbGen extends AbstractGen {
             previewRes.add(ControllerPInfo);
             previewRes.add(ControllerReqPInfo);
             previewRes.add(DtoPInfo);
+            previewRes.add(MapStruct);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

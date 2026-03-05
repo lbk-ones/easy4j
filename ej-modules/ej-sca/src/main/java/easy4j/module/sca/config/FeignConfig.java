@@ -30,18 +30,10 @@ import feign.RequestInterceptor;
 import feign.codec.Encoder;
 import feign.form.spring.SpringFormEncoder;
 import lombok.extern.slf4j.Slf4j;
-//import org.apache.http.client.HttpClient;
-//import org.apache.http.client.config.RequestConfig;
-//import org.apache.http.impl.client.HttpClientBuilder;
-//import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.config.ConnectionConfig;
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.core5.util.TimeValue;
-import org.apache.hc.core5.util.Timeout;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -56,8 +48,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.Resource;
-
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -148,10 +139,11 @@ public class FeignConfig {
     }
 
 
+
     /**
      * 配置HTTP连接池管理器
      */
-    /*@Bean
+    @Bean
     public PoolingHttpClientConnectionManager connectionManager() {
         Integer maxTotal = Easy4j.getProperty(SysConstant.PARAM_PREFIX + SP.DOT + "rest-http-pool-max-total", Integer.class, 200);
         Integer perRoute = Easy4j.getProperty(SysConstant.PARAM_PREFIX + SP.DOT + "rest-http-default-max-per-route", Integer.class, 160);
@@ -172,9 +164,9 @@ public class FeignConfig {
         return connectionManager;
     }
 
-    *//**
+    /**
      * 配置HttpClient（使用连接池）
-     *//*
+     */
     @Bean
     public HttpClient httpClient(PoolingHttpClientConnectionManager connectionManager) {
         Integer connectTimeOut = Easy4j.getProperty(SysConstant.PARAM_PREFIX + SP.DOT + "rest-http-connect-timeout", Integer.class, 3000);
@@ -195,11 +187,9 @@ public class FeignConfig {
                 .build();
     }
 
-    */
-
     /**
      * 创建带有连接池的RestTemplate
-     *//*
+     */
     @Bean
     public RestTemplate restTemplate(HttpClient httpClient) {
         // 使用HttpClient作为底层连接工厂
@@ -207,74 +197,6 @@ public class FeignConfig {
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         initJackson(restTemplate);
         restTemplate.setInterceptors(Collections.singletonList(new LoggingRequestInterceptor()));
-
-        return restTemplate;
-    }*/
-
-    /**
-     * 配置HTTP连接池管理器（HttpClient 5.x 版本）
-     */
-    @Bean
-    public PoolingHttpClientConnectionManager connectionManager() {
-        // 从配置获取参数（保持原有逻辑）
-        Integer maxTotal = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-pool-max-total", Integer.class, 200);
-        Integer perRoute = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-default-max-per-route", Integer.class, 160);
-        Integer validateAfterInactivity = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-validate-after-inactivity", Integer.class, 2000);
-
-        // 连接配置（如超时、缓冲区等）
-        ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(3000)) // 连接超时（与RequestConfig的连接超时区别：此处是底层TCP连接超时）
-                .setSocketTimeout(Timeout.ofMilliseconds(10000)) //  socket超时（数据传输超时）
-                .setValidateAfterInactivity(TimeValue.of(validateAfterInactivity, TimeUnit.MILLISECONDS))
-                .build();
-
-        // 构建连接池管理器（HttpClient 5.x 用 PoolingHttpClientConnectionManagerBuilder）
-        return PoolingHttpClientConnectionManagerBuilder.create()
-                .setMaxConnTotal(maxTotal) // 连接池最大连接数
-                .setMaxConnPerRoute(perRoute) // 每个路由默认最大连接数
-                .setDefaultConnectionConfig(connectionConfig) // 默认连接配置
-                //.setValidateAfterInactivity(TimeValue.of(validateAfterInactivity, TimeUnit.MILLISECONDS)) // 空闲连接校验时间
-                .build();
-    }
-
-    /**
-     * 配置HttpClient（HttpClient 5.x 版本）
-     */
-    @Bean
-    public HttpClient httpClient(PoolingHttpClientConnectionManager connectionManager) {
-        // 从配置获取参数（保持原有逻辑）
-        Integer connectTimeOut = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-connect-timeout", Integer.class, 3000);
-        Integer connectionRequestTimeOut = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-connection-request-timeout", Integer.class, 5000);
-        Integer socketTimeout = Easy4j.getProperty(SysConstant.PARAM_PREFIX + ".rest-http-socket-timeout", Integer.class, 10000);
-
-        // 请求配置（HttpClient 5.x 用 RequestConfig 替代旧的 RequestConfig）
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(connectTimeOut)) // 建立连接超时
-                .setConnectionRequestTimeout(Timeout.ofMilliseconds(connectionRequestTimeOut)) // 从连接池获取连接的等待超时
-                .setResponseTimeout(Timeout.ofMilliseconds(socketTimeout)) // 响应超时（替代旧的 socketTimeout）
-                .build();
-
-        // 构建HttpClient（HttpClient 5.x 用 HttpClientBuilder）
-        return HttpClientBuilder.create()
-                .setConnectionManager(connectionManager) // 关联连接池
-                .setDefaultRequestConfig(requestConfig) // 设置默认请求配置
-                .evictExpiredConnections() // 自动清理过期连接
-                .evictIdleConnections(TimeValue.of(30, TimeUnit.SECONDS)) // 自动清理空闲超过30秒的连接（新增优化）
-                .build();
-    }
-
-    /**
-     * 创建带有连接池的RestTemplate（适配HttpClient 5.x）
-     */
-    @Bean
-    public RestTemplate restTemplate(HttpClient httpClient) {
-        // 注意：Spring 5+ 已支持 HttpClient 5.x，需使用对应的 HttpComponentsClientHttpRequestFactory
-        // 确保Spring版本 >= 5.3（Spring Boot 3.x 基础Spring版本为6.x，完全兼容）
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        initJackson(restTemplate); // 保持原有Jackson配置
-        restTemplate.setInterceptors(Collections.singletonList(new LoggingRequestInterceptor())); // 保持原有拦截器
 
         return restTemplate;
     }

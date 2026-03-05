@@ -129,7 +129,8 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.error("catch exception ", cause);
-        if (cause instanceof RpcException ex2) {
+        if (cause instanceof RpcException ) {
+            RpcException ex2 = (RpcException) cause;
             if (ex2.getCause() != null) cause = ex2.getCause();
             send(ctx, RpcResponse.error(ex2.getMsgId(), RpcResponseStatus.DECODE_ERROR, cause.getMessage()), FrameType.RESPONSE);
         }

@@ -7,7 +7,7 @@ import easy4j.infra.rpc.serializable.SerializerSecurityRegistry;
 
 public class KryoSerializerFactory {
     private static final KryoSerializerFactory FACTORY = new KryoSerializerFactory();
-    private final Pool<Kryo> pool = new Pool<>(true, true, IntegratedFactory.getConfig().getKryoPoolMaxNum()) {
+    private final Pool<Kryo> pool = new Pool<Kryo>(true, true, IntegratedFactory.getConfig().getKryoPoolMaxNum()) {
         protected Kryo create() {
             Kryo kryo = new Kryo();
             // 启用对象引用跟踪

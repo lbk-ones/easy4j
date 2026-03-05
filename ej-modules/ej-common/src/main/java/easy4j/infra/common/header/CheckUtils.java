@@ -26,8 +26,6 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Supplier;
@@ -195,7 +193,7 @@ public class CheckUtils {
         return current;
     }
 
-    public static void checkParam(Object t, @NotNull String fieldName) {
+    public static void checkParam(Object t, String fieldName) {
         checkByPathWith(t, fieldName, fieldName);
     }
 
@@ -354,6 +352,12 @@ public class CheckUtils {
         }
     }
 
+
+    public static void checkRuntimeNotNull(Object obj, String name) {
+        if (ObjectUtil.isEmpty(obj)) {
+            throw new RuntimeException("the parameter "+name+" is not null!");
+        }
+    }
     public static <T> T convertRpcRes(EasyResult<Object> securitySessionEasyResult, Class<T> securitySessionClass) {
         Object data = securitySessionEasyResult.getData();
         if (ObjectUtil.isNotEmpty(data)) {

@@ -14,7 +14,7 @@
  */
 package easy4j.infra.context.api.idempotent;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Easy4jIdempotentStorage

@@ -33,7 +33,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 import java.util.Date;
 import java.util.List;

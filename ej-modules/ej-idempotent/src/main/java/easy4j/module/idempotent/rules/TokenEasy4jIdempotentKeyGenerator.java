@@ -18,7 +18,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentKeyGenerator;
 import easy4j.infra.common.utils.SysConstant;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * FormEasy4jIdempotentKeyGenerator

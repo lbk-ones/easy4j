@@ -18,7 +18,7 @@ import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 
-import jakarta.annotation.Nullable;
+import javax.annotation.Nullable;
 
 import java.sql.Connection;
 import java.util.List;

@@ -15,7 +15,7 @@ package easy4j.module.jaeger.opentracing.web;
 
 import io.opentracing.propagation.TextMap;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.*;
 

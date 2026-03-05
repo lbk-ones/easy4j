@@ -6,8 +6,7 @@ import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.session.SessionStrategy;
-
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * BearerToken认证方式 token是未知类型的TOKEn 这里不做具体鉴权实现由外部传入

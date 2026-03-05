@@ -37,7 +37,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 
 import java.util.ArrayList;
 import java.util.HashSet;

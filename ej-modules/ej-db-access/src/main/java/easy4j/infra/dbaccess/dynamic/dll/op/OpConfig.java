@@ -71,15 +71,15 @@ public class OpConfig {
     private boolean autoExeDDL;
 
 
-    public static Map<String,Wrapper> dbVsWrapper = Maps.newHashMap();
+    public static Map<String, Wrapper> dbVsWrapper = Maps.newHashMap();
 
     static {
-        dbVsWrapper.put(DbType.MYSQL.getDb(), new Wrapper('`','`'));
-        dbVsWrapper.put(DbType.ORACLE.getDb(), new Wrapper('"','"'));
-        dbVsWrapper.put(DbType.H2.getDb(), new Wrapper('"','"'));
-        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new Wrapper('"','"'));
-        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new Wrapper('[',']'));
-        dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"','"'));
+        dbVsWrapper.put(DbType.MYSQL.getDb(), new Wrapper('`', '`'));
+        dbVsWrapper.put(DbType.ORACLE.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.H2.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.POSTGRE_SQL.getDb(), new Wrapper('"', '"'));
+        dbVsWrapper.put(DbType.SQL_SERVER.getDb(), new Wrapper('[', ']'));
+        dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"', '"'));
         dbVsWrapper = Collections.unmodifiableMap(dbVsWrapper);
     }
 
@@ -144,9 +144,9 @@ public class OpConfig {
      */
     public String escapeCn(String name, Connection connection, boolean forceEscape) {
         DialectV2 dialectV2 = DialectFactory.get(connection);
-        if(forceEscape){
+        if (forceEscape) {
             return dialectV2.forceEscape(name);
-        }else{
+        } else {
             return dialectV2.escape(name);
         }
 //        String databaseType = null;
@@ -230,15 +230,15 @@ public class OpConfig {
     @Deprecated
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName, String dbType) {
         if (StrUtil.equalsIgnoreCase(DbType.MYSQL.getDb(), dbType)) {
-            return Optional.ofNullable(MySQLFieldType.getFromDataType(typeName)).map(MySQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+            return Optional.ofNullable(MySQLFieldType.getFromDataType(typeName)).map(MySQLFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
         } else if (StrUtil.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb(), dbType)) {
-            return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+            return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
         } else if (StrUtil.equalsIgnoreCase(DbType.ORACLE.getDb(), dbType)) {
-            return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+            return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
         } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
-            return Optional.ofNullable(H2SqlFieldType.getFromDataType(typeName)).map(H2SqlFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
-        }else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
-            return Optional.ofNullable(SqlServerFieldType.getFromDataType(typeName)).map(SqlServerFieldType::getJavaTypes).map(e -> ListTs.get(e, 0)).orElse(null);
+            return Optional.ofNullable(H2SqlFieldType.getFromDataType(typeName)).map(H2SqlFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
+        } else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
+            return Optional.ofNullable(SqlServerFieldType.getFromDataType(typeName)).map(SqlServerFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
         }
         return null;
     }
@@ -318,7 +318,7 @@ public class OpConfig {
         } else if (StrUtil.equalsIgnoreCase(DbType.H2.getDb(), dbType)) {
             H2SqlFieldType fromDataType1 = H2SqlFieldType.getFromDataType(typeName);
             return fromDataType1 == H2SqlFieldType.CLOB || fromDataType1 == H2SqlFieldType.TEXT;
-        }else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
+        } else if (StrUtil.equalsIgnoreCase(DbType.SQL_SERVER.getDb(), dbType)) {
             SqlServerFieldType fromDataType1 = SqlServerFieldType.getFromDataType(typeName);
             return fromDataType1 == SqlServerFieldType.VARCHAR_MAX || fromDataType1 == SqlServerFieldType.NVARCHAR_MAX || fromDataType1 == SqlServerFieldType.TEXT || fromDataType1 == SqlServerFieldType.NTEXT;
         }

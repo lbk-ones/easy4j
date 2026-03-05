@@ -36,11 +36,11 @@ import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.List;
 

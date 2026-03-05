@@ -8,7 +8,7 @@ import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import jakarta.persistence.Transient;
+import javax.persistence.Transient;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

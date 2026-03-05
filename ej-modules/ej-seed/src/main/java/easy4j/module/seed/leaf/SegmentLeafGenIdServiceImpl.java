@@ -22,7 +22,7 @@ import easy4j.infra.context.api.seed.LeafSeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 import java.util.*;
 import java.util.concurrent.*;

@@ -12,9 +12,8 @@ import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
+import javax.annotation.Resource;
 import org.springframework.beans.factory.InitializingBean;
-
-import jakarta.annotation.Resource;
 
 /**
  * 只从远程RPC服务中查询用户信息

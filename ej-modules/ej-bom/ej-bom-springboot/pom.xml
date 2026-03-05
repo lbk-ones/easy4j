@@ -45,13 +45,13 @@
                 <scope>import</scope>
             </dependency>
             <!--mybatis-plus-->
-            <dependency>
+            <!--<dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-bom</artifactId>
                 <version>${mplus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
+            </dependency>-->
             <!--dubbo-->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
