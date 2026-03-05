@@ -11,7 +11,7 @@ import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.List;

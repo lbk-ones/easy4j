@@ -1,7 +1,7 @@
 package template.service.order.service.tcc;
 
 import easy4j.infra.common.header.EasyResult;
-import io.seata.rm.tcc.api.BusinessActionContext;
+import org.apache.seata.rm.tcc.api.BusinessActionContext;
 import template.service.order.domains.AdviceOrder;
 
 

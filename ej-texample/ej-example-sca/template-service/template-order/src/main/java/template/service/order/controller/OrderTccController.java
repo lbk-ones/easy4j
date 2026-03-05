@@ -5,8 +5,8 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.seed.CommonKey;
-import io.seata.rm.tcc.api.BusinessActionContext;
-import io.seata.spring.annotation.GlobalTransactional;
+import org.apache.seata.rm.tcc.api.BusinessActionContext;
+import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,7 @@ import template.service.order.service.AdviceOrderService;
 import template.service.order.service.tcc.AccountTccAction;
 import template.service.order.service.tcc.StorageTccAction;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * OrderTccController

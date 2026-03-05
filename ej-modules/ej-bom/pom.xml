@@ -35,8 +35,6 @@
         <sentinel.version>1.8.7</sentinel.version> <!-- 支持Spring Boot 3.x -->
         <org.mapstruct.version>1.6.0.Beta1</org.mapstruct.version> <!-- 支持Jakarta -->
         <log4j.version>2.23.1</log4j.version> <!-- 安全更新 -->
-        <mplus.version>3.5.14</mplus.version> <!-- MyBatis-Plus支持Spring Boot 3 -->
-        <mplus.gen.version>3.5.14</mplus.gen.version> <!-- 对应MP版本 -->
         <mybatis-plus-dynamicdatasource.version>4.3.1</mybatis-plus-dynamicdatasource.version>
         <hutool.version>5.8.26</hutool.version> <!-- 兼容Java 17 -->
         <alibaba.ttl.version>2.14.1</alibaba.ttl.version> <!-- 最新稳定版 -->
@@ -61,6 +59,7 @@
         <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
         <commons-io.version>2.15.0</commons-io.version>
         <jjwt.version>0.11.5</jjwt.version>
+        <mybatis-plus.version>3.5.4</mybatis-plus.version>
     </properties>
 
     <dependencyManagement>
@@ -168,7 +167,12 @@
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-generator</artifactId>
-                <version>${mplus.gen.version}</version>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.redisson</groupId>
@@ -193,7 +197,7 @@
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mplus.version}</version>
+                <version>${mybatis-plus.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

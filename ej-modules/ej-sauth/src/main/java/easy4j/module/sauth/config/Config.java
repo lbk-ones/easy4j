@@ -46,7 +46,7 @@ import easy4j.module.sauth.enums.SecuritySessionType;
 import easy4j.module.sauth.session.DbSessionStrategy;
 import easy4j.module.sauth.session.RedisSessionStrategy;
 import easy4j.module.sauth.session.SessionStrategy;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;

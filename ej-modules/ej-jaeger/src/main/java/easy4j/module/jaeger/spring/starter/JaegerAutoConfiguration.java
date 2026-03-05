@@ -107,9 +107,13 @@ public class JaegerAutoConfiguration {
                                     JaegerConfigurationProperties.RemoteReporter remoteReporter,
                                     JaegerConfigurationProperties.UdpSender udpSenderProperties) {
         io.jaegertracing.thrift.internal.senders.UdpSender udpSender = null;
-        udpSender = new io.jaegertracing.thrift.internal.senders.UdpSender(
-                udpSenderProperties.getHost(), udpSenderProperties.getPort(),
-                udpSenderProperties.getMaxPacketSize());
+        try {
+            udpSender = new io.jaegertracing.thrift.internal.senders.UdpSender(
+                    udpSenderProperties.getHost(), udpSenderProperties.getPort(),
+                    udpSenderProperties.getMaxPacketSize());
+        } catch (TTransportException e) {
+            throw new RuntimeException(e);
+        }
 
         return createReporter(metrics, remoteReporter, udpSender);
     }
@@ -129,8 +133,13 @@ public class JaegerAutoConfiguration {
             builder.withAuth(httpSenderProperties.getAuthToken());
         }
 
-        return createReporter(metrics, remoteReporter, builder.build());
+        try {
+            return createReporter(metrics, remoteReporter, builder.build());
+        } catch (TTransportException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     private Reporter createReporter(Metrics metrics,
                                     JaegerConfigurationProperties.RemoteReporter remoteReporter, Sender udpSender) {

@@ -47,7 +47,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 
 import javax.sql.DataSource;
 

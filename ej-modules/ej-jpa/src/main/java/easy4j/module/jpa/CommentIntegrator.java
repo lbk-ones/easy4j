@@ -17,6 +17,7 @@ package easy4j.module.jpa;
 import org.hibernate.boot.Metadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
+import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -91,9 +93,10 @@ public class CommentIntegrator implements Integrator {
 
             // Process fields with Comment annotation.
             //noinspection unchecked
-            Iterator<Property> iterator = persistentClass.getPropertyIterator();
-            while (iterator.hasNext()) {
-                fieldComment(persistentClass, iterator.next().getName());
+            List<Property> declaredProperties = persistentClass.getDeclaredProperties();
+            for (Property declaredProperty : declaredProperties) {
+                String name = declaredProperty.getName();
+                fieldComment(persistentClass, name);
             }
 
         }
@@ -121,10 +124,8 @@ public class CommentIntegrator implements Integrator {
         if(Objects.nonNull(field)){
             if (field.isAnnotationPresent(Comment.class)) {
                 String comment = field.getAnnotation(Comment.class).value();
-                String sqlColumnName= persistentClass.getProperty(columnName).getValue().getColumnIterator().next().getText();
-                Iterator<org.hibernate.mapping.Column> columnIterator = persistentClass.getTable().getColumnIterator();
-                while (columnIterator.hasNext()) {
-                    org.hibernate.mapping.Column column = columnIterator.next();
+                String sqlColumnName = persistentClass.getProperty(columnName).getValue().getColumns().get(0).getText();
+                for (Column column : persistentClass.getTable().getColumns()) {
                     if (sqlColumnName.equalsIgnoreCase(column.getName())) {
                         column.setComment(comment);
                         break;
