@@ -6,6 +6,7 @@ import easy4j.infra.base.properties.CodeGenProperties;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SysLog;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;

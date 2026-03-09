@@ -464,7 +464,7 @@ public class Easy4jServlet extends HttpServlet {
                     } else {
                         Object o = null;
                         try {
-                            o = BeanUtil.mapToBean(formDataMap, classFromType, true, CopyOptions.create().ignoreNullValue().ignoreError());
+                            o = BeanUtil.toBean(formDataMap, classFromType, CopyOptions.create().setAutoTransCamelCase(true).ignoreNullValue().ignoreError());
                         } catch (Exception ignored) {
                         }
                         args.add(o);

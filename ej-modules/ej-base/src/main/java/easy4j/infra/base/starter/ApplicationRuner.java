@@ -16,6 +16,8 @@ package easy4j.infra.base.starter;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.properties.CodeGenProperties;
+import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
@@ -60,7 +62,7 @@ public class ApplicationRuner implements InitializingBean, CommandLineRunner, Di
             String h2u = Easy4j.getProperty(SysConstant.DB_USER_NAME);
             String h2p = Easy4j.getProperty(SysConstant.DB_USER_PASSWORD);
             if (StrUtil.equals(h2Enabled, "true")) {
-                logger.info(SysLog.compact("h2 数据库管理地址 http://127.0.0.1:" + port + h2Path + "用户名:" + h2u + ";密码:" + h2p + ";数据库地址:" + dbUrl));
+                logger.info(SysLog.compact("h2 数据库管理地址 http://127.0.0.1:" + port + h2Path + " 用户名:" + h2u + ";密码:" + h2p + ";数据库地址:" + dbUrl));
             }
 
         } catch (Exception ignored) {
@@ -72,6 +74,18 @@ public class ApplicationRuner implements InitializingBean, CommandLineRunner, Di
 
             if (StringPool.TRUE.equals(Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_ENABLE))) {
                 logger.info(SysLog.compact("接口文档用户名:" + Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_USERNAME) + ";密码:" + Easy4j.getProperty(SysConstant.KNIFE4J_BASIC_PASSWORD)));
+            }
+        }
+
+        logger.info(SysLog.compact("如果需要mybatis关系型数据库代码生成，请在启动类添加注解@EnableCodeGen"));
+        logger.info(SysLog.compact("代码生成页面地址 http://127.0.0.1:" + Easy4j.getProperty(SysConstant.SERVER_PORT_STR)+"/e4j/cg/index.html"));
+        EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
+        CodeGenProperties codeGen = ejSysProperties.getCodeGen();
+        if (codeGen.isEnableBasicAuth()) {
+            String username = codeGen.getUsername();
+            String password = codeGen.getPassword();
+            if(StrUtil.isAllNotBlank(username,password)){
+                logger.info(SysLog.compact("代码生成页面用户名:" + username + ";密码:" + password));
             }
         }
 

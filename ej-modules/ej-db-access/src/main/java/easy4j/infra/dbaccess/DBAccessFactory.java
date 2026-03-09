@@ -112,9 +112,9 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                     DDlHelper.execDDL(connection, null, ListTs.asList(s1), true);
 //                    ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
 //                    jdbcDbAccess.runScript(classPathResource);
-                    log.info(SysLog.compact("the " + s1 + ".sql db initialization succeeded"));
+                    log.info(SysLog.compact("the " + s1 + " db initialization succeeded"));
                 } catch (Exception e) {
-                    log.info(SysLog.compact("the " + s1 + ".sql db has been initialized"));
+                    log.info(SysLog.compact("the " + s1 + " db has been initialized"));
                 } finally {
                     JdbcHelper.close(connection);
                     INIT_DB_FILE_TYPE.add(s);
