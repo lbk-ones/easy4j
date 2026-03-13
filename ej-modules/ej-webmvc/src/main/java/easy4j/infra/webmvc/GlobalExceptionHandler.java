@@ -17,6 +17,7 @@ package easy4j.infra.webmvc;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.Easy4JStarterNd;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -69,8 +71,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
+    @ResponseStatus
     public EasyResult<Object> defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        log.error("不可预期的异常：" + e.getMessage(), e);
+        String requestURI = req.getRequestURI();
+        if ("/.well-known/appspecific/com.chrome.devtools.json".equals(requestURI)) {
+            return EasyResult.ok("ok");
+        }
+        log.error("不可预期的异常：【" + requestURI + "】" + e.getMessage(), e);
         if (e instanceof EasyException) {
             return EasyResult.rpcErrorInfo(e);
         } else {
@@ -79,8 +86,10 @@ public class GlobalExceptionHandler {
                 Easy4jDbLog easy4jDbLog = easy4jContext.get(Easy4jDbLog.class);
                 easy4jDbLog.setException(e);
             } catch (Exception e2) {
-                Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
-                e.printStackTrace();
+                if (Easy4j.mainClass != null && !Easy4j.mainClass.isAnnotationPresent(Easy4JStarterNd.class)) {
+                    Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
+                    e.printStackTrace();
+                }
             }
             return EasyResult.error(e);
         }

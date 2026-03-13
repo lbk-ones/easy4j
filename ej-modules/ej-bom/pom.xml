@@ -47,7 +47,7 @@
         <rxjava.version>3.1.8</rxjava.version> <!-- 稳定版 -->
         <druid.version>1.2.27</druid.version> <!-- 支持Spring Boot 3 -->
         <disruptor.version>3.4.4</disruptor.version> <!-- 保持不变（兼容） -->
-        <spring-boot-admin.version>3.2.3</spring-boot-admin.version> <!-- 适配Spring Boot 3 -->
+        <spring-boot-admin.version>3.5.7</spring-boot-admin.version> <!-- 适配Spring Boot 3 -->
         <jaeger.client.version>1.8.1</jaeger.client.version> <!-- 最新稳定版 -->
         <openfeign.fastjson.version>2.0.60</openfeign.fastjson.version> <!-- 适配Feign 3.x -->
         <redissioin.version>3.52.0</redissioin.version> <!-- 修正拼写（redisson）并升级 -->

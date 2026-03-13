@@ -58,7 +58,7 @@ import java.lang.annotation.*;
         )}
 )
 /**
- * Easy4JStarterNd
+ * Easy4JStarterNd (无数据源的服务最好使用这个注解)
  *
  * @author bokun.li
  * @date 2025-05
