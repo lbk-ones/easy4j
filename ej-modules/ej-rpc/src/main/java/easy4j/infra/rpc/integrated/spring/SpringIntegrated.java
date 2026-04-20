@@ -279,19 +279,26 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                 }
                 if (field.isAnnotationPresent(RpcProxy.class)) {
                     RpcProxy annotation = field.getAnnotation(RpcProxy.class);
-                    String value = annotation.value();
+                    String value = springContext.getEnvironment().resolvePlaceholders(annotation.value());
+                    String url = springContext.getEnvironment().resolvePlaceholders(annotation.url());
                     Class<?> type = field.getType();
                     if (!type.isInterface()) {
                         throw new IllegalArgumentException("The field type of RpcProxy annotation must be a interface!");
                     }
+                    // local inject
+                    try{
+                        Object localBean = springContext.getBean(type);
+                        ReflectUtil.setFieldValue(bean, field, localBean);
+                        return bean;
+                    }catch (BeansException ignored){
+                    }
                     if (StrUtil.isNotBlank(value)) {
-                        value = springContext.getEnvironment().resolvePlaceholders(value);
                         serverName.add(value);
                         FilterAttributes filterAttributes = new FilterAttributes()
                                 .setServiceName(value)
                                 .setBroadcast(annotation.broadcast())
                                 .setBroadcastAsync(annotation.broadcastAsync())
-                                .setUrl(annotation.url())
+                                .setUrl(url)
                                 .setInvokeRetryMaxCount(annotation.invokeRetryMaxCount())
                                 .setTimeOut(annotation.timeOut());
                         Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
