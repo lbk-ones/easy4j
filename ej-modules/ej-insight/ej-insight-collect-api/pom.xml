@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.lbk-ones</groupId>
+        <artifactId>ej-insight</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>ej-insight-collect-api</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ej-insight-collect-api</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-insight-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+</project>

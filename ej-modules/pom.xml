@@ -50,6 +50,7 @@
         <module>ej-elasticsearch</module>
         <module>ej-rpc</module>
         <module>ej-bom</module>
+        <module>ej-insight</module>
     </modules>
     <name>ej-modules</name>
     <url>https://github.com/lbk-ones/easy4j</url>
