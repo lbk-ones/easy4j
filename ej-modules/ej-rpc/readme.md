@@ -20,6 +20,8 @@
 - 直连调用（√）
 - spring代理调用（√）
 
+> ps: 直连地址配置方式 可以直接在 @RpcProxy注解的url属性配置，也可以直接在配置文件中配置 easy4j.rpc.reference.服务名称.url=127.0.0.1:9898 不用带协议schema
+
 ### 服务治理
 
 - 热更新以下服务策略（√）
@@ -45,3 +47,58 @@
 ### 监控大盘
 
 提供独立的监控页面
+
+### Getting start (开始使用)
+
+#### 提供者
+
+```java
+
+import easy4j.infra.rpc.integrated.spring.annotations.EnableEasy4jRpc;
+import easy4j.infra.rpc.integrated.spring.annotations.RpcService;
+import org.springframework.boot.SpringApplication;
+import easy4j.infra.base.starter.Easy4JStarter;
+
+@Easy4JStarter
+@EnableEasy4jRpc
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+@RpcService("服务名称（可选如果写了值那么客户端@RpcProxy不用写服务名称）")
+public interface IApiService {
+    String hello(String name);
+}
+// RpcService 注解在接口和实现类添加都生效，实现类的优先级高于接口
+// 如果他们的服务名称和该服务名称不一样那么会单独再注册一个服务到注册中心上去
+// 不管是接口还是实现类添加了 这个类都会注册到springIOC容器里面去
+@RpcService("一个单独的服务名称")
+public class IApiServiceImpl implements IApiService {
+    public String hello(String name){
+        return "hello" + name + "!";
+    }
+}
+```
+#### 消费者
+
+```java
+
+import easy4j.infra.rpc.integrated.spring.annotations.RpcProxy;
+import org.springframework.stereotype.Service;
+
+@Service
+public class Consumer {
+
+    @RpcProxy("指定服务名称，可以不指定，具体看上面服务名称的规则")
+    IApiService iApiService;
+
+    public void hello() {
+        String res = iApiService.hello("bk");
+        System.out.println(res);
+    }
+}
+
+
+```

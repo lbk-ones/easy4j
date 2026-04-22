@@ -52,7 +52,7 @@ public class RpcClientWrapper extends AbstractRpcWrapper {
         RpcRequest rpcRequest1 = rpcContext.getRpcRequest();
         RpcResponse rpcResponse = RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.CLIENT_ERROR);
         // 如果CLIENT的REQUEST_BEFORE阶段出现了异常、那么不会执行调用请求，但是还是要过RESPONSE_BEFORE阶段的Filter逻辑
-        if (exception != null) {
+        if (exception == null) {
             try {
                 if (host == null) {
                     if (!rpcClient.sendRequestBroadCast(rpcRequest1)) {

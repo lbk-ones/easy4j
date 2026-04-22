@@ -56,7 +56,8 @@ public enum RpcResponseStatus {
     SERVICE_NAME_NOT_BE_NULL(false, 508, "ServiceName不能为空", "ServiceName cannot be empty"),
     CLIENT_ERROR(false, 509, "客户端出现未知异常", "Unknown exception occurred on the client side"),
     SERVER_ERROR(false, 510, "服务端出现未知异常", "Unknown exception occurred on the server"),
-    SERVER_HANDLER_NOT_FOUND_ERROR(false, 511, "未找到handler或者出现异常", "Not found handler or handler appear exception!");
+    SERVER_HANDLER_NOT_FOUND_ERROR(false, 511, "未找到handler或者出现异常", "Not found handler or handler appear exception!"),
+    REGISTRY_IS_NONE(false, 512, "注册中心未开启，不能调用注册中心", "The registry is disabled!");
 
     /**
      * 是否成功（true=成功，false=失败）

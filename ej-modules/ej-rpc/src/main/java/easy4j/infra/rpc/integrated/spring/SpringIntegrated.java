@@ -212,7 +212,8 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
      * @param config
      */
     private static void startServer(E4jRpcConfig config) {
-        if (!config.getServer().isDisabled()) {
+        RegisterType registerType = config.getRegisterType();
+        if (!config.getServer().isDisabled() || registerType == RegisterType.NONE) {
             ExecutorService executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory("e4j-rpc-server-main-thread", true));
             executorService.execute(() -> {
                 RpcServer rpcServer = new RpcServer(config);
@@ -272,6 +273,7 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
         String name = aClass.getName();
         if (BeanImport.getBasePackages().stream().anyMatch(name::startsWith)) {
             Field[] fields = ReflectUtil.getFields(aClass);
+            Map<String, E4jRpcConfig.ReferenceUrl> reference = IntegratedFactory.getConfig().getReference();
             for (Field field : fields) {
                 int modifiers = field.getModifiers();
                 if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isNative(modifiers) || Modifier.isTransient(modifiers)) {
@@ -292,7 +294,9 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                         return bean;
                     }catch (BeansException ignored){
                     }
+                    // @RpcProxy 标识了服务名称
                     if (StrUtil.isNotBlank(value)) {
+                        url = compatibleGetUrl(reference, value, url);
                         serverName.add(value);
                         FilterAttributes filterAttributes = new FilterAttributes()
                                 .setServiceName(value)
@@ -304,12 +308,18 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
                         Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
                         ReflectUtil.setFieldValue(bean, field, proxy);
                     } else {
+                        // @RpcProxy 未标识服务名称
                         boolean annotationPresent = type.isAnnotationPresent(RpcService.class);
                         if (annotationPresent) {
                             String sn = type.getAnnotation(RpcService.class).serviceName();
                             if (StrUtil.isNotBlank(sn)) {
+                                url = compatibleGetUrl(reference, sn, url);
                                 FilterAttributes filterAttributes = new FilterAttributes()
                                         .setServiceName(sn)
+                                        .setBroadcast(annotation.broadcast())
+                                        .setBroadcastAsync(annotation.broadcastAsync())
+                                        .setInvokeRetryMaxCount(annotation.invokeRetryMaxCount())
+                                        .setUrl(url)
                                         .setTimeOut(annotation.timeOut());
                                 Object proxy = RpcProxyFactory.getProxy(type, filterAttributes);
                                 ReflectUtil.setFieldValue(bean, field, proxy);
@@ -322,6 +332,15 @@ public class SpringIntegrated implements ApplicationListener<ContextRefreshedEve
             }
         }
         return bean;
+    }
+
+    // 兼容取一下 reference 的 url
+    private static String compatibleGetUrl(Map<String, E4jRpcConfig.ReferenceUrl> reference, String value, String url) {
+        E4jRpcConfig.ReferenceUrl referenceUrl = reference.get(value);
+        if(referenceUrl != null && StrUtil.isNotBlank(referenceUrl.getUrl()) && StrUtil.isBlank(url)){
+            url = referenceUrl.getUrl();
+        }
+        return url;
     }
 
     @Override

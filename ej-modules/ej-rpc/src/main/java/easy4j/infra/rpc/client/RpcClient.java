@@ -20,6 +20,7 @@ import easy4j.infra.rpc.enums.*;
 import easy4j.infra.rpc.exception.RpcException;
 import easy4j.infra.rpc.exception.RpcTimeoutException;
 import easy4j.infra.rpc.heart.NettyHeartbeatHandler;
+import easy4j.infra.rpc.integrated.IntegratedFactory;
 import easy4j.infra.rpc.registry.RegistryFactory;
 import easy4j.infra.rpc.registry.jdbc.ServiceManagement;
 import easy4j.infra.rpc.retry.SendRetryFunction;
@@ -203,6 +204,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
         String serviceName = request.getServiceName();
         if (StrUtil.isBlank(serviceName))
             return RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.SERVICE_NAME_NOT_BE_NULL);
+        if (IntegratedFactory.getConfig().getRegisterType() == RegisterType.NONE)
+            return RpcResponse.error(RpcResponse.ERROR_MSG_ID, RpcResponseStatus.REGISTRY_IS_NONE);
         // 获取当前服务的负载均衡策略
         LbType lbType = ServiceManagement.getCurrent(
                 e -> LbType.of(e.getLbType()),
@@ -376,7 +379,8 @@ public class RpcClient extends NettyBootStrap implements AutoCloseable {
     public boolean sendRequestBroadCast(RpcRequest request) {
         boolean broadCast = request.matchAttachment(CommonConstant.IS_BROAD_CAST, "true");
         boolean broadCastAsync = request.matchAttachment(CommonConstant.IS_BROAD_CAST_ASYNC, "true");
-        if (broadCast) {
+        boolean noRegistry = IntegratedFactory.getConfig().getRegisterType() == RegisterType.NONE;
+        if (broadCast && !noRegistry) {
             Collection<String> children = RegistryFactory.get()
                     .children(RegisterInfoType.NODE.getRegisterPath() + StrPool.SLASH + request.getServiceName());
             for (String child : children) {

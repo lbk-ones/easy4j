@@ -51,7 +51,7 @@ public @interface RpcService {
 
 
     /**
-     * 是否禁用这个服务
+     * 是否禁用这个服务 禁用之后不会往注册中心注册
      *
      * @return
      */
