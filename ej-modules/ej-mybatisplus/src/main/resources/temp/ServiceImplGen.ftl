@@ -74,9 +74,11 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     }
 
     public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list) {
-            return list.stream()
+        List<${entityName}Dto> collect = list.stream()
             .map(MapperStruct.instance::to${entityName}Dto)
             .collect(Collectors.toList());
+
+        return collect;
     }
 
     public List<${entityName}> list${entityName}DtoToDomain(List<${entityName}Dto> list) {

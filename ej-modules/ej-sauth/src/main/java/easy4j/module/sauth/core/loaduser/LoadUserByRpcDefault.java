@@ -10,6 +10,7 @@ import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.core.NacosInvokerApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import jakarta.annotation.Resource;
@@ -34,11 +35,6 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
         return authEnable && !isServer;
     }
 
-    Easy4jNacosInvokerApi easy4jNacosInvokerApi;
-
-    @Resource
-    Easy4jContext easy4jContext;
-
     @Resource
     SecurityContext securityContext;
 
@@ -47,7 +43,6 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        easy4jNacosInvokerApi = easy4jContext.get(Easy4jNacosInvokerApi.class);
 
         // boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
@@ -66,7 +61,7 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
                     .serverName(serverName)
                     .path(LOAD_USER_BY_USER_NAME + SP.SLASH + username)
                     .build();
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             user = CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUser.class);
             securityContext.setUser(username, user);

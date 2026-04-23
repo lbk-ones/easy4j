@@ -20,10 +20,13 @@ import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
+import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
@@ -31,6 +34,7 @@ import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.core.NacosInvokerApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.SecuritySession;
 
@@ -61,32 +65,26 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     private static DBAccess dbAccess;
 
-
-    Easy4jNacosInvokerApi easy4jNacosInvokerApi;
-
-    @Resource
-    Easy4jContext easy4jContext;
-
     @Resource
     SecurityContext securityContext;
 
     boolean isClient;
 
     String serverName;
+    boolean sAuthEnable;
+    boolean isServer;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class), true, true);
-        easy4jNacosInvokerApi = easy4jContext.get(Easy4jNacosInvokerApi.class);
-
-        boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
-        boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
-        if (!isServer && property) {
+        sAuthEnable = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
+        isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
+        if (!isServer && sAuthEnable) {
             serverName = Config.AUTH_SERVER_NAME;
             isClient = true;
         }
         // server run session clear thread
-        if (isServer && property) {
+        if (isServer && sAuthEnable) {
             scheduleClear();
         }
     }
@@ -115,6 +113,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public SecuritySession getSession(String token) {
         if (isClient) {
+            if(!sAuthEnable){
+                log.error(SysLog.compact("auth is not enable!"));
+                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+            }
             // cache
             ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
             if (session == null) {
@@ -125,7 +127,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                         .path(GET_SESSION + SP.SLASH + token)
                         .build();
 
-                EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+                EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
                 CheckUtils.checkRpcRes(securitySessionEasyResult);
                 session = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
                 securityContext.setSessionByToken(token, session);
@@ -142,6 +144,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public SecuritySession saveSession(SecuritySession securitySession) {
         if (isClient) {
+            if(!sAuthEnable){
+                log.error(SysLog.compact("auth is not enable!"));
+                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+            }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
                     .serverName(serverName)
@@ -150,7 +156,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.post(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             SecuritySession securitySession1 = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
             securityContext.setSession(securitySession1);
@@ -173,6 +179,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public void deleteSession(String token) {
         if (isClient) {
+            if(!sAuthEnable){
+                log.error(SysLog.compact("auth is not enable!"));
+                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+            }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
                     .serverName(serverName)
@@ -180,7 +190,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.delete(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().delete(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             securityContext.removeSessionByToken(token);
             ISecurityEasy4jSession session = securityContext.getSession();
@@ -199,6 +209,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
 
         if (isClient) {
+            if(!sAuthEnable){
+                log.error(SysLog.compact("auth is not enable!"));
+                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+            }
             ISecurityEasy4jSession o = securityContext.getSession();
             if (o == null || !StrUtil.equals(o.getUserName(), userName)) {
                 NacosInvokeDto build = NacosInvokeDto.builder()
@@ -207,7 +221,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                         .path(GET_SESSION_BY_USER_NAME + SP.SLASH + userName)
                         .build();
 
-                EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+                EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
                 CheckUtils.checkRpcRes(securitySessionEasyResult);
                 o = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
                 if (o != null) {
@@ -227,13 +241,17 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Transactional(rollbackFor = Exception.class)
     public SecuritySession refreshSession(String token, Integer expireTime, TimeUnit timeUnit) {
         if (isClient) {
+            if(!sAuthEnable){
+                log.error(SysLog.compact("auth is not enable!"));
+                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+            }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
                     .serverName(serverName)
                     .path(REFRESH_SESSION + SP.SLASH + token)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             SecuritySession securitySession = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
             if (null != securitySession) {

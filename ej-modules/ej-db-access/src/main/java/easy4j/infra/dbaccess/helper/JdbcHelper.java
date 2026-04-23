@@ -18,6 +18,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.dialect.*;
 import easy4j.infra.dbaccess.exception.DbAccessException;
 import org.springframework.dao.DataAccessException;
@@ -28,6 +29,7 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import static cn.hutool.core.lang.Validator.isEmpty;
@@ -201,7 +203,14 @@ public abstract class JdbcHelper {
         } else if (Clob.class.equals(requiredType)) {
             value = rs.getClob(index);
         } else {
-            value = getResultSetValue(rs, index);
+            if(Map.class.isAssignableFrom(requiredType)){
+                String string = rs.getString(index);
+                try{
+                    value = JacksonUtil.toMap(string, String.class, Object.class);
+                }catch (Exception ignored){
+                }
+            }
+            if(value == null) value = getResultSetValue(rs, index);
         }
 
         if (wasNullCheck && rs.wasNull()) {

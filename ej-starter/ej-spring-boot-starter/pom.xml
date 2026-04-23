@@ -151,6 +151,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-sauth</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
     </dependencies>
 
 

@@ -30,6 +30,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -197,7 +198,7 @@ public class SecuritySession implements ISecurityEasy4jSession {
         this.userId = reqUser.getUserId();
         this.sessionId = CommonKey.gennerLong();
         this.expireTimeSeconds = expireTimeMilli;
-        this.extMap = reqUser.getExtMap();
+        this.extMap = reqUser.getExtMap() == null ? new HashMap<>() : reqUser.getExtMap();
         this.deptCode = reqUser.getDeptCode();
         this.deptName = reqUser.getDeptName();
         this.deviceInfo = reqUser.getDeviceInfo();

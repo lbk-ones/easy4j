@@ -11,6 +11,7 @@ import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
+import easy4j.module.sauth.core.NacosInvokerApi;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,22 +20,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc, InitializingBean {
+public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc {
 
     public static final String LOAD_URL = "/sauth/loadSecurityAuthoritiesByUsername";
-
-    Easy4jNacosInvokerApi easy4jNacosInvokerApi;
-
-    @Resource
-    Easy4jContext easy4jContext;
 
     @Resource
     SecurityContext securityContext;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        easy4jNacosInvokerApi = easy4jContext.get(Easy4jNacosInvokerApi.class);
-    }
 
     @Override
     public Set<SecurityAuthority> loadSecurityAuthoritiesByUsername(String userName) {
@@ -45,7 +37,7 @@ public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc, Initializi
                     .serverName(Config.AUTH_SERVER_NAME)
                     .path(LOAD_URL + SP.SLASH + userName)
                     .build();
-            EasyResult<Object> securitySessionEasyResult = easy4jNacosInvokerApi.get(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             Object data = securitySessionEasyResult.getData();
             if (ObjectUtil.isNotEmpty(data)) {
