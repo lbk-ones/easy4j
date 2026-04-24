@@ -63,7 +63,7 @@ public interface DialectV2 extends CrudDialect,SchemaMetaDialect {
     /**
      * 根据typeName确定javaclass的类型
      *
-     * @param typeName
+     * @param typeName 类型#字段长度
      * @return
      */
     Class<?> getJavaClassByTypeNameAndDbType(String typeName);

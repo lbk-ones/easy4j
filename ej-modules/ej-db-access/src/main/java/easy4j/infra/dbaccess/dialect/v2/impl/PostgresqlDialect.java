@@ -30,6 +30,7 @@ public class PostgresqlDialect extends AbstractDialectV2 {
 
     @Override
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName) {
+        typeName = ListTs.get(StrUtil.split(typeName, "#"), 0);
         return Optional.ofNullable(PgSQLFieldType.getFromDataType(typeName)).map(PgSQLFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);}
 
     @Override

@@ -29,6 +29,7 @@ public class H2Dialect extends AbstractDialectV2 {
 
     @Override
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName) {
+        typeName = ListTs.get(StrUtil.split(typeName, "#"), 0);
         return Optional.ofNullable(H2SqlFieldType.getFromDataType(typeName)).map(H2SqlFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
     }
 

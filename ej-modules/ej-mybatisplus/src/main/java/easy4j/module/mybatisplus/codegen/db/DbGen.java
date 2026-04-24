@@ -30,7 +30,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static easy4j.module.mybatisplus.codegen.db.FieldNameValidator.validateAndCorrect;
@@ -132,7 +131,7 @@ public class DbGen extends AbstractGen {
                     if (!StrUtil.equals(tableName1, tableName)) {
                         continue;
                     }
-                    Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName());
+                    Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize());
                     if (javaClassByTypeNameAndDbType == null) {
                         System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() + " vs java class is null！");
                         continue;
@@ -173,7 +172,7 @@ public class DbGen extends AbstractGen {
                     eFieldInfo.setDbName(columnName);
                     eFieldInfo.setSameTableField(sameTableField);
                     eFieldInfo.setSameSchema(sameSchema);
-                    eFieldInfo.setDescription(StrUtil.blankToDefault(remarks, columnName));
+                    eFieldInfo.setDescription(StrUtil.blankToDefault(remarks, StrUtil.toCamelCase(columnName)));
                     eFieldInfo.setType(javaClassByTypeNameAndDbType.getSimpleName());
                     eFieldInfo.setHasAutoincrement("YES".equalsIgnoreCase(databaseColumnMetadata.getIsAutoincrement()));
                     String name = JdbcType.forCode(databaseColumnMetadata.getDataType()).name();

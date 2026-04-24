@@ -517,6 +517,10 @@ public class E4jCgController {
                 } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal", "Integer", "Double", "Short", "Long", "Float").contains(fieldType)) {
                     form.setType("number");
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
+                }else if (ListTs.asList("long", "Long").contains(fieldType)) {
+                    // long类型单独处理 浏览器long类型会丢失精度 所以 这里直接转为text        l
+                    form.setType("input");
+                    form.setPlaceholder("请输入" + columnInfo.getTitle());
                 } else if (ListTs.asList("boolean", "Boolean").contains(fieldType)) {
                     form.setType("switch");
                     form.setPlaceholder("请选择" + columnInfo.getTitle());

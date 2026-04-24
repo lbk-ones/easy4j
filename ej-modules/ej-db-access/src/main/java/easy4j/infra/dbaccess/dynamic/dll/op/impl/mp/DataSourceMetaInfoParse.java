@@ -283,7 +283,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setDbType(dbType);
         ddlFieldInfo.setDbVersion(dbVersion);
         DialectV2 dialectV2 = DialectFactory.get(this.opContext.getConnection());
-        ddlFieldInfo.setFieldClass(dialectV2.getJavaClassByTypeNameAndDbType(typeName));
+        ddlFieldInfo.setFieldClass(dialectV2.getJavaClassByTypeNameAndDbType(typeName+"#"+columnSize));
         ddlFieldInfo.setName(columnName);
         ddlFieldInfo.setPrimary(opConfig.isMatchMapIgnoreCase(primaryKeyMetadataMap, columnName));
         ddlFieldInfo.setAutoIncrement("YES".equals(e.getIsAutoincrement()));

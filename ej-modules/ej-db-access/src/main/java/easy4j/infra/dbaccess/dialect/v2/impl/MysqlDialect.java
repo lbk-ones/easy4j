@@ -30,7 +30,17 @@ public class MysqlDialect extends AbstractDialectV2 {
 
     @Override
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName) {
-        return Optional.ofNullable(MySQLFieldType.getFromDataType(typeName)).map(MySQLFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
+        List<String> split = StrUtil.split(typeName, "#");
+        String _typeName = ListTs.get(split, 0);
+        String columnSize = ListTs.get(split, 1);
+        // 这里兼容下 TINYINT(1) 这种情况 这种直接转为 int
+        Class<?> aClass = Optional.ofNullable(MySQLFieldType.getFromDataType(_typeName)).map(MySQLFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
+        if(StrUtil.isNotBlank(columnSize) && "1".equals(columnSize)){
+            if("bit".equalsIgnoreCase(_typeName) && byte[].class == aClass){
+                aClass = int.class;
+            }
+        }
+        return aClass;
     }
 
     @Override

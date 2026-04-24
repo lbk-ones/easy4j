@@ -7,6 +7,7 @@ import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
@@ -64,5 +65,29 @@ class DialectFactoryTest {
         System.out.println(sysLock1.getEffectRows());
         System.out.println(JacksonUtil.toJson(stringObjectMap));
         connection.close();
+    }
+
+
+    @Test
+    void testMysql8DialectV2() throws SQLException {
+        String s = "jdbc:mysql://localhost:3306/ticket?serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true";
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(s);
+        TempDataSource tempDataSource = new TempDataSource(driverClassNameByUrl, s, "ticket", "ticket");
+        try(Connection connection = tempDataSource.getConnection()){
+            DialectV2 dialectV2 = DialectFactory.get(connection);
+            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(connection.getCatalog(),connection.getSchema(), "sys_security_user_role");
+
+            for (DatabaseColumnMetadata databaseColumnMetadata : columnsNoCacheQuiet) {
+                String columnName = databaseColumnMetadata.getColumnName();
+                if ("is_enabled".equals(columnName.toLowerCase())) {
+                    Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName() + "#" + databaseColumnMetadata.getColumnSize());
+                    System.out.println(javaClassByTypeNameAndDbType.getName());
+                }
+            }
+        }
+
+
+
+
     }
 }

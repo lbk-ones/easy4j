@@ -20,7 +20,7 @@ import java.util.Date;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum MySQLFieldType {
     // 整数类型
-    TINYINT("TINYINT", "", "", "1字节有符号整数，范围-128~127；无符号0~255", byte.class, Byte.class),
+    TINYINT("TINYINT", "", "", "1字节有符号整数，范围-128~127；无符号0~255", int.class, Integer.class),
     SMALLINT("SMALLINT", "", "", "2字节有符号整数，范围-32768~32767；无符号0~65535", short.class, Short.class),
     INT("INT", "", "", "4字节有符号整数，范围-2147483648~2147483647；无符号0~4294967295", int.class, Integer.class),
     INT_UNSIGNED("INT UNSIGNED", "", "", "4字节无符号整数，范围0~4294967295", int.class, Integer.class),
@@ -49,10 +49,10 @@ public enum MySQLFieldType {
     LONGBLOB("LONGBLOB", "", "", "大型二进制对象，最大4294967295字节", byte[].class),
 
     // 日期时间类型
-    DATETIME("DATETIME", "", "", "日期时间类型，格式'YYYY-MM-DD HH:MM:SS'，范围1000-01-01 00:00:00~9999-12-31 23:59:59", java.sql.Date.class, Date.class, java.sql.Timestamp.class, LocalDateTime.class),
-    DATE("DATE", "", "", "日期类型，格式'YYYY-MM-DD'，范围1000-01-01~9999-12-31", java.sql.Date.class, LocalDate.class),
-    TIME("TIME", "", "", "时间类型，格式'HH:MM:SS'，范围-838:59:59~838:59:59", java.sql.Time.class, LocalTime.class),
-    TIMESTAMP("TIMESTAMP", "", "", "时间戳，格式同DATETIME，范围1970-01-01 00:00:01 UTC~2038-01-19 03:14:07 UTC，受时区影响", java.sql.Timestamp.class),
+    DATETIME("DATETIME", "", "", "日期时间类型，格式'YYYY-MM-DD HH:MM:SS'，范围1000-01-01 00:00:00~9999-12-31 23:59:59",  Date.class,java.sql.Date.class, java.sql.Timestamp.class, LocalDateTime.class),
+    DATE("DATE", "", "", "日期类型，格式'YYYY-MM-DD'，范围1000-01-01~9999-12-31", Date.class,java.sql.Date.class, LocalDate.class),
+    TIME("TIME", "", "", "时间类型，格式'HH:MM:SS'，范围-838:59:59~838:59:59", LocalTime.class,java.sql.Time.class ),
+    TIMESTAMP("TIMESTAMP", "", "", "时间戳，格式同DATETIME，范围1970-01-01 00:00:01 UTC~2038-01-19 03:14:07 UTC，受时区影响", Date.class,java.sql.Timestamp.class),
     YEAR("YEAR", "", "", "年份类型，格式YYYY，范围1901~2155（MySQL 5+支持4位年份）", int.class, Integer.class),
 
     // 特殊类型
