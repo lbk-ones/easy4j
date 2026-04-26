@@ -209,8 +209,8 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     @Transactional(rollbackFor = Exception.class)
     public List<${entityName}Dto> enableOrDisable${domainName}(${domainName}ControllerReq req) {
         CheckUtils.checkByLambda(req,${domainName}ControllerReq::get${entityName}Dtos);
-        List<${entityName}Dto> dtos = req.get${entityName}Dtos();
-        List<String> collect = dtos.stream().map(this::getIdValueToStr).collect(Collectors.toList());
+        List<String> collect = list${entityName}DtoToDomain(req.get${entityName}Dtos())
+                        .stream().map(this::getIdValueToStr).collect(Collectors.toList());
         List<${entityName}Dto> queryResList = get${domainName}ByIds(collect);
         if (ListTs.isNotEmpty(queryResList)) {
             boolean b = ReflectUtil.hasField(queryResList.get(0).getClass(), IS_ENABLED);

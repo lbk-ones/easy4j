@@ -91,7 +91,7 @@ public class Config extends StandAbstractEasy4jResolve implements CommandLineRun
                 DBAccessFactory.initDb("db/auth-user");
             }
             DBAccessFactory.initDb("db/auth");
-            DBAccessFactory.autoDDL(SecuritySession.class);
+            //DBAccessFactory.autoDDL(SecuritySession.class);
         }
     }
 

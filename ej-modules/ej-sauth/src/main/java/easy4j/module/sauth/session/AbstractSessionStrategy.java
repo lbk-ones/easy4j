@@ -71,7 +71,7 @@ public abstract class AbstractSessionStrategy implements SessionStrategy {
             }
             if (!securitySession.isValid()) {
                 deleteSession(securitySession.getShaToken());
-                log.info("auto delete invalid session [{}] username is {}",securitySession.getShaToken(),securitySession.getUserName());
+                log.info("auto delete invalid session [{}] username is {}",securitySession.getShaToken(),securitySession.getUsername());
                 cacheSessionList.remove(i);
             }
         }

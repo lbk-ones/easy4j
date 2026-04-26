@@ -181,3 +181,7 @@ body {
 .ant-divider-vertical {
     margin: 0 8px;
 }
+
+.setting-list-item:hover{
+    background-color: #fcc !important;
+}

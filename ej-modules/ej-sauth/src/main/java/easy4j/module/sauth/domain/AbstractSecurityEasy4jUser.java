@@ -101,5 +101,10 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "访问码AccessToken")
     private String accessToken;
 
+    @Desc("租户ID")
+    @JdbcIgnore
+    @Schema(description = "租户ID")
+    private Long tenantId;
+
 
 }

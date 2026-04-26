@@ -23,7 +23,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("用户唯一ID")
-    long getUserId();
+    Long getUserId();
 
     /**
      * 用户名（用户CODE）
@@ -64,7 +64,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("获取性别")
-    int getSex();
+    Integer getSex();
 
     /**
      * 设置性别
@@ -72,7 +72,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("设置性别")
-    void setSex(int sex);
+    void setSex(Integer sex);
 
     /**
      * 获取电话号码
@@ -179,21 +179,6 @@ public interface ISecurityEasy4jUser extends Serializable {
     @Desc("部门名称")
     String getDeptName();
 
-    /**
-     * 机构代码
-     *
-     * @return
-     */
-    @Desc("机构代码")
-    String getOrgCode();
-
-    /**
-     * 机构名称
-     *
-     * @return
-     */
-    @Desc("机构名称")
-    String getOrgName();
 
 
     /**
@@ -201,16 +186,16 @@ public interface ISecurityEasy4jUser extends Serializable {
      *
      * @return
      */
-    @Desc("租户ID")
-    String getTenantId();
+    //@Desc("租户ID")
+    //Long getTenantId();
 
     /**
      * 租户名称
      *
      * @return
      */
-    @Desc("租户名称")
-    String getTenantName();
+    //@Desc("租户名称")
+    //String getTenantName();
 
     /**
      * 账户是否过期（true：没过期，false：过期）
@@ -267,7 +252,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("创建时间")
-    Date getCreateDate();
+    Date getCreateTime();
 
     /**
      * 创建时间
@@ -291,7 +276,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      * @return
      */
     @Desc("更新时间")
-    Date getUpdateDate();
+    Date getLastUpdateTime();
 
     /**
      * 更新人代码
@@ -513,5 +498,14 @@ public interface ISecurityEasy4jUser extends Serializable {
      * 输入访问码
      */
     void setAccessToken(String accessToken);
+
+    /**
+     * 租户ID
+     */
+    Long getTenantId();
+    /**
+     * 输入租户ID
+     */
+    void setTenantId(Long tenantId);
 
 }

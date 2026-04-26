@@ -72,6 +72,7 @@
 
 
     <build>
+        <!--跳过静态文件打包-->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -83,6 +84,23 @@
                 </excludes>
             </resource>
         </resources>
+
+        <!--跳过静态文件扫描-->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <!-- 跳过资源目录的文件扫描 -->
+                    <excludes>
+                        <exclude>**/support/**</exclude>
+                        <exclude>**/node_modules/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+
     </build>
 
 </project>

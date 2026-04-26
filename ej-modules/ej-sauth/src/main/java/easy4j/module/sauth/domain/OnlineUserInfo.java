@@ -112,7 +112,7 @@ public class OnlineUserInfo {
                 username = user.getUsername();
             }
             if (StrUtil.isBlank(username) && session != null) {
-                username = session.getUserName();
+                username = session.getUsername();
             }
         }
         return username;

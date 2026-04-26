@@ -14,7 +14,7 @@ public interface ISecurityEasy4jSession {
     /**
      * 会话ID
      */
-    long getSessionId();
+    Long getSessionId();
 
     /**
      * jwt加密之后的短token 索引 IDX_SYS_SECURITY_SESSION_SHA_TOKEN
@@ -24,12 +24,12 @@ public interface ISecurityEasy4jSession {
     /**
      * jwtToken
      */
-    String getJwtToken();
+    String getRealToken();
 
     /**
      * 将SessionJwtToken加密成SessionShaToken的盐值
      */
-    String getJwtSalt();
+    String getShaTokenSalt();
 
     /**
      * ip
@@ -39,47 +39,39 @@ public interface ISecurityEasy4jSession {
     /**
      * 设备信息 （浏览器、手机型号等）
      */
-    String getDeviceInfo();
+    String getDeviceId();
 
     /**
      * 登录时间
      */
-    Date getLoginDateTime();
+    //Date getLoginDateTime();
 
-    /**
-     * 登出时间
-     */
-    Date getLogoutDateTime();
+
 
     /**
      * 会话是否有效  1无效 0有效
      */
-    int getIsInvalid();
+    Integer getIsInvalid();
 
     /**
      * 过期时间（秒为单位）
      */
-    long getExpireTimeSeconds();
+    Long getExpireTimeSeconds();
 
     /**
      * 用户唯一ID
      *
      * @return
      */
-    long getUserId();
+    Long getUserId();
 
     /**
      * 用户CODE
      *
      * @return
      */
-    String getUserName();
+    String getUsername();
 
-
-    /**
-     * 额外信息 存入 长文本 json 字符串
-     */
-    Map<String, Object> getExtMap();
 
     /**
      * 会话是否有效 返回true代表生效

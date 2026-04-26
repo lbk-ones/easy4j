@@ -27,8 +27,6 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.context.Easy4jContext;
-import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
@@ -214,7 +212,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                 throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
             }
             ISecurityEasy4jSession o = securityContext.getSession();
-            if (o == null || !StrUtil.equals(o.getUserName(), userName)) {
+            if (o == null || !StrUtil.equals(o.getUsername(), userName)) {
                 NacosInvokeDto build = NacosInvokeDto.builder()
                         .group(SysConstant.NACOS_AUTH_GROUP)
                         .serverName(serverName)
@@ -232,7 +230,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
         } else {
             Dict dict = Dict.create()
-                    .set(LambdaUtil.getFieldName(SecuritySession::getUserName), userName);
+                    .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
             return dbAccess.selectOneByMap(dict, SecuritySession.class);
         }
     }

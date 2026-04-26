@@ -26,6 +26,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -82,6 +83,20 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
              * 根据映射字段集合返回字段名称对应的属性描述符对象
              */
             PropertyDescriptor pd = this.mappedFields.get(column.replaceAll(" ", "").toLowerCase());
+            // fix: 如果数据库的字段名字为is_开头,对象字段里的字段又以is开头 这种情况
+            boolean fieldIsPrefix = false;
+            if(pd == null && StrUtil.startWithIgnoreCase(column,"is_")){
+                String newName = StrUtil.replaceFirst(
+                        column.replaceAll(" ", "").toLowerCase(),
+                        "is_",
+                        "",
+                        true);
+                pd = this.mappedFields.get(newName);
+                if(pd != null){
+                    // 说明数据库中的字段是 is_ 且对象里面的字段也是is开头
+                    fieldIsPrefix = true;
+                }
+            }
             if (pd != null) {
                 try {
                     /**
@@ -94,7 +109,11 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
                         /**
                          * 使用apache-beanutils设置对象的属性
                          */
-                        BeanUtil.setProperty(mappedObject, pd.getName(), value);
+                        String name = pd.getName();
+                        if(fieldIsPrefix){
+                            name = "is"+StrUtil.upperFirst(name);
+                        }
+                        BeanUtil.setProperty(mappedObject, name, value);
                     } catch (Exception e) {
                         try {
                             // fix json type

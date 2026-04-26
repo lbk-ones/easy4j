@@ -230,14 +230,14 @@ public class DbGen extends AbstractGen {
                 String tableName = entityInfo.getTableName();
                 if (dbGenSetting.isGenEntity()) {
                     String fileName = entityInfo.getSchema() + ".java";
-                    String filePath = filePath_ + File.separator + SRC_MAIN_JAVA + File.separator + packageNamePath + File.separator + getEntityPackageName() + File.separator + fileName;
+                    String filePath = filePath_ + File.separator + SRC_MAIN_JAVA + File.separator + packageNamePath + File.separator + parsePackage(getEntityPackageName()) + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "EntityGen.ftl", entityInfo, isPreview);
                     entityLines.add(s);
                     EntityPInfo.add(fileName, s);
                 }
                 if (dbGenSetting.isGenMapperXml()) {
                     String fileName = entityInfo.getSchema() + "Mapper.xml";
-                    String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + this.getMapperXmlPackageName() + File.separator + dbType + File.separator + fileName;
+                    String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + parsePackage(this.getMapperXmlPackageName()) + File.separator + dbType + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo, isPreview);
                     mapperXmlLines.add(s);
                     MapperXmlPInfo.add(fileName, s);

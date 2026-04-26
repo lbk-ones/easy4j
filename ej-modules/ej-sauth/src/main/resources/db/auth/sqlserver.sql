@@ -1,26 +1,35 @@
-CREATE TABLE SYS_SECURITY_SESSION
+CREATE TABLE sys_security_session
 (
-    SESSION_ID          BIGINT PRIMARY KEY,
-    USER_NAME           NVARCHAR(255),
-    USER_ID             BIGINT,
-    USER_NAME_CN        NVARCHAR(255),
-    USER_NAME_EN        NVARCHAR(255),
-    NICK_NAME           NVARCHAR(255),
-    SHA_TOKEN           NVARCHAR(255),
-    JWT_TOKEN           NVARCHAR(MAX),
-    JWT_SALT            NVARCHAR(255),
-    IP                  NVARCHAR(45),
-    DEVICE_INFO         NVARCHAR(255),
-    LOGIN_DATE_TIME     DATETIME2,
-    LOGOUT_DATE_TIME    DATETIME2,
-    IS_INVALID          INT,
-    EXPIRE_TIME_SECONDS BIGINT,
-    DEPT_CODE           NVARCHAR(255),
-    DEPT_NAME           NVARCHAR(255),
-    EXT_MAP             NVARCHAR(MAX)
+    session_id          BIGINT IDENTITY(1,1) PRIMARY KEY,
+    username            VARCHAR(128) NOT NULL,
+    user_id             BIGINT,
+    username_cn         VARCHAR(128),
+    username_en         VARCHAR(128),
+    nick_name           VARCHAR(128),
+    sha_token           VARCHAR(255) NOT NULL,
+    sha_token_type      TINYINT,
+    sha_token_salt      VARCHAR(128),
+    real_token          VARCHAR(512) NOT NULL,
+    ip                  VARCHAR(64),
+    user_agent          VARCHAR(1024),
+    device_id           VARCHAR(128),
+    is_invalid          TINYINT  DEFAULT 1,
+    expire_time_seconds BIGINT,
+    tenant_id           BIGINT       NOT NULL,
+    create_by           VARCHAR(128),
+    create_name         VARCHAR(128),
+    create_time         DATETIME DEFAULT GETDATE(),
+    update_by           VARCHAR(128),
+    update_name         VARCHAR(128),
+    last_update_time    DATETIME DEFAULT GETDATE()
 );
 
-CREATE INDEX IDX_SYS_SECURITY_SESSION_USER_NAME ON SYS_SECURITY_SESSION (USER_NAME);
-CREATE INDEX IDX_SYS_SECURITY_SESSION_USER_ID ON SYS_SECURITY_SESSION (USER_ID);
-CREATE INDEX IDX_SYS_SECURITY_SESSION_SHA_TOKEN ON SYS_SECURITY_SESSION (SHA_TOKEN);
+EXEC sp_addextendedproperty
+    @name = N'MS_Description', @value = '会话表',
+    @level0type = N'SCHEMA', @level0name = dbo,
+    @level1type = N'TABLE',  @level1name = sys_security_session;
 
+CREATE INDEX idx_username ON sys_security_session (username);
+CREATE INDEX idx_user_id ON sys_security_session (user_id);
+CREATE INDEX idx_create_time ON sys_security_session (create_time);
+CREATE INDEX idx_last_update_time ON sys_security_session (last_update_time);

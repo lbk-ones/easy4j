@@ -89,7 +89,7 @@ public final class LoadUserApi {
             securityUserInfo.setUsername(username);
             String salt = RandomUtil.randomString(4);
             securityUserInfo.setPwdSalt(salt);
-            securityUserInfo.setCreateDate(new Date());
+            securityUserInfo.setCreateTime(new Date());
             securityUserInfo.setUsernameCn(username_CN);
             securityUserInfo.setAccountNonExpired(true);
             securityUserInfo.setAccountNonLocked(true);

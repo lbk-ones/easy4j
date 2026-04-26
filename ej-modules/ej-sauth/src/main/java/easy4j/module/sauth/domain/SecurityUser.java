@@ -14,6 +14,7 @@
  */
 package easy4j.module.sauth.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,7 +41,7 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
      */
     @JdbcColumn(isPrimaryKey = true)
     @Schema(description = "用户主键 长号 (主键)")
-    private long userId;
+    private Long userId;
 
     /**
      * 用户名 短号 唯一索引 IDX_SYS_SECURITY_USER_USERNAME
@@ -56,10 +57,35 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
     private Date birthDate;
 
     /**
-     * 性别
+     * 性别 0未知 1男 2女 9未说明/其他
      */
-    @Schema(description = "性别 1男2女0未知")
-    private int sex;
+    @Schema(description = "性别 0未知 1男 2女 9未说明/其他")
+    @TableField("sex")
+    private Integer sex;
+
+    /**
+     * 头像
+     */
+    @Schema(description = "头像")
+    @TableField("avatar")
+    private String avatar;
+
+    /**
+     * 审批状态
+     */
+    @Schema(description = "审批状态")
+    @TableField("sp_status")
+    private String spStatus;
+
+
+    /**
+     * 用户状态
+     */
+    @Schema(description = "用户状态")
+    @TableField("status")
+    private Integer status;
+    
+
     /**
      * 联系电话号码
      */
@@ -110,6 +136,13 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
     private String deptCode;
 
     /**
+     * 邮箱
+     */
+    @Schema(description = "邮箱")
+    @TableField("email")
+    private String email;
+
+    /**
      * 当前部门名称
      */
     @Schema(description = "当前部门名称")
@@ -138,8 +171,22 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
      * 账户是否可用 true代表可用
      */
     @Schema(description = "账户是否可用 true代表可用")
-    private boolean enabled;
+    private boolean isEnabled;
 
+    /**
+     * 是否删除 1已删除 0未删除
+     */
+    @Schema(description = "是否删除 1已删除 0未删除")
+    @TableField("is_deleted")
+    private Integer isDeleted;
+
+
+    /**
+     * 第三方映射码
+     */
+    @Schema(description = "第三方映射码")
+    @TableField("map_code")
+    private String mapCode;
 
     /**
      * 加密随机数
@@ -152,37 +199,14 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
      * 创建时间
      */
     @Schema(description = "创建时间")
-    private Date createDate;
+    private Date createTime;
 
     /**
      * 更新时间
      */
     @Schema(description = "更新时间")
-    private Date updateDate;
+    private Date lastUpdateTime;
 
-    /**
-     * 机构代码
-     */
-    @Schema(description = "机构代码")
-    private String orgCode;
-
-    /**
-     * 机构名称
-     */
-    @Schema(description = "机构名称")
-    private String orgName;
-
-    /**
-     * 租户ID
-     */
-    @Schema(description = "租户ID")
-    private String tenantId;
-
-    /**
-     * 租户名称
-     */
-    @Schema(description = "租户名称")
-    private String tenantName;
 
     /**
      * 创建人代码
@@ -208,6 +232,8 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
      */
     @Schema(description = "更新人姓名")
     private String updateName;
+
+
 
 
 }

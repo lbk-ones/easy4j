@@ -225,7 +225,7 @@ function App() {
     });
   };
 
-  const frontPageInit = (dtoName, domainName,controllerName) => {
+  const frontPageInit = (dtoName, domainName,controllerName,dbUrl) => {
     let param = {
       parentPackageName: initData.parentPackageName,
       controllerPackageName: initData.controllerPackageName,
@@ -235,6 +235,7 @@ function App() {
       dtoName: dtoName,
       domainName: domainName,
       controllerName: controllerName,
+      dbUrl: dbUrl,
       isEnabledName: form.getFieldValue('isEnabledName'),
       isDeletedName: form.getFieldValue('isDeletedName'),
       isEnabledValid: form.getFieldValue('isEnabledValid'),
@@ -415,6 +416,9 @@ function App() {
                 onClick={() => {
                   scanPackageFunc();
                   setModalVisible(true);
+                  setTimeout(()=>{
+                    modalForm.setFieldValue("dbUrl",initData.url+"@"+initData.username+":"+initData.password)
+                  },20)
                 }}
               >
                 生成前端界面
@@ -1023,7 +1027,7 @@ function App() {
         centered
         onOk={async () => {
           let values = await modalForm.validateFields();
-          frontPageInit(values.dtoName, values.domainName, values.controllerName);
+          frontPageInit(values.dtoName, values.domainName, values.controllerName,values.dbUrl);
         }}
         okText='确认'
         cancelText='取消'
@@ -1083,6 +1087,17 @@ function App() {
                     return <Option key={e}>{e}</Option>;
                   })}
                 </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={24} md={24}>
+              <Form.Item
+                  name='dbUrl'
+                  label='数据库链接'
+                  rules={[{ required: true, message: '请输入数据库链接' }]}
+              >
+                <Input placeholder='数据库链接格式jdbc:mysql://localhost:3306/xxx@用户名:密码' style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>

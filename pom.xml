@@ -83,6 +83,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- 跳过资源目录的文件扫描 -->
+                    <excludes>
+                        <exclude>**/support/**</exclude>
+                        <exclude>**/node_modules/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>

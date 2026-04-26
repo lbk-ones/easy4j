@@ -1,36 +1,42 @@
--- SQL Server 建表脚本
 CREATE TABLE sys_security_user
 (
-    user_id                 BIGINT       NOT NULL PRIMARY KEY,
-    username                VARCHAR(50)  NOT NULL,
+    user_id                 BIGINT IDENTITY (1,1) PRIMARY KEY,
+    username                VARCHAR(128) NOT NULL,
     birth_date              DATE,
-    sex                     INT,
-    phone                   VARCHAR(20),
-    id_card                 VARCHAR(18),
-    address                 VARCHAR(255),
-    password                VARCHAR(100) NOT NULL,
-    username_cn             VARCHAR(100),
-    username_en             VARCHAR(100),
-    nick_name               VARCHAR(100),
-    dept_code               VARCHAR(50),
-    dept_name               VARCHAR(100),
-    account_non_expired     BIT          NOT NULL,
-    account_non_locked      BIT          NOT NULL,
-    credentials_non_expired BIT          NOT NULL,
-    enabled                 BIT          NOT NULL,
-    pwd_salt                VARCHAR(50),
-    create_date             DATETIME,
-    update_date             DATETIME,
-    org_code                VARCHAR(50),
-    org_name                VARCHAR(100),
-    tenant_id               VARCHAR(50),
-    tenant_name             VARCHAR(100),
-    create_by               VARCHAR(50),
-    create_name             VARCHAR(100),
-    update_by               VARCHAR(50),
-    update_name             VARCHAR(100)
+    sex                     TINYINT  DEFAULT 0,
+    phone                   VARCHAR(64),
+    id_card                 VARCHAR(32),
+    email                   VARCHAR(128),
+    password                VARCHAR(255),
+    avatar                  VARCHAR(MAX),
+    address                 VARCHAR(1024),
+    username_cn             VARCHAR(128),
+    username_en             VARCHAR(128),
+    nick_name               VARCHAR(128),
+    account_non_expired     TINYINT  DEFAULT 1,
+    account_non_locked      TINYINT  DEFAULT 1,
+    credentials_non_expired TINYINT  DEFAULT 1,
+    pwd_salt                VARCHAR(128),
+    map_code                VARCHAR(128),
+    sp_status               VARCHAR(64),
+    status                  TINYINT,
+    create_by               VARCHAR(128),
+    create_name             VARCHAR(128),
+    create_time             DATETIME DEFAULT GETDATE(),
+    update_by               VARCHAR(128),
+    update_name             VARCHAR(128),
+    last_update_time        DATETIME DEFAULT GETDATE(),
+    is_enabled              TINYINT  DEFAULT 1,
+    is_deleted              TINYINT  DEFAULT 0
 );
 
--- 唯一索引
-CREATE UNIQUE INDEX idx_sys_security_user_username ON sys_security_user (username);
-    
+EXEC sp_addextendedproperty
+     @name = N'MS_Description', @value = '用户信息表',
+     @level0type = N'SCHEMA', @level0name = dbo,
+     @level1type = N'TABLE', @level1name = sys_security_user;
+
+CREATE INDEX idx_username ON sys_security_user (username);
+CREATE INDEX idx_phone ON sys_security_user (phone);
+CREATE INDEX idx_email ON sys_security_user (email);
+CREATE INDEX idx_create_time ON sys_security_user (create_time);
+CREATE INDEX idx_last_update_time ON sys_security_user (last_update_time);

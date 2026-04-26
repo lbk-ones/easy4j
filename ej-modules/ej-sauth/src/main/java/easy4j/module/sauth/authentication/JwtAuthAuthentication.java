@@ -119,7 +119,7 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
         OnlineUserInfo onlineUserInfo = super.genOnlineUserInfo(context);
         ISecurityEasy4jUser user = onlineUserInfo.getUser();
         ISecurityEasy4jSession session = onlineUserInfo.getSession();
-        String jwtToken = session.getJwtToken();
+        String jwtToken = session.getRealToken();
         // 返回jwtToken
         user.setShaToken(jwtToken);
         return onlineUserInfo;

@@ -22,16 +22,15 @@ import com.google.common.collect.Lists;
 
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
-import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.common.utils.PackageScanner;
-import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.*;
 import easy4j.infra.common.utils.servletmvc.MethodType;
 import easy4j.infra.common.utils.servletmvc.SRes;
 import easy4j.infra.common.utils.servletmvc.ServletHandler;
 import easy4j.infra.common.utils.servletmvc.UrlMap;
+import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.module.mybatisplus.audit.AutoAudit;
 import easy4j.module.mybatisplus.codegen.AutoGen;
@@ -424,6 +423,7 @@ public class E4jCgController {
         String entityPackageName = formDataMap.get("entityPackageName");
         String dtoName_ = formDataMap.get("dtoName");
         String domainName_ = formDataMap.get("domainName");
+        String dbUrl_ = formDataMap.get("dbUrl");
         String controllerName = formDataMap.get("controllerName");
         String isEnabledName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isEnabledName")));
         String isDeletedName = StrUtil.toCamelCase(StrUtil.toUnderlineCase(formDataMap.get("isDeletedName")));
@@ -432,10 +432,11 @@ public class E4jCgController {
         String isEnabledIsNumber = formDataMap.get("isEnabledIsNumber");
         if (checkNotNullR(servletHandler,
                 formDataMap,
-                ListTs.asList("dtoName", "domainName", "controllerName", "isEnabledName","isDeletedName","isEnabledValid","isEnabledNotValid")
+                ListTs.asList("dtoName", "domainName", "dbUrl", "controllerName", "isEnabledName", "isDeletedName", "isEnabledValid", "isEnabledNotValid")
         )) {
             return null;
         }
+
         String abPath = projectAbsolutePath +
                 File.separator +
                 String.join(File.separator, ListTs.asList("src", "main", "java")) +
@@ -461,6 +462,9 @@ public class E4jCgController {
             }
 
             String tableName = domainParse.getTableName();
+
+            Map<String, DatabaseColumnMetadata> columnNameMap = getDatabaseColumnMetadataMap(dbUrl_, tableName);
+
             pageViewRes.setUniqueId(RandomUtil.randomString(4) + "_" + StrUtil.blankToDefault(tableName, StrUtil.toUnderlineCase(domainParse.getClassName()).toLowerCase()));
 
             String schemaDesc = domainParse.getSchemaDesc();
@@ -493,7 +497,7 @@ public class E4jCgController {
                 columnInfo.setDataIndex(fieldName);
                 PageViewRes.ColumnInfo.Form form = columnInfo.getForm();
                 // 不要删除字段
-                if (StrUtil.equals(isDeletedName,fieldName)) {
+                if (StrUtil.equals(isDeletedName, fieldName)) {
                     continue;
                 }
                 // 审计字段不能出现在动态表单中
@@ -501,8 +505,17 @@ public class E4jCgController {
                     form.setCreatable(false);
                     form.setEditable(false);
                     // 这俩一般不在页面显示
-                    if(ListTs.asList("createBy","updateBy").contains(fieldName)){
+                    if (ListTs.asList("createBy", "updateBy").contains(fieldName)) {
                         columnInfo.setVisible(false);
+                    }
+                }
+                // 根据数据库字段信息来判断是否要必填
+                String camelCase = StrUtil.toCamelCase(StrUtil.toUnderlineCase(fieldName).toLowerCase());
+                DatabaseColumnMetadata databaseColumnMetadata = columnNameMap.get(camelCase);
+                if (databaseColumnMetadata != null) {
+                    int nullable = databaseColumnMetadata.getNullable();
+                    if (nullable == 0 || "NO".equals(databaseColumnMetadata.getIsNullable())) {
+                        form.setRequired(true);
                     }
                 }
                 String fieldType = field.getFieldType();
@@ -514,10 +527,10 @@ public class E4jCgController {
                 } else if (ListTs.asList("String", "char", "Character").contains(fieldType)) {
                     form.setType("input");
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
-                } else if (ListTs.asList("int", "double", "short", "long", "float", "BigDecimal", "Integer", "Double", "Short", "Long", "Float").contains(fieldType)) {
+                } else if (ListTs.asList("int", "double", "short", "float", "BigDecimal", "Integer", "Double", "Short", "Float").contains(fieldType)) {
                     form.setType("number");
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
-                }else if (ListTs.asList("long", "Long").contains(fieldType)) {
+                } else if (ListTs.asList("long", "Long").contains(fieldType)) {
                     // long类型单独处理 浏览器long类型会丢失精度 所以 这里直接转为text        l
                     form.setType("input");
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
@@ -527,15 +540,15 @@ public class E4jCgController {
                 } else {
                     form.setPlaceholder("请输入" + columnInfo.getTitle());
                 }
-                if(StrUtil.equals(isEnabledName,fieldName)){
+                if (StrUtil.equals(isEnabledName, fieldName)) {
                     form.setType("switch");
                     Map<String, Object> attrs = form.getAttrs();
-                    if(StrUtil.equals(isEnabledIsNumber,"true")){
+                    if (StrUtil.equals(isEnabledIsNumber, "true")) {
                         attrs.put("checked-value", Convert.toInt(isEnabledValid));
-                        attrs.put("unchecked-value",Convert.toInt(isEnabledNotValid));
-                    }else{
-                        attrs.put("checked-value",isEnabledValid);
-                        attrs.put("unchecked-value",isEnabledNotValid);
+                        attrs.put("unchecked-value", Convert.toInt(isEnabledNotValid));
+                    } else {
+                        attrs.put("checked-value", isEnabledValid);
+                        attrs.put("unchecked-value", isEnabledNotValid);
                     }
                 }
                 ClassField classField = ListTs.get(fields, i + 1);
@@ -556,6 +569,27 @@ public class E4jCgController {
             throw new RuntimeException("出现异常:" + e.getMessage());
         }
         return SRes.success(pageViewRes);
+    }
+
+    private static Map<String, DatabaseColumnMetadata> getDatabaseColumnMetadataMap(String dbUrl_, String tableName) throws SQLException {
+        List<String> split = StrUtil.split(dbUrl_, "@");
+        String jdbcUrl = ListTs.get(split, 0);
+        String s = ListTs.get(split, 1);
+        List<String> split1 = StrUtil.split(s, ":");
+        String username = ListTs.get(split1, 0);
+        String password = ListTs.get(split1, 1);
+        TempDataSource tempDataSource = new TempDataSource(
+                SqlType.getDriverClassNameByUrl(jdbcUrl),
+                jdbcUrl,
+                username,
+                password);
+        Map<String, DatabaseColumnMetadata> columnNameMap = new HashMap<>();
+        try (Connection quietConnection = tempDataSource.getQuietConnection()) {
+            DialectV2 dialectV2 = DialectFactory.get(quietConnection);
+            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(quietConnection.getCatalog(), quietConnection.getSchema(), tableName);
+            columnNameMap = ListTs.toMap(columnsNoCacheQuiet, e -> StrUtil.toCamelCase(StrUtil.toUnderlineCase(e.getColumnName()).toLowerCase()));
+        }
+        return columnNameMap;
     }
 
     private ClassParseResult clazzToClassParseResult(Class<?> dtoClass) {

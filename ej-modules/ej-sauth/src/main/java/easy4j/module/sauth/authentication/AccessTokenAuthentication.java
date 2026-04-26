@@ -73,7 +73,7 @@ public class AccessTokenAuthentication extends UserNamePasswordAuthentication {
         securityUser.setUsernameCn(userNameCn);
         String salt = RandomUtil.randomString(4);
         securityUser.setPwdSalt(salt);
-        securityUser.setCreateDate(new Date());
+        securityUser.setCreateTime(new Date());
         securityUser.setAccountNonExpired(true);
         securityUser.setAccountNonLocked(true);
         securityUser.setCredentialsNonExpired(true);
