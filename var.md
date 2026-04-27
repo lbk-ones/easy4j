@@ -1,12 +1,3 @@
-# 系统参数解释
-
-> - 系统参数按照命名规则来 短横线命名规则
-> - 这些参数可以加在application.properties/yaml/yml中去 也可以从nacos和apollo等远程配置中心去获取
-> - 拿取以easy4j.开头的系统参数统一使用Easy4j.getProperty("xxx") 或者 Easy4j.getEjSysProperties()
-    来拿取，比如获取数据源地址：使用Easy4j.getEjSysProperties().getDataSourceUrl()
->
-
-
 - **easy4j.dev**: 是否是开发环境，如果是开发环境那么有些参数会降低提升应用启动速度 (true|false)
 - **easy4j.author**: 业务模块负责人
 - **easy4j.server-port**: 服务端口 默认8080 等同于server.port
@@ -83,6 +74,12 @@
 - **easy4j.sentinel-dashboard-enable**: 是否开启sentinel的控制台，默认不开启 (true|false)
 - **easy4j.sentinel-dashboard-eager**:  （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化 (true|false)
 - **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）
+- **easy4j.sentinel-flow-count**: 每秒允许通过的请求数
+- **easy4j.sentinel-flow-grade-type**: 限流模式为 1、QPS 0、THREAD
+- **easy4j.sentinel-degrade-count**: 降级规则 熔断阈值比例，这里表示异常比例阈值
+- **easy4j.sentinel-degrade-grade-type**: 降级模式 0：平均响应时间，1：异常比例，2：异常次数
+- **easy4j.sentinel-degrade-time**: 熔断时长，单位为秒
+- **easy4j.sentinel-runtime-port**: 本地服务要起哪一个端口和控制台通讯
 - **easy4j.metrics-enable**: 是否开启指标采集 默认开启 (true|false)
 - **easy4j.default-i18n**: 默认i18n，默认中文
 - **easy4j.db-access-not-cache-schema**: 是否不缓存动态表查询的schema信息，默认false也就是要缓存 (true|false)
@@ -95,3 +92,5 @@
 - **easy4j.quartz-job-restart-check-delete**: 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除 (true|false)
 - **easy4j.knife4j-nacos-aggregation**: knife4j通过nacos进行聚合，默认不聚合 (true|false)
 - **easy4j.knife4j-nacos-routers**: knife4j要聚合的路由信息，和nacos整合
+- **easy4j.dynamic-data-source**: 动态数据源
+- **easy4j.code-gen**: 代码生成相关配置

@@ -279,6 +279,7 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
   const [currentColumnForDisplay, setCurrentColumnForDisplay] = useState({ record: {}, index: -1,formType:'' });
 
   const [apiUrlPrefix, setApiUrlPrefix] = useState('');
+  const [displayPreview, setDisplayPreview] = useState(false);
   const [form] = Form.useForm();
   const [columnForm] = Form.useForm();
   const [searchForm] = Form.useForm();
@@ -402,11 +403,13 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
       .trim()
       .split('\n')
       .map((item, index, arr) => {
-        if (item.includes('-')) {
+        // 如果参数名称携带
+        let strings = item.split(":");
+        if (strings?.[0]?.includes('-')) {
           return item;
         }
         let sl = item.replace('"', '').replace('"', '');
-        if (index == arr.length - 1) {
+        if (index === arr.length - 1) {
           sl = sl + ',';
         }
         return sl;
@@ -541,7 +544,7 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
         console.log("列配置变化", config);
     },
 }`;
-    return temp.replace(/%temp%/g, tempStr).replaceAll("\"slotName\"","slotName");
+    return temp.replace(/%temp%/g, tempStr);
   };
 
   /**
@@ -1090,6 +1093,17 @@ defineExpose({
             <Button style={{ marginLeft: 8 }} onClick={() => setConfig(defaultConfig)}>
               重置配置
             </Button>
+            <Button style={{ marginLeft: 8 }} type='primary' icon={<CopyOutlined />} onClick={copyToClipboard}>
+              复制 JS 配置
+            </Button>
+            <Button style={{ marginLeft: 8 }} type='primary' icon={<CopyOutlined />} onClick={copyCodeToClipboard}>
+              复制代码
+            </Button>
+            <Button style={{ marginLeft: 8 }} type='primary' icon={<CopyOutlined />} onClick={()=>{
+              setDisplayPreview(!displayPreview)
+            }}>
+              开启/关闭预览
+            </Button>
           </div>
 
           <Form
@@ -1612,7 +1626,7 @@ defineExpose({
             width: '30%',
             padding: '20px',
             backgroundColor: '#fafafa',
-            display: 'flex',
+            display: displayPreview===false?'none':'flex',
             flexDirection: 'column',
           }}
         >

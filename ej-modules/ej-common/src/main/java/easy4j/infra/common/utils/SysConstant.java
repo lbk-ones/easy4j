@@ -182,6 +182,27 @@ public class SysConstant {
     public static final String EASY4J_QUARTZ_JOB_RESTART_CHECK_DELETE = PARAM_PREFIX + SP.DOT + "quartz-job-restart-check-delete";
     public static final String EASY4J_NACOS_AGGREGATION = PARAM_PREFIX + SP.DOT + "knife4j-nacos-aggregation";
 
+    // 如果不使用sca架构那么兼容sentinel中的SentinelResource的话且不使用dashboard的话下面的这些配置用来统一控制流控
+    // 每秒允许通过的请求数
+    public static final String EASY4J_SENTINEL_FLOW_COUNT = PARAM_PREFIX + SP.DOT + "sentinel-flow-count";
+    // 限流模式为 1、QPS 0、THREAD
+    public static final String EASY4J_SENTINEL_FLOW_GRADE_TYPE = PARAM_PREFIX + SP.DOT + "sentinel-flow-grade-type";
+    // 降级规则 熔断阈值比例，这里表示异常比例阈值为 0.5
+    public static final String EASY4J_SENTINEL_DEGRADE_COUNT = PARAM_PREFIX + SP.DOT + "sentinel-degrade-count";
+    // 降级模式 0：平均响应时间，1：异常比例，2：异常次数
+    public static final String EASY4J_SENTINEL_DEGRADE_GRADE_TYPE = PARAM_PREFIX + SP.DOT + "sentinel-degrade-grade-type";
+    // 熔断时长，单位为秒
+    public static final String EASY4J_SENTINEL_DEGRADE_TIME = PARAM_PREFIX + SP.DOT + "sentinel-degrade-time";
+
+    // 是否对接控制台
+    public static final String EASY4J_SENTINEL_DASHBOARD_ENABLE = PARAM_PREFIX + SP.DOT + "sentinel-dashboard-enable";
+    // 对接的控制台地址
+    public static final String EASY4J_SENTINEL_DASHBOARD_CONSOLE_URL = PARAM_PREFIX + SP.DOT + "sentinel-dashboard-url";
+    // 本地服务要起哪一个端口和控制台通讯
+    public static final String EASY4J_SENTINEL_DASHBOARD_RUNTIME_PORT = PARAM_PREFIX + SP.DOT + "sentinel-runtime-port";
+
+
+
 
 
     public static final int SUCCESSCODE = 0;
@@ -252,35 +273,35 @@ public class SysConstant {
     public static final String SPRING_BOOT_ADMIN_HOST_TYPE = "spring.boot.admin.client.instance.service-host-type";
     public static final String SPRING_BOOT_ADMIN_CONNECTION_TIMEOUT = "spring.boot.admin.client.connect-timeout";
     public static final String SPRING_BOOT_ADMIN_READ_TIMEOUT = "spring.boot.admin.client.read-timeout";
-    public static final String SPRING_REDIS_URL = "spring.redis.url";
-    public static final String SPRING_REDIS_HOST = "spring.redis.host";
-    public static final String SPRING_REDIS_PORT = "spring.redis.port";
-    public static final String SPRING_REDIS_USERNAME = "spring.redis.username";
-    public static final String SPRING_REDIS_PASSWORD = "spring.redis.password";
-    public static final String SPRING_REDIS_SENTINEL_MASTER = "spring.redis.sentinel.master";
-    public static final String SPRING_REDIS_SENTINEL_NODES = "spring.redis.sentinel.nodes";
-    public static final String SPRING_REDIS_SENTINEL_USERNAME = "spring.redis.sentinel.username";
-    public static final String SPRING_REDIS_SENTINEL_PASSWORD = "spring.redis.sentinel.password";
-    public static final String SPRING_REDIS_CLUSTER_NODES = "spring.redis.cluster.nodes";
-    public static final String SPRING_REDIS_CLUSTER_MAX_REDIRECTS = "spring.redis.cluster.max-redirects";
+    public static final String SPRING_REDIS_URL = "spring.data.redis.url";
+    public static final String SPRING_REDIS_HOST = "spring.data.redis.host";
+    public static final String SPRING_REDIS_PORT = "spring.data.redis.port";
+    public static final String SPRING_REDIS_USERNAME = "spring.data.redis.username";
+    public static final String SPRING_REDIS_PASSWORD = "spring.data.redis.password";
+    public static final String SPRING_REDIS_SENTINEL_MASTER = "spring.data.redis.sentinel.master";
+    public static final String SPRING_REDIS_SENTINEL_NODES = "spring.data.redis.sentinel.nodes";
+    public static final String SPRING_REDIS_SENTINEL_USERNAME = "spring.data.redis.sentinel.username";
+    public static final String SPRING_REDIS_SENTINEL_PASSWORD = "spring.data.redis.sentinel.password";
+    public static final String SPRING_REDIS_CLUSTER_NODES = "spring.data.redis.cluster.nodes";
+    public static final String SPRING_REDIS_CLUSTER_MAX_REDIRECTS = "spring.data.redis.cluster.max-redirects";
     // read timeout
-    public static final String SPRING_REDIS_TIMEOUT = "spring.redis.timeout";
+    public static final String SPRING_REDIS_TIMEOUT = "spring.data.redis.timeout";
     // connection_timeout
-    public static final String SPRING_REDIS_CONNECT_TIMEOUT = "spring.redis.connect-timeout";
-    public static final String SPRING_REDIS_DATABASE = "spring.redis.database";
-    public static final String SPRING_REDIS_SSL = "spring.redis.ssl";
-    public static final String SPRING_REDIS_LETTUCE_POOL_ENABLE = "spring.redis.lettuce.pool.enabled";
-    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_ACTIVE = "spring.redis.lettuce.pool.max-active";
+    public static final String SPRING_REDIS_CONNECT_TIMEOUT = "spring.data.redis.connect-timeout";
+    public static final String SPRING_REDIS_DATABASE = "spring.data.redis.database";
+    public static final String SPRING_REDIS_SSL = "spring.data.redis.ssl";
+    public static final String SPRING_REDIS_LETTUCE_POOL_ENABLE = "spring.data.redis.lettuce.pool.enabled";
+    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_ACTIVE = "spring.data.redis.lettuce.pool.max-active";
 
     // 最大空闲数
-    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_IDLE = "spring.redis.lettuce.pool.max-idle";
+    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_IDLE = "spring.data.redis.lettuce.pool.max-idle";
     // 最小空闲数
-    public static final String SPRING_REDIS_LETTUCE_POOL_MIN_IDLE = "spring.redis.lettuce.pool.min-idle";
+    public static final String SPRING_REDIS_LETTUCE_POOL_MIN_IDLE = "spring.data.redis.lettuce.pool.min-idle";
     // 关闭连接的超时
-    public static final String SPRING_REDIS_LETTUCE_POOL_SHUTDOWN_TIMEOUT = "spring.redis.lettuce.shutdown-timeout";
+    public static final String SPRING_REDIS_LETTUCE_POOL_SHUTDOWN_TIMEOUT = "spring.data.redis.lettuce.shutdown-timeout";
 
     // 获取连接的最大等待时间
-    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_WAIT = "spring.redis.lettuce.pool.max-wait";
+    public static final String SPRING_REDIS_LETTUCE_POOL_MAX_WAIT = "spring.data.redis.lettuce.pool.max-wait";
 
 
     // h2

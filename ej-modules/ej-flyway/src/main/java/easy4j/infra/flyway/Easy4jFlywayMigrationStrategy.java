@@ -35,6 +35,7 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
     @Override
     public void migrate(Flyway flyway) {
         try {
+            flyway.repair();
             flyway.migrate();
         } catch (FlywayException e) {
             if (e instanceof FlywayValidateException) {

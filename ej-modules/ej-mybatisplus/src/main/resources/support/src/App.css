@@ -22,7 +22,6 @@ body {
 
 /* 头部样式 */
 .app-header {
-    background-color: #ffffff;
     padding: 0 24px;
     display: flex;
     align-items: center;
@@ -30,6 +29,8 @@ body {
     height: 50px;
     line-height: 50px;
     justify-content: space-between;
+    background: linear-gradient(to right, #ffffff, var(--ant-color-primary-border));
+    border-bottom:1px solid var(--ant-color-primary);
 }
 
 .header-title {
@@ -43,10 +44,13 @@ body {
     display: flex;
     flex: auto;
     flex-flow: row nowrap;
-    padding: 15px;
+    /*padding: 15px;*/
     overflow: auto;
     box-sizing: border-box;
-    background-color: #f0f2f5;
+    background: linear-gradient(to right, #ffffff, var(--ant-color-primary-border));
+}
+.app-content .ant-tabs-nav{
+    padding-top:10px;
 }
 
 /* 卡片样式 */
@@ -66,8 +70,9 @@ body {
     flex-flow: column nowrap;
     overflow: auto;
     background-color: white;
-    padding: 20px;
     box-sizing: border-box;
+    margin: 10px;
+    padding: 20px;
 }
 
 /* 代码编辑器样式 */

@@ -20,11 +20,10 @@ import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.module.sentinel.annotation.FlowDegradeAspect;
+import easy4j.module.sentinel.annotation2.SentinelResourceAspect;
 import lombok.Getter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,11 +35,12 @@ import org.springframework.context.annotation.Configuration;
  * @date 2025-05
  */
 @Configuration
-public class SentinelAutoConfiguration implements InitializingBean {
+public class SentinelAutoConfiguration2 implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
         InitConfig.init();
+
     }
 
 
@@ -48,7 +48,7 @@ public class SentinelAutoConfiguration implements InitializingBean {
     // 支持 @FlowDegrade 注解的切面
     @Bean
     @ConditionalOnMissingBean
-    public FlowDegradeAspect sentinelResourceAspect() {
-        return new FlowDegradeAspect();
+    public SentinelResourceAspect sentinelResourceAspect() {
+        return new SentinelResourceAspect();
     }
 }

@@ -288,7 +288,7 @@ function App() {
       {contextHolder}
       <Header className='app-header'>
         <Title level={2} className='header-title'>
-          Easy4j底座代码生成工具
+          EASY4J代码生成
         </Title>
 
         <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -304,6 +304,9 @@ function App() {
 
       <Content className='app-content'>
         <Tabs
+            styles={{
+              paddingTop:'10px'
+            }}
           activeKey={activeTab}
           onChange={e => {
             setActiveTab(e);
@@ -1013,7 +1016,7 @@ function App() {
         </div>
       </Content>
 
-      <Footer className='app-footer'>© 2025 Easy4j底座代码生成工具</Footer>
+      <Footer className='app-footer'>© 2025 EASY4J底座代码生成工具</Footer>
 
       <Modal
         title='模型选择'

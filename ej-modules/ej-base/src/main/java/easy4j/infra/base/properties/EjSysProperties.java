@@ -612,6 +612,37 @@ public class EjSysProperties {
     private String sentinelDashboardUrl;
 
     /**
+     * (非SCA架构生效)每秒允许通过的请求数
+     */
+    @SpringVs(desc = "(非SCA架构生效)每秒允许通过的请求数", vs = "")
+    private Integer sentinelFlowCount = 100;
+    /**
+     * (非SCA架构生效)限流模式为 1、QPS 0、THREAD
+     */
+    @SpringVs(desc = "(非SCA架构生效)限流模式为 1、QPS 0、THREAD", vs = "")
+    private Integer sentinelFlowGradeType = 1;
+    /**
+     * 降级规则 熔断阈值比例，这里表示异常比例阈值为
+     */
+    @SpringVs(desc = "(非SCA架构生效)降级规则 熔断阈值比例，这里表示异常比例阈值", vs = "")
+    private Double sentinelDegradeCount = 0.5;
+    /**
+     * 降级模式 0：平均响应时间，1：异常比例，2：异常次数
+     */
+    @SpringVs(desc = "(非SCA架构生效)降级模式 0：平均响应时间，1：异常比例，2：异常次数", vs = "")
+    private Integer sentinelDegradeGradeType = 1;
+    /**
+     * 熔断时长，单位为秒
+     */
+    @SpringVs(desc = "(非SCA架构生效)熔断时长，单位为秒", vs = "")
+    private Integer sentinelDegradeTime = 60;
+    /**
+     * 本地服务要起哪一个端口和控制台通讯
+     */
+    @SpringVs(desc = "(非SCA架构生效)本地服务要起哪一个端口和控制台通讯", vs = "")
+    private Integer sentinelRuntimePort = 8179;
+
+    /**
      * 是否开启指标采集 默认开启
      */
     @SpringVs(desc = "是否开启指标采集 默认开启")

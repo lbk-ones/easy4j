@@ -47,7 +47,6 @@ public class Config {
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
-
         // 设置键的序列化方式
         template.setKeySerializer(new StringRedisSerializer());
         // 设置值的序列化方式（JSON格式）

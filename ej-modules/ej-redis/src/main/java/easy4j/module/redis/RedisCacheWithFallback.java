@@ -14,6 +14,11 @@
  */
 package easy4j.module.redis;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SysConstant;
+import jodd.time.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -22,7 +27,9 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StopWatch;
 
+import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -43,16 +50,29 @@ public class RedisCacheWithFallback<T> {
     private final String cachePrefix;
 
     // 熔断状态
-    private final AtomicInteger failureCount = new AtomicInteger(0);
+    private static final AtomicInteger failureCount = new AtomicInteger(0);
     private long lastFailureTime = 0;
     private final ReadWriteLock circuitLock = new ReentrantReadWriteLock();
+
+    // 默认五分钟
+    private final Duration duration;
 
     public RedisCacheWithFallback(RedisTemplate<String, T> redisTemplate,
                                   Function<String, T> databaseFallback,
                                   String cachePrefix) {
         this.redisTemplate = redisTemplate;
-        this.databaseFallback = databaseFallback;
-        this.cachePrefix = cachePrefix;
+        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix,"");
+        this.duration = Duration.ofMinutes(5L);
+    }
+
+    public RedisCacheWithFallback(RedisTemplate<String, T> redisTemplate,
+                                  Function<String, T> databaseFallback,
+                                  String cachePrefix, Duration duration) {
+        this.redisTemplate = redisTemplate;
+        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix,"");
+        this.duration = duration;
     }
 
     /**
@@ -102,6 +122,7 @@ public class RedisCacheWithFallback<T> {
      */
     private T executeRedisOperation(String key) {
         String cacheKey = getCacheKey(key);
+        if(redisTemplate == null) return null;
         return redisTemplate.opsForValue().get(cacheKey);
     }
 
@@ -129,7 +150,8 @@ public class RedisCacheWithFallback<T> {
 
         try {
             String cacheKey = getCacheKey(key);
-            redisTemplate.opsForValue().set(cacheKey, value);
+            if(redisTemplate == null) return;
+            redisTemplate.opsForValue().set(cacheKey, value, duration);
             logger.debug("Cache updated for key: {}", key);
         } catch (Exception e) {
             handleRedisFailure(key, e);
@@ -146,6 +168,7 @@ public class RedisCacheWithFallback<T> {
 
         try {
             String cacheKey = getCacheKey(key);
+            if(redisTemplate == null) return;
             redisTemplate.delete(cacheKey);
             logger.debug("Cache deleted for key: {}", key);
         } catch (Exception e) {
@@ -190,6 +213,8 @@ public class RedisCacheWithFallback<T> {
     private boolean isCircuitBroken() {
         circuitLock.readLock().lock();
         try {
+            Boolean enable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, Boolean.class);
+            if (!enable) return true;
             int failures = failureCount.get();
             if (failures < MAX_FAILURES) {
                 return false;
@@ -213,7 +238,7 @@ public class RedisCacheWithFallback<T> {
      * 获取带前缀的缓存键
      */
     private String getCacheKey(String key) {
-        return cachePrefix + ":" + key;
+        return cachePrefix.endsWith(":") ? cachePrefix : (cachePrefix + ":") + key;
     }
 
     /**
@@ -224,6 +249,8 @@ public class RedisCacheWithFallback<T> {
             return Objects.equals("PONG", redisTemplate.execute(RedisConnection::ping));
         } catch (DataAccessException e) {
             logger.error("Redis connection check failed", e);
+            return false;
+        }catch (Exception e){
             return false;
         }
     }
