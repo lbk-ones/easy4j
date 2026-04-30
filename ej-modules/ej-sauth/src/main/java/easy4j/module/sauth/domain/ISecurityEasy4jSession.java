@@ -80,5 +80,13 @@ public interface ISecurityEasy4jSession {
      */
     boolean isValid();
 
+    /**
+     * 获取租户ID
+     * @return
+     */
+    Long getTenantId();
+
+    void setTenantId(Long tenantId);
+
 
 }

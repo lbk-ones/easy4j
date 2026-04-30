@@ -59,8 +59,14 @@ public class SecurityAuthority implements Serializable {
     /**
      * 菜单code
      */
-    @Schema(description = "菜单code")
+    @Schema(description = "菜单code不能以数字开头")
     private String menuCode;
+
+    /**
+     * 上级菜单code
+     */
+    @Schema(description = "上级菜单code")
+    private String parentMenuCode;
 
 
     /**
@@ -71,10 +77,29 @@ public class SecurityAuthority implements Serializable {
 
 
     /**
-     * 请求地址 ant风格 /api/**
+     * 路由/请求地址
      */
-    @Schema(description = "请求地址 ant风格 /api/**")
-    private String requestUri;
+    @Schema(description = "菜单路由/外部请求地址")
+    private String path;
+
+    /**
+     * 排序号
+     */
+    @Schema(description = "排序号")
+    private Integer order;
+
+    /**
+     * 图标
+     */
+    @Schema(description = "图标")
+    private String icon;
+
+    /**
+     * 前端i18n码
+     */
+    @Schema(description = "前端i18n码")
+    private String locale;
+
 
     /**
      * 是否有效
@@ -83,10 +108,10 @@ public class SecurityAuthority implements Serializable {
     private boolean isEnabled;
 
     /**
-     * 权限类别 菜单、应用、列表、按钮等
+     * 权限类别 1菜单 2资源 3接口
      */
-    @Schema(description = "权限类别 菜单、应用、列表、按钮等")
-    private String authorityType;
+    @Schema(description = "权限类别 1菜单 2资源 3接口")
+    private Integer authorityType;
 
 
     /**

@@ -37,12 +37,12 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -68,10 +68,20 @@ public class GlobalExceptionHandler {
         log.info("运行时自定义异常-------" + e.getMessage());
         return EasyResult.toI18n(e);
     }
+    /**
+     * 专门处理 @RequestParam(required=true) 这种情况
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public EasyResult<Object> handleMissingParamException(MissingServletRequestParameterException ex) {
+        // 只记录一条简洁的警告日志
+        log.error("缺少请求参数: {}，{}", ex.getParameterName(),ex.getParameterType());
+        return EasyResult.error(I18nUtils.getMessage(BusCode.A00004, ex.getParameterName()));
+    }
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
-    @ResponseStatus
+    // 算了还是不要响应500码
+    // @ResponseStatus
     public EasyResult<Object> defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
         String requestURI = req.getRequestURI();
         if ("/.well-known/appspecific/com.chrome.devtools.json".equals(requestURI)) {

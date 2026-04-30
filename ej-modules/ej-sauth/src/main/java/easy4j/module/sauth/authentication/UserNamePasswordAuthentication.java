@@ -23,6 +23,7 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
         return AuthenticationType.UserNamePassword.name();
     }
 
+    // 这个时候是查不到租户ID的 所以这个时候dbUser的tenantId是空的
     @Override
     public ISecurityEasy4jUser queryUser(AuthenticationContext context) {
         ISecurityEasy4jUser reqUser = context.getReqUser();

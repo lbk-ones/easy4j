@@ -29,9 +29,10 @@ public class SysConstant {
     public static final String PACKAGE_PREFIX = PARAM_PREFIX;
 
     public static final String X_ACCESS_TOKEN = "X-Access-Token";
+    public static final String X_TENANT_ID = "X-Tenant-Id";
+    public static final String X_REFRESH_TOKEN = "X-Refresh-Token";
     public static final String X_SIGN = "X-Sign";
     public static final String X_TIMESTAMP = "X-TIMESTAMP";
-    public static final String X_TENANT_ID = "X-Tenant-Id";
     public static final String TRACE_ID_NAME = "traceId";
     public static final String AUTHORIZATION = "Authorization";
     public static final String AUTHORIZATION_TYPE = "AuthorizationType";

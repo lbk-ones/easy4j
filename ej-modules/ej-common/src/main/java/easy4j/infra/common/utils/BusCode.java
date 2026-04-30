@@ -201,4 +201,7 @@ public class BusCode {
     @Desc("bearerToken不能为空")
     public static final String A00064 = "A00064";
 
+    @Desc("违反唯一性约束{0}")
+    public static final String A00065 = "A00065";
+
 }

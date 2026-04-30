@@ -14,6 +14,7 @@ import easy4j.module.mybatisplus.base.BaseServiceImpl;
 import easy4j.module.mybatisplus.base.EQueryWrapper;
 import easy4j.module.mybatisplus.base.EasyPageRes;
 import easy4j.module.mybatisplus.base.PageDto;
+import easy4j.infra.common.utils.BusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -110,7 +111,11 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<${entityName}> newInsert = list${entityName}DtoToDomain(dtoList);
 
         if (!newInsert.isEmpty()) {
-            CheckUtils.checkInsert(saveBatch(newInsert),"${domainName}");
+            try{
+                CheckUtils.checkInsert(saveBatch(newInsert),"${domainName}");
+            }catch(DuplicateKeyException exception){
+                throw new EasyException(BusCode.A00065);
+            }
         }
         return list${entityName}ToDto(newInsert);
     }
@@ -177,9 +182,16 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<${entityName}> domainList = list${entityName}DtoToDomain(dtos);
         ${entityName}Mapper baseMapper1 = this.getBaseMapper();
         List<String> ids = ListTs.newList();
-        for (${entityName} domain : domainList) {
+        if(ListTs.isEmpty(get${domainName}ByIds(ListTs.mapToList(domainList, this::getIdValueToStr)))){
+            throw new EasyException(BusCode.A00012);
+        }
+        for (${entityName} domain : domainList)
             clearAudit(domain);
-            baseMapper1.updateById(domain);
+            try{
+                baseMapper1.updateById(domain);
+            }catch (DuplicateKeyException e){
+                throw new EasyException(BusCode.A00065);
+            }
             String id = getIdValueToStr(domain);
             if(StrUtil.isNotBlank(id)){
                 ids.add(id);

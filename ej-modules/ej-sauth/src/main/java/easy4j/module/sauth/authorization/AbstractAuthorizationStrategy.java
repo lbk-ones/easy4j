@@ -175,7 +175,7 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
                 String roleCode = authority.getRoleCode();
                 String menuCode = authority.getMenuCode();
                 String authorityCode = authority.getAuthorityCode();
-                String requestUri = authority.getRequestUri();
+                String requestUri = authority.getPath();
                 // role
                 if (StrUtil.equals(permissionCode, roleCode) && StrUtil.isNotBlank(roleCode)) {
                     has = true;

@@ -14,6 +14,7 @@
  */
 package easy4j.module.sauth.core;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.authentication.AuthenticationCore;
@@ -80,9 +81,13 @@ public class Easy4jSecurityService extends AbstractSecurityService {
         // querySession from db/redis
         authenticationCore.querySession(ctx);
         ctx.checkError();
+
         // queryUserInfo from db
         authenticationCore.queryUser(ctx);
         ctx.checkError();
+
+        // init tenantId
+        initTenantId(securityUser, ctx);
 
         // pre verify
         authenticationCore.verifyPre(ctx);
@@ -119,6 +124,24 @@ public class Easy4jSecurityService extends AbstractSecurityService {
             loginAware.accept(ctx);
         }
         return onlineUserInfo;
+    }
+
+    private static void initTenantId(ISecurityEasy4jUser securityUser, AuthenticationContext ctx) {
+        ISecurityEasy4jUser dbUser = ctx.getDbUser();
+        if (dbUser != null && securityUser!=null) {
+            ISecurityEasy4jSession dbSession = ctx.getDbSession();
+            // 优先级 reqTenantId > sessionTenantId > dbTenantId
+            Long reqTenantId = securityUser.getTenantId();
+            Long dbTenantId = dbUser.getTenantId();
+            Long sessionTenantId = dbSession==null?null:dbSession.getTenantId();
+            Long finalTenantId = reqTenantId!=null? reqTenantId: sessionTenantId!=null?sessionTenantId: dbTenantId;
+            if (securityUser.getTenantId() == null) {
+                securityUser.setTenantId(finalTenantId);
+            }
+            if (dbUser.getTenantId() == null) {
+                dbUser.setTenantId(finalTenantId);
+            }
+        }
     }
 
     /**

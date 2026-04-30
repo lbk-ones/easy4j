@@ -35,11 +35,14 @@ public class ShaTokenAuthentication extends AbstractAuthenticationCore {
         SecuritySession session = sessionStrategy.getSession(shaToken);
         context.setDbSession(session);
         if (null != session) {
+            // 从会话中取出租户ID放到用户请求信息中去
+            reqUser.setTenantId(session.getTenantId());
             String userName = session.getUsername();
             ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
             if (null == byUserName) {
                 context.setErrorCode(BusCode.A00037);
             }else{
+                byUserName.setTenantId(session.getTenantId());
                 byUserName.setShaToken(shaToken);
             }
             context.setDbUser(byUserName);
