@@ -311,6 +311,11 @@ const Vue3ArcoSupertable = ({ pageInitData, open, onClose }) => {
           next.actions = pageInitData.actions;
           hasChange = true;
         }
+        console.log('pageInitData.searchFields--->',pageInitData.searchFields,next.searchFields)
+        if (pageInitData.searchFields && next.searchFields !== pageInitData.searchFields) {
+          next.searchFields = pageInitData.searchFields;
+          hasChange = true;
+        }
         if (pageInitData.pageApiUrl && next.pageApiUrl !== pageInitData.pageApiUrl) {
           next.pageApiUrl = pageInitData.pageApiUrl;
           hasChange = true;

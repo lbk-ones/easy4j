@@ -15,6 +15,8 @@ import easy4j.module.mybatisplus.base.EQueryWrapper;
 import easy4j.module.mybatisplus.base.EasyPageRes;
 import easy4j.module.mybatisplus.base.PageDto;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.exception.EasyException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import java.util.Arrays;
 import java.util.Objects;
+
 
 /**
  * ${headerDesc}
@@ -185,7 +188,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         if(ListTs.isEmpty(get${domainName}ByIds(ListTs.mapToList(domainList, this::getIdValueToStr)))){
             throw new EasyException(BusCode.A00012);
         }
-        for (${entityName} domain : domainList)
+        for (${entityName} domain : domainList){
             clearAudit(domain);
             try{
                 baseMapper1.updateById(domain);

@@ -168,11 +168,13 @@ public class DbGen extends AbstractGen {
                         eFieldInfo.setHasPrimaryKey(true);
                     }
                     // 纠正字符不影响 autoIndex 的比对 因为 AutoAudit里面的字段名称一定合法
-                    eFieldInfo.setName(toCamelCase(validateAndCorrect(columnName.toLowerCase())));
+                    eFieldInfo.setName(StrUtil.toCamelCase(validateAndCorrect(columnName.toLowerCase())));
                     eFieldInfo.setDbName(columnName);
                     eFieldInfo.setSameTableField(sameTableField);
                     eFieldInfo.setSameSchema(sameSchema);
-                    eFieldInfo.setDescription(StrUtil.blankToDefault(remarks, StrUtil.toCamelCase(columnName)));
+
+                    // fix: 注释中有双引号导致的报错
+                    eFieldInfo.setDescription(StrUtil.replace(StrUtil.blankToDefault(remarks, StrUtil.toCamelCase(columnName)), "\"","\\\""));
                     eFieldInfo.setType(javaClassByTypeNameAndDbType.getSimpleName());
                     eFieldInfo.setHasAutoincrement("YES".equalsIgnoreCase(databaseColumnMetadata.getIsAutoincrement()));
                     String name = JdbcType.forCode(databaseColumnMetadata.getDataType()).name();
@@ -398,5 +400,4 @@ public class DbGen extends AbstractGen {
         return camelCase;
 
     }
-
 }

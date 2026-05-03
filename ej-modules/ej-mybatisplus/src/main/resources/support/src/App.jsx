@@ -109,6 +109,8 @@ function App() {
     rowKey: '',
     allApiUrl: [],
     columns: [],
+    actions: [],
+    searchFields:[]
   });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -209,14 +211,15 @@ function App() {
     });
   };
   const scanPackageFunc = () => {
+
     post(
       '/db/scanPackage',
       {
-        projectAbsolutePath: initData.projectAbsolutePath,
-        parentPackageName: initData.parentPackageName,
-        dtoPackageName: initData.dtoPackageName,
-        entityPackageName: initData.entityPackageName,
-        controllerPackageName: initData.controllerPackageName,
+        projectAbsolutePath: form.getFieldValue("projectAbsolutePath"),
+        parentPackageName: form.getFieldValue("parentPackageName"),
+        dtoPackageName: form.getFieldValue("dtoPackageName"),
+        entityPackageName: form.getFieldValue("entityPackageName"),
+        controllerPackageName: form.getFieldValue("controllerPackageName"),
       },
       { skipLoading: true }
     ).then(res => {
@@ -227,11 +230,11 @@ function App() {
 
   const frontPageInit = (dtoName, domainName,controllerName,dbUrl) => {
     let param = {
-      parentPackageName: initData.parentPackageName,
-      controllerPackageName: initData.controllerPackageName,
-      projectAbsolutePath: initData.projectAbsolutePath,
-      dtoPackageName: initData.dtoPackageName,
-      entityPackageName: initData.entityPackageName,
+      parentPackageName: form.getFieldValue("parentPackageName"),
+      controllerPackageName: form.getFieldValue("controllerPackageName"),
+      projectAbsolutePath: form.getFieldValue("projectAbsolutePath"),
+      dtoPackageName: form.getFieldValue("dtoPackageName"),
+      entityPackageName: form.getFieldValue("entityPackageName"),
       dtoName: dtoName,
       domainName: domainName,
       controllerName: controllerName,
@@ -243,7 +246,10 @@ function App() {
       isEnabledIsNumber: form.getFieldValue('isEnabledIsNumber'),
     };
     post('/pageGenInit', param).then(res => {
-      setPageInitData(res);
+      setPageInitData({
+        ...res,
+        searchFields: []
+      });
       setSuperTableVisible(true);
       setModalVisible(false);
       modalForm.resetFields();
@@ -420,7 +426,7 @@ function App() {
                   scanPackageFunc();
                   setModalVisible(true);
                   setTimeout(()=>{
-                    modalForm.setFieldValue("dbUrl",initData.url+"@"+initData.username+":"+initData.password)
+                    modalForm.setFieldValue("dbUrl",form.getFieldValue("url")+"@"+form.getFieldValue("username")+":"+form.getFieldValue("password"))
                   },20)
                 }}
               >
