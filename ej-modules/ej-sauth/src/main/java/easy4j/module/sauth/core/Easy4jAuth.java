@@ -44,13 +44,13 @@ public class Easy4jAuth {
     public static OnlineUserInfo getOnlineUser() {
         return get()
                 .map(SecurityService::getOnlineUser)
-                .orElse(null);
+                .orElse(new OnlineUserInfo());
     }
 
     public static OnlineUserInfo getOnlineUser(String token) {
         return get()
                 .map(e -> e.getOnlineUser(token))
-                .orElse(null);
+                .orElse(new OnlineUserInfo());
     }
 
     public static boolean isOnline(String token) {
@@ -62,19 +62,19 @@ public class Easy4jAuth {
     public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
         return get()
                 .map(e -> e.authentication(securityUser, loginAware))
-                .orElse(null);
+                .orElse(new OnlineUserInfo());
     }
 
     public static OnlineUserInfo logout() {
         return get()
                 .map(SecurityService::logout)
-                .orElse(null);
+                .orElse(new OnlineUserInfo());
     }
 
     public static OnlineUserInfo logoutByUserName(String userName) {
         return get()
                 .map(e -> e.logoutByUserName(userName))
-                .orElse(null);
+                .orElse(new OnlineUserInfo());
     }
 
     public static String getToken() {

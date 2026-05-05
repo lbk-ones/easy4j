@@ -212,7 +212,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         }
     }
 
-    private static void bindUserCtx(ISecurityEasy4jUser user) {
+    public static void bindUserCtx(ISecurityEasy4jUser user) {
         Easy4jContext context = Easy4j.getContext();
         UserContext userContext = new UserContext();
         userContext.setUserName(user.getUsername());

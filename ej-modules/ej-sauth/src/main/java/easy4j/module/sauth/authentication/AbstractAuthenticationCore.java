@@ -12,6 +12,7 @@ import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
+import easy4j.module.sauth.filter.Easy4jSecurityFilterInterceptor;
 import easy4j.module.sauth.session.SessionStrategy;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestAttributes;
@@ -53,6 +54,8 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
     @Override
     public void bindSessionToCtx(AuthenticationContext context) {
         bindCtx(context.getDbSession());
+        ISecurityEasy4jUser dbUser = context.getDbUser();
+        if(dbUser != null) Easy4jSecurityFilterInterceptor.bindUserCtx(dbUser);
     }
 
     @Override
