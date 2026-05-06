@@ -54,20 +54,20 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     private LeafAllocDomain getByBizTag(String bizTag) {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
-        leafAllocDomain.setBIZ_TAG(bizTag);
+        leafAllocDomain.setBizTag(bizTag);
         return dbaccess.selectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
     }
 
 
     public List<String> getAllTags() {
-        return ListTs.tListToListString(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBIZ_TAG);
+        return ListTs.tListToListString(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBizTag);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public LeafAllocDomain updateMaxIdAndGetLeafAlloc(String bizTag) {
         LeafAllocDomain domain = getByBizTag(bizTag);
-        domain.setMAX_ID(domain.getMAX_ID() + domain.getSTEP());
+        domain.setMaxId(domain.getMaxId() + domain.getStep());
         return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
     }
 
@@ -76,10 +76,10 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public LeafAllocDomain updateMaxIdByCustomStepAndGetLeafAlloc(LeafAllocDomain domain) {
 
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
-        leafAllocDomain.setBIZ_TAG(domain.getBIZ_TAG());
-        long maxId = domain.getSTEP() + domain.getMAX_ID();
-        leafAllocDomain.setMAX_ID(maxId);
-        leafAllocDomain.setUPDATE_TIME(new Date());
+        leafAllocDomain.setBizTag(domain.getBizTag());
+        long maxId = domain.getStep() + domain.getMaxId();
+        leafAllocDomain.setMaxId(maxId);
+        leafAllocDomain.setUpdateTime(new Date());
         return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
     }
 

@@ -28,7 +28,7 @@ import java.util.Date;
  * @date 2025-05
  */
 @Data
-@JdbcTable(name = "SYS_KEY_IDEMPOTENT")
+@JdbcTable(name = "sys_key_idempotent")
 public class Easy4jKeyIdempotent implements Serializable {
 
     // 正在发送

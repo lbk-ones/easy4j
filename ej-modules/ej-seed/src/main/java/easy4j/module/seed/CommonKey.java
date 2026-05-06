@@ -89,8 +89,8 @@ public class CommonKey implements SnowSeed {
             List<SYS_WORK_IP> allWorkIpList = dbAccess.selectAll(SYS_WORK_IP.class);
             //List<SYS_WORK_IP> allWorkIpList = jdbcTemplate.query("SELECT * FROM SYS_WORK_IP", BeanPropertyRowMapper.newInstance(SYS_WORK_IP.class));
             ListTs.foreach(allWorkIpList, e -> {
-                if (Objects.isNull(e.getNUM())) {
-                    e.setNUM(0);
+                if (Objects.isNull(e.getNum())) {
+                    e.setNum(0);
                 }
             });
             // 校验是否自动开启 如果使用了 k8 那么副本ip一般都是两个 除掉环回地址肯定就是只有一个 当然也有其他情况 这里也得兼容
@@ -102,7 +102,7 @@ public class CommonKey implements SnowSeed {
                 }
                 String masterIp = notHhIpList.size() == 1 ? notHhIpList.get(0) : ListTs.get(collect, 0);
                 if (Objects.nonNull(masterIp)) {
-                    String nextNum = allWorkIpList.isEmpty() ? "1" : String.valueOf(allWorkIpList.stream().max((o1, o2) -> o2.getNUM().compareTo(o1.getNUM())).get().getNUM() + 1);
+                    String nextNum = allWorkIpList.isEmpty() ? "1" : String.valueOf(allWorkIpList.stream().max((o1, o2) -> o2.getNum().compareTo(o1.getNum())).get().getNum() + 1);
                     // 如果超过31了 删了重来 这个时候 极端情况下 workIp 可能会出现重复的这种情况
                     if ("32".equals(nextNum)) {
 
@@ -112,17 +112,17 @@ public class CommonKey implements SnowSeed {
                         return getWorkerId();
                     }
                     workerId = Long.parseLong(nextNum);
-                    if (allWorkIpList.stream().noneMatch(e -> masterIp.equals(e.getIP()))) {
+                    if (allWorkIpList.stream().noneMatch(e -> masterIp.equals(e.getIp()))) {
                         SYS_WORK_IP workIp = new SYS_WORK_IP();
-                        workIp.setIP(masterIp);
-                        workIp.setNUM(Integer.parseInt(nextNum));
+                        workIp.setIp(masterIp);
+                        workIp.setNum(Integer.parseInt(nextNum));
                         int i = dbAccess.saveOne(workIp, SYS_WORK_IP.class);
                         //jdbcTemplate.update("INSERT INTO SYS_WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
                     } else {
                         // k8s 重启 ip是不会延续原来的 但是这里兼容一下这种情况 万一不用 k8s捏 对吧
                         SYS_WORK_IP workip = dbAccess.selectByPrimaryKey(masterIp, SYS_WORK_IP.class);
                         if (Objects.nonNull(workip)) {
-                            workerId = workip.getNUM();
+                            workerId = workip.getNum();
                         }
                     }
                     enabled = true;
@@ -160,12 +160,12 @@ public class CommonKey implements SnowSeed {
 
     @Setter
     @Getter
-    @JdbcTable(name = "SYS_WORK_IP")
+    @JdbcTable(name = "sys_work_ip")
     static class SYS_WORK_IP implements Serializable {
 
         @JdbcColumn(name = "ip", isPrimaryKey = true)
-        private String IP;
-        private Integer NUM;
+        private String ip;
+        private Integer num;
 
     }
 

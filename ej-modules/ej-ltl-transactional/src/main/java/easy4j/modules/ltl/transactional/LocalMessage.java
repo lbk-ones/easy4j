@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
  * @date 2025-05
  */
 @Data
-@JdbcTable(name = "SYS_LOCAL_MESSAGE")
+@JdbcTable(name = "sys_local_message")
 public class LocalMessage implements Serializable {
 
     // 正在发送

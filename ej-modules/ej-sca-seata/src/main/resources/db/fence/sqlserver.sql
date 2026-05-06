@@ -1,20 +1,20 @@
-CREATE TABLE [DBO].[SYS_TCC_FENCE_LOG]
+CREATE TABLE sys_tcc_fence_log
 (
-    [XID]          VARCHAR(128) NOT NULL,
-    [BRANCH_ID]    BIGINT       NOT NULL,
-    [ACTION_NAME]  VARCHAR(64)  NOT NULL,
-    [STATUS]       TINYINT      NOT NULL,
-    [GMT_CREATE]   DATETIME2(3) NOT NULL,
-    [GMT_MODIFIED] DATETIME2(3) NOT NULL,
-    PRIMARY KEY CLUSTERED ([XID], [BRANCH_ID])
-);
+    xid          VARCHAR(128) NOT NULL,
+    branch_id    BIGINT       NOT NULL,
+    action_name  VARCHAR(64)  NOT NULL,
+    status       TINYINT      NOT NULL,
+    gmt_create   DATETIME2(3) NOT NULL,
+    gmt_modified DATETIME2(3) NOT NULL,
+    PRIMARY KEY CLUSTERED (xid, branch_id)
+    );
 
-CREATE NONCLUSTERED INDEX [IDX_GMT_MODIFIED] ON [DBO].[SYS_TCC_FENCE_LOG] ([GMT_MODIFIED]);
-CREATE NONCLUSTERED INDEX [IDX_STATUS] ON [DBO].[SYS_TCC_FENCE_LOG] ([STATUS]);
+CREATE NONCLUSTERED INDEX idx_gmt_modified ON sys_tcc_fence_log (gmt_modified);
+CREATE NONCLUSTERED INDEX idx_status ON sys_tcc_fence_log (status);
 
-EXEC SP_ADDEXTENDEDPROPERTY
-     @NAME = N'MS_DESCRIPTION',
-     @VALUE = N'GLOBAL ID',
-     @LEVEL0TYPE = N'SCHEMA', @LEVEL0NAME = N'DBO',
-     @LEVEL1TYPE = N'TABLE', @LEVEL1NAME = N'SYS_TCC_FENCE_LOG',
-     @LEVEL2TYPE = N'COLUMN', @LEVEL2NAME = N'XID';
+EXEC sp_addextendedproperty
+     @name = N'MS_Description',
+     @value = N'GLOBAL ID',
+     @level0type = N'SCHEMA', @level0name = N'dbo',
+     @level1type = N'TABLE', @level1name = N'sys_tcc_fence_log',
+     @level2type = N'COLUMN', @level2name = N'xid';

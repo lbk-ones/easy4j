@@ -1,8 +1,8 @@
-CREATE TABLE IF NOT EXISTS SYS_LOCK
+create table if not exists sys_lock
 (
-    ID           VARCHAR(36) PRIMARY KEY COMMENT '主键',
-    CREATE_DATE  DATETIME COMMENT '操作时间',
-    EXPIRE_DATE  DATETIME COMMENT '过期时间',
-    REMARK  DATETIME COMMENT '备注',
-    INDEX IDX_SYS_LOCK_CREATE_DATE (CREATE_DATE)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT ='系统锁';
+    id           varchar(36) primary key comment '主键',
+    create_date  datetime comment '操作时间',
+    expire_date  datetime comment '过期时间',
+    remark       datetime comment '备注',
+    index idx_sys_lock_create_date (create_date)
+) engine = innodb default charset = utf8mb4 comment ='系统锁';

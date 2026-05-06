@@ -1,14 +1,14 @@
-create TABLE SYS_LOCK
+create table sys_lock
 (
-    ID          VARCHAR(36) NOT NULL PRIMARY KEY,
-    CREATE_DATE TIMESTAMP,
-    EXPIRE_DATE TIMESTAMP,
-    REMARK      VARCHAR(500)
+    id          varchar(36) not null primary key,
+    create_date timestamp,
+    expire_date timestamp,
+    remark      varchar(500)
 
 );
-COMMENT ON TABLE SYS_LOCK IS '系统锁';
-COMMENT ON COLUMN SYS_LOCK.ID IS '主键';
-COMMENT ON COLUMN SYS_LOCK.CREATE_DATE IS '操作时间';
-COMMENT ON COLUMN SYS_LOCK.EXPIRE_DATE IS '过期时间';
-COMMENT ON COLUMN SYS_LOCK.REMARK IS '备注';
-CREATE INDEX IDX_SYS_LOCK_CREATE_DATE ON SYS_LOCK (CREATE_DATE);
+comment on table sys_lock is '系统锁';
+comment on column sys_lock.id is '主键';
+comment on column sys_lock.create_date is '操作时间';
+comment on column sys_lock.expire_date is '过期时间';
+comment on column sys_lock.remark is '备注';
+create index idx_sys_lock_create_date on sys_lock (create_date);

@@ -1,22 +1,22 @@
-CREATE TABLE SYS_TCC_FENCE_LOG
+create table sys_tcc_fence_log
 (
-    XID          VARCHAR(128) NOT NULL,
-    BRANCH_ID    BIGINT       NOT NULL,
-    ACTION_NAME  VARCHAR(64)  NOT NULL,
-    STATUS       SMALLINT     NOT NULL,
-    GMT_CREATE   TIMESTAMP(3) NOT NULL,
-    GMT_MODIFIED TIMESTAMP(3) NOT NULL,
-    PRIMARY KEY (XID, BRANCH_ID)
+    xid          varchar(128) not null,
+    branch_id    bigint       not null,
+    action_name  varchar(64)  not null,
+    status       smallint     not null,
+    gmt_create   timestamp(3) not null,
+    gmt_modified timestamp(3) not null,
+    primary key (xid, branch_id)
 );
 
 -- 创建索引
-CREATE INDEX IDX_GMT_MODIFIED ON SYS_TCC_FENCE_LOG (GMT_MODIFIED);
-CREATE INDEX IDX_STATUS ON SYS_TCC_FENCE_LOG (STATUS);
+create index idx_gmt_modified on sys_tcc_fence_log (gmt_modified);
+create index idx_status on sys_tcc_fence_log (status);
 
 -- 添加注释
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.XID IS 'global id';
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.BRANCH_ID IS 'branch id';
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.ACTION_NAME IS 'action name';
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.STATUS IS 'status(tried:1;committed:2;rollbacked:3;suspended:4)';
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.GMT_CREATE IS 'create time';
-COMMENT ON COLUMN SYS_TCC_FENCE_LOG.GMT_MODIFIED IS 'update time';
+comment on column sys_tcc_fence_log.xid is 'global id';
+comment on column sys_tcc_fence_log.branch_id is 'branch id';
+comment on column sys_tcc_fence_log.action_name is 'action name';
+comment on column sys_tcc_fence_log.status is 'status(tried:1;committed:2;rollbacked:3;suspended:4)';
+comment on column sys_tcc_fence_log.gmt_create is 'create time';
+comment on column sys_tcc_fence_log.gmt_modified is 'update time';

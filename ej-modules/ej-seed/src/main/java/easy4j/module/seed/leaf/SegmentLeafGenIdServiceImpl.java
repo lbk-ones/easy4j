@@ -187,13 +187,13 @@ public class SegmentLeafGenIdServiceImpl extends LeafSeed implements LeafGenIdSe
         LeafAllocDomain leafAlloc;
         if (!buffer.isInitOk()) {
             leafAlloc = leafAllocDao.updateMaxIdAndGetLeafAlloc(key);
-            buffer.setStep(leafAlloc.getSTEP());
-            buffer.setMinStep(leafAlloc.getSTEP());//leafAlloc中的step为DB中的step
+            buffer.setStep(leafAlloc.getStep());
+            buffer.setMinStep(leafAlloc.getStep());//leafAlloc中的step为DB中的step
         } else if (buffer.getUpdateTimestamp() == 0) {
             leafAlloc = leafAllocDao.updateMaxIdAndGetLeafAlloc(key);
             buffer.setUpdateTimestamp(System.currentTimeMillis());
-            buffer.setStep(leafAlloc.getSTEP());
-            buffer.setMinStep(leafAlloc.getSTEP());//leafAlloc中的step为DB中的step
+            buffer.setStep(leafAlloc.getStep());
+            buffer.setMinStep(leafAlloc.getStep());//leafAlloc中的step为DB中的step
         } else {
             long duration = System.currentTimeMillis() - buffer.getUpdateTimestamp();
             long nextStep = buffer.getStep();
@@ -210,17 +210,17 @@ public class SegmentLeafGenIdServiceImpl extends LeafSeed implements LeafGenIdSe
             }
             logger.info("leafKey[{}], step[{}], duration[{}mins], nextStep[{}]", key, buffer.getStep(), String.format("%.2f", ((double) duration / (1000 * 60))), nextStep);
             LeafAllocDomain temp = new LeafAllocDomain();
-            temp.setBIZ_TAG(key);
-            temp.setSTEP(nextStep);
+            temp.setBizTag(key);
+            temp.setStep(nextStep);
             leafAlloc = leafAllocDao.updateMaxIdByCustomStepAndGetLeafAlloc(temp);
             buffer.setUpdateTimestamp(System.currentTimeMillis());
             buffer.setStep(nextStep);
-            buffer.setMinStep(leafAlloc.getSTEP());//leafAlloc的step为DB中的step
+            buffer.setMinStep(leafAlloc.getStep());//leafAlloc的step为DB中的step
         }
         // must set value before set max
-        long value = leafAlloc.getMAX_ID() - buffer.getStep();
+        long value = leafAlloc.getMaxId() - buffer.getStep();
         segment.getValue().set(value);
-        segment.setMax(leafAlloc.getMAX_ID());
+        segment.setMax(leafAlloc.getMaxId());
         segment.setStep(buffer.getStep());
     }
 

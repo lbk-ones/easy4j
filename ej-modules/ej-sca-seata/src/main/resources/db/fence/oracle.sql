@@ -1,12 +1,12 @@
-CREATE TABLE SYS_TCC_FENCE_LOG
+create table sys_tcc_fence_log
 (
-    XID          VARCHAR2(128) NOT NULL,
-    BRANCH_ID    NUMBER(19)    NOT NULL,
-    ACTION_NAME  VARCHAR2(64)  NOT NULL,
-    STATUS       NUMBER(3)     NOT NULL,
-    GMT_CREATE   TIMESTAMP(3)  NOT NULL,
-    GMT_MODIFIED TIMESTAMP(3)  NOT NULL,
-    PRIMARY KEY (XID, BRANCH_ID)
+    xid          varchar2(128) not null,
+    branch_id    number(19)    not null,
+    action_name  varchar2(64)  not null,
+    status       number(3)     not null,
+    gmt_create   timestamp(3)  not null,
+    gmt_modified timestamp(3)  not null,
+    primary key (xid, branch_id)
 );
-CREATE INDEX IDX_GMT_MODIFIED ON SYS_TCC_FENCE_LOG (GMT_MODIFIED);
-CREATE INDEX IDX_STATUS ON SYS_TCC_FENCE_LOG (STATUS);
+create index idx_gmt_modified on sys_tcc_fence_log (gmt_modified);
+create index idx_status on sys_tcc_fence_log (status);

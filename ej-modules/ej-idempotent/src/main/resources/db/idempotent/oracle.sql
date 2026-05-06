@@ -1,11 +1,11 @@
 -- 创建表
-CREATE TABLE SYS_KEY_IDEMPOTENT
+create table sys_key_idempotent
 (
-    IDE_KEY   VARCHAR2(128) NOT NULL,
-    EXPIRE_DATE TIMESTAMP     NOT NULL,
-    CONSTRAINT SYS_KEY_IDEMPOTENT_PK PRIMARY KEY (IDE_KEY)
+    ide_key   varchar2(128) not null,
+    expire_date timestamp     not null,
+    constraint sys_key_idempotent_pk primary key (ide_key)
 );
 
 -- 添加字段备注
-COMMENT ON COLUMN SYS_KEY_IDEMPOTENT.IDE_KEY IS '业务key';
-COMMENT ON COLUMN SYS_KEY_IDEMPOTENT.EXPIRE_DATE IS '过期时间';
+comment on column sys_key_idempotent.ide_key is '业务key';
+comment on column sys_key_idempotent.expire_date is '过期时间';

@@ -1,6 +1,6 @@
-CREATE TABLE SYS_WORK_IP
+create table sys_work_ip
 (
-    IP  VARCHAR(100),
-    NUM INT(20),
-    PRIMARY KEY (`IP`)
-) COMMENT '分布式主键IP记录';
+    ip  varchar(100),
+    num int(20),
+    primary key (ip)
+) comment '分布式主键ip记录';

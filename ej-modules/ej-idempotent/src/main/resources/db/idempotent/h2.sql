@@ -1,6 +1,6 @@
-CREATE TABLE SYS_KEY_IDEMPOTENT
+create table sys_key_idempotent
 (
-    IDE_KEY   VARCHAR(128) NOT NULL COMMENT '业务key',
-    EXPIRE_DATE TIMESTAMP    NOT NULL COMMENT '过期时间',
-    PRIMARY KEY (IDE_KEY)
+    ide_key   varchar(128) not null comment '业务key',
+    expire_date timestamp    not null comment '过期时间',
+    primary key (ide_key)
 );

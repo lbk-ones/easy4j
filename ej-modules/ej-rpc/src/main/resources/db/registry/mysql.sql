@@ -1,18 +1,18 @@
 -- 注册表 sys_e4j_jdbc_reg_data
-CREATE TABLE sys_e4j_jdbc_reg_data
+create table sys_e4j_jdbc_reg_data
 (
-    id               BIGINT AUTO_INCREMENT COMMENT '主键 自增',
-    data_key         VARCHAR(2000) COMMENT '键值key',
-    data_value       LONGTEXT COMMENT '键值value',
-    data_type        VARCHAR(1) COMMENT '数据类型 临时节点 0，存储节点 1',
-    create_date      DATETIME COMMENT '创建时间',
-    last_update_date DATETIME COMMENT '更新时间',
-    PRIMARY KEY (id)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='注册表';
+    id               bigint auto_increment comment '主键 自增',
+    data_key         varchar(2000) comment '键值key',
+    data_value       longtext comment '键值value',
+    data_type        varchar(1) comment '数据类型 临时节点 0，存储节点 1',
+    create_date      datetime comment '创建时间',
+    last_update_date datetime comment '更新时间',
+    primary key (id)
+) engine = innodb
+  default charset = utf8mb4 comment ='注册表';
 
 -- 给data_key创建索引
-CREATE UNIQUE INDEX idx_sys_e4j_jdbc_reg_data_data_key ON sys_e4j_jdbc_reg_data (data_key);
+create unique index idx_sys_e4j_jdbc_reg_data_data_key on sys_e4j_jdbc_reg_data (data_key);
 
 -- 给data_type创建索引
-CREATE INDEX idx_sys_e4j_jdbc_reg_data_data_type ON sys_e4j_jdbc_reg_data (data_type);
+create index idx_sys_e4j_jdbc_reg_data_data_type on sys_e4j_jdbc_reg_data (data_type);

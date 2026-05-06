@@ -28,20 +28,20 @@ import java.util.Date;
  * @date 2025-05
  */
 @Data
-@JdbcTable(name = "SYS_LEAF_ALLOC")
+@JdbcTable(name = "sys_leaf_alloc")
 public class LeafAllocDomain implements Serializable {
 
     @JdbcColumn(name = "biz_tag", isPrimaryKey = true)
-    private String BIZ_TAG;
+    private String bizTag;
 
     @JdbcColumn(name = "max_id")
-    private Long MAX_ID;
+    private Long maxId;
 
     @JdbcColumn(name = "step")
-    private Long STEP;
+    private Long step;
     @JdbcColumn(name = "description")
-    private String DESCRIPTION;
+    private String description;
 
     @JdbcColumn(name = "update_time")
-    private Date UPDATE_TIME;
+    private Date updateTime;
 }

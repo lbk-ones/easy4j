@@ -1,20 +1,20 @@
-CREATE TABLE SYS_LOG_RECORD
+create table sys_log_record
 (
-    ID           VARCHAR(500) PRIMARY KEY COMMENT '主键',
-    TAG          VARCHAR(100) COMMENT '日志标签',
-    TAG_DESC     VARCHAR(200) COMMENT '标签描述',
-    TRACE_ID     VARCHAR(100) COMMENT '链路ID',
-    STATUS       VARCHAR(50) COMMENT '处理状态',
-    PROCESS_TIME VARCHAR(50) COMMENT '处理时间',
-    CREATE_DATE  TIMESTAMP COMMENT '操作时间(长文本)',
-    PARAMS       CLOB COMMENT '参数(长文本)',
-    REMARK       CLOB COMMENT '备注(长文本)',
-    ERROR_INFO   CLOB COMMENT '错误信息',
-    TARGET_ID    VARCHAR(200) COMMENT '操作对象ID(当前操作的对象标识id)',
-    TARGET_ID2   VARCHAR(200) COMMENT '当前操作对象第二个标识id',
-    OPERATE_CODE VARCHAR(300) COMMENT '操作人代码',
-    OPERATE_NAME VARCHAR(700) COMMENT '操作人姓名'
+    id           varchar(500) primary key comment '主键',
+    tag          varchar(100) comment '日志标签',
+    tag_desc     varchar(200) comment '标签描述',
+    trace_id     varchar(100) comment '链路id',
+    status       varchar(50) comment '处理状态',
+    process_time varchar(50) comment '处理时间',
+    create_date  timestamp comment '操作时间(长文本)',
+    params       clob comment '参数(长文本)',
+    remark       clob comment '备注(长文本)',
+    error_info   clob comment '错误信息',
+    target_id    varchar(200) comment '操作对象id(当前操作的对象标识id)',
+    target_id2   varchar(200) comment '当前操作对象第二个标识id',
+    operate_code varchar(300) comment '操作人代码',
+    operate_name varchar(700) comment '操作人姓名'
 );
-CREATE INDEX IDX_SYS_LOG_RECORD_CREATE_DATE ON SYS_LOG_RECORD (CREATE_DATE);
-CREATE INDEX IDX_SYS_LOG_RECORD_TARGET_ID ON SYS_LOG_RECORD (TARGET_ID);
-CREATE INDEX IDX_SYS_LOG_RECORD_TAG ON SYS_LOG_RECORD (TAG);
+create index idx_sys_log_record_create_date on sys_log_record (create_date);
+create index idx_sys_log_record_target_id on sys_log_record (target_id);
+create index idx_sys_log_record_tag on sys_log_record (tag);

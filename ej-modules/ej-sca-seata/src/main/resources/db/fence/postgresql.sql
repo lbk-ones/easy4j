@@ -1,13 +1,13 @@
--- -------------------------------- THE SCRIPT USED FOR TCC FENCE  --------------------------------
-CREATE TABLE IF NOT EXISTS PUBLIC.SYS_TCC_FENCE_LOG
+-- -------------------------------- the script used for tcc fence  --------------------------------
+create table if not exists public.sys_tcc_fence_log
 (
-    XID          VARCHAR(128) NOT NULL,
-    BRANCH_ID    BIGINT       NOT NULL,
-    ACTION_NAME  VARCHAR(64)  NOT NULL,
-    STATUS       SMALLINT     NOT NULL,
-    GMT_CREATE   TIMESTAMP(3) NOT NULL,
-    GMT_MODIFIED TIMESTAMP(3) NOT NULL,
-    CONSTRAINT PK_SYS_TCC_FENCE_LOG PRIMARY KEY (XID, BRANCH_ID)
+    xid          varchar(128) not null,
+    branch_id    bigint       not null,
+    action_name  varchar(64)  not null,
+    status       smallint     not null,
+    gmt_create   timestamp(3) not null,
+    gmt_modified timestamp(3) not null,
+    constraint pk_sys_tcc_fence_log primary key (xid, branch_id)
 );
-CREATE INDEX IDX_GMT_MODIFIED ON PUBLIC.SYS_TCC_FENCE_LOG (GMT_MODIFIED);
-CREATE INDEX IDX_STATUS ON PUBLIC.SYS_TCC_FENCE_LOG (STATUS);
+create index idx_gmt_modified on public.sys_tcc_fence_log (gmt_modified);
+create index idx_status on public.sys_tcc_fence_log (status);
