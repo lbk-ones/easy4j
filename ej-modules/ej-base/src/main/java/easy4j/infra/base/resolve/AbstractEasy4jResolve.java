@@ -47,10 +47,10 @@ public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R>
         String password = null;
         try {
             url = split[0];
-            String s = split[1];
+            String s = String.join(SP.AT, Arrays.copyOfRange(split, 1, split.length));
             String[] split1 = s.split(SP.COLON);
             userName = split1[0];
-            password = split1[1];
+            password = String.join(SP.COLON, Arrays.copyOfRange(split1, 1, split1.length));
         } catch (Exception e) {
 
         }
