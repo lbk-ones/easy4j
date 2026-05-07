@@ -42,6 +42,8 @@ public class ImportFilter implements AutoConfigurationImportFilter {
         if (StrUtil.isNotBlank(autoConfigurationClass)) {
             boolean contains = autoConfigurationClass.contains("Redis");
             if (contains) {
+                Boolean enabled = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, Boolean.class, false);
+                if(!enabled) return true;
                 String eas4jRedisUrl = Easy4j.getProperty(SysConstant.EASY4J_REDIS_URL);
                 String redisUrl = Easy4j.getProperty(SysConstant.SPRING_REDIS_URL);
                 String redisHost = Easy4j.getProperty(SysConstant.SPRING_REDIS_HOST);

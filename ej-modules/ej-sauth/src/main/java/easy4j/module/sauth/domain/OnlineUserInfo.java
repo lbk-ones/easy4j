@@ -27,7 +27,7 @@ import java.util.Set;
 @Data
 public class OnlineUserInfo {
 
-    public static final String REDIS_KEY_PREFIX_AUTHORITY = "easy4j:user:authority:";
+    public static final String REDIS_KEY_PREFIX_AUTHORITY = "user:authority:";
 
     ISecurityEasy4jSession session;
 

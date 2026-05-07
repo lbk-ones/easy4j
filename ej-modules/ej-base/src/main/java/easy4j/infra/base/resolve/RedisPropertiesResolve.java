@@ -46,7 +46,8 @@ public class RedisPropertiesResolve extends ObjectMapStrObjectAbstractResovle {
     @Override
     public Object handler(Object t, Map<String, Object> map) {
         String easy4jRedisUrl = Convert.toStr(map.get(SysConstant.EASY4J_REDIS_URL));
-        if (StrUtil.isBlank(easy4jRedisUrl)) {
+        Boolean enable = Convert.toBool(map.get(SysConstant.EASY4J_REDIS_ENABLE),false);
+        if (StrUtil.isBlank(easy4jRedisUrl) || !enable) {
             return t;
         }
         String redisPassword = Easy4j.getProperty(map, SysConstant.SPRING_REDIS_PASSWORD, String.class);

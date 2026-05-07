@@ -17,6 +17,7 @@ package easy4j.module.redis;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import jodd.time.TimeUtil;
 import org.slf4j.Logger;
@@ -57,12 +58,19 @@ public class RedisCacheWithFallback<T> {
     // 默认五分钟
     private final Duration duration;
 
+    public String getCachePrefix() {
+        if (cachePrefix != null && !StrUtil.startWith(cachePrefix, SysConstant.PARAM_PREFIX + SP.COLON)) {
+            return SysConstant.PARAM_PREFIX + SP.COLON + cachePrefix;
+        }
+        return cachePrefix;
+    }
+
     public RedisCacheWithFallback(RedisTemplate<String, T> redisTemplate,
                                   Function<String, T> databaseFallback,
                                   String cachePrefix) {
         this.redisTemplate = redisTemplate;
         this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
-        this.cachePrefix = StrUtil.blankToDefault(cachePrefix,"");
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
         this.duration = Duration.ofMinutes(5L);
     }
 
@@ -71,7 +79,7 @@ public class RedisCacheWithFallback<T> {
                                   String cachePrefix, Duration duration) {
         this.redisTemplate = redisTemplate;
         this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
-        this.cachePrefix = StrUtil.blankToDefault(cachePrefix,"");
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
         this.duration = duration;
     }
 
@@ -122,7 +130,7 @@ public class RedisCacheWithFallback<T> {
      */
     private T executeRedisOperation(String key) {
         String cacheKey = getCacheKey(key);
-        if(redisTemplate == null) return null;
+        if (redisTemplate == null) return null;
         return redisTemplate.opsForValue().get(cacheKey);
     }
 
@@ -150,7 +158,7 @@ public class RedisCacheWithFallback<T> {
 
         try {
             String cacheKey = getCacheKey(key);
-            if(redisTemplate == null) return;
+            if (redisTemplate == null) return;
             redisTemplate.opsForValue().set(cacheKey, value, duration);
             logger.debug("Cache updated for key: {}", key);
         } catch (Exception e) {
@@ -168,7 +176,7 @@ public class RedisCacheWithFallback<T> {
 
         try {
             String cacheKey = getCacheKey(key);
-            if(redisTemplate == null) return;
+            if (redisTemplate == null) return;
             redisTemplate.delete(cacheKey);
             logger.debug("Cache deleted for key: {}", key);
         } catch (Exception e) {
@@ -238,7 +246,7 @@ public class RedisCacheWithFallback<T> {
      * 获取带前缀的缓存键
      */
     private String getCacheKey(String key) {
-        return cachePrefix.endsWith(":") ? cachePrefix : (cachePrefix + ":") + key;
+        return getCachePrefix().endsWith(":") ? getCachePrefix() : (getCachePrefix() + ":") + key;
     }
 
     /**
@@ -250,7 +258,7 @@ public class RedisCacheWithFallback<T> {
         } catch (DataAccessException e) {
             logger.error("Redis connection check failed", e);
             return false;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }

@@ -110,11 +110,13 @@ public class Config extends StandAbstractEasy4jResolve implements CommandLineRun
         if (SecuritySessionType.DB.name().equalsIgnoreCase(property)) {
             return new DbSessionStrategy();
         } else {
-            boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
+            boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class,false);
             if (redisEnable) {
                 return new RedisSessionStrategy();
+            }else{
+                return new DbSessionStrategy();
             }
-            throw new IllegalArgumentException(SysLog.compact("not enable redis so check config: " + SysConstant.EASY4J_AUTH_SESSION_STORAGE_TYPE));
+            // throw new IllegalArgumentException(SysLog.compact("not enable redis so check config: " + SysConstant.EASY4J_AUTH_SESSION_STORAGE_TYPE));
         }
     }
 

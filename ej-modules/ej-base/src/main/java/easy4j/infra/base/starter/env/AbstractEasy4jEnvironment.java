@@ -326,7 +326,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         if (!mapProperties.isEmpty()) {
             BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
             bootStrapSpecialVsResolve.handler(mapProperties, null);
-            propertySources.addLast(new MapPropertySource(FIRST_ENV_NAME, mapProperties));
+            // fix: if enable redis server.port...attrs confusion
+            if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES)) {
+                propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES,new MapPropertySource(FIRST_ENV_NAME, mapProperties));
+            }else{
+                propertySources.addLast(new MapPropertySource(FIRST_ENV_NAME, mapProperties));
+            }
         }
     }
 
