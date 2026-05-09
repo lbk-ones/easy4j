@@ -35,7 +35,8 @@ public class RedisSessionStrategy extends AbstractSessionStrategy {
 
     @Override
     public SecuritySession getSession(String token) {
-        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX_SESSION);
         assert cache != null;
         Cache.ValueWrapper valueWrapper = cache.get(token);
         if (valueWrapper == null) {
@@ -53,7 +54,7 @@ public class RedisSessionStrategy extends AbstractSessionStrategy {
             return null;
         }
         String shaToken = securitySession.getShaToken();
-        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX_SESSION);
         assert cache != null;
         cache.put(shaToken, securitySession);
         return securitySession;
@@ -61,7 +62,7 @@ public class RedisSessionStrategy extends AbstractSessionStrategy {
 
     @Override
     public void deleteSession(String token) {
-        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
+        Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX_SESSION);
         assert cache != null;
         cache.evict(token);
     }

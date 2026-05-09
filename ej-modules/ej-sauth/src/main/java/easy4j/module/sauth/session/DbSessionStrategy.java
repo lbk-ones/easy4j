@@ -111,9 +111,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public SecuritySession getSession(String token) {
         if (isClient) {
-            if(!sAuthEnable){
+            if (!sAuthEnable) {
                 log.error(SysLog.compact("auth is not enable!"));
-                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+                throw EasyException.wrap(BusCode.A000031, "auth is not enable!");
             }
             // cache
             ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
@@ -132,9 +132,16 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             }
             return session == null ? null : Convert.convert(SecuritySession.class, session);
         } else {
-            Dict dict = Dict.create()
-                    .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-            return dbAccess.selectOneByMap(dict, SecuritySession.class);
+            ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
+            if(session == null){
+                Dict dict = Dict.create()
+                        .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
+                SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
+                securityContext.setSessionByToken(token,securitySession);
+                return securitySession;
+            }else{
+                return Convert.convert(SecuritySession.class,session);
+            }
         }
 
     }
@@ -142,9 +149,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public SecuritySession saveSession(SecuritySession securitySession) {
         if (isClient) {
-            if(!sAuthEnable){
+            if (!sAuthEnable) {
                 log.error(SysLog.compact("auth is not enable!"));
-                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+                throw EasyException.wrap(BusCode.A000031, "auth is not enable!");
             }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
@@ -177,9 +184,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Override
     public void deleteSession(String token) {
         if (isClient) {
-            if(!sAuthEnable){
+            if (!sAuthEnable) {
                 log.error(SysLog.compact("auth is not enable!"));
-                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+                throw EasyException.wrap(BusCode.A000031, "auth is not enable!");
             }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
@@ -207,9 +214,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
 
         if (isClient) {
-            if(!sAuthEnable){
+            if (!sAuthEnable) {
                 log.error(SysLog.compact("auth is not enable!"));
-                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+                throw EasyException.wrap(BusCode.A000031, "auth is not enable!");
             }
             ISecurityEasy4jSession o = securityContext.getSession();
             if (o == null || !StrUtil.equals(o.getUsername(), userName)) {
@@ -229,9 +236,21 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             return Convert.convert(SecuritySession.class, o);
 
         } else {
-            Dict dict = Dict.create()
-                    .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
-            return dbAccess.selectOneByMap(dict, SecuritySession.class);
+            ISecurityEasy4jSession o = securityContext.getSession();
+            if (o == null) {
+                Dict dict = Dict.create()
+                        .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
+                SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
+                securityContext.setSession(securitySession);
+                return securitySession;
+            }else if(StrUtil.equals(o.getUsername(),userName)){
+                return Convert.convert(SecuritySession.class, o);
+            }else{
+                Dict dict = Dict.create()
+                        .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
+                return dbAccess.selectOneByMap(dict, SecuritySession.class);
+            }
+
         }
     }
 
@@ -239,9 +258,9 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     @Transactional(rollbackFor = Exception.class)
     public SecuritySession refreshSession(String token, Integer expireTime, TimeUnit timeUnit) {
         if (isClient) {
-            if(!sAuthEnable){
+            if (!sAuthEnable) {
                 log.error(SysLog.compact("auth is not enable!"));
-                throw EasyException.wrap(BusCode.A000031,"auth is not enable!");
+                throw EasyException.wrap(BusCode.A000031, "auth is not enable!");
             }
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)

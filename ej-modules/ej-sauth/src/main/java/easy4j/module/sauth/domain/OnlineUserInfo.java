@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.Easy4jContextFactory;
+import easy4j.infra.context.THConstant;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
@@ -32,6 +35,7 @@ public class OnlineUserInfo {
     ISecurityEasy4jSession session;
 
     ISecurityEasy4jUser user;
+    private static SecurityContext context;
 
     Set<SecurityAuthority> authorityList;
 
@@ -69,10 +73,19 @@ public class OnlineUserInfo {
     }
 
     // 权限列表获取
-    public void handlerAuthorityList(String username) {
+    public synchronized void handlerAuthorityList(String username) {
         if (CollUtil.isNotEmpty(this.authorityList)) {
             return;
         }
+        if (context == null) {
+            context = SpringUtil.getBean(SecurityContext.class);
+        }
+        Set<SecurityAuthority> authority = context.getAuthority(username);
+        if (null != authority) {
+            this.authorityList = authority;
+            return;
+        }
+
         // 权限可以缓存一下
         username = getUsername(username);
         boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
@@ -102,6 +115,7 @@ public class OnlineUserInfo {
         } else {
             this.authorityList = LoadAuthorityApi.getAuthorityList(username);
         }
+        context.setAuthority(username, this.authorityList);
 
 
     }

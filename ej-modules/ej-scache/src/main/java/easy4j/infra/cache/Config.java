@@ -15,6 +15,7 @@
 package easy4j.infra.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
@@ -69,6 +70,8 @@ public class Config {
 
         // 为特定缓存区域设置不同的过期时间
         cacheConfigurations.put(SysConstant.PARAM_PREFIX, defaultConfig.entryTtl(Duration.ofMinutes(20)));
+        long seconds = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class);
+        cacheConfigurations.put(SysConstant.PARAM_PREFIX_SESSION, defaultConfig.entryTtl(Duration.ofSeconds(seconds)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .withInitialCacheConfigurations(cacheConfigurations)

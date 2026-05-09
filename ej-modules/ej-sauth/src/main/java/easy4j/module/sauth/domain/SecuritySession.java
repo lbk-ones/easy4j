@@ -130,7 +130,7 @@ public class SecuritySession implements ISecurityEasy4jSession {
     /**
      * 是否失效 1在线 0被踢
      */
-    @Schema(description = "是否失效 1在线 0被踢")
+    @Schema(description = "是否失效 0在线 1被踢")
     @TableField("is_invalid")
     private Integer isInvalid;
 
