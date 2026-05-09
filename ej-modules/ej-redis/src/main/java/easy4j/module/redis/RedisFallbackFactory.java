@@ -22,18 +22,18 @@ public class RedisFallbackFactory {
     public final static Map<String, RedisCacheWithFallback<?>> FALLBACK_MAP = Maps.newConcurrentMap();
 
 
-    public static <K> Optional<RedisCacheWithFallback<K>> registerAndGet(String key,Supplier<RedisCacheWithFallback<K>> fallback) {
+    public static <K> Optional<RedisCacheWithFallback<K>> registerAndGet(String key, Supplier<RedisCacheWithFallback<K>> fallback) {
         if (StrUtil.isBlank(key) && fallback != null) return Optional.ofNullable(fallback.get());
         if (fallback == null) return Optional.empty();
         RedisCacheWithFallback<K> redisCacheWithFallback = fallback.get();
         if (redisCacheWithFallback == null) return Optional.empty();
         FALLBACK_MAP.putIfAbsent(key, redisCacheWithFallback);
-        RedisCacheWithFallback< K> redisCacheWithFallback1 = (RedisCacheWithFallback< K>) FALLBACK_MAP.get(key);
+        RedisCacheWithFallback<K> redisCacheWithFallback1 = (RedisCacheWithFallback<K>) FALLBACK_MAP.get(key);
         return Optional.ofNullable(redisCacheWithFallback1);
     }
 
-    public static <K> Optional<RedisCacheWithFallback<K>> getFallback(String key,Class<K> kc) {
-        RedisCacheWithFallback< K> redisCacheWithFallback = (RedisCacheWithFallback<K>) FALLBACK_MAP.get(key);
+    public static <K> Optional<RedisCacheWithFallback<K>> getFallback(String key, Class<K> kc) {
+        RedisCacheWithFallback<K> redisCacheWithFallback = (RedisCacheWithFallback<K>) FALLBACK_MAP.get(key);
         return Optional.ofNullable(redisCacheWithFallback);
     }
 
@@ -46,22 +46,22 @@ public class RedisFallbackFactory {
      */
     public static void clear(String fallbackKey, String key1, String key2) {
         Optional<RedisCacheWithFallback> redisCacheWithFallback = Optional.ofNullable(FALLBACK_MAP.get(fallbackKey));
-        boolean present = redisCacheWithFallback
-                .isPresent();
-        if (present) {
-            redisCacheWithFallback.ifPresent(e -> e.clearKey(key1, key2));
+        if (redisCacheWithFallback
+                .isPresent()) {
+            boolean redisEnabled = redisCacheWithFallback.get().clearKey(key1, key2);
+            if (redisEnabled) {
+                DelayExecutor.instance.submit(ListTs.asList(fallbackKey, key1, key2), 1000L, (data) -> {
+                    String s = ListTs.get(data, 0);
+                    String s1 = ListTs.get(data, 1);
+                    String s2 = ListTs.get(data, 2);
+                    Optional.ofNullable(FALLBACK_MAP.get(s)).ifPresent(e2 -> e2.clearKey(s1, s2));
+                });
+            }
         } else {
             if (log.isInfoEnabled()) {
                 log.info(SysLog.compact("not found the fallbackKey instance 【" + fallbackKey + "】 so can't clear cache"));
             }
         }
-
-        DelayExecutor.instance.submit(ListTs.asList(fallbackKey, key1, key2), 1000L, (data) -> {
-            String s = ListTs.get(data, 0);
-            String s1 = ListTs.get(data, 1);
-            String s2 = ListTs.get(data, 2);
-            Optional.ofNullable(FALLBACK_MAP.get(s)).ifPresent(e -> e.clearKey(s1, s2));
-        });
     }
 
 }

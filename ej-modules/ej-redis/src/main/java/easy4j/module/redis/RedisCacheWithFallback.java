@@ -149,14 +149,14 @@ public class RedisCacheWithFallback<K> {
      * 从缓存获取数据，如果Redis失败则从数据库获取
      */
     public Object get(K data) {
-        if(data == null) return null;
+        if (data == null) return null;
         // 检查熔断状态
         if (isCircuitBroken() || this.getRedisKey == null) {
             logger.warn("Redis circuit is broken, falling back to database");
             return getFromDatabase(data);
         }
         String redisKey = this.getRedisKey.apply(data);
-        if(StrUtil.isBlank(redisKey)) return getFromDatabase(data);
+        if (StrUtil.isBlank(redisKey)) return getFromDatabase(data);
         Object value = null;
         try {
             // 添加Redis操作的监控
@@ -332,33 +332,41 @@ public class RedisCacheWithFallback<K> {
      *
      * @param key
      */
-    public void clearKey(String key, String key2) {
-        if (StrUtil.isBlank(key)) return;
+    public boolean clearKey(String key, String key2) {
+        if (StrUtil.isBlank(key)) return false;
         // 如果熔断打开，不尝试更新缓存
         if (isCircuitBroken()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Circuit is broken, skipping cache clearKey for key: {}", key);
             }
-            return;
+            return false;
         }
-        if (redisTemplate == null) return;
+        if (redisTemplate == null) return false;
 
-        if (isHash) {
-            String hashKey = getHashKey();
-            if (StrUtil.isNotBlank(key2)) {
-                HashOperations<String, Object, Object> hp = redisTemplate.opsForHash();
-                hp.delete(hashKey, key2);
-                hp.delete(hashKey + EMPTY_SUFFIX, key2);
+        try {
+            if (isHash) {
+                String hashKey = getHashKey();
+                if (StrUtil.isNotBlank(key2)) {
+                    HashOperations<String, Object, Object> hp = redisTemplate.opsForHash();
+                    hp.delete(hashKey, key2);
+                    hp.delete(hashKey + EMPTY_SUFFIX, key2);
+                } else {
+                    redisTemplate.delete(hashKey);
+                    redisTemplate.delete(hashKey + EMPTY_SUFFIX);
+                }
             } else {
-                redisTemplate.delete(hashKey);
-                redisTemplate.delete(hashKey + EMPTY_SUFFIX);
+                ValueOperations<String, Object> hp = redisTemplate.opsForValue();
+                String cacheKey = getCacheKey(key);
+                hp.getAndDelete(cacheKey);
+                hp.getAndDelete(cacheKey + EMPTY_SUFFIX);
             }
-        } else {
-            ValueOperations<String, Object> hp = redisTemplate.opsForValue();
-            String cacheKey = getCacheKey(key);
-            hp.getAndDelete(cacheKey);
-            hp.getAndDelete(cacheKey + EMPTY_SUFFIX);
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("RedisCacheWithFallback clearKey error" + e.getMessage());
+            }
+            return false;
         }
+        return true;
     }
 
     /**
