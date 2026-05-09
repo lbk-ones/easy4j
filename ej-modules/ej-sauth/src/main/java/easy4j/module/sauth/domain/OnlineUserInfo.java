@@ -5,19 +5,19 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.context.Easy4jContext;
-import easy4j.infra.context.Easy4jContextFactory;
-import easy4j.infra.context.THConstant;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.core.loaduser.LoadUserBy;
 import easy4j.module.sauth.session.SessionStrategy;
 import lombok.Data;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.Set;
 
@@ -28,9 +28,11 @@ import java.util.Set;
  * @date 2025-07-26
  */
 @Data
+@Slf4j
 public class OnlineUserInfo {
 
     public static final String REDIS_KEY_PREFIX_AUTHORITY = "user:authority:";
+    public static final String REDIS_KEY_PREFIX_AUTHORITY_KEY = SysConstant.PARAM_PREFIX + SP.COLON + "user:authority";
 
     ISecurityEasy4jSession session;
 
@@ -85,30 +87,29 @@ public class OnlineUserInfo {
             this.authorityList = authority;
             return;
         }
-
         // 权限可以缓存一下
         username = getUsername(username);
         boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
         boolean isCache = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_IS_CACHE_AUTHORITY, boolean.class);
         if (redisEnable && isCache) {
             try {
-                Object bean = SpringUtil.getBean(SysConstant.REDIS_CACHE_MANAGER);
-                if (bean instanceof CacheManager) {
-                    CacheManager cacheManager = (CacheManager) bean;
-                    Cache cache = cacheManager.getCache(SysConstant.PARAM_PREFIX);
-                    if (null != cache) {
-                        Cache.ValueWrapper valueWrapper = cache.get(REDIS_KEY_PREFIX_AUTHORITY + username);
-                        if (null != valueWrapper) {
-                            Object o = valueWrapper.get();
-                            this.authorityList = JacksonUtil.toSet(JacksonUtil.toJson(o), SecurityAuthority.class);
-                        } else {
-                            Set<SecurityAuthority> authorityList1 = LoadAuthorityApi.getAuthorityList(username);
-                            cache.put(REDIS_KEY_PREFIX_AUTHORITY + username, authorityList1);
-                            this.authorityList = authorityList1;
-                        }
+                Object bean = SpringUtil.getBean(SysConstant.REDIS_TEMPLATE_BEAN);
+                if (bean != null) {
+                    RedisTemplate<String, Object> redisTemplate = (RedisTemplate<String, Object>) bean;
+                    HashOperations<String, String, Object> hp = redisTemplate.opsForHash();
+                    Object o1 = hp.get(REDIS_KEY_PREFIX_AUTHORITY_KEY, username);
+                    if (null != o1) {
+                        this.authorityList = JacksonUtil.toSet(JacksonUtil.toJson(o1), SecurityAuthority.class);
+                    } else {
+                        Set<SecurityAuthority> authorityList1 = LoadAuthorityApi.getAuthorityList(username);
+                        hp.put(REDIS_KEY_PREFIX_AUTHORITY_KEY, username, authorityList1);
+                        this.authorityList = authorityList1;
                     }
                 }
             } catch (Throwable e) {
+                if (log.isErrorEnabled()) {
+                    log.error(SysLog.compact(REDIS_KEY_PREFIX_AUTHORITY_KEY + " redis is error " + e.getMessage() + " so now use degrade methods!"));
+                }
                 // degrade
                 this.authorityList = LoadAuthorityApi.getAuthorityList(username);
             }
@@ -116,9 +117,50 @@ public class OnlineUserInfo {
             this.authorityList = LoadAuthorityApi.getAuthorityList(username);
         }
         context.setAuthority(username, this.authorityList);
-
-
     }
+
+    /**
+     * 清除所有权限缓存
+     */
+    public void clearAllAuthorityList() {
+        boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
+        boolean isCache = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_IS_CACHE_AUTHORITY, boolean.class);
+        if (redisEnable && isCache) {
+            try {
+                Object bean = SpringUtil.getBean(SysConstant.REDIS_TEMPLATE_BEAN);
+                if (bean != null) {
+                    RedisTemplate<String, Object> redisTemplate = (RedisTemplate<String, Object>) bean;
+                    HashOperations<String, String, Object> hp = redisTemplate.opsForHash();
+                    hp.delete(REDIS_KEY_PREFIX_AUTHORITY_KEY);
+                }
+            } catch (Exception e) {
+                if (log.isErrorEnabled()) {
+                    log.error(SysLog.compact("clearAuthorityList exception because redis is error: " + e.getMessage()));
+                }
+            }
+        }
+    }
+
+    public void clearAuthorityList(String key) {
+        if(StrUtil.isBlank(key)) return;
+        boolean redisEnable = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, boolean.class);
+        boolean isCache = Easy4j.getProperty(SysConstant.EASY4J_SIMPLE_AUTH_IS_CACHE_AUTHORITY, boolean.class);
+        if (redisEnable && isCache) {
+            try {
+                Object bean = SpringUtil.getBean(SysConstant.REDIS_TEMPLATE_BEAN);
+                if (bean != null) {
+                    RedisTemplate<String, Object> redisTemplate = (RedisTemplate<String, Object>) bean;
+                    HashOperations<String, String, Object> hp = redisTemplate.opsForHash();
+                    hp.delete(REDIS_KEY_PREFIX_AUTHORITY_KEY,key);
+                }
+            } catch (Exception e) {
+                if (log.isErrorEnabled()) {
+                    log.error(SysLog.compact("clearAuthorityList exception because redis is error: " + e.getMessage()));
+                }
+            }
+        }
+    }
+
 
     private String getUsername(String username) {
         if (StrUtil.isBlank(username)) {

@@ -92,12 +92,16 @@ public abstract class AbstractSecurityService extends StandardResolve implements
     @Override
     public OnlineUserInfo logout() {
         OnlineUserInfo onlineUser = getOnlineUser();
-        if (onlineUser != null) {
-            String shaToken = onlineUser.getSession().getShaToken();
+        if (onlineUser != null && onlineUser.getSession()!=null) {
+            ISecurityEasy4jSession session = onlineUser.getSession();
+            String username = session.getUsername();
+            String shaToken = session.getShaToken();
             SessionStrategy sessionStrategy = getSessionStrategy();
             if (Objects.nonNull(sessionStrategy) && StrUtil.isNotBlank(shaToken)) {
                 sessionStrategy.deleteSession(shaToken);
                 getSecurityContext().removeSession();
+                getSecurityContext().removeSessionByToken(shaToken);
+                onlineUser.clearAuthorityList(username);
             }
         }
         return onlineUser;

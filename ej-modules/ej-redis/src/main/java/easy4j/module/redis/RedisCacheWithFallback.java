@@ -19,17 +19,24 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
-import jodd.time.TimeUtil;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StopWatch;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -39,16 +46,24 @@ import java.util.function.Function;
 /**
  * Redis缓存实现，带有数据库降级功能
  * 当Redis出现故障时，自动降级到数据库获取数据
+ * K: 数据库查询回调的传参类型
+ *
+ * @author bokun.li]
  */
-public class RedisCacheWithFallback<T> {
+public class RedisCacheWithFallback<K> {
     private static final Logger logger = LoggerFactory.getLogger(RedisCacheWithFallback.class);
     private static final int MAX_FAILURES = 5; // 最大连续失败次数
 
     private static final long RECOVERY_TIME = 30_000; // 恢复时间（毫秒）
-
-    private final RedisTemplate<String, T> redisTemplate;
-    private final Function<String, T> databaseFallback;
+    public static final String EMPTY_SUFFIX = "__empty__";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final Function<K, Object> databaseFallback;
+    private final Function<K, String> getRedisKey;
     private final String cachePrefix;
+    /**
+     * 如果存hash结构的话 hashKey将由cachePrefix推算出来
+     */
+    private final Boolean isHash;
 
     // 熔断状态
     private static final AtomicInteger failureCount = new AtomicInteger(0);
@@ -58,49 +73,98 @@ public class RedisCacheWithFallback<T> {
     // 默认五分钟
     private final Duration duration;
 
-    public String getCachePrefix() {
+    private String getCachePrefix() {
         if (cachePrefix != null && !StrUtil.startWith(cachePrefix, SysConstant.PARAM_PREFIX + SP.COLON)) {
             return SysConstant.PARAM_PREFIX + SP.COLON + cachePrefix;
         }
         return cachePrefix;
     }
 
-    public RedisCacheWithFallback(RedisTemplate<String, T> redisTemplate,
-                                  Function<String, T> databaseFallback,
-                                  String cachePrefix) {
-        this.redisTemplate = redisTemplate;
-        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
-        this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
-        this.duration = Duration.ofMinutes(5L);
+    private String getHashKey() {
+        String nKey = cachePrefix;
+        if (cachePrefix != null && !StrUtil.startWith(cachePrefix, SysConstant.PARAM_PREFIX + SP.COLON)) {
+            nKey = SysConstant.PARAM_PREFIX + SP.COLON + cachePrefix;
+        }
+        if (StrUtil.endWith(nKey, SP.COLON)) {
+            nKey = StrUtil.removeSuffix(nKey, SP.COMMA);
+        }
+        return nKey;
     }
 
-    public RedisCacheWithFallback(RedisTemplate<String, T> redisTemplate,
-                                  Function<String, T> databaseFallback,
+    /**
+     * @param redisTemplate    传入的 redisTemplate
+     * @param databaseFallback 降级函数
+     * @param cachePrefix      缓存键
+     */
+    public RedisCacheWithFallback(RedisTemplate<String, Object> redisTemplate,
+                                  Function<K, Object> databaseFallback,
+                                  Function<K, String> getRedisKey,
+                                  String cachePrefix) {
+        this.redisTemplate = redisTemplate;
+        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, s -> null);
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
+        this.duration = Duration.ofMinutes(5L);
+        this.isHash = false;
+        this.getRedisKey = getRedisKey;
+    }
+
+    /**
+     * @param redisTemplate    传入的 redisTemplate
+     * @param databaseFallback 降级函数
+     * @param cachePrefix      缓存键
+     * @param duration         过期时间
+     */
+    public RedisCacheWithFallback(RedisTemplate<String, Object> redisTemplate,
+                                  Function<K, Object> databaseFallback,
+                                  Function<K, String> getRedisKey,
                                   String cachePrefix, Duration duration) {
         this.redisTemplate = redisTemplate;
-        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, (Function<String, T>) s -> null);
+        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, s -> null);
         this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
         this.duration = duration;
+        this.isHash = false;
+        this.getRedisKey = getRedisKey;
+    }
+
+    /**
+     * @param redisTemplate    传入的 redisTemplate
+     * @param databaseFallback 降级函数
+     * @param cachePrefix      缓存键
+     * @param duration         过期时间
+     * @param isHashKey        是否存成hash结构
+     */
+    public RedisCacheWithFallback(RedisTemplate<String, Object> redisTemplate,
+                                  Function<K, Object> databaseFallback,
+                                  Function<K, String> getRedisKey,
+                                  String cachePrefix, Duration duration, Boolean isHashKey) {
+        this.redisTemplate = redisTemplate;
+        this.databaseFallback = ObjectUtil.defaultIfNull(databaseFallback, s -> null);
+        this.cachePrefix = StrUtil.blankToDefault(cachePrefix, "");
+        this.duration = duration;
+        this.isHash = isHashKey;
+        this.getRedisKey = getRedisKey;
     }
 
     /**
      * 从缓存获取数据，如果Redis失败则从数据库获取
      */
-    public T get(String key) {
+    public Object get(K data) {
+        if(data == null) return null;
         // 检查熔断状态
-        if (isCircuitBroken()) {
+        if (isCircuitBroken() || this.getRedisKey == null) {
             logger.warn("Redis circuit is broken, falling back to database");
-            return getFromDatabase(key);
+            return getFromDatabase(data);
         }
-
-        T value = null;
+        String redisKey = this.getRedisKey.apply(data);
+        if(StrUtil.isBlank(redisKey)) return getFromDatabase(data);
+        Object value = null;
         try {
             // 添加Redis操作的监控
             StopWatch watch = new StopWatch();
             watch.start();
 
             // 执行Redis操作
-            value = executeRedisOperation(key);
+            value = executeRedisOperation(redisKey);
 
             watch.stop();
             logger.debug("Redis operation completed in {} ms", watch.getTotalTimeMillis());
@@ -110,17 +174,17 @@ public class RedisCacheWithFallback<T> {
 
             // 如果缓存中没有数据，从数据库获取并更新缓存
             if (value == null) {
-                logger.debug("Key {} not found in Redis, fetching from database", key);
-                value = getFromDatabase(key);
+                logger.debug("Key {} not found in Redis, fetching from database", redisKey);
+                value = getFromDatabase(data);
                 if (value != null) {
-                    updateCache(key, value);
+                    updateCache(redisKey, value);
                 }
             }
         } catch (Exception e) {
             // 记录失败并处理
-            handleRedisFailure(key, e);
+            handleRedisFailure(redisKey, e);
             // 从数据库获取
-            value = getFromDatabase(key);
+            value = getFromDatabase(data);
         }
         return value;
     }
@@ -128,41 +192,172 @@ public class RedisCacheWithFallback<T> {
     /**
      * 执行Redis操作
      */
-    private T executeRedisOperation(String key) {
+    private Object executeRedisOperation(String key) {
         String cacheKey = getCacheKey(key);
         if (redisTemplate == null) return null;
-        return redisTemplate.opsForValue().get(cacheKey);
+        Object res = null;
+        if (!isHash) {
+            res = redisTemplate.opsForValue().get(cacheKey);
+            if (res == null) {
+                res = redisTemplate.opsForValue().get(cacheKey + EMPTY_SUFFIX);
+            }
+        } else {
+            HashOperations<String, String, Object> hp = redisTemplate.opsForHash();
+            res = hp.get(getHashKey(), key);
+            if (res == null) {
+                res = hp.get(getHashKey() + EMPTY_SUFFIX, key);
+            }
+        }
+        return res;
     }
 
     /**
      * 从数据库获取数据
      */
-    private T getFromDatabase(String key) {
+    private Object getFromDatabase(K data) {
         try {
-            return databaseFallback.apply(key);
+            return databaseFallback.apply(data);
         } catch (Exception e) {
-            logger.error("Database fallback failed for key: {}", key, e);
+            logger.error("Database fallback failed for key: {}", data, e);
             throw new RuntimeException("Database operation failed", e);
+        }
+    }
+
+    public static boolean isEmptyCollection(Object value) {
+        // 1. 先判空
+        if (value == null) {
+            return true;
+        }
+        if (StrUtil.isBlankIfStr(value)) return true;
+
+        // 2. 如果是集合（List/Set/Queue 等都继承自 Collection）
+        if (value instanceof Collection) {
+            return ((Collection<?>) value).isEmpty();
+        }
+
+        // 3. 如果是数组
+        if (value.getClass().isArray()) {
+            return Arrays.asList((Object[]) value).isEmpty();
+        }
+
+        // 都不是 → 不是空集合
+        return false;
+    }
+
+    public void saveHashWithExpireLua(String key, String field, Object value, Long seconds) {
+        String script = "redis.call('hset', KEYS[1], ARGV[1], ARGV[2]) " +
+                "redis.call('expire', KEYS[1], ARGV[3]) " +
+                "return 1";
+
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptText(script);
+        redisScript.setResultType(Long.class);
+        List<String> keys = Collections.singletonList(key);
+        Long execute = redisTemplate.execute(redisScript, new StringRedisSerializer(), new RedisSerializer<>() {
+
+            @Nullable
+            @Override
+            public byte[] serialize(@Nullable Long value) throws SerializationException {
+                if (value == null) {
+                    return new byte[0];
+                }
+                return ByteBuffer.allocate(8).putLong(value).array();
+            }
+
+
+            @Nullable
+            @Override
+            public Long deserialize(@Nullable byte[] bytes) throws SerializationException {
+                if (bytes == null || bytes.length != 8) {
+                    return null;
+                }
+                return ByteBuffer.wrap(bytes).getLong();
+            }
+        }, keys, field, JacksonUtil.toJson(value), String.valueOf(seconds));
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("lua result is " + execute);
         }
     }
 
     /**
      * 更新缓存
      */
-    public void updateCache(String key, T value) {
+    public void updateCache(String key, Object value) {
         // 如果熔断打开，不尝试更新缓存
         if (isCircuitBroken()) {
-            logger.debug("Circuit is broken, skipping cache update for key: {}", key);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Circuit is broken, skipping cache update for key: {}", key);
+            }
             return;
         }
+        if (redisTemplate == null) return;
 
-        try {
+        // 缓存空值，避免压垮数据库，查的时候查不到的时候再查一下redis，如果不为null就返回，就不用查数据库了
+        boolean isEmpty = isEmptyCollection(value);
+
+        // 为了防止疯狂写入 加一个500MS的锁
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(getCacheKey("lock:cache:write:" + key), "1", 500L, TimeUnit.MILLISECONDS);
+        if (success) {
+            try {
+                if (isHash) {
+                    HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+                    String hashKey = getHashKey();
+                    if (isEmpty) {
+                        String emptyKey = hashKey + EMPTY_SUFFIX;
+                        saveHashWithExpireLua(emptyKey, key, value, 60L);
+                    } else {
+                        // 不永久缓存 缓存一天
+                        saveHashWithExpireLua(hashKey, key, value, 60L * 60 * 24);
+                    }
+                } else {
+                    String cacheKey = getCacheKey(key);
+                    if (isEmpty) {
+                        redisTemplate.opsForValue().set(cacheKey + EMPTY_SUFFIX, value, duration);
+                    } else {
+                        redisTemplate.opsForValue().set(cacheKey, value, duration);
+                    }
+                }
+                logger.debug("Cache updated for key: {}", key);
+            } catch (Exception e) {
+                handleRedisFailure(key, e);
+            }
+        }
+
+    }
+
+    /**
+     * 清除这个KEY
+     *
+     * @param key
+     */
+    public void clearKey(String key, String key2) {
+        if (StrUtil.isBlank(key)) return;
+        // 如果熔断打开，不尝试更新缓存
+        if (isCircuitBroken()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Circuit is broken, skipping cache clearKey for key: {}", key);
+            }
+            return;
+        }
+        if (redisTemplate == null) return;
+
+        if (isHash) {
+            String hashKey = getHashKey();
+            if (StrUtil.isNotBlank(key2)) {
+                HashOperations<String, Object, Object> hp = redisTemplate.opsForHash();
+                hp.delete(hashKey, key2);
+                hp.delete(hashKey + EMPTY_SUFFIX, key2);
+            } else {
+                redisTemplate.delete(hashKey);
+                redisTemplate.delete(hashKey + EMPTY_SUFFIX);
+            }
+        } else {
+            ValueOperations<String, Object> hp = redisTemplate.opsForValue();
             String cacheKey = getCacheKey(key);
-            if (redisTemplate == null) return;
-            redisTemplate.opsForValue().set(cacheKey, value, duration);
-            logger.debug("Cache updated for key: {}", key);
-        } catch (Exception e) {
-            handleRedisFailure(key, e);
+            hp.getAndDelete(cacheKey);
+            hp.getAndDelete(cacheKey + EMPTY_SUFFIX);
         }
     }
 

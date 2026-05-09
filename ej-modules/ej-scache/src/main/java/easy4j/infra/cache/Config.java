@@ -59,7 +59,7 @@ public class Config {
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
         // 默认缓存配置
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10))
+//                .entryTtl(Duration.ofMinutes(10))
                 .computePrefixWith(cacheName -> cacheName + SP.COLON)
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(JacksonUtil.getMapper())))

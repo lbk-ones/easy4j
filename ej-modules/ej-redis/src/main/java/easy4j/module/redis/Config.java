@@ -43,7 +43,7 @@ public class Config {
         return new CustomRedisson();
     }
 
-    @Bean
+    @Bean(name = SysConstant.REDIS_TEMPLATE_BEAN)
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
@@ -56,7 +56,6 @@ public class Config {
         template.setHashKeySerializer(new StringRedisSerializer());
         // 设置Hash值的序列化方式
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(JacksonUtil.getMapper()));
-
         template.afterPropertiesSet();
         return template;
     }

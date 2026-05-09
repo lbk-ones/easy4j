@@ -25,7 +25,7 @@ import jodd.util.StringPool;
 public class SysConstant {
 
     public static final String PARAM_PREFIX = "easy4j";
-    public static final String PARAM_PREFIX_SESSION = PARAM_PREFIX+SP.DOT+"session";
+    public static final String PARAM_PREFIX_SESSION = PARAM_PREFIX+SP.COLON+"session";
     // 包结构的前缀
     public static final String PACKAGE_PREFIX = PARAM_PREFIX;
 
@@ -372,6 +372,7 @@ public class SysConstant {
     public static final String REDIS_CACHE_MANAGER = "redisCacheManager";
     public static final String CAFFEINE_CACHE_MANAGER = "caffeineCacheManager";
     public static final String REDIS_CONNECTION_FACTORY = "redissonConnectionFactory";
+    public static final String REDIS_TEMPLATE_BEAN = "redisTemplate";
 
 
     public static final String SESSION_USER = "SESSION_USER";

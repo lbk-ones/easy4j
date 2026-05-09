@@ -115,6 +115,21 @@ public class JacksonUtil {
         }
     }
 
+    /**
+     * 对象转JSON字符串
+     *
+     * @param obj 对象
+     * @return JSON字符串
+     */
+    public static byte[] toBytes(Object obj) {
+        try {
+            return mapper.writeValueAsBytes(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON序列化失败: " + e.getMessage(), e);
+        }
+    }
+
+
     public static String toJsonContainNull(Object obj) {
         try {
             return mapper2.writeValueAsString(obj);
@@ -284,6 +299,16 @@ public class JacksonUtil {
             return mapper.readValue(json, Object.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON格式化失败: " + e.getMessage(), e);
+        }
+
+    }
+
+    public static <T> Object readValue(byte[] data,Class<T> tClass) {
+
+        try {
+            return mapper.readValue(data, tClass);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }

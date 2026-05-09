@@ -37,6 +37,11 @@
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
         </dependency>
 
