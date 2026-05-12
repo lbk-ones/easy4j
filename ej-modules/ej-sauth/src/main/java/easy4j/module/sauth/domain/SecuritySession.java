@@ -255,13 +255,10 @@ public class SecuritySession implements ISecurityEasy4jSession {
         //this.extMap = reqUser.getExtMap() == null ? new HashMap<>() : reqUser.getExtMap();
         //this.deptCode = reqUser.getDeptCode();
         //this.deptName = reqUser.getDeptName();
-        this.deviceId = reqUser.getDeviceInfo();
+        this.deviceId = reqUser.getDeviceId();
         this.ip = reqUser.getIp();
-
-        //this.orgCode = reqUser.getOrgCode();
-        //this.orgCode = reqUser.getOrgName();
+        this.userAgent = reqUser.getUserAgent();
         this.tenantId = reqUser.getTenantId();
-        //this.tenantName = reqUser.getTenantName();
         return this;
     }
 

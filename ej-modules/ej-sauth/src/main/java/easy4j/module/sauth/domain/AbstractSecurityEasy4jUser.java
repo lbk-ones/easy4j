@@ -10,6 +10,7 @@ import easy4j.module.sauth.authentication.LoadAuthentication;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,6 +82,13 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "作用域，（认证、拦截）")
     private AuthenticationScopeType scope = AuthenticationScopeType.Authentication;
 
+
+    @Desc("是否是openApi认证")
+    @JdbcIgnore
+    @JsonIgnore
+    @Schema(description = "是否是openApi认证")
+    private Boolean openApiAuthenticationIs = false;
+
     @Desc("其他鉴权方式")
     @JdbcIgnore
     @Schema(description = "其他鉴权方式")
@@ -105,6 +113,25 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @JdbcIgnore
     @Schema(description = "租户ID")
     private Long tenantId;
+
+
+
+    @Desc("用户Agent")
+    @JdbcIgnore
+    @Schema(description = "用户Agent")
+    private String userAgent;
+
+
+    @Desc("用户设备唯一ID")
+    @JdbcIgnore
+    @Schema(description = "用户设备唯一ID")
+    private String deviceId;
+
+
+    @Desc("拥有角色代码列表")
+    @JdbcIgnore
+    @Schema(description = "拥有角色代码列表")
+    private List<String> roleCodeList;
 
 
 }

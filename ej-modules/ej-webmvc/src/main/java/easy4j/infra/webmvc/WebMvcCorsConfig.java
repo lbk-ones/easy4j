@@ -15,7 +15,11 @@
 package easy4j.infra.webmvc;
 
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.ModuleBoolean;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
@@ -35,18 +39,33 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ModuleBoolean(SysConstant.GLOBAL_CORS_ENABLE + ":true")
 public class WebMvcCorsConfig implements WebMvcConfigurer, InitializingBean {
 
+    private String allowOriginDomains;
+
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.info(SysLog.compact("SpringMVC允许跨域已开启"));
+        log.info(SysLog.compact("SpringMVC allows cross-origin enabled"));
+        allowOriginDomains = Easy4j.getProperty(SysConstant.GLOBAL_CORS_ALLOW_DOMAINS);
+
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")  // 匹配所有接口
-                .allowedOriginPatterns("*")  // 允许所有来源（生产环境建议指定具体域名）
-                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")  // 允许所有请求方法
-                .allowedHeaders("*")  // 允许所有请求头
-                .allowCredentials(false) // 允许携带 Cookie（需与前端配合，域名需一致）
-                .maxAge(3600); // 预检请求的有效期（秒）
+        if (StrUtil.isNotBlank(allowOriginDomains)) {
+            registry.addMapping("/**")  // 匹配所有接口
+                    .allowedOrigins(ListTs.split(allowOriginDomains, SP.COMMA))  // 允许所有来源（生产环境建议指定具体域名）
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 允许所有请求方法
+                    .allowedHeaders("*")  // 允许所有请求头
+                    .allowCredentials(true) // 允许携带 Cookie（需与前端配合，域名需一致）
+                    .maxAge(3600); // 预检请求的有效期（秒）
+        } else {
+            registry.addMapping("/**")  // 匹配所有接口
+                    .allowedOriginPatterns("*")  // 允许所有来源（生产环境建议指定具体域名）
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 允许所有请求方法
+                    .allowedHeaders("*")  // 允许所有请求头
+                    .allowCredentials(true) // 允许携带 Cookie（需与前端配合，域名需一致）
+                    .maxAge(3600); // 预检请求的有效期（秒）
+        }
+
     }
 }

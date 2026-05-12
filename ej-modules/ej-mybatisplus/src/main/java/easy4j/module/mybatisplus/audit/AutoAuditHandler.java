@@ -14,10 +14,13 @@
  */
 package easy4j.module.mybatisplus.audit;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.user.UserContext;
+import easy4j.module.mybatisplus.MybatisPlusProperties;
 import org.apache.ibatis.reflection.MetaObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,23 +45,31 @@ public class AutoAuditHandler implements MetaObjectHandler {
     public static final String CREATE_TIME = "createTime";
     public static final String UPDATE_DATE = "lastUpdateTime";
 
+    private static final class PlusPropertiesHolder {
+        private static final MybatisPlusProperties plusProperties = SpringUtil.getBean(MybatisPlusProperties.class);
+    }
 
-    private final Logger log = LoggerFactory.getLogger(AutoAuditHandler.class);
+    public String getTenantIdName(){
+        String tenantIdFieldName = PlusPropertiesHolder.plusProperties.getTenantIdFieldName();
+        return StrUtil.toCamelCase(tenantIdFieldName);
+    }
 
-    public UserContext getUserContext() {
+
+    public static UserContext getUserContext() {
         Easy4jContext context = Easy4j.getContext();
         Optional<Object> threadHashValue = context.getThreadHashValue(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME);
         if (threadHashValue.isPresent()) {
             Object o = threadHashValue.get();
             return (UserContext) o;
         }
-        return null;
+        return  new UserContext();
     }
 
     @Override
     public void insertFill(MetaObject metaObject) {
         boolean updateDate = metaObject.hasSetter(UPDATE_DATE);
         boolean createDate = metaObject.hasSetter(CREATE_TIME);
+
         if (updateDate || createDate) {
             Date date = new Date();
             if (createDate) {
@@ -69,9 +80,16 @@ public class AutoAuditHandler implements MetaObjectHandler {
             }
         }
         try {
-            UserContext userContext = this.getUserContext();
+
+            UserContext userContext = getUserContext();
             String userName = userContext.getUserName();
             String userNameCn = userContext.getUserNameCn();
+            Long tenantId = userContext.getTenantId();
+            String tenantIdName = getTenantIdName();
+            if (metaObject.hasSetter(tenantIdName)) {
+                this.setFieldValByName(tenantIdName, tenantId, metaObject);
+            }
+
             if (metaObject.hasSetter(CREATE_BY)) {
                 this.setFieldValByName(CREATE_BY, userName, metaObject);
             }
@@ -84,6 +102,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
             if (metaObject.hasSetter(UPDATE_NAME)) {
                 this.setFieldValByName(UPDATE_NAME, userNameCn, metaObject);
             }
+
         } catch (Exception ignored) {
 
         }
@@ -94,7 +113,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         try {
-            UserContext userContext = this.getUserContext();
+            UserContext userContext = getUserContext();
             String userName = userContext.getUserName();
             String userNameCn = userContext.getUserNameCn();
             if (metaObject.hasSetter(UPDATE_BY)) {
@@ -106,6 +125,13 @@ public class AutoAuditHandler implements MetaObjectHandler {
             if (metaObject.hasSetter(UPDATE_DATE)) {
                 this.setFieldValByName(UPDATE_DATE, new Date(), metaObject);
             }
+
+            Long tenantId = userContext.getTenantId();
+            String tenantIdName = getTenantIdName();
+            if (metaObject.hasSetter(tenantIdName)) {
+                this.setFieldValByName(tenantIdName, tenantId, metaObject);
+            }
+
         } catch (Exception ignored) {
 
         }

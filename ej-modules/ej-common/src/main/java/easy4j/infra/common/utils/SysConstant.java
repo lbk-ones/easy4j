@@ -92,6 +92,7 @@ public class SysConstant {
     public static final String SIGNATURE_SECRET = PARAM_PREFIX + StringPool.DOT + "signature-secret";
     public static final String SIGN_URLS = PARAM_PREFIX + StringPool.DOT + "sign-urls";
     public static final String GLOBAL_CORS_ENABLE = PARAM_PREFIX + StringPool.DOT + "cors-reject-enable";
+    public static final String GLOBAL_CORS_ALLOW_DOMAINS = PARAM_PREFIX + StringPool.DOT + "cors-allow-domains";
     public static final String SEED_IP_SEGMENT = PARAM_PREFIX + StringPool.DOT + "seed-ip-segment";
     public static final String H2_ENABLE = PARAM_PREFIX + StringPool.DOT + "h2-enable";
     public static final String H2_URL = PARAM_PREFIX + StringPool.DOT + "h2-url";
@@ -129,6 +130,12 @@ public class SysConstant {
     public static final String EASY4J_SECURITY_OLD_SCHOOL = PARAM_PREFIX + StringPool.DOT + "security-old-school-enable";
     public static final String EASY4J_SAUTH_ENABLE = PARAM_PREFIX + StringPool.DOT + "simple-auth-enable";
     public static final String EASY4J_SAUTH_IS_SERVER = PARAM_PREFIX + StringPool.DOT + "simple-auth-is-server";
+    public static final String EASY4J_SAUTH_IS_USE_COOKIE = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie";
+    public static final String EASY4J_SAUTH_COOKIE_HTTPONLY = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie-httponly";
+    public static final String EASY4J_SAUTH_COOKIE_SECURE = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie-secure";
+    public static final String EASY4J_SAUTH_COOKIE_DOMAIN = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie-domain";
+    public static final String EASY4J_SAUTH_COOKIE_PATH = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie-path";
+    public static final String EASY4J_SAUTH_COOKIE_SAME_SITE = PARAM_PREFIX + StringPool.DOT + "simple-auth-token-use-cookie-same-site";
     public static final String EASY4J_PRINT_REQUEST_LOG = PARAM_PREFIX + StringPool.DOT + "print-request-log";
     public static final String EASY4J_AUTH_SESSION_STORAGE_TYPE = PARAM_PREFIX + StringPool.DOT + "simple-auth-session-storage-type";
     public static final String EASY4J_AUTH_SESSION_EXPIRE_TIME = PARAM_PREFIX + StringPool.DOT + "session-expire-time-seconds";

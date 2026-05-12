@@ -2,6 +2,7 @@ package easy4j.module.sauth.authentication;
 
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.webmvc.WebContextUtil;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
@@ -85,7 +86,7 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
             user.setErrorCode(BusCode.A00004 + ",user");
             return;
         }
-        HttpServletRequest servletRequest = getServletRequest();
+        HttpServletRequest servletRequest = WebContextUtil.getRequest();
         String method = servletRequest.getMethod();
         if (!"post".equalsIgnoreCase(method)) {
             user.setErrorCode(BusCode.A00030);

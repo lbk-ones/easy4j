@@ -27,22 +27,28 @@ import com.baomidou.mybatisplus.extension.MybatisMapWrapperFactory;
 import com.baomidou.mybatisplus.extension.injector.methods.AlwaysUpdateSomeColumnById;
 import com.baomidou.mybatisplus.extension.injector.methods.InsertBatchSomeColumn;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.api.user.UserContext;
 import easy4j.module.mybatisplus.audit.AutoAuditHandler;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.EnvironmentAware;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
@@ -57,14 +63,15 @@ import java.util.List;
  */
 @Configuration
 @AutoConfigureBefore(value = {MybatisPlusAutoConfiguration.class})
+@EnableConfigurationProperties({MybatisPlusProperties.class})
 @Slf4j
-public class Config implements EnvironmentAware {
-    private Environment environment;
+public class Config {
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
+
+    @Autowired
+    MybatisPlusProperties mybatisPlusProperties;
+
+    public final static List<String> IGNORE_TABLES = ListTs.newCopyOnWriteArrayList();
 
 
 //    @Bean
@@ -88,11 +95,11 @@ public class Config implements EnvironmentAware {
      */
     @Bean("sqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource, GlobalConfig globalConfig) throws Exception {
-        log.info(SysLog.compact("开始配置MYBATIS_PLUS"));
+        log.info(SysLog.compact("Start configuring mybatis-plus!"));
         String dataType = Easy4j.getType();
         DbType dbType = DbType.getDbType(dataType);
         String db = dbType.getDb();
-        log.info(SysLog.compact("判定数据库为,{}", db));
+        log.info(SysLog.compact("The database is determined to be,【{}】", db));
 
         MybatisSqlSessionFactoryBean sqlSessionFactory = new MybatisSqlSessionFactoryBean();
         // 数据源
@@ -102,14 +109,14 @@ public class Config implements EnvironmentAware {
         // 枚举扫描
         sqlSessionFactory.setTypeAliasesPackage(enumPath);
         String xmlLocation = "classpath*:/mappers/" + db + "/**/*.xml";
-        log.info(SysLog.compact("xml文件扫描路径,{}", xmlLocation));
+        log.info(SysLog.compact("xml file scanning path,{}", xmlLocation));
         // xml扫描
         sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver()
                 .getResources(xmlLocation));
 
         // 扫描 typeHandler
         String domainPath = Easy4j.mainClassPath + SysConstant.DOT + SysConstant.DOMAINS;
-        log.info(SysLog.compact("实体domain路径,{}", domainPath));
+        log.info(SysLog.compact("entity domain path ,{}", domainPath));
         sqlSessionFactory.setTypeHandlersPackage(domainPath);
         MybatisConfiguration configuration = new MybatisConfiguration();
         configuration.setJdbcTypeForNull(JdbcType.NULL);
@@ -117,27 +124,60 @@ public class Config implements EnvironmentAware {
         configuration.setMapUnderscoreToCamelCase(true);
         // 拦截器
         MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
-//        new PaginationInnerInterceptor()
+        // 开启多租户
+        if (mybatisPlusProperties.isMultiTenantEnabled()) {
+            log.info(SysLog.compact("mybatis-plus Multi-tenant mode has been enabled"));
+            Long tenantIdDefault = mybatisPlusProperties.getDefaultTenantId();
+            // 多租户插件
+            TenantLineInnerInterceptor tenantInterceptor = new TenantLineInnerInterceptor();
+            tenantInterceptor.setTenantLineHandler(new TenantLineHandler() {
+
+                // 返回当前登录用户的 tenantId
+                @Override
+                public Expression getTenantId() {
+                    UserContext userContext = AutoAuditHandler.getUserContext();
+                    long tenantId = userContext != null ? userContext.getTenantId() == null ? tenantIdDefault : userContext.getTenantId() : tenantIdDefault;
+                    return new LongValue(tenantId);
+                }
+
+                // 租户字段名（数据库列名，不是实体类属性名）
+                @Override
+                public String getTenantIdColumn() {
+                    return mybatisPlusProperties.getTenantIdFieldName();
+                }
+
+                // 忽略表：这些表不自动拼接 tenant_id
+                @Override
+                public boolean ignoreTable(String tableName) {
+                    return IGNORE_TABLES.contains(tableName) ||
+                            mybatisPlusProperties.getTenantIgnoreTables().contains(tableName);
+                }
+            });
+            mybatisPlusInterceptor.addInnerInterceptor(tenantInterceptor);
+        }else{
+            log.info(SysLog.compact("mybatis-plus Multi-tenant mode is not enabled"));
+        }
+
         mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor(dbType));
-        log.info(SysLog.compact("分页插件已经配置"));
+        log.info(SysLog.compact("The pagination plugin has been configured"));
         // 乐观锁插件
         mybatisPlusInterceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
-        log.info(SysLog.compact("乐观锁插件已经配置"));
+        log.info(SysLog.compact("The optimistic locking plugin has been configured"));
         // 阻止恶意的全表更新删除
         mybatisPlusInterceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
-        log.info(SysLog.compact("阻止恶意的全表更新删除"));
+        log.info(SysLog.compact("Prevent malicious full-table update and deletion"));
         sqlSessionFactory.setPlugins(mybatisPlusInterceptor);
 
         // map 下划线转驼峰
         configuration.setObjectWrapperFactory(new MybatisMapWrapperFactory());
-        log.info(SysLog.compact("mybatis-plus 开启下划线转驼峰"));
+        log.info(SysLog.compact("mybatis-plus Enable underscore to camelCase conversion"));
         sqlSessionFactory.setConfiguration(configuration);
         // 自动填充插件
         globalConfig.setMetaObjectHandler(new AutoAuditHandler());
-        log.info(SysLog.compact("自定义自动审计"));
+        log.info(SysLog.compact("Customized automatic audit"));
         globalConfig.setBanner(false);
         sqlSessionFactory.setGlobalConfig(globalConfig);
-        log.info(SysLog.compact("MYBATIS_PLUS 初始化完毕【" + MybatisPlusVersion.getVersion() + "】"));
+        log.info(SysLog.compact("mybatis-plus Initialization completed【" + MybatisPlusVersion.getVersion() + "】"));
         return sqlSessionFactory.getObject();
     }
 

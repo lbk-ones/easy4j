@@ -339,6 +339,7 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.data-source-url**: 数据源简写，例如：“jdbc:postgresql://localhost:5432/postgres@root:123456”
 - **easy4j.seed-ip-segment**: seed模块的雪花算法 ip前缀，用于多网卡确定ip的 例如 10.“设置了ip前缀之后会按照ip来分配工作ID 分布式系统则不会主键重复”
 - **easy4j.cors-reject-enable**: 是否开启全局允许跨域 默认true 但是可以关闭
+- **easy4j.cors-allow-domains**: 跨域允许的domain,多个用逗号隔开
 - **easy4j.h2-enable**: 是否启用h2数据库 (true|false)
 - **easy4j.h2-url**: h2 数据库地址
 - **easy4j.h2-console-username**: h2控制台用户名 默认 easy4j
@@ -382,6 +383,12 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.simple-auth-scan-package-prefix**: 权限扫描包名，比如org.springframework这种前缀,只有处于这个包前缀的类才会被权限验证，默认是启动类所在包路径
 - **easy4j.simple-auth-session-repeat-strategy**: 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线 (default|new|reject|public|kick)
 - **easy4j.simple-auth-access-tokens**: 认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取
+- **easy4j.simple-auth-token-use-cookie**: 不使用header的方式来携带token,启用cookie来进行token携带
+- **easy4j.simple-auth-token-use-cookie-httponly**: cookie是否使用httponly模式
+- **easy4j.simple-auth-token-use-cookie-secure**: cookie是否使用secure模式,如果是则强制要求https
+- **easy4j.simple-auth-token-use-cookie-domain**: cookie是否设置domain
+- **easy4j.simple-auth-token-use-cookie-path**: cookie是否设置path默认为/
+- **easy4j.simple-auth-token-use-cookie-same-site**: cookie的samesite策略默认为Lax
 - **easy4j.db-request-log-enable**: 是否启用RequestLog注解进行请求日志收集 默认启用false关闭 (true|false)
 - **easy4j.enable-print-sys-db-sql**: 是否开启系统sql日志记录 true 代表开启，默认开启 (true|false)
 - **easy4j.cache-http-content-length**: 请求体缓存字节流最大大小，默认5M
@@ -407,6 +414,12 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.sentinel-dashboard-enable**: 是否开启sentinel的控制台，默认不开启 (true|false)
 - **easy4j.sentinel-dashboard-eager**:  （非必填）sentinel控制台是否提前初始化，默认如果启用控制台则提前初始化 (true|false)
 - **easy4j.sentinel-dashboard-url**: sentinel控制台地址，示例（localhost:8080）
+- **easy4j.sentinel-flow-count**: (非SCA架构生效)每秒允许通过的请求数
+- **easy4j.sentinel-flow-grade-type**: (非SCA架构生效)限流模式为 1、QPS 0、THREAD
+- **easy4j.sentinel-degrade-count**: (非SCA架构生效)降级规则 熔断阈值比例，这里表示异常比例阈值
+- **easy4j.sentinel-degrade-grade-type**: (非SCA架构生效)降级模式 0：平均响应时间，1：异常比例，2：异常次数
+- **easy4j.sentinel-degrade-time**: (非SCA架构生效)熔断时长，单位为秒
+- **easy4j.sentinel-runtime-port**: (非SCA架构生效)本地服务要起哪一个端口和控制台通讯
 - **easy4j.metrics-enable**: 是否开启指标采集 默认开启 (true|false)
 - **easy4j.default-i18n**: 默认i18n，默认中文
 - **easy4j.db-access-not-cache-schema**: 是否不缓存动态表查询的schema信息，默认false也就是要缓存 (true|false)
@@ -419,3 +432,5 @@ chore：其他不修改 src 或 test 目录的变更（如配置文件）
 - **easy4j.quartz-job-restart-check-delete**: 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除 (true|false)
 - **easy4j.knife4j-nacos-aggregation**: knife4j通过nacos进行聚合，默认不聚合 (true|false)
 - **easy4j.knife4j-nacos-routers**: knife4j要聚合的路由信息，和nacos整合
+- **easy4j.dynamic-data-source**: 动态数据源
+- **easy4j.code-gen**: 代码生成相关配置

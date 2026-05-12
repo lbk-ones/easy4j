@@ -26,6 +26,7 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.user.UserContext;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
+import easy4j.infra.webmvc.CookieUtil;
 import easy4j.module.sauth.annotations.OpenApi;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
 import easy4j.module.sauth.authentication.AuthenticationType;
@@ -62,6 +63,16 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     public Easy4jSecurityFilterInterceptor() {
     }
 
+    public String getToken(HttpServletRequest request){
+        boolean useCookies = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_USE_COOKIE, boolean.class);
+        String token = null;
+        if(!useCookies){
+            token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN), request.getParameter(SysConstant.X_ACCESS_TOKEN));
+        }else{
+            token = CookieUtil.getCookie(request, SysConstant.X_ACCESS_TOKEN);
+        }
+        return token;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
@@ -76,8 +87,9 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         if (method.isAnnotationPresent(OpenApi.class) || beanType.isAnnotationPresent(OpenApi.class)) {
             handlerOpenApi(request, method, beanType, authorizationStrategy1);
         } else {
+
             // take session
-            String token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN), request.getParameter(SysConstant.X_ACCESS_TOKEN));
+            String token = getToken(request);
             if (!authorizationStrategy1.isNeedLogin(handler, request, response)) {
                 return true;
             }
@@ -140,6 +152,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         SecurityUser securityUser = new SecurityUser();
         securityUser.setShaToken(headerValue);
         securityUser.setAuthenticationType(authenticationType.name());
+        securityUser.setOpenApiAuthenticationIs(true);
         securityUser.setScope(AuthenticationScopeType.Interceptor);
         handlerAccessToken(annotation, securityUser);
         if (AuthenticationType.BearerToken.name().equals(securityUser.getAuthenticationType())) {
@@ -217,6 +230,8 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         UserContext userContext = new UserContext();
         userContext.setUserName(user.getUsername());
         userContext.setUserNameCn(user.getUsernameCn());
+        userContext.setTenantId(user.getTenantId());
+        userContext.setRoleCodeList(user.getRoleCodeList());
         context.registerThreadHash(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME, userContext);
     }
 

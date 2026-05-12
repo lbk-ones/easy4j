@@ -209,6 +209,20 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
 
 
     /**
+     * 最后一次登录时间
+     */
+    @Schema(description = "最后一次登录时间")
+    private Date lastLoginTime;
+
+
+    /**
+     * 密码错误次数
+     */
+    @Schema(description = "密码错误次数")
+    private Integer pwdErrorCount;
+
+
+    /**
      * 创建人代码
      */
     @Schema(description = "创建人代码")

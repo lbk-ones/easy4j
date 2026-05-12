@@ -37,6 +37,7 @@ public class OnlineUserInfo {
     ISecurityEasy4jSession session;
 
     ISecurityEasy4jUser user;
+
     private static SecurityContext context;
 
     Set<SecurityAuthority> authorityList;

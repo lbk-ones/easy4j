@@ -3,6 +3,7 @@ package easy4j.module.sauth.authentication;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.webmvc.WebContextUtil;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
@@ -35,7 +36,7 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
     @Override
     public ISecurityEasy4jUser queryUser(AuthenticationContext context) {
         ISecurityEasy4jUser reqUser = context.getReqUser();
-        HttpServletRequest servletRequest = getServletRequest();
+        HttpServletRequest servletRequest = WebContextUtil.getRequest();
         String basicToken = servletRequest.getHeader(SysConstant.AUTHORIZATION);
         if (basicToken == null || !basicToken.startsWith("Basic ")) {
             context.setErrorCode(BusCode.A00034);
@@ -79,7 +80,7 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
             return;
         }
         // verify http method
-        HttpServletRequest servletRequest = getServletRequest();
+        HttpServletRequest servletRequest = WebContextUtil.getRequest();
         String method = servletRequest.getMethod();
         if (!"post".equalsIgnoreCase(method)) {
             context.setErrorCode(BusCode.A00030);

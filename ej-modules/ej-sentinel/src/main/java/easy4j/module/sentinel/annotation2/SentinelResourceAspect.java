@@ -45,7 +45,7 @@ import java.util.Map;
  */
 @Aspect
 public class SentinelResourceAspect extends FlowDegradeAspectSupport {
-    private static final Map<String,String> CACHE_RULES = Maps.newConcurrentMap();
+    private static final Map<String, String> CACHE_RULES = Maps.newConcurrentMap();
 
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void degradeResourceAnnotationPointcut() {
@@ -61,7 +61,7 @@ public class SentinelResourceAspect extends FlowDegradeAspectSupport {
             throw new IllegalStateException("Wrong state for FlowDegrade annotation");
         }
         String resourceName = getResourceName(annotation.value(), originMethod);
-        initRules(resourceName,annotation);
+        initRules(resourceName,null,null,null,null,null);
         EntryType entryType = annotation.entryType();
         int resourceType = annotation.resourceType();
         Entry entry = null;
@@ -90,29 +90,48 @@ public class SentinelResourceAspect extends FlowDegradeAspectSupport {
         }
     }
 
-    public static void initRules(String resourceName, SentinelResource annotation) {
-        if(StrUtil.isBlank(resourceName)){
+    /**
+     * @param resourceName 资源名称
+     */
+    public static void initRules(String resourceName,Integer flowCount, Integer flowGrade, Double degradeCount, Integer degradeGrade, Integer degradeTime) {
+        if (StrUtil.isBlank(resourceName)) {
             return;
         }
         String s = CACHE_RULES.get(resourceName);
-        if(StrUtil.isNotBlank(s)){
+        if (StrUtil.isNotBlank(s)) {
             return;
         }
-        CACHE_RULES.put(resourceName,"true");
+        CACHE_RULES.put(resourceName, "true");
+
         // 初始化流控规则
+        loadRule(resourceName, flowCount, flowGrade, degradeCount, degradeGrade, degradeTime);
+    }
+
+    /**
+     * 加载资源配置
+     *
+     * @param resourceName 资源名称
+     * @param flowCount    流控数量 100
+     * @param flowGrade    流控类型 1、QPS 0、THREAD 默认1
+     * @param degradeCount 熔断阈值，这里表示异常比例阈值为 0.5
+     * @param degradeGrade 降级模式 0：平均响应时间，1：异常比例，2：异常次数 默认1
+     * @param degradeTime  熔断时长，单位为秒 默认60秒
+     */
+    public static void loadRule(String resourceName, Integer flowCount, Integer flowGrade, Double degradeCount, Integer degradeGrade, Integer degradeTime) {
+
         List<FlowRule> flowRules = new ArrayList<>();
         FlowRule flowRule = new FlowRule();
         flowRule.setResource(resourceName); // 资源名称要与 @SentinelResource 中的 value 一致
-        Integer flowCount = Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_FLOW_COUNT, Integer.class, 100);
-        Integer flowGrade = Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_FLOW_GRADE_TYPE, Integer.class, 1);
+        flowCount = flowCount != null ? flowCount : Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_FLOW_COUNT, Integer.class, 100);
+        flowGrade = flowGrade != null ? flowGrade : Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_FLOW_GRADE_TYPE, Integer.class, 1);
         flowRule.setCount(flowCount); // 每秒允许通过的请求数
         flowRule.setGrade(flowGrade); // 限流模式为 QPS
         flowRules.add(flowRule);
         FlowRuleManager.loadRules(flowRules);
 
-        Double degradeCount = Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_COUNT, Double.class, 0.5);
-        Integer degradeGrade = Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_GRADE_TYPE, Integer.class, 1);
-        Integer degradeTime = Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_TIME, Integer.class, 60);
+        degradeCount = degradeCount != null ? degradeCount : Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_COUNT, Double.class, 0.5);
+        degradeGrade = degradeGrade != null ? degradeGrade : Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_GRADE_TYPE, Integer.class, 1);
+        degradeTime = degradeTime != null ? degradeTime : Easy4j.getProperty(SysConstant.EASY4J_SENTINEL_DEGRADE_TIME, Integer.class, 60);
         // 初始化降级规则
         List<DegradeRule> degradeRules = new ArrayList<>();
         DegradeRule degradeRule = new DegradeRule();

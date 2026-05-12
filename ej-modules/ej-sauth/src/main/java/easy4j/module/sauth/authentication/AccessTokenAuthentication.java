@@ -11,6 +11,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.RegexEscapeUtils;
+import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
@@ -101,6 +102,14 @@ public class AccessTokenAuthentication extends UserNamePasswordAuthentication {
         }
         reqUser.setUsername(username);
         reqUser.setPassword(accessToken);
+        // 从数据库去捞一下 万一捞到了呢
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+        if (byUserName != null) {
+            // 这里需要强行跳过密码认证 这样可以强行跳过的呢
+            byUserName.setPassword(iSecurityEasy4jUser.getPassword());
+            byUserName.setPwdSalt(iSecurityEasy4jUser.getPwdSalt());
+            iSecurityEasy4jUser = byUserName;
+        }
         context.setDbUser(iSecurityEasy4jUser);
         syncReqUser(context, iSecurityEasy4jUser);
         SessionStrategy sessionStrategy = getSessionStrategy();

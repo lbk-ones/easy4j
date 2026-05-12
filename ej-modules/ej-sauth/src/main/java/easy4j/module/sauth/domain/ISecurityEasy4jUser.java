@@ -7,6 +7,7 @@ import easy4j.module.sauth.authentication.LoadAuthentication;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -352,21 +353,6 @@ public interface ISecurityEasy4jUser extends Serializable {
     @Desc("设置扩展信息")
     void setExtMap(Map<String, Object> extMap);
 
-    /**
-     * 获取设备信息
-     *
-     * @return
-     */
-    @Desc("获取设备信息")
-    String getDeviceInfo();
-
-    /**
-     * 设置设备信息
-     *
-     * @return
-     */
-    @Desc("设置设备信息")
-    void setDeviceInfo(String deviceInfo);
 
     /**
      * 获取平台信息，PC、PHONE、APPLET等
@@ -507,5 +493,43 @@ public interface ISecurityEasy4jUser extends Serializable {
      * 输入租户ID
      */
     void setTenantId(Long tenantId);
+
+    /**
+     * 获取用户UA
+     */
+    String getUserAgent();
+
+    /**
+     * 设置用户UA
+     * @param userAgent
+     */
+    void setUserAgent(String userAgent);
+
+
+    /**
+     * 获取用户设备ID
+     */
+    String getDeviceId();
+
+    /**
+     * 设置用户设备ID
+     * @param deviceId
+     */
+    void setDeviceId(String deviceId);
+
+    /**
+     * 获取角色列表
+     */
+    List<String> getRoleCodeList();
+
+    /**
+     * 设置角色列表
+     */
+    void setRoleCodeList(List<String> roleCodeList);
+
+    /**
+     * 获取是否是从OpenApi过来的
+     */
+    Boolean getOpenApiAuthenticationIs();
 
 }

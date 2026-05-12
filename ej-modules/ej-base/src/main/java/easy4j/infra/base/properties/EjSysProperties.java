@@ -117,6 +117,12 @@ public class EjSysProperties {
     private String corsRejectEnable;
 
     /**
+     * 跨域允许的domain,多个用逗号隔开
+     */
+    @SpringVs(desc = "跨域允许的domain,多个用逗号隔开")
+    private String corsAllowDomains;
+
+    /**
      * 是否启用h2数据库
      */
     @SpringVs(desc = "是否启用h2数据库"
@@ -434,7 +440,7 @@ public class EjSysProperties {
      * 认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线
      */
     @SpringVs(
-            valueEnums = {"default","new","reject","public","kick"},
+            valueEnums = {"default", "new", "reject", "public", "kick"},
             desc = "认证时会话重复策略,默认default也就是共用会话,new新建会话,reject不允许重复，public共用会话，kick把已存在的会话踢下线"
     )
     private String simpleAuthSessionRepeatStrategy = "default";
@@ -446,6 +452,56 @@ public class EjSysProperties {
             desc = "认证时会话口令集合，可以以环境变量的形式配在服务器上，以$开头代表从环境变量中获取"
     )
     private List<AccessToken> simpleAuthAccessTokens;
+
+
+    /**
+     * 不使用header的方式来携带token,启用cookie来进行token携带，默认使用header
+     */
+    @SpringVs(
+            desc = "不使用header的方式来携带token,启用cookie来进行token携带"
+    )
+    private Boolean simpleAuthTokenUseCookie = false;
+
+
+    /**
+     * cookie是否使用httponly模式
+     */
+    @SpringVs(
+            desc = "cookie是否使用httponly模式"
+    )
+    private Boolean simpleAuthTokenUseCookieHttponly = false;
+
+    /**
+     * cookie是否使用secure模式,如果是则强制要求https
+     */
+    @SpringVs(
+            desc = "cookie是否使用secure模式,如果是则强制要求https"
+    )
+    private Boolean simpleAuthTokenUseCookieSecure = false;
+
+    /**
+     * cookie是否设置domain
+     */
+    @SpringVs(
+            desc = "cookie是否设置domain"
+    )
+    private String simpleAuthTokenUseCookieDomain;
+
+    /**
+     * cookie是否设置path默认为/
+     */
+    @SpringVs(
+            desc = "cookie是否设置path默认为/"
+    )
+    private String simpleAuthTokenUseCookiePath = "/";
+
+    /**
+     * cookie的samesite策略默认为Lax
+     */
+    @SpringVs(
+            desc = "cookie的samesite策略默认为Lax"
+    )
+    private String simpleAuthTokenUseCookieSameSite = "Lax";
 
     /**
      * 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
@@ -664,25 +720,25 @@ public class EjSysProperties {
      * 日志所在目录,默认程序运行当前目录logs文件夹下面
      */
     @SpringVs(desc = "日志所在目录,默认程序运行当前目录logs文件夹下面")
-    private String logPath="logs";
+    private String logPath = "logs";
 
     /**
      * minio地址
      */
     @SpringVs(desc = "minio地址")
-    private String minioUrl="minioUrl";
+    private String minioUrl = "minioUrl";
 
     /**
      * minio访问key
      */
     @SpringVs(desc = "minio访问key")
-    private String minioAccessKey="minioAccessKey";
+    private String minioAccessKey = "minioAccessKey";
 
     /**
      * minio访问密钥
      */
     @SpringVs(desc = "minio访问密钥")
-    private String minioSecretKey="minioSecretKey";
+    private String minioSecretKey = "minioSecretKey";
 
     /**
      * quartz全局日志打印
@@ -700,14 +756,14 @@ public class EjSysProperties {
     /**
      * 针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除
      */
-    @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除",valueEnums = {"true","false"})
+    @SpringVs(desc = "针对quartz任务，如果任务被从代码层面删除，那么重启服务之后是否删除所有触发器和任务明细，默认true会删除", valueEnums = {"true", "false"})
     private boolean quartzJobRestartCheckDelete = true;
 
 
     /**
      * knife4j通过nacos进行聚合，默认不聚合
      */
-    @SpringVs(desc = "knife4j通过nacos进行聚合，默认不聚合",valueEnums = {"true","false"})
+    @SpringVs(desc = "knife4j通过nacos进行聚合，默认不聚合", valueEnums = {"true", "false"})
     private boolean knife4jNacosAggregation = false;
 
     @SpringVs(desc = "knife4j要聚合的路由信息，和nacos整合")

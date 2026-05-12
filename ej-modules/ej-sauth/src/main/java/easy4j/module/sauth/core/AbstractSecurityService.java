@@ -15,8 +15,12 @@
 package easy4j.module.sauth.core;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.webmvc.CookieUtil;
+import easy4j.infra.webmvc.WebContextUtil;
 import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
@@ -102,6 +106,11 @@ public abstract class AbstractSecurityService extends StandardResolve implements
                 getSecurityContext().removeSession();
                 getSecurityContext().removeSessionByToken(shaToken);
                 onlineUser.clearAuthorityList(username);
+            }
+
+            boolean useCookies = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_USE_COOKIE, boolean.class);
+            if(useCookies){
+                CookieUtil.removeCookie(WebContextUtil.getResponse(),SysConstant.X_ACCESS_TOKEN);
             }
         }
         return onlineUser;
