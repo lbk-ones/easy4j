@@ -37,6 +37,7 @@ import org.springframework.boot.env.PropertySourceLoader;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.*;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -46,6 +47,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -303,10 +306,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             if (StrUtil.isNotBlank(property1)) {
                 mapProperties.put(e, property1);
                 return;
-            }else{
+            } else {
                 Map<String, String> sMap = Easy4j.getSpringInputArgsMap();
                 String var2 = sMap.get(e);
-                if(StrUtil.isNotBlank(var2)){
+                if (StrUtil.isNotBlank(var2)) {
                     mapProperties.put(e, var2);
                     return;
                 }
@@ -328,8 +331,8 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             bootStrapSpecialVsResolve.handler(mapProperties, null);
             // fix: if enable redis server.port...attrs confusion
             if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES)) {
-                propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES,new MapPropertySource(FIRST_ENV_NAME, mapProperties));
-            }else{
+                propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES, new MapPropertySource(FIRST_ENV_NAME, mapProperties));
+            } else {
                 propertySources.addLast(new MapPropertySource(FIRST_ENV_NAME, mapProperties));
             }
         }
@@ -340,6 +343,41 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         PropertySource<?> loadPropertySource = null;
         ClassPathResource resource = new ClassPathResource(fileNameInit + ".properties");
         try {
+            String jarDir = JarPathUtil.getJarDirectory();
+            if(StrUtil.isNotBlank(jarDir)){
+                // 先检查当前目录 在检查 config目录
+                for (String path_ : ListTs.asList("", "config")) {
+                    // 检查 properties yml yaml 文件
+                    for (String suffix : ListTs.asList(SP.PROPERTIES_SUFFIX, SP.YML_SUFFIX, SP.YAML_SUFFIX)) {
+                        String fileName = fileNameInit + suffix;
+                        Path path = null;
+                        if(StrUtil.isEmpty(path_)){
+                            path = Paths.get(jarDir, fileName);
+                        }else{
+                            path = Paths.get(jarDir,path_, fileName);
+                        }
+                        File file = new File(path.toUri());
+                        if (file.exists()) {
+                            FileSystemResource fResource = new FileSystemResource(file);
+                            if (SP.PROPERTIES_SUFFIX.equals(suffix)) {
+                                Properties properties = PropertiesLoaderUtils.loadProperties(fResource);
+                                loadPropertySource = new PropertiesPropertySource(fileName, properties);
+                            } else if (SP.YML_SUFFIX.equals(suffix)) {
+                                YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
+                                loadPropertySource = loader.load(fileName, fResource).get(0);
+                            } else if (SP.YAML_SUFFIX.equals(suffix)) {
+                                YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
+                                loadPropertySource = loader.load(fileName, fResource).get(0);
+                            }
+                            if (loadPropertySource != null) {
+                                return loadPropertySource;
+                            }
+                        }
+                    }
+                }
+            }
+
+
             if (resource.exists()) {
                 Properties properties = PropertiesLoaderUtils.loadProperties(resource);
                 loadPropertySource = new PropertiesPropertySource(FIRST_ENV_NAME, properties);
