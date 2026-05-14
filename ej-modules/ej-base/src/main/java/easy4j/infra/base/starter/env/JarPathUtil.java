@@ -18,7 +18,7 @@ public class JarPathUtil {
 
     static {
         try{
-            URL url = JarPathUtil.class.getProtectionDomain().getCodeSource().getLocation();
+            URL url = Easy4j.mainClass.getProtectionDomain().getCodeSource().getLocation();
             path = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
             // nested:/E:/xxx.jar/!BOOT-INF/lib/xxx.jar!/
             if (path.startsWith("nested:")) {
@@ -34,7 +34,7 @@ public class JarPathUtil {
             if (path.startsWith("/") && path.length() > 2 && path.charAt(2) == ':') {
                 path = path.substring(1);
             }
-            System.out.println(SysLog.compact("app runtime path is ->" + path));
+            System.out.println(SysLog.compact("app runtime path is ->" + getJarDirectory()));
         }catch (Exception e){
             System.out.println(SysLog.compact("static get jar directory error " + e.getMessage()));
         }

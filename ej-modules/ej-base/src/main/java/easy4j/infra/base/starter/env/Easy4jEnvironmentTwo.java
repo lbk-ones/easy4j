@@ -44,8 +44,6 @@ public class Easy4jEnvironmentTwo extends AbstractEasy4jEnvironment {
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
         initEnv(environment, application);
-        //String name = SystemUtil.getHostInfo().getName();
-        //System.setProperty("LOG_FILE_NAME",this.getProperty("spring.application.name")+"-"+name.toLowerCase());
     }
 
 }

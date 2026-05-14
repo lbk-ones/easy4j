@@ -24,7 +24,7 @@ import java.util.Properties;
 /**
  * 先于spring配置加载 所以这个时候配置的手动拿取
  */
-@Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 2)
+@Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 3)
 public class Easy4jEnvironmentFirst extends AbstractEasy4jEnvironment {
 
     public static final String SCA_PROPERTIES_NAME = "easy4j-environment-first";

@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+io.github.lbkones.config.api.Easy4jConfigEnvironment

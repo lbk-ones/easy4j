@@ -63,6 +63,8 @@ public class SysConstant {
     public static final String DRUID_FILTER = "spring.datasource.druid.filters";
     public static final String SPRING_PROFILE_ACTIVE = "spring.profiles.active";
     public static final String SPRING_PROFILE_INCLUDES = "spring.profiles.include";
+    public static final String SPRING_CONFIG_LOCATION = "spring.config.location";
+    public static final String SPRING_CONFIG_ADDITIONAL_LOCATION = "spring.config.additional-location";
     public static final String SPRING_CONFIG_IMPORT = "spring.config.import";
     // ------spring cloud alibaba begin
     public static final String SPRING_CLOUD_NACOS_URL = "spring.cloud.nacos.server-addr";

@@ -460,6 +460,12 @@
                 <artifactId>ej-xxl-job</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-config-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
