@@ -312,7 +312,7 @@ public class EjSysProperties {
     @SpringVs(
             desc = "nacos配置中心group，如果设置了这个 则配置中心和注册中心可以不用填group"
     )
-    private String nacosGroup;
+    private String nacosGroup = "DEFAULT_GROUP";
 
     /**
      * nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace
@@ -320,7 +320,7 @@ public class EjSysProperties {
     @SpringVs(
             desc = "nacos配置中心namespace，如果设置了这个 则配置中心和注册中心可以不用填namespace"
     )
-    private String nacosNameSpace;
+    private String nacosNameSpace = "public";
 
     /**
      * 签名密钥串(字典等敏感接口)

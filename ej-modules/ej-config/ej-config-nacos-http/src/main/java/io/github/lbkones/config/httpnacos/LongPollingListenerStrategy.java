@@ -7,21 +7,22 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-/**
- * ==================== 策略实现1: v1.x/v2.x 长轮询策略 ====================
- */
+
 /**
  * 长轮询监听策略（v1.x 和 v2.x）
+ * <br/>
  * 原理：定期发送配置MD5值，服务器如果有变更立即返回，否则等待30秒
+ * <br/>
+ * 支持用户名密码认证和AccessKey/SecretKey签名认证
  */
 public class LongPollingListenerStrategy implements ConfigListenerStrategy {
 
-    private static final int LONG_POLLING_TIMEOUT = 30000; // 30秒
+    private static final int LONG_POLLING_TIMEOUT = 30000;
     private static final String CHARSET = "UTF-8";
 
     private final String serverAddr;
@@ -29,12 +30,8 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
     private final Map<String, ConfigCache> configCacheMap;
     private final Map<String, ListeningTask> listeningTasks;
     private final ExecutorService executorService;
+    private final NacosAuthHelper authHelper;
 
-
-
-    /**
-     * 监听任务
-     */
     private static class ListeningTask {
         volatile boolean running = true;
         Future<?> future;
@@ -43,10 +40,18 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
     public LongPollingListenerStrategy(String serverAddr, String namespace,
                                        Map<String, ConfigCache> configCacheMap,
                                        ExecutorService executorService) {
+        this(serverAddr, namespace, configCacheMap, executorService, null);
+    }
+
+    public LongPollingListenerStrategy(String serverAddr, String namespace,
+                                       Map<String, ConfigCache> configCacheMap,
+                                       ExecutorService executorService,
+                                       NacosAuthHelper authHelper) {
         this.serverAddr = serverAddr;
         this.namespace = namespace;
         this.configCacheMap = configCacheMap;
         this.executorService = executorService;
+        this.authHelper = authHelper;
         this.listeningTasks = new ConcurrentHashMap<>();
     }
 
@@ -72,13 +77,11 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
                                      ConfigChangeCallback callback, ListeningTask task) {
         while (task.running) {
             try {
-                // 1. 构建监听配置报文
-                String listeningConfigs = buildListeningConfigs(dataId, group);
+                ensureAuthenticated();
 
-                // 2. 执行长轮询
+                String listeningConfigs = buildListeningConfigs(dataId, group);
                 String response = longPolling(listeningConfigs);
 
-                // 3. 如果有变更，获取新配置并触发回调
                 if (response != null && !response.isEmpty()) {
                     String newContent = getRemoteConfig(dataId, group);
                     updateCache(dataId, group, newContent);
@@ -86,7 +89,7 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
                 }
 
                 if (!task.running) break;
-                Thread.sleep(100); // 短暂延迟后继续
+                Thread.sleep(100);
 
             } catch (InterruptedException e) {
                 if (task.running) {
@@ -95,7 +98,7 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
             } catch (Exception e) {
                 System.err.println("[LongPolling] Error: " + e.getMessage());
                 try {
-                    Thread.sleep(1000); // 错误后延迟重试
+                    Thread.sleep(1000);
                 } catch (InterruptedException ie) {
                     // ignore
                 }
@@ -117,8 +120,19 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
         conn.setReadTimeout(35000);
         conn.setDoOutput(true);
 
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
+
+        String body;
+        if (authHelper != null && authHelper.getAccessToken() != null) {
+            String signedConfigs = authHelper.signListeningConfig(listeningConfigs);
+            body = "Listening-Configs=" + URLEncoder.encode(signedConfigs, CHARSET);
+        } else {
+            body = "Listening-Configs=" + URLEncoder.encode(listeningConfigs, CHARSET);
+        }
+
         try (OutputStream os = conn.getOutputStream()) {
-            String body = "Listening-Configs=" + URLEncoder.encode(listeningConfigs, CHARSET);
             os.write(body.getBytes(CHARSET));
             os.flush();
         }
@@ -148,6 +162,8 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
     }
 
     private String getRemoteConfig(String dataId, String group) throws Exception {
+        ensureAuthenticated();
+
         String url = String.format("http://%s/nacos/v1/cs/configs", serverAddr);
         url += "?dataId=" + URLEncoder.encode(dataId, CHARSET);
         url += "&group=" + URLEncoder.encode(group, CHARSET);
@@ -155,10 +171,18 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
             url += "&tenant=" + URLEncoder.encode(namespace, CHARSET);
         }
 
+        if (authHelper != null) {
+            url = authHelper.addAuthParams(url);
+        }
+
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
+
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
 
         return readResponse(conn);
     }
@@ -197,7 +221,11 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
         }
     }
 
-
+    private void ensureAuthenticated() {
+        if (authHelper != null && authHelper.needRefreshToken()) {
+            authHelper.login();
+        }
+    }
 
     @Override
     public void stopListening(String dataId, String group) {

@@ -7,10 +7,10 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>ej-config-nacos-http</artifactId>
+    <artifactId>ej-nacos-client-3.X</artifactId>
     <packaging>jar</packaging>
 
-    <name>ej-config-nacos-http</name>
+    <name>ej-nacos-client-3.X</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -21,6 +21,23 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-config-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-base</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
     </dependencies>

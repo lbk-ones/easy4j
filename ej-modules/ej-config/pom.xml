@@ -15,7 +15,10 @@
     <modules>
         <module>ej-config-nacos-http</module>
         <module>ej-config-api</module>
+        <module>ej-nacos-client-2.X</module>
+        <module>ej-nacos-client-3.X</module>
     </modules>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

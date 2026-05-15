@@ -1,16 +1,11 @@
 package io.github.lbkones.config.httpnacos;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
-import easy4j.infra.base.properties.EjSysProperties;
-import easy4j.infra.base.properties.cc.ConfigCenterFactory;
-import easy4j.infra.base.resolve.NacosUrlResolve;
-import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.starter.env.PropertySourceConverter;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SysConstant;
 import io.github.lbkones.config.api.AbstractCcSpi;
 import io.github.lbkones.config.api.ConfigChange;
 import lombok.extern.slf4j.Slf4j;
@@ -26,37 +21,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 使用这个有弊端
- * 只能变更spring环境中的参数，不能变更 @Value 和注入Properties参数对象的值
- * 通过 Easy4j.getProperties("xxx")
- * 和
+ * Nacos HTTP配置中心SPI实现
+ * <br/>
+ * 通过HTTP接口访问Nacos配置中心，支持Nacos 2.x和3.x版本
+ * <br/>
+ * 支持认证方式：
+ * 1. 用户名密码认证：通过login接口获取accessToken
+ * 2. AccessKey/SecretKey签名认证
+ * <br/>
+ * 只能通过 Easy4j.getProperties("xxx") 或者 SpringUtil.getProperty("xxx")
+ * <br/>
  */
 @Slf4j
 public class CcHttpNacosSpi extends AbstractCcSpi {
 
     CompatibleNacosHttpClient client;
 
-    List<String> dataId;
-    String group;
-    String namespace;
+    NacosPropetiesParse nacosPropetiesParse;
+
+    private final Map<String, Properties> configCache = new ConcurrentHashMap<>();
 
     @Override
-    public Map<String,Properties> getConfig() {
+    public Map<String, Properties> getConfig() {
         try {
-            Map<String,Properties> m = new HashMap<>();
-
-            for (String did : dataId) {
-                String dataId1 = getDataId(did);
-                String group1 = getGroup(did, group);
+            Map<String, Properties> m = new HashMap<>();
+            List<NacosPropetiesParse.NacosDataId> dataIds = nacosPropetiesParse.getDataIds();
+            for (NacosPropetiesParse.NacosDataId dataId : dataIds) {
+                String dataId1 = dataId.getDataId();
+                String group1 = dataId.getGroup();
+                String dg = dataId1 + SP.AT + group1;
+                Properties properties = configCache.get(dg);
+                if (properties != null) {
+                    m.put(dg, properties);
+                    continue;
+                }
                 String config = client.getConfig(dataId1, group1);
-                Properties properties1 = getProperties(did, config);
-                m.put(dataId1+SP.AT+group1,properties1);
+                Properties properties1 = getProperties(dataId1, config);
+                configCache.put(dg,properties1);
+                m.put(dg, properties1);
             }
             return m;
         } catch (Exception e) {
-            log.error("get config error ->" ,e);
+            log.error("get config error ->", e);
             return null;
         }
     }
@@ -64,26 +73,24 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
     @Override
     public void start() {
         try {
-            EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
-            String nacosUrl_ = ejSysProperties.getNacosUrl();
-            String nacosConfigUrl = ejSysProperties.getNacosConfigUrl();
-            String dataIds = ejSysProperties.getDataIds();
-            group = StrUtil.blankToDefault(ejSysProperties.getNacosConfigGroup(), ejSysProperties.getNacosGroup());
-            dataId = ListTs.splitToList(dataIds,SP.COMMA);
-            String nacosUsername = StrUtil.blankToDefault(ejSysProperties.getNacosConfigUsername(),ejSysProperties.getNacosUsername());
-            String password = StrUtil.blankToDefault(ejSysProperties.getNacosConfigPassword(),ejSysProperties.getNacosPassword());
-            namespace = ejSysProperties.getNacosNameSpace();
-            String nacosUrl = StrUtil.blankToDefault(nacosConfigUrl, nacosUrl_);
-            NacosUrlResolve nacosUrlResolve = new NacosUrlResolve();
-            Map<String, String> stringStringMap = new HashMap<>();
-            nacosUrlResolve.handler(stringStringMap, nacosUrl);
-            String nurl = stringStringMap.get(SysConstant.EASY4J_SCA_NACOS_URL);
+            nacosPropetiesParse = NacosPropetiesParse.build(null);
+            String username = nacosPropetiesParse.getNacosConfigUsername();
+            String password = nacosPropetiesParse.getNacosConfigPassword();
+            String nurl = nacosPropetiesParse.getNacosConfigUrl();
+            String nameSpace = nacosPropetiesParse.getNacosConfigNameSpace();
+            if (StrUtil.isNotBlank(username) && StrUtil.isNotBlank(password)) {
+                log.info("Initializing Nacos HTTP client with username/password authentication");
+                client = new CompatibleNacosHttpClient(nurl, nameSpace, username, password);
+            } else {
+                log.info("Initializing Nacos HTTP client without authentication");
+                client = new CompatibleNacosHttpClient(nurl, nameSpace);
+            }
 
-            client = new CompatibleNacosHttpClient(nurl, namespace);
             ConfigChange change = this.configChange;
-            for (String s : dataId) {
-                String dataId1 = getDataId(s);
-                String group1 = getGroup(s, group);
+            List<NacosPropetiesParse.NacosDataId> dataIds = nacosPropetiesParse.getDataIds();
+            for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
+                String dataId1 = dataId_.getDataId();
+                String group1 = dataId_.getGroup();
                 client.addListener(dataId1, group1, (dataId, group, configInfo) -> {
                     Map<@Nullable String, @Nullable Object> res = Maps.newHashMap();
                     Properties properties = getProperties(dataId, configInfo);
@@ -92,20 +99,13 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
                         res.put(String.valueOf(o), String.valueOf(o1));
                     }
                     if (change != null) {
-                        change.change(dataId+SP.AT+group,res);
+                        change.change(dataId + SP.AT + group, res);
                     }
-                    Map<String, String> mr = new HashMap<>();
-                    for (String key : res.keySet()) {
-                        Object o = res.get(key);
-                        if (o != null) {
-                            mr.put(key, o.toString());
-                        }
-                    }
-                    ConfigCenterFactory.get().change(mr);
                 });
             }
 
         } catch (Exception e) {
+            log.error("Failed to initialize Nacos HTTP ConfigCenter", e);
             throw new RuntimeException(e);
         }
     }
@@ -138,7 +138,10 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
     @Override
     public void destroy() {
         try {
-            client.shutdown();
+            if (client != null) {
+                client.shutdown();
+                log.info("Nacos HTTP client shutdown successfully");
+            }
         } catch (Exception ignored) {
 
         }
@@ -148,6 +151,5 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
     public String getName() {
         return "nacos-http";
     }
-
 
 }

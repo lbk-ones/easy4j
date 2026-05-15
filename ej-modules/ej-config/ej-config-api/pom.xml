@@ -18,6 +18,10 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-base</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

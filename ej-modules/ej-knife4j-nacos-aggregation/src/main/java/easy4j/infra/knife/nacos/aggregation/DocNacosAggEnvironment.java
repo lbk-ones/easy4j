@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.properties.Knife4jRouter;
-import easy4j.infra.base.properties.cc.ConfigCenterFactory;
+import  io.github.lbkones.config.api.ConfigCenterFactory;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.common.utils.ListTs;

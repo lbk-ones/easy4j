@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quartz.JobDataMap;
 
 import cn.hutool.extra.spring.SpringUtil;
-import easy4j.infra.base.properties.cc.ConfigCenterFactory;
+import  io.github.lbkones.config.api.ConfigCenterFactory;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;

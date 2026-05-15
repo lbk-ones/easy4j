@@ -20,7 +20,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysProperties;
-import easy4j.infra.base.properties.cc.ConfigCenterFactory;
+import  io.github.lbkones.config.api.ConfigCenterFactory;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;

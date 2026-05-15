@@ -1,10 +1,10 @@
 package io.github.lbkones.config.httpnacos;
 
-
 /**
  * ==================== 核心客户端：统一入口 ====================
  */
 
+import easy4j.infra.common.utils.SysLog;
 import lombok.Getter;
 
 import java.io.ByteArrayOutputStream;
@@ -24,9 +24,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 版本兼容的Nacos HTTP客户端
+ * <br/>
+ * 支持Nacos 2.x/3.x版本自动检测和认证功能
+ * <br/>
+ * 认证方式：
+ * 1. 用户名密码认证：通过login接口获取token
+ * 2. AccessKey/SecretKey签名认证
  */
 public class CompatibleNacosHttpClient {
-    
+
     private final String serverAddr;
     private final String namespace;
     /**
@@ -41,88 +47,127 @@ public class CompatibleNacosHttpClient {
      */
     @Getter
     private NacosVersionDetector.NacosVersion detectedVersion;
+
+    private NacosAuthHelper authHelper;
+
     private final ExecutorService executorService;
     private final Map<String, ConfigCache> configCacheMap;
     private final Map<String, ConfigListener> listenerMap;
     private final ReentrantReadWriteLock lock;
     private volatile boolean shutdown = false;
-    
+
     public interface ConfigListener {
         void onConfigChange(String dataId, String group, String newContent);
     }
-    
+
+    /**
+     * 构造函数（无认证）
+     */
     public CompatibleNacosHttpClient(String serverAddr, String namespace) throws Exception {
+        this(serverAddr, namespace, null, null);
+    }
+
+    /**
+     * 构造函数（用户名密码认证）
+     */
+    public CompatibleNacosHttpClient(String serverAddr, String namespace, String username, String password) throws Exception {
         this.serverAddr = serverAddr;
         this.namespace = namespace == null ? "" : namespace;
         this.executorService = Executors.newCachedThreadPool();
         this.configCacheMap = new ConcurrentHashMap<>();
         this.listenerMap = new ConcurrentHashMap<>();
         this.lock = new ReentrantReadWriteLock();
-        
-        // 1. 检测版本
+
+        if (username != null && password != null) {
+            this.authHelper = new NacosAuthHelper(serverAddr, namespace, username, password);
+        }
+
         detectAndInitStrategy();
     }
-    
+
+    /**
+     * 构造函数（AccessKey/SecretKey认证）
+     */
+    public CompatibleNacosHttpClient(String serverAddr, String namespace, String accessKey, String secretKey, String signType) throws Exception {
+        this.serverAddr = serverAddr;
+        this.namespace = namespace == null ? "" : namespace;
+        this.executorService = Executors.newCachedThreadPool();
+        this.configCacheMap = new ConcurrentHashMap<>();
+        this.listenerMap = new ConcurrentHashMap<>();
+        this.lock = new ReentrantReadWriteLock();
+
+        if (accessKey != null && secretKey != null) {
+            this.authHelper = new NacosAuthHelper(serverAddr, namespace, accessKey, secretKey, signType);
+        }
+
+        detectAndInitStrategy();
+    }
+
     private void detectAndInitStrategy() throws Exception {
-        System.out.println("========== Detecting Nacos Version ==========");
-        
+        System.out.println(SysLog.compact("========== Detecting Nacos Version =========="));
+
         NacosVersionDetector detector = new NacosVersionDetector(serverAddr);
         this.detectedVersion = detector.detect();
-        
-        System.out.println("Detected Version: " + detectedVersion.getVersionName());
-        
-        // 2. 根据版本选择策略
+
+        System.out.println(SysLog.compact("Detected Version: " + detectedVersion.getVersionName()));
+
         switch (detectedVersion) {
             case V1_X:
             case V2_X:
                 this.strategy = new LongPollingListenerStrategy(
-                    serverAddr, namespace, adaptCacheMap(), executorService);
-                System.out.println("Using Strategy: " + strategy.getStrategyName());
+                    serverAddr, namespace, adaptCacheMap(), executorService, authHelper);
+                System.out.println(SysLog.compact("Using Strategy: " + strategy.getStrategyName()));
                 break;
-                
+
             case V3_X:
                 this.strategy = new PollingListenerStrategy(
-                    serverAddr, namespace, adaptCacheMap(), executorService);
-                System.out.println("Using Strategy: " + strategy.getStrategyName());
+                    serverAddr, namespace, adaptCacheMap(), executorService, authHelper);
+                System.out.println(SysLog.compact("Using Strategy: " + strategy.getStrategyName()));
                 break;
-                
+
             case UNKNOWN:
             default:
-                System.out.println("Warning: Unknown version, fallback to Polling strategy");
+                System.out.println(SysLog.compact("Warning: Unknown version, fallback to Polling strategy"));
                 this.strategy = new PollingListenerStrategy(
-                    serverAddr, namespace, adaptCacheMap(), executorService);
+                    serverAddr, namespace, adaptCacheMap(), executorService, authHelper);
                 break;
         }
-        
-        System.out.println("==========================================\n");
+
+        System.out.println(SysLog.compact("==========================================\n"));
     }
-    
-    /**
-     * 将String缓存转换为ConfigCache缓存供策略使用
-     */
+
     private Map<String, ConfigCache> adaptCacheMap() {
         return configCacheMap;
     }
-    
+
     /**
      * 获取配置
      */
     public String getConfig(String dataId, String group) throws Exception {
+        ensureAuthenticated();
+
         String url = String.format("http://%s/nacos/v1/cs/configs", serverAddr);
         url += "?dataId=" + URLEncoder.encode(dataId, StandardCharsets.UTF_8);
         url += "&group=" + URLEncoder.encode(group, StandardCharsets.UTF_8);
         if (!namespace.isEmpty()) {
             url += "&tenant=" + URLEncoder.encode(namespace, StandardCharsets.UTF_8);
         }
-        
+
+        if (authHelper != null) {
+            url = authHelper.addAuthParams(url);
+        }
+
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
-        
+
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
+
         String response = readResponse(conn);
-        
-        // 缓存
+
         String cacheKey = dataId + "#" + group;
         lock.writeLock().lock();
         try {
@@ -130,59 +175,74 @@ public class CompatibleNacosHttpClient {
         } finally {
             lock.writeLock().unlock();
         }
-        
+
         return response;
     }
-    
+
     /**
      * 发布配置
      */
     public boolean publishConfig(String dataId, String group, String content) throws Exception {
+        ensureAuthenticated();
+
         String url = String.format("http://%s/nacos/v1/cs/configs", serverAddr);
-        
+
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
         conn.setDoOutput(true);
-        
+
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
+
         String body = "dataId=" + URLEncoder.encode(dataId, StandardCharsets.UTF_8) +
                      "&group=" + URLEncoder.encode(group, StandardCharsets.UTF_8) +
                      "&content=" + URLEncoder.encode(content, StandardCharsets.UTF_8);
-        
+
         if (!namespace.isEmpty()) {
             body += "&tenant=" + URLEncoder.encode(namespace, StandardCharsets.UTF_8);
         }
-        
+
         try (OutputStream os = conn.getOutputStream()) {
             os.write(body.getBytes(StandardCharsets.UTF_8));
             os.flush();
         }
-        
+
         String response = readResponse(conn);
         return "true".equalsIgnoreCase(response.trim());
     }
-    
+
     /**
      * 删除配置
      */
     public boolean removeConfig(String dataId, String group) throws Exception {
+        ensureAuthenticated();
+
         String url = String.format("http://%s/nacos/v1/cs/configs", serverAddr);
         url += "?dataId=" + URLEncoder.encode(dataId, StandardCharsets.UTF_8);
         url += "&group=" + URLEncoder.encode(group, StandardCharsets.UTF_8);
         if (!namespace.isEmpty()) {
             url += "&tenant=" + URLEncoder.encode(namespace, StandardCharsets.UTF_8);
         }
-        
+
+        if (authHelper != null) {
+            url = authHelper.addAuthParams(url);
+        }
+
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("DELETE");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
-        
+
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
+
         String response = readResponse(conn);
-        
-        // 清除缓存
+
         String cacheKey = dataId + "#" + group;
         lock.writeLock().lock();
         try {
@@ -190,28 +250,26 @@ public class CompatibleNacosHttpClient {
         } finally {
             lock.writeLock().unlock();
         }
-        
+
         return "true".equalsIgnoreCase(response.trim());
     }
-    
+
     /**
      * 添加配置监听
      */
     public void addListener(String dataId, String group, ConfigListener listener) throws Exception {
         String cacheKey = dataId + "#" + group;
         listenerMap.put(cacheKey, listener);
-        
-        // 先获取初始值
+
         try {
             getConfig(dataId, group);
         } catch (Exception e) {
             System.err.println("Failed to get initial config: " + e.getMessage());
         }
-        
-        // 启动监听
+
         strategy.startListening(dataId, group, listener::onConfigChange);
     }
-    
+
     /**
      * 移除配置监听
      */
@@ -221,35 +279,44 @@ public class CompatibleNacosHttpClient {
         strategy.stopListening(dataId, group);
     }
 
+    /**
+     * 确保已认证
+     */
+    private void ensureAuthenticated() {
+        if (authHelper != null && authHelper.needRefreshToken()) {
+            authHelper.login();
+        }
+    }
+
     private String readResponse(HttpURLConnection conn) throws Exception {
         try (InputStream is = conn.getInputStream();
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            
+
             byte[] buffer = new byte[1024];
             int length;
             while ((length = is.read(buffer)) != -1) {
                 baos.write(buffer, 0, length);
             }
-            
+
             return baos.toString(StandardCharsets.UTF_8);
         } catch (IOException e) {
             if (conn.getResponseCode() >= 400) {
                 try (InputStream is = conn.getErrorStream();
                      ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    
+
                     byte[] buffer = new byte[1024];
                     int length;
                     while ((length = is.read(buffer)) != -1) {
                         baos.write(buffer, 0, length);
                     }
-                    
+
                     return baos.toString(StandardCharsets.UTF_8);
                 }
             }
             throw e;
         }
     }
-    
+
     public void shutdown() {
         shutdown = true;
         executorService.shutdown();
@@ -259,50 +326,12 @@ public class CompatibleNacosHttpClient {
             executorService.shutdownNow();
         }
     }
-    
-    // ===================== 使用示例 =====================
-    public static void main(String[] args) throws Exception {
-        // 创建客户端（自动检测版本）
-        CompatibleNacosHttpClient client = new CompatibleNacosHttpClient("127.0.0.1:8848", "develop");
-        
-        System.out.println("Detected Version: " + client.getDetectedVersion().getVersionName());
-        System.out.println("Using Strategy: " + client.getStrategy().getStrategyName());
-        System.out.println();
-        
-        // 1. 获取配置
-        System.out.println("=== 获取配置 ===");
-        try {
-            String config = client.getConfig("common.properties", "dataspace-service");
-            System.out.println("Current Config: " + config);
-        } catch (Exception e) {
-            System.err.println("Failed to get config: " + e.getMessage());
-        }
-        
-        // 2. 发布配置
-        System.out.println("\n=== 发布配置 ===");
-        try {
-            boolean success = client.publishConfig("myapp.properties", "DEFAULT_GROUP",
-                "key1=value1\nkey2=value2\nkey3=value3");
-            System.out.println("Publish success: " + success);
-        } catch (Exception e) {
-            System.err.println("Failed to publish config: " + e.getMessage());
-        }
-        
-        // 3. 监听配置变更
-        System.out.println("\n=== 监听配置变更 ===");
-        try {
-            client.addListener("common.properties", "dataspace-service",
-                (dataId, group, newContent) -> {
-                    System.out.println("\n[Config Changed] " + dataId + "/" + group);
-                    System.out.println("New Content:\n" + newContent);
-                });
-            System.out.println("Listening started...");
-        } catch (Exception e) {
-            System.err.println("Failed to add listener: " + e.getMessage());
-        }
-        
-        // 保持运行
-        System.out.println("\nPress Ctrl+C to exit...");
-        Thread.sleep(Long.MAX_VALUE);
+
+    /**
+     * 获取认证助手
+     */
+    public NacosAuthHelper getAuthHelper() {
+        return authHelper;
     }
+
 }

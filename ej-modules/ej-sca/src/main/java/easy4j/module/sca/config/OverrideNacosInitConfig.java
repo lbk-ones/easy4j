@@ -19,7 +19,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.EjSysProperties;
-import easy4j.infra.base.properties.cc.ConfigCenterFactory;
+import  io.github.lbkones.config.api.ConfigCenterFactory;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;

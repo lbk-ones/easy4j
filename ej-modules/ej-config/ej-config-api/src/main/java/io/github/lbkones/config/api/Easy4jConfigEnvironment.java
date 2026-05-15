@@ -18,6 +18,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.base.starter.env.PropertySourceConverter;
+import easy4j.infra.common.utils.SysLog;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
@@ -28,11 +29,12 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * 配置中心初始化
+ * 配置中心初始化 紧随 Easy4jEnvironmentFirst 之后执行
  */
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 2)
 public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
-    public static final String EASY4j_ENV_NAME = "easy4j-init-environment";
+    private static boolean INIT_IS = false;
+    public static final String EASY4j_ENV_NAME = "easy4j-config-environment";
 
     public static final String E_NAME_2 = "easy4j-cc-";
 
@@ -43,43 +45,53 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
 
     @Override
     public Properties getProperties() {
-        return handlerDefaultAnnotationValues();
+        return null;
     }
 
 
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
         initEnv(environment, application);
-        //String name = SystemUtil.getHostInfo().getName();
-        //System.setProperty("LOG_FILE_NAME",this.getProperty("spring.application.name")+"-"+name.toLowerCase());
         if (isSca()) return;
-
         // 如果没有使用sca架构的话这里只会执行一次
         // 从这里加载远程配置文件
+        // 不允许二次执行
+        if (INIT_IS) return;
+        INIT_IS = true;
         CcSpi ccSpi = CcSpiFactory.get();
-        if (!StrUtil.equals(DefaultCcSpi.DEFAULT_SPI,ccSpi.getName())) {
-            ccSpi.start();
+        if (!StrUtil.equals(DefaultCcSpi.DEFAULT_SPI, ccSpi.getName())) {
+            System.out.println(SysLog.compact("begin load config from config center"));
+            try {
+                ccSpi.start();
+            } catch (Exception e) {
+                System.err.println(SysLog.compact("config center start error " + e.getMessage()));
+                return;
+            }
             MutablePropertySources propertySources1 = environment.getPropertySources();
             PropertySource<?> propertySource = propertySources1.get(FIRST_ENV_NAME);
             Map<String, String> map = PropertySourceConverter.toMap(propertySource);
             ccSpi.setBootParameters(map);
-            ccSpi.subscribe((key,properties) -> {
-                if(properties ==null || properties.isEmpty()) return;
+
+            ccSpi.subscribe((key, properties) -> {
+                if (StrUtil.isBlank(key) || properties == null || properties.isEmpty()) return;
                 ConfigurableEnvironment environment1 = (ConfigurableEnvironment) Easy4j.environment;
                 MutablePropertySources propertySources = environment1.getPropertySources();
-                MapPropertySource mapPropertySource = new MapPropertySource(E_NAME_2+key, properties);
-                propertySources.replace(E_NAME_2+key,mapPropertySource);
+                MapPropertySource mapPropertySource = new MapPropertySource(E_NAME_2 + key, properties);
+                propertySources.replace(E_NAME_2 + key, mapPropertySource);
             });
+
             Runtime.getRuntime().addShutdownHook(new Thread(ccSpi::destroy));
+
             Map<String, Properties> config = ccSpi.getConfig();
-            if(config!=null && !config.isEmpty()){
+            if (config != null && !config.isEmpty()) {
                 for (String key : config.keySet()) {
+                    if (StrUtil.isBlank(key)) continue;
                     String key_ = E_NAME_2 + key;
                     Properties bootConfig = config.get(key);
                     if (bootConfig != null && !bootConfig.isEmpty()) {
                         PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(key_, bootConfig);
                         environment.getPropertySources()
-                                .addAfter(FIRST_ENV_NAME,propertiesPropertySource);
+                                .addAfter(FIRST_ENV_NAME, propertiesPropertySource);
                     }
                 }
             }

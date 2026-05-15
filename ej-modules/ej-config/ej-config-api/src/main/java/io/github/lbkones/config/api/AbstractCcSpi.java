@@ -16,7 +16,7 @@ public abstract class AbstractCcSpi extends StandAbstractEasy4jResolve implement
 
     @Override
     public void subscribe(ConfigChange configChange) {
-        this.configChange = configChange;
+        if(this.configChange==null) this.configChange = configChange;
     }
 
 }

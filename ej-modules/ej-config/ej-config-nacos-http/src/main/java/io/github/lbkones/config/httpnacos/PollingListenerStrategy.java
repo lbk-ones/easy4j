@@ -1,25 +1,29 @@
 package io.github.lbkones.config.httpnacos;
 
+import easy4j.infra.common.utils.SysLog;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-/**
- * ==================== 策略实现2: v3.x 定时轮询策略 ====================
- */
+
 /**
  * 定时轮询监听策略（v3.x）
+ * <br/>
  * 原理：定期轮询获取配置，与本地缓存对比，如有变更则触发回调
+ * <br/>
+ * 支持用户名密码认证和AccessKey/SecretKey签名认证
  */
 public class PollingListenerStrategy implements ConfigListenerStrategy {
 
-    private static final int POLLING_INTERVAL = 10000; // 10秒轮询一次
+    private static final int POLLING_INTERVAL = 10000;
     private static final String CHARSET = "UTF-8";
 
     private String serverAddr;
@@ -27,9 +31,8 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
     private Map<String, ConfigCache> configCacheMap;
     private Map<String, PollingTask> pollingTasks;
     private ExecutorService executorService;
-    /**
-     * 轮询任务
-     */
+    private NacosAuthHelper authHelper;
+
     private static class PollingTask {
         volatile boolean running = true;
         Future<?> future;
@@ -38,10 +41,18 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
     public PollingListenerStrategy(String serverAddr, String namespace,
                                    Map<String, ConfigCache> configCacheMap,
                                    ExecutorService executorService) {
+        this(serverAddr, namespace, configCacheMap, executorService, null);
+    }
+
+    public PollingListenerStrategy(String serverAddr, String namespace,
+                                   Map<String, ConfigCache> configCacheMap,
+                                   ExecutorService executorService,
+                                   NacosAuthHelper authHelper) {
         this.serverAddr = serverAddr;
         this.namespace = namespace;
         this.configCacheMap = configCacheMap;
         this.executorService = executorService;
+        this.authHelper = authHelper;
         this.pollingTasks = new ConcurrentHashMap<>();
     }
 
@@ -50,7 +61,7 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
         String taskKey = dataId + "#" + group;
 
         if (pollingTasks.containsKey(taskKey)) {
-            System.out.println("[Polling] Listening already started for " + taskKey);
+            System.out.println(SysLog.compact("[Polling] Listening already started for " + taskKey));
             return;
         }
 
@@ -60,40 +71,38 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
         });
 
         pollingTasks.put(taskKey, task);
-        System.out.println("[Polling] Started listening: " + taskKey);
+        System.out.println(SysLog.compact("[Polling] Started listening: " + taskKey));
     }
 
     private void doPollingListen(String dataId, String group,
                                  ConfigChangeCallback callback, PollingTask task) {
         while (task.running) {
             try {
-                // 1. 获取远程配置
+                ensureAuthenticated();
+
                 String newContent = getRemoteConfig(dataId, group);
 
-                // 2. 与缓存对比
                 String cacheKey = dataId + "#" + group;
                 ConfigCache cache = configCacheMap.get(cacheKey);
 
                 if (cache == null || !cache.content.equals(newContent)) {
-                    // 配置有变更
                     updateCache(dataId, group, newContent);
                     callback.onConfigChanged(dataId, group, newContent);
-                    System.out.println("[Polling] Config changed detected for " + cacheKey);
+                    System.out.println(SysLog.compact("[Polling] Config changed detected for " + cacheKey));
                 }
 
                 if (!task.running) break;
 
-                // 3. 等待轮询间隔
                 Thread.sleep(POLLING_INTERVAL);
 
             } catch (InterruptedException e) {
                 if (task.running) {
-                    System.err.println("[Polling] Interrupted: " + e.getMessage());
+                    System.err.println(SysLog.compact("[Polling] Interrupted: " + e.getMessage()));
                 }
             } catch (Exception e) {
-                System.err.println("[Polling] Error: " + e.getMessage());
+                System.err.println(SysLog.compact("[Polling] Error: " + e.getMessage()));
                 try {
-                    Thread.sleep(2000); // 错误后延迟重试
+                    Thread.sleep(2000);
                 } catch (InterruptedException ie) {
                     // ignore
                 }
@@ -102,6 +111,8 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
     }
 
     private String getRemoteConfig(String dataId, String group) throws Exception {
+        ensureAuthenticated();
+
         String url = String.format("http://%s/nacos/v1/cs/configs", serverAddr);
         url += "?dataId=" + URLEncoder.encode(dataId, CHARSET);
         url += "&group=" + URLEncoder.encode(group, CHARSET);
@@ -109,10 +120,18 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
             url += "&tenant=" + URLEncoder.encode(namespace, CHARSET);
         }
 
+        if (authHelper != null) {
+            url = authHelper.addAuthParams(url);
+        }
+
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
+
+        if (authHelper != null) {
+            authHelper.setAuthHeader(conn);
+        }
 
         return readResponse(conn);
     }
@@ -148,6 +167,12 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
                 }
             }
             throw e;
+        }
+    }
+
+    private void ensureAuthenticated() {
+        if (authHelper != null && authHelper.needRefreshToken()) {
+            authHelper.login();
         }
     }
 
