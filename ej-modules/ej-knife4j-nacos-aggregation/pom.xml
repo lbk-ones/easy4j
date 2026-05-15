@@ -27,6 +27,11 @@
     <dependencies>
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-config-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-webmvc</artifactId>
         </dependency>
 
