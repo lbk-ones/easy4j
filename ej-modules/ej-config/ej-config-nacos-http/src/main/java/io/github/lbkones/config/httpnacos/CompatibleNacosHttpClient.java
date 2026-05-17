@@ -4,6 +4,8 @@ package io.github.lbkones.config.httpnacos;
  * ==================== 核心客户端：统一入口 ====================
  */
 
+import cn.hutool.core.util.StrUtil;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysLog;
 import lombok.Getter;
 
@@ -21,6 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static io.github.lbkones.config.httpnacos.NacosVersionDetector.NacosVersion.UNKNOWN;
 
 /**
  * 版本兼容的Nacos HTTP客户端
@@ -106,8 +110,16 @@ public class CompatibleNacosHttpClient {
     private void detectAndInitStrategy() throws Exception {
         System.out.println(SysLog.compact("========== Detecting Nacos Version =========="));
 
+
+
         NacosVersionDetector detector = new NacosVersionDetector(serverAddr);
         this.detectedVersion = detector.detect();
+
+        String property = Easy4j.getProperty("easy4j.nacos-http-version","");
+        if(StrUtil.isNotBlank(property)){
+            this.detectedVersion = NacosVersionDetector.NacosVersion.from(property);
+            System.out.println(SysLog.compact("Version specification: " + this.detectedVersion));
+        }
 
         System.out.println(SysLog.compact("Detected Version: " + detectedVersion.getVersionName()));
 
@@ -260,14 +272,14 @@ public class CompatibleNacosHttpClient {
     public void addListener(String dataId, String group, ConfigListener listener) throws Exception {
         String cacheKey = dataId + "#" + group;
         listenerMap.put(cacheKey, listener);
-
+        strategy.startListening(dataId, group, listener::onConfigChange);
         try {
             getConfig(dataId, group);
         } catch (Exception e) {
             System.err.println("Failed to get initial config: " + e.getMessage());
         }
 
-        strategy.startListening(dataId, group, listener::onConfigChange);
+
     }
 
     /**

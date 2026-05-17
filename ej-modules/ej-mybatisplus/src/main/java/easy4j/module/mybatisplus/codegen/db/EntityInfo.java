@@ -28,6 +28,7 @@ public class EntityInfo extends GlobalGenConfig implements Serializable {
 
 
     List<EFieldInfo> fieldInfoList = new ArrayList<>();
+    List<EFieldInfo> auditFields = new ArrayList<>();
 
     /**
      * 是否继承 AutoAudit

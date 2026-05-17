@@ -2,7 +2,9 @@ package io.github.lbkones.config.httpnacos;
 
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,26 +86,26 @@ public class NacosAuthHelper {
             url += "&password=" + URLEncoder.encode(password, StandardCharsets.UTF_8);
 
             HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-            conn.setRequestMethod("GET");
+            conn.setRequestMethod("POST");
             conn.setConnectTimeout(DEFAULT_TIMEOUT);
             conn.setReadTimeout(DEFAULT_TIMEOUT);
 
             int responseCode = conn.getResponseCode();
             if (responseCode == 200) {
                 String response = readResponse(conn);
-                log.debug("Nacos login response: {}", response);
 
                 TokenResponse tokenResponse = JacksonUtil.toObject(response, TokenResponse.class);
                 if (tokenResponse != null && StrUtil.isNotBlank(tokenResponse.getAccessToken())) {
                     this.accessToken = tokenResponse.getAccessToken();
                     this.tokenExpireTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(tokenResponse.getTokenTtl() > 0 ? tokenResponse.getTokenTtl() : 18000);
                     this.isAuthenticated = true;
-                    log.info("Nacos login successful, token will expire in {} seconds", tokenResponse.getTokenTtl());
+                    System.out.println(SysLog.compact("Nacos login successful, token will expire in "+tokenResponse.getTokenTtl()+" seconds : " + this.accessToken));
                     return true;
                 }
             }
 
-            log.warn("Nacos login failed, response code: {}", responseCode);
+            System.err.println(SysLog.compact("Nacos login failed, response code: {}", String.valueOf(responseCode)));
+
             return false;
 
         } catch (Exception e) {
@@ -231,33 +233,13 @@ public class NacosAuthHelper {
     /**
      * Token响应结构
      */
+    @Data
     public static class TokenResponse {
         private String accessToken;
         private String tokenType;
         private long tokenTtl;
 
-        public String getAccessToken() {
-            return accessToken;
-        }
-
-        public void setAccessToken(String accessToken) {
-            this.accessToken = accessToken;
-        }
-
-        public String getTokenType() {
-            return tokenType;
-        }
-
-        public void setTokenType(String tokenType) {
-            this.tokenType = tokenType;
-        }
-
-        public long getTokenTtl() {
-            return tokenTtl;
-        }
-
-        public void setTokenTtl(long tokenTtl) {
-            this.tokenTtl = tokenTtl;
-        }
+        private Boolean globalAdmin;
+        private String username;
     }
 }

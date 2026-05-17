@@ -61,12 +61,15 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
         CcSpi ccSpi = CcSpiFactory.get();
         if (!StrUtil.equals(DefaultCcSpi.DEFAULT_SPI, ccSpi.getName())) {
             System.out.println(SysLog.compact("begin load config from config center"));
+
+
             try {
                 ccSpi.start();
             } catch (Exception e) {
                 System.err.println(SysLog.compact("config center start error " + e.getMessage()));
                 return;
             }
+
             MutablePropertySources propertySources1 = environment.getPropertySources();
             PropertySource<?> propertySource = propertySources1.get(FIRST_ENV_NAME);
             Map<String, String> map = PropertySourceConverter.toMap(propertySource);
@@ -76,8 +79,12 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                 if (StrUtil.isBlank(key) || properties == null || properties.isEmpty()) return;
                 ConfigurableEnvironment environment1 = (ConfigurableEnvironment) Easy4j.environment;
                 MutablePropertySources propertySources = environment1.getPropertySources();
-                MapPropertySource mapPropertySource = new MapPropertySource(E_NAME_2 + key, properties);
-                propertySources.replace(E_NAME_2 + key, mapPropertySource);
+                String s = E_NAME_2 + key;
+                boolean contains = propertySources.contains(s);
+                if(contains){
+                    MapPropertySource mapPropertySource = new MapPropertySource(s, properties);
+                    propertySources.replace(s, mapPropertySource);
+                }
             });
 
             Runtime.getRuntime().addShutdownHook(new Thread(ccSpi::destroy));

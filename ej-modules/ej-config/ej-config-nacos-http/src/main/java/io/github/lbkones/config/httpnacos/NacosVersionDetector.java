@@ -1,5 +1,6 @@
 package io.github.lbkones.config.httpnacos;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +30,18 @@ public class NacosVersionDetector {
             this.majorVersion = majorVersion;
         }
 
+        public static NacosVersion from(String versionName){
+            if(StrUtil.isBlank(versionName)) return UNKNOWN;
+            for (NacosVersion value : NacosVersion.values()) {
+                String versionName1 = value.getVersionName();
+                String lowerCase = versionName.toLowerCase();
+                if(StrUtil.equals(versionName1,lowerCase)){
+                    return value;
+                }
+            }
+            return UNKNOWN;
+        }
+
     }
 
     private final String serverAddr;
@@ -52,7 +65,7 @@ public class NacosVersionDetector {
             }
 
             // 备选方案：尝试v2接口
-            url = String.format("http://%s/nacos/v2/core/ops/metrics", serverAddr);
+            url = String.format("http://%s/nacos/v2/ns/operator/metrics", serverAddr);
             response = sendSimpleGet(url);
             if (response != null) {
                 return NacosVersion.V2_X;

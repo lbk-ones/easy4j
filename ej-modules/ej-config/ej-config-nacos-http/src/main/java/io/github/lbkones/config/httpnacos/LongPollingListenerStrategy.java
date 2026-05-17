@@ -1,5 +1,7 @@
 package io.github.lbkones.config.httpnacos;
 
+import easy4j.infra.common.utils.SysLog;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 长轮询监听策略（v1.x 和 v2.x）
@@ -80,6 +83,9 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
                 ensureAuthenticated();
 
                 String listeningConfigs = buildListeningConfigs(dataId, group);
+
+                // 测试 服务端 2.5.2 jdk-17
+                // 这里会有一个问题（且这个问题会在使用nacos-client之后一样也会出现） 客户端和服务端算出来的md5值应该是不一样 导致这里无限循环 暂时无法解决 降级使用轮训吧脑壳痛什么垃圾玩意儿 如果使用java8可能会修复这个问题 但是我并不想使用java8 就这样吧
                 String response = longPolling(listeningConfigs);
 
                 if (response != null && !response.isEmpty()) {
@@ -89,7 +95,7 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
                 }
 
                 if (!task.running) break;
-                Thread.sleep(100);
+                TimeUnit.SECONDS.sleep(2L);
 
             } catch (InterruptedException e) {
                 if (task.running) {
@@ -98,7 +104,7 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
             } catch (Exception e) {
                 System.err.println("[LongPolling] Error: " + e.getMessage());
                 try {
-                    Thread.sleep(1000);
+                    TimeUnit.SECONDS.sleep(1L);
                 } catch (InterruptedException ie) {
                     // ignore
                 }
@@ -235,7 +241,7 @@ public class LongPollingListenerStrategy implements ConfigListenerStrategy {
             task.running = false;
             task.future.cancel(true);
             listeningTasks.remove(taskKey);
-            System.out.println("[LongPolling] Stopped listening: " + taskKey);
+            System.out.println(SysLog.compact("[LongPolling] Stopped listening: " + taskKey));
         }
     }
 

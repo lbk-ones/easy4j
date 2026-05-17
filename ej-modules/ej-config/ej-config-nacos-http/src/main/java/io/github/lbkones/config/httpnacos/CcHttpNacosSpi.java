@@ -1,11 +1,13 @@
 package io.github.lbkones.config.httpnacos;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.starter.env.PropertySourceConverter;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SysLog;
 import io.github.lbkones.config.api.AbstractCcSpi;
 import io.github.lbkones.config.api.ConfigChange;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,6 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
 
     NacosPropetiesParse nacosPropetiesParse;
 
-    private final Map<String, Properties> configCache = new ConcurrentHashMap<>();
 
     @Override
     public Map<String, Properties> getConfig() {
@@ -53,14 +54,8 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
                 String dataId1 = dataId.getDataId();
                 String group1 = dataId.getGroup();
                 String dg = dataId1 + SP.AT + group1;
-                Properties properties = configCache.get(dg);
-                if (properties != null) {
-                    m.put(dg, properties);
-                    continue;
-                }
                 String config = client.getConfig(dataId1, group1);
                 Properties properties1 = getProperties(dataId1, config);
-                configCache.put(dg,properties1);
                 m.put(dg, properties1);
             }
             return m;
@@ -79,27 +74,40 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
             String nurl = nacosPropetiesParse.getNacosConfigUrl();
             String nameSpace = nacosPropetiesParse.getNacosConfigNameSpace();
             if (StrUtil.isNotBlank(username) && StrUtil.isNotBlank(password)) {
-                log.info("Initializing Nacos HTTP client with username/password authentication");
+                System.out.println(SysLog.compact("Initializing Nacos HTTP client with username/password authentication"));
                 client = new CompatibleNacosHttpClient(nurl, nameSpace, username, password);
             } else {
-                log.info("Initializing Nacos HTTP client without authentication");
+                System.out.println(SysLog.compact("Initializing Nacos HTTP client without authentication"));
                 client = new CompatibleNacosHttpClient(nurl, nameSpace);
             }
 
-            ConfigChange change = this.configChange;
             List<NacosPropetiesParse.NacosDataId> dataIds = nacosPropetiesParse.getDataIds();
             for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
                 String dataId1 = dataId_.getDataId();
                 String group1 = dataId_.getGroup();
-                client.addListener(dataId1, group1, (dataId, group, configInfo) -> {
-                    Map<@Nullable String, @Nullable Object> res = Maps.newHashMap();
-                    Properties properties = getProperties(dataId, configInfo);
-                    for (Object o : properties.keySet()) {
-                        Object o1 = properties.get(o);
-                        res.put(String.valueOf(o), String.valueOf(o1));
-                    }
-                    if (change != null) {
-                        change.change(dataId + SP.AT + group, res);
+                client.addListener(dataId1, group1, new CompatibleNacosHttpClient.ConfigListener() {
+
+                    private String lastMd5 = null;
+
+                    @Override
+                    public void onConfigChange(String dataId, String group, String configInfo) {
+                        String md5 = DigestUtil.md5Hex(configInfo, StandardCharsets.UTF_8);
+                        System.out.println(SysLog.compact("The value in the configuration center has changed " + dataId + "@" + group) + " last md5 is " + lastMd5 + " current md5 is " + md5);
+                        if (StrUtil.isNotBlank(configInfo)) {
+                            if (StrUtil.equals(lastMd5, md5)) return;
+                            ConfigChange change = CcHttpNacosSpi.this.configChange;
+                            Map<@Nullable String, @Nullable Object> res = Maps.newHashMap();
+                            Properties properties = getProperties(dataId, configInfo);
+                            for (Object o : properties.keySet()) {
+                                Object o1 = properties.get(o);
+                                res.put(String.valueOf(o), String.valueOf(o1));
+                            }
+                            if (change != null) {
+                                change.change(dataId + SP.AT + group, res);
+                            }
+                            lastMd5 = md5;
+                        }
+
                     }
                 });
             }

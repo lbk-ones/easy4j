@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractEasy4jResolve<T, R> implements Easy4jResolve<T, R> {
 
     public static List<String> splitUrl(String p) {
+        if(StrUtil.isBlank(p)) return ListTs.newArrayList();
         String[] split = p.split(SP.AT);
 
         String url = null;

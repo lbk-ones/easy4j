@@ -1,5 +1,6 @@
 package io.github.lbkones.config.httpnacos;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import easy4j.infra.common.utils.SysLog;
 
 import java.io.ByteArrayOutputStream;
@@ -84,13 +85,11 @@ public class PollingListenerStrategy implements ConfigListenerStrategy {
 
                 String cacheKey = dataId + "#" + group;
                 ConfigCache cache = configCacheMap.get(cacheKey);
-
-                if (cache == null || !cache.content.equals(newContent)) {
+                String newMd5 = DigestUtil.md5Hex(newContent, StandardCharsets.UTF_8);
+                if (cache == null || !cache.md5.equals(newMd5)) {
                     updateCache(dataId, group, newContent);
                     callback.onConfigChanged(dataId, group, newContent);
-                    System.out.println(SysLog.compact("[Polling] Config changed detected for " + cacheKey));
                 }
-
                 if (!task.running) break;
 
                 Thread.sleep(POLLING_INTERVAL);

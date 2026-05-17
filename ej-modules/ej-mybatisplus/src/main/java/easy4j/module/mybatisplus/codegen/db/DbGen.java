@@ -91,10 +91,11 @@ public class DbGen extends AbstractGen {
             System.out.println("scan " + allTableInfo.size() + " tables");
             List<EntityInfo> entityInfos = ListTs.newList();
             Field[] fields1 = ReflectUtil.getFields(AutoAudit.class);
-            List<String> collect = Arrays.stream(fields1).map(Field::getName).collect(Collectors.toList());
+            List<String> collect = Arrays.stream(fields1).map(Field::getName).toList();
             for (TableMetadata tableMetadata : allTableInfo) {
                 Set<String> importList = Sets.newHashSet();
                 List<EntityInfo.EFieldInfo> fields = ListTs.newList();
+                List<EntityInfo.EFieldInfo> autoAudit = ListTs.newList();
                 String tableName = tableMetadata.getTableName();
                 tableMetadata.setRemarks(StrUtil.replace(tableMetadata.getRemarks(), "\n", ""));
                 if (StrUtil.isNotBlank(tablePrefix)) {
@@ -185,10 +186,12 @@ public class DbGen extends AbstractGen {
 
                     if (collect.stream().anyMatch(e -> StrUtil.equals(e, eFieldInfo.getName()))) {
                         autoIndex++;
+                        autoAudit.add(eFieldInfo);
                         continue;
                     }
                     fields.add(eFieldInfo);
                 }
+                // 如果全是审计字段会有问题 但是话说回来全是审计 没有什么意义 先不管
                 if (fields.isEmpty()) {
                     System.out.println("the table " + tableName + " fields is empty so skip!!!");
                     continue;
@@ -201,6 +204,7 @@ public class DbGen extends AbstractGen {
                         .setSameSchema(sameSchema)
                         .setTableName(tableName)
                         .setFieldInfoList(fields)
+                        .setAuditFields(autoAudit)
                         .setImportList(importList);
                 BeanUtil.copyProperties(this, entityInfo, CopyOptions.create().ignoreNullValue());
                 if (collect.size() <= autoIndex) {
@@ -238,6 +242,10 @@ public class DbGen extends AbstractGen {
                     EntityPInfo.add(fileName, s);
                 }
                 if (dbGenSetting.isGenMapperXml()) {
+                    EntityInfo entityInfo1 = new EntityInfo();
+                    BeanUtil.copyProperties(entityInfo,entityInfo1);
+                    // fix：mapper xml lost audit fields
+                    ListTs.addAll(entityInfo1.getFieldInfoList(),entityInfo1.getAuditFields());
                     String fileName = entityInfo.getSchema() + "Mapper.xml";
                     String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + parsePackage(this.getMapperXmlPackageName()) + File.separator + dbType + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo, isPreview);
