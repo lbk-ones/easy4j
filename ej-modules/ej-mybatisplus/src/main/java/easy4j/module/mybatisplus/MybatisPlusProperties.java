@@ -1,5 +1,6 @@
 package easy4j.module.mybatisplus;
 
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ConfigurationProperties(
-        prefix = SysConstant.PARAM_PREFIX
+        prefix = SysConstant.PARAM_PREFIX+ SP.DOT+"mp"
 )
 @Data
 public class MybatisPlusProperties {

@@ -65,6 +65,13 @@ public class RedisCacheWithFallback<K> {
      */
     private final Boolean isHash;
 
+    private boolean forceFlush = false;
+
+    public RedisCacheWithFallback<K> setForceFlush(boolean forceFlush) {
+        this.forceFlush = forceFlush;
+        return this;
+    }
+
     // 熔断状态
     private static final AtomicInteger failureCount = new AtomicInteger(0);
     private long lastFailureTime = 0;
@@ -163,8 +170,11 @@ public class RedisCacheWithFallback<K> {
             StopWatch watch = new StopWatch();
             watch.start();
 
-            // 执行Redis操作
-            value = executeRedisOperation(redisKey);
+            // forceFlush为true代表需要强制刷新
+            if(!this.forceFlush){
+                // 执行Redis操作
+                value = executeRedisOperation(redisKey);
+            }
 
             watch.stop();
             logger.debug("Redis operation completed in {} ms", watch.getTotalTimeMillis());
