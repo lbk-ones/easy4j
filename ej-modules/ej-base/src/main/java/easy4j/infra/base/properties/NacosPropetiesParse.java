@@ -47,7 +47,7 @@ public class NacosPropetiesParse extends StandAbstractEasy4jResolve {
         private String group;
     }
 
-    public static NacosPropetiesParse build(Environment env){
+    public static NacosPropetiesParse build(Environment env, boolean checkConfigUrl){
         EjSysProperties ejSysProperties = Easy4j.getEjSysPropertiesFromEnv(env);
         String nacosUrl1 = getUrl(ejSysProperties.getNacosUrl());
         String nacosUsername1 = StrUtil.blankToDefault(getUsername(ejSysProperties.getNacosUrl()),ejSysProperties.getNacosUsername());
@@ -84,7 +84,7 @@ public class NacosPropetiesParse extends StandAbstractEasy4jResolve {
         nacosPropetiesParse.setNacosDiscoveryGroup(StrUtil.blankToDefault(nacosDiscoveryGroup1,nacosGroup1));
 
         List<String> strings = ListTs.splitToList(dataIds1, SP.COMMA);
-        List<NacosDataId> objects = Lists.newArrayList();
+        List<NacosDataId> dataIdsList = Lists.newArrayList();
         for (String string : strings) {
             String dataId = nacosPropetiesParse.getDataId(string);
             String defaultGroup = StrUtil.firstNonBlank(nacosGroup1, nacosConfigGroup1, nacosDiscoveryGroup1);
@@ -92,9 +92,15 @@ public class NacosPropetiesParse extends StandAbstractEasy4jResolve {
             NacosDataId nacosDataId = new NacosDataId();
             nacosDataId.setDataId(dataId);
             nacosDataId.setGroup(group);
-            objects.add(nacosDataId);
+            dataIdsList.add(nacosDataId);
         }
-        nacosPropetiesParse.setDataIds(objects);
+        nacosPropetiesParse.setDataIds(dataIdsList);
+        if(checkConfigUrl){
+            String nacosConfigUrl2 = nacosPropetiesParse.getNacosConfigUrl();
+            if(StrUtil.isBlank(nacosConfigUrl2) || dataIdsList.isEmpty()){
+                throw new RuntimeException("please check nacos config!");
+            }
+        }
         return nacosPropetiesParse;
     }
 

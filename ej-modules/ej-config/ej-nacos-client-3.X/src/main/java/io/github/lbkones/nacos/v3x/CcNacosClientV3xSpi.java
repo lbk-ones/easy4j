@@ -42,6 +42,7 @@ public class CcNacosClientV3xSpi extends AbstractCcSpi {
     private ConfigService configService;
     private final Map<String, Properties> configCache = new HashMap<>();
     private NacosPropetiesParse nacosPropetiesParse;
+
     @Override
     public Map<String, Properties> getConfig() {
         if (configService == null) {
@@ -81,12 +82,11 @@ public class CcNacosClientV3xSpi extends AbstractCcSpi {
     @Override
     public void start() {
         try {
-            nacosPropetiesParse = NacosPropetiesParse.build(null);
+            nacosPropetiesParse = NacosPropetiesParse.build(null, true);
             String url = nacosPropetiesParse.getNacosConfigUrl();
             String nameSpace = nacosPropetiesParse.getNacosConfigNameSpace();
             Properties properties = buildNacosProperties(url, nameSpace);
             configService = NacosFactory.createConfigService(properties);
-            ConfigChange change = this.configChange;
             List<NacosPropetiesParse.NacosDataId> dataIds = nacosPropetiesParse.getDataIds();
             for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
                 final String dataId = dataId_.getDataId();
@@ -104,6 +104,7 @@ public class CcNacosClientV3xSpi extends AbstractCcSpi {
                         if (StrUtil.isBlank(configInfo)) {
                             return;
                         }
+                        System.out.println(SysLog.compact("The value in the configuration center has changed " +dg));
                         Properties props = parseConfig(dataId, configInfo);
                         configCache.put(dg, props);
                         Map<String, Object> res = new HashMap<>();
@@ -113,6 +114,7 @@ public class CcNacosClientV3xSpi extends AbstractCcSpi {
                                 res.put(String.valueOf(key), String.valueOf(value));
                             }
                         }
+                        ConfigChange change = CcNacosClientV3xSpi.this.configChange;
                         if (change != null) {
                             change.change(dg, res);
                         }
@@ -120,7 +122,7 @@ public class CcNacosClientV3xSpi extends AbstractCcSpi {
 
                     @Override
                     public Executor getExecutor() {
-                        return Executors.newSingleThreadExecutor(new NamedThreadFactory("nacos-config-listener",true));
+                        return Executors.newSingleThreadExecutor(new NamedThreadFactory("nacos-config-listener", true));
                     }
                 });
             }

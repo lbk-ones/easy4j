@@ -339,10 +339,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                 if(StrUtil.startWith(key,prefix) && ObjectUtil.isEmpty(mapProperties.get(key))){
                     String iv = getInitParameterValue(key);
                     if(StrUtil.isNotBlank(iv)){
-                        mapProperties.put(key,iv);
+                        // fix: need resolve placeholders
+                        mapProperties.put(key,configEnvironment.resolvePlaceholders(iv));
                         return;
                     }
-                    mapProperties.put(key, v);
+                    // fix: need resolve placeholders
+                    mapProperties.put(key, configEnvironment.resolvePlaceholders(v));
                 }
             }
         });

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Nacos HTTP配置中心SPI实现
@@ -68,7 +67,7 @@ public class CcHttpNacosSpi extends AbstractCcSpi {
     @Override
     public void start() {
         try {
-            nacosPropetiesParse = NacosPropetiesParse.build(null);
+            nacosPropetiesParse = NacosPropetiesParse.build(null, true);
             String username = nacosPropetiesParse.getNacosConfigUsername();
             String password = nacosPropetiesParse.getNacosConfigPassword();
             String nurl = nacosPropetiesParse.getNacosConfigUrl();

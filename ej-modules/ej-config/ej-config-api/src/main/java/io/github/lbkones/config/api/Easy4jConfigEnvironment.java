@@ -15,11 +15,12 @@
 package io.github.lbkones.config.api;
 
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
+import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.base.starter.env.PropertySourceConverter;
 import easy4j.infra.common.utils.SysLog;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.core.annotation.Order;
@@ -27,6 +28,7 @@ import org.springframework.core.env.*;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * 配置中心初始化 紧随 Easy4jEnvironmentFirst 之后执行
@@ -67,12 +69,22 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                 ccSpi.start();
             } catch (Exception e) {
                 System.err.println(SysLog.compact("config center start error " + e.getMessage()));
+                e.printStackTrace();
+                System.exit(1);
                 return;
             }
 
             MutablePropertySources propertySources1 = environment.getPropertySources();
             PropertySource<?> propertySource = propertySources1.get(FIRST_ENV_NAME);
             Map<String, String> map = PropertySourceConverter.toMap(propertySource);
+            System.out.println(SysLog.compact("print boot config keys: ↓"));
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (value != null) {
+                    System.out.println(SysLog.compact(key + "=" + configEnvironment.resolvePlaceholders(value)));
+                }
+            }
             ccSpi.setBootParameters(map);
 
             ccSpi.subscribe((key, properties) -> {
@@ -81,7 +93,18 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                 MutablePropertySources propertySources = environment1.getPropertySources();
                 String s = E_NAME_2 + key;
                 boolean contains = propertySources.contains(s);
-                if(contains){
+                if (contains) {
+                    Map<String, Object> mapProperties = Maps.newHashMap();
+                    for (String keyStr : properties.keySet()) {
+                        Object vp = properties.get(keyStr);
+                        if (null != vp) {
+                            String value = environment.resolvePlaceholders(vp.toString());
+                            mapProperties.put(keyStr, value);
+                        }
+                    }
+                    // fix: 这里也需要转换 不然和启动的时候参数对应不上
+                    BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
+                    bootStrapSpecialVsResolve.handler(mapProperties, null);
                     MapPropertySource mapPropertySource = new MapPropertySource(s, properties);
                     propertySources.replace(s, mapPropertySource);
                 }
@@ -91,16 +114,37 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
 
             Map<String, Properties> config = ccSpi.getConfig();
             if (config != null && !config.isEmpty()) {
-                for (String key : config.keySet()) {
+                Set<String> keySet = config.keySet();
+                for (String key : keySet) {
                     if (StrUtil.isBlank(key)) continue;
                     String key_ = E_NAME_2 + key;
                     Properties bootConfig = config.get(key);
                     if (bootConfig != null && !bootConfig.isEmpty()) {
-                        PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(key_, bootConfig);
-                        environment.getPropertySources()
-                                .addAfter(FIRST_ENV_NAME, propertiesPropertySource);
+                        System.out.println(SysLog.compact("from config center ["+key+"] read "+bootConfig.keySet().size()+" keys"));
+                        Map<String, Object> mapProperties = Maps.newHashMap();
+                        for (Object keyStr : bootConfig.keySet()) {
+                            String keyS = keyStr.toString();
+                            String property = bootConfig.getProperty(keyS);
+                            String value = environment.resolvePlaceholders(property);
+                            mapProperties.put(keyS, value);
+                        }
+                        // fix: 需要进行启动映射
+                        BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
+                        bootStrapSpecialVsResolve.handler(mapProperties, null);
+                        MutablePropertySources propertySources = environment.getPropertySources();
+                        MapPropertySource propertiesPropertySource = new MapPropertySource(key_, mapProperties);
+                        // fix: 优先级必须比注解要高
+                        if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES) && propertySources.contains(FIRST_ENV_NAME)) {
+                            propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES, propertiesPropertySource);
+                        } else {
+                            propertySources
+                                    .addAfter(FIRST_ENV_NAME, propertiesPropertySource);
+                        }
                     }
                 }
+            }else{
+                System.err.println(SysLog.compact("not found keys from config center，please check config!"));
+                System.exit(1);
             }
         }
     }

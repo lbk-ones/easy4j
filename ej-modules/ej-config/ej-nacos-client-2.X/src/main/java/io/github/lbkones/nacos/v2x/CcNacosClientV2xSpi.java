@@ -80,12 +80,11 @@ public class CcNacosClientV2xSpi extends AbstractCcSpi {
     @Override
     public void start() {
         try {
-            nacosPropetiesParse = NacosPropetiesParse.build(null);
+            nacosPropetiesParse = NacosPropetiesParse.build(null, true);
             String nacosConfigUrl = nacosPropetiesParse.getNacosConfigUrl();
             String nameSpace = nacosPropetiesParse.getNacosConfigNameSpace();
             Properties properties = buildNacosProperties(nacosConfigUrl, nameSpace);
             configService = NacosFactory.createConfigService(properties);
-            final ConfigChange change = this.configChange;
             List<NacosPropetiesParse.NacosDataId> dataIds = nacosPropetiesParse.getDataIds();
             for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
                 final String dataId = dataId_.getDataId();
@@ -102,6 +101,8 @@ public class CcNacosClientV2xSpi extends AbstractCcSpi {
                         if (StrUtil.isBlank(configInfo)) {
                             return;
                         }
+                        System.out.println(SysLog.compact("The value in the configuration center has changed " +dg));
+
 
                         Properties props = parseConfig(dataId, configInfo);
                         configCache.put(dg, props);
@@ -113,7 +114,7 @@ public class CcNacosClientV2xSpi extends AbstractCcSpi {
                                 res.put(String.valueOf(key), String.valueOf(value));
                             }
                         }
-
+                        ConfigChange change = CcNacosClientV2xSpi.this.configChange;
                         if (change != null) {
                             change.change(dg, res);
                         }
