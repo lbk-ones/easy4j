@@ -19,7 +19,7 @@
     <properties>
         <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
         <!-- 核心框架升级 -->
-        <spring-boot.version>3.5.9</spring-boot.version>
+        <spring-boot.version>3.5.15</spring-boot.version>
         <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
         <!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
         <!--升级至2025版本-->
@@ -54,8 +54,8 @@
         <xxljob.version>3.2.0</xxljob.version> <!-- 注意：2.5.0暂不支持Spring Boot 3，需用2.4.0或等待更新 -->
         <oshi-core.version>6.4.1</oshi-core.version> <!-- 最新稳定版 -->
         <pinyin4j.version>2.5.1</pinyin4j.version> <!-- 保持不变（兼容） -->
-        <easyexcel.version>3.3.0</easyexcel.version> <!-- 支持Spring Boot 3 -->
-        <minio.version>8.5.13</minio.version> <!-- 安全更新 -->
+        <easyexcel.version>4.0.3</easyexcel.version> <!-- 支持Spring Boot 3 -->
+        <minio.version>8.6.0</minio.version> <!-- 安全更新 -->
         <knife4j.aggregation.version>4.5.0</knife4j.aggregation.version>
         <commons-io.version>2.15.0</commons-io.version>
         <jjwt.version>0.11.5</jjwt.version>
