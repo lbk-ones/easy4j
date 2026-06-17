@@ -18,6 +18,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.modules.ltl.transactional.LocalMessage;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -38,7 +39,7 @@ public class LtlTransactionService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add("db/lt");
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
     }
 

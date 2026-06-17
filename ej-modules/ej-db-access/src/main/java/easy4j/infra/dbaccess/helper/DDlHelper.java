@@ -71,12 +71,15 @@ public class DDlHelper {
                     encodedResource = new EncodedResource(inputStreamResource, StandardCharsets.UTF_8);
                 } else {
                     ClassPathResource classPathResource = new ClassPathResource(sqlFile);
-                    InputStream inputStream = classPathResource.getInputStream();
-                    InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
-                    encodedResource = new EncodedResource(inputStreamResource, StandardCharsets.UTF_8);
+                    if (classPathResource.exists()) {
+                        InputStream inputStream = classPathResource.getInputStream();
+                        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+                        encodedResource = new EncodedResource(inputStreamResource, StandardCharsets.UTF_8);
+                    }
                 }
-                executeSqlScript(connection, encodedResource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
-                        DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
+                if (encodedResource != null)
+                    executeSqlScript(connection, encodedResource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
+                            DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
             }
         } finally {
             if (isCloseConnection) {

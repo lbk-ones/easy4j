@@ -18,6 +18,7 @@ package easy4j.module.seed.leaf;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.SqlFileEnums;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,6 @@ import java.util.List;
 @Service
 public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
-    public static final String LEAF_PATH = "db/leaf";
-    public static final String SNOWIP_PATH = "db/snowip";
-
     private DBAccess dbaccess;
 
     @Autowired
@@ -47,8 +45,8 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add(LEAF_PATH);
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SNOWIP_PATH);
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LEAF);
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_SNOW_IP);
         dbaccess = DBAccessFactory.getDBAccess(dataSource, true, false);
     }
 

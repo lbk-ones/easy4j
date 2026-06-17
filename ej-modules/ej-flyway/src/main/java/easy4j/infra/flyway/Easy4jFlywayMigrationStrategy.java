@@ -15,14 +15,20 @@
 package easy4j.infra.flyway;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.TempDataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
+import org.flywaydb.core.api.configuration.Configuration;
 import org.flywaydb.core.api.exception.FlywayValidateException;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+
+import javax.sql.DataSource;
 
 /**
  * 重写部分flyway执行逻辑
@@ -35,6 +41,14 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
     @Override
     public void migrate(Flyway flyway) {
         try {
+            // fix 修复一些脚本还没执行 但是flyway脚本可能对那些表做操作了已经
+            String flywayUrl = Easy4j.getProperty(FlywayConstant.FLYWAY_URL);
+            String driverClassName = Easy4j.getProperty(FlywayConstant.FLYWAY_DRIVER_CLASS_NAME);
+            String user = Easy4j.getProperty(FlywayConstant.FLYWAY_USER);
+            String password = Easy4j.getProperty(FlywayConstant.FLYWAY_PASSWORD);
+            TempDataSource tempDataSource = new TempDataSource(driverClassName,flywayUrl,user,password);
+            DBAccessFactory.exeAll(tempDataSource);
+
             flyway.repair();
             flyway.migrate();
         } catch (FlywayException e) {

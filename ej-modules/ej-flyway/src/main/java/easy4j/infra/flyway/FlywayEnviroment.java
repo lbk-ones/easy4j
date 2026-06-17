@@ -43,29 +43,29 @@ public class FlywayEnviroment extends AbstractEasy4jEnvironment {
 
         String dbType1 = getDbType();
 
-        properties.setProperty("spring.flyway.locations", "classpath:db/migration/" + dbType1);
+        properties.setProperty(FlywayConstant.FLYWAY_LOCATION, "classpath:db/migration/" + dbType1);
 
 //        properties.setProperty("spring.flyway.schemas", "public");
-        properties.setProperty("spring.flyway.table", "sys_flyway_schema_history");
+        properties.setProperty(FlywayConstant.FLYWAY_TABLE, "sys_flyway_schema_history");
 
         // 不允许无序执行
-        properties.setProperty("spring.flyway.out-of-order", "true");
+        properties.setProperty(FlywayConstant.FLYWAY_OUT_OF_ORDER, "true");
 
         // 禁用 flyway clean 命令
-        properties.setProperty("spring.flyway.clean-disabled", "true");
+        properties.setProperty(FlywayConstant.FLYWAY_CLEAN_DISABLED, "true");
         // 自动创建基线
-        properties.setProperty("spring.flyway.baseline-on-migrate", "true");
+        properties.setProperty(FlywayConstant.FLYWAY_BASELINE_ON_MIGRATE, "true");
         // 从0开始
-        properties.setProperty("spring.flyway.baseline-version", "0");
+        properties.setProperty(FlywayConstant.FLYWAY_BASELINE_VERSION, "0");
         // 跳过检查
-        properties.setProperty("spring.flyway.validate-on-migrate", "false");
+        properties.setProperty(FlywayConstant.FLYWAY_VALIDATE_ON_MIGRATE, "false");
 
 
         boolean enable = Easy4j.getProperty(SysConstant.EASY4J_FLYWAY_ENABLE, boolean.class);
 
         if (SystemUtil.getOsInfo().isLinux() || enable) {
             properties.setProperty(SysConstant.EASY4J_FLYWAY_ENABLE, "true");
-            properties.setProperty("spring.flyway.enabled", "true");
+            properties.setProperty(FlywayConstant.FLYWAY_ENABLED, "true");
         }
         String normalDbUrl = getNormalDbUrl();
         String url = getUrl(normalDbUrl);
@@ -78,10 +78,10 @@ public class FlywayEnviroment extends AbstractEasy4jEnvironment {
             throw new EasyException("the db  " + url + "  is not support!");
         }
         String driverClassName = SqlType.getDriverClassName(db);
-        properties.setProperty("spring.flyway.url", url);
-        properties.setProperty("spring.flyway.driver-class-name", driverClassName);
-        properties.setProperty("spring.flyway.user", username);
-        properties.setProperty("spring.flyway.password", password);
+        properties.setProperty(FlywayConstant.FLYWAY_URL, url);
+        properties.setProperty(FlywayConstant.FLYWAY_DRIVER_CLASS_NAME, driverClassName);
+        properties.setProperty(FlywayConstant.FLYWAY_USER, username);
+        properties.setProperty(FlywayConstant.FLYWAY_PASSWORD, password);
 
         return properties;
     }

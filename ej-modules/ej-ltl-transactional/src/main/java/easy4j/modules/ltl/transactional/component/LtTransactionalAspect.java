@@ -27,6 +27,7 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.seed.leaf.LeafGenIdService;
 import easy4j.modules.ltl.transactional.LocalMessage;
@@ -69,7 +70,7 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
     @Override
     public void run(String... args) throws Exception {
 
-        DBAccessFactory.INIT_DB_FILE_PATH.add("db/lt");
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
 
         try {

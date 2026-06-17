@@ -15,13 +15,10 @@
 package easy4j.infra.dbaccess;
 
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
-import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SqlType;
-import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -33,6 +30,7 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,12 +43,12 @@ import java.util.Set;
 @Getter
 @Slf4j
 public class DBAccessFactory extends StandAbstractEasy4jResolve {
-    public static final Set<String> INIT_DB_FILE_TYPE = new HashSet<>();
-    public static final Set<String> INIT_DB_FILE_PATH = new HashSet<>();
+    public static final Set<SqlFileEnums> INITED_FILE_PATH = new HashSet<>();
+    public static final Set<SqlFileEnums> INIT_DB_FILE_PATH = new HashSet<>();
 
     static {
-        INIT_DB_FILE_PATH.add("db/log");
-        INIT_DB_FILE_PATH.add("db/simplelock");
+        INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LOG);
+        INIT_DB_FILE_PATH.add(SqlFileEnums.DB_SIMPLE_LOCK);
     }
 
     /**
@@ -85,30 +83,46 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
         return jdbcDbAccess;
     }
 
-    public static void initDb(String path) {
+    public static void initDb(SqlFileEnums path) {
         INIT_DB_FILE_PATH.add(path);
         DataSource dataSource = SpringUtil.getBean(DataSource.class);
         getDBAccess(dataSource);
     }
 
     /**
-     * 全局sql文件初始化的地方
+     * 迁移前最后一次执行
+     * @param dataSource 传入数据源
+     */
+    public static void exeAll(DataSource dataSource){
+        List<SqlFileSpi> load = ServiceLoaderUtils.load(SqlFileSpi.class);
+        for (SqlFileSpi sqlFileSpi : load) {
+            List<SqlFileEnums> collect = sqlFileSpi.collect();
+            if(CollUtil.isNotEmpty(collect)){
+                INIT_DB_FILE_PATH.addAll(collect);
+            }
+        }
+        DBAccess dbAccess = getDBAccess(dataSource);
+        init(dbAccess);
+    }
+
+    /**
+     * 全局sql文件初始化的地方，已执行的sql不会再次执行
      *
      * @param jdbcDbAccess
      */
     public static void init(DBAccess jdbcDbAccess) {
         synchronized (INIT_DB_FILE_PATH) {
-            for (String s : INIT_DB_FILE_PATH) {
-                boolean contains = INIT_DB_FILE_TYPE.contains(s);
+            for (SqlFileEnums s : INIT_DB_FILE_PATH) {
+                boolean contains = INITED_FILE_PATH.contains(s);
                 if (contains) {
                     continue;
                 }
-                String s1 = s;
+                String s1 = s.getPath();
                 Connection connection = null;
                 try {
                     connection = jdbcDbAccess.getConnection();
                     String databaseType = JdbcHelper.getDatabaseType(connection);
-                    s1 = s + "/" + databaseType + SP.DOT + "sql";
+                    s1 = s1+ "/" + databaseType + SP.DOT + "sql";
                     DDlHelper.execDDL(connection, null, ListTs.asList(s1), true);
 //                    ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
 //                    jdbcDbAccess.runScript(classPathResource);
@@ -117,7 +131,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                     log.info(SysLog.compact("the " + s1 + " db has been initialized"));
                 } finally {
                     JdbcHelper.close(connection);
-                    INIT_DB_FILE_TYPE.add(s);
+                    INITED_FILE_PATH.add(s);
                 }
             }
         }

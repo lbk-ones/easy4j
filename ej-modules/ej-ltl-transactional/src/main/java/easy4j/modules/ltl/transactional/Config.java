@@ -16,6 +16,8 @@ package easy4j.modules.ltl.transactional;
 
 
 import easy4j.infra.common.module.ModuleBoolean;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.modules.ltl.transactional.component.LtTransactionalAspect;
 import easy4j.modules.ltl.transactional.component.LtlTransactionService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -33,7 +35,7 @@ import javax.sql.DataSource;
 @Configuration
 @ConditionalOnBean(DataSource.class)
 public class Config {
-    public static final String EASY4J_LTL_ENABLE = "ltl.enable";
+    public static final String EASY4J_LTL_ENABLE = SysConstant.PARAM_PREFIX + SP.DOT + "ltl.enable";
 
     @Bean
     @ModuleBoolean(EASY4J_LTL_ENABLE)

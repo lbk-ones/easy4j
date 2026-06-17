@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
  * @author bokun.li
  * @date 2025-05
  */
-@EnableConfigurationProperties({DataSourceProperties.class})
 @Configuration
 public class Config {
 

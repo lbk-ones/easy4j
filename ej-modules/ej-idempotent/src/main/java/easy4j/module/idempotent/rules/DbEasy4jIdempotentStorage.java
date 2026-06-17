@@ -23,6 +23,7 @@ import easy4j.infra.context.Easy4jContextFactory;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -58,7 +59,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add("db/idempotent");
+        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_IDEMPOTENT);
         dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
 //        schedule();
     }
