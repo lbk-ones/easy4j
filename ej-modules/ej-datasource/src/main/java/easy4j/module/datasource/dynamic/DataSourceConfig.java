@@ -1,11 +1,13 @@
 package easy4j.module.datasource.dynamic;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure;
 import easy4j.infra.base.properties.DataSourceProperties;
 import easy4j.infra.base.properties.DynamicDataSourceProperties;
 import easy4j.infra.base.properties.EjSysProperties;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
@@ -54,14 +56,17 @@ public class DataSourceConfig {
         Integer initialSize = Easy4j.getProperty("spring.datasource.druid.initial-size", Integer.class);
         Integer maxActiveSize = Easy4j.getProperty("spring.datasource.druid.max-active", Integer.class);
         Integer minIdle = Easy4j.getProperty("spring.datasource.druid.min-idle", Integer.class);
+        Integer maxIdle = Easy4j.getProperty("spring.datasource.druid.max-idle", Integer.class);
         Integer maxWait = Easy4j.getProperty("spring.datasource.druid.max-wait", Integer.class);
         // 遍历配置的数据源，逐个创建 Druid 数据源
         for (Map.Entry<String, DataSourceProperties> entry : datasources.entrySet()) {
             String dsKey = entry.getKey(); // 数据源标识（如 db1、db2）
             DataSourceProperties dsProps = entry.getValue(); // 数据源参数
             String url = dsProps.getUrl();
-            String username = dsProps.getUsername();
-            String password = dsProps.getPassword();
+            String username1 = AbstractEasy4jEnvironment.getUsername(url);
+            String password1 = AbstractEasy4jEnvironment.getPassword(url);
+            String username = StrUtil.blankToDefault(dsProps.getUsername(),username1);
+            String password = StrUtil.blankToDefault(dsProps.getPassword(),password1);
             if (StrUtil.hasEmpty(url, username, password, dsKey) || DataSourceContextHolder.DEFAULT_KEY.equals(dsKey)) {
                 continue;
             }
@@ -77,10 +82,12 @@ public class DataSourceConfig {
             }
             // 复用 Druid 通用配置（可根据需要自定义）
             druidDataSource.setDriverClassName(driverClassName);
-            druidDataSource.setInitialSize(initialSize);
-            druidDataSource.setMinIdle(minIdle);
-            druidDataSource.setMaxActive(maxActiveSize);
-            druidDataSource.setMaxWait(maxWait);
+            druidDataSource.setInitialSize(ObjectUtil.defaultIfNull(dsProps.getInitialSize(),initialSize));
+            druidDataSource.setMinIdle(ObjectUtil.defaultIfNull(dsProps.getMinIdle(),minIdle));
+            //druidDataSource.setMaxIdle(ObjectUtil.defaultIfNull(dsProps.getMaxIdle(),maxIdle));
+            druidDataSource.setMaxActive(ObjectUtil.defaultIfNull(dsProps.getMaxActive(),maxActiveSize));
+            druidDataSource.setMaxWait(ObjectUtil.defaultIfNull(dsProps.getMaxWait(),(long)maxWait));
+
             String validateSqlByUrl = SqlType.getValidateSqlByUrl(url);
             druidDataSource.setValidationQuery(validateSqlByUrl);
             druidDataSource.setTestWhileIdle(true);

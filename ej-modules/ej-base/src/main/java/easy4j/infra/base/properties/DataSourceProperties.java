@@ -15,4 +15,11 @@ public class DataSourceProperties {
      * 为空会自动推断
      */
     private String driverClassName;
+
+
+    protected Integer initialSize;
+    protected Integer maxActive;
+    protected Integer minIdle;
+    //protected Integer maxIdle;
+    protected Long maxWait;
 }
