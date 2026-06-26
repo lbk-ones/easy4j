@@ -28,6 +28,7 @@ import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.TempDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.exception.FlywayValidateException;
@@ -40,19 +41,22 @@ import java.util.Map;
  * @author bokun.li
  * @date 2025-07-28
  */
+@Slf4j
 public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
 
     @Override
     public void migrate(Flyway flyway) {
         try {
+
             // fix 修复一些脚本还没执行 但是flyway脚本可能对那些表做操作了已经
             String flywayUrl = Easy4j.getProperty(FlywayConstant.FLYWAY_URL);
             String driverClassName = Easy4j.getProperty(FlywayConstant.FLYWAY_DRIVER_CLASS_NAME);
             String user = Easy4j.getProperty(FlywayConstant.FLYWAY_USER);
             String password = Easy4j.getProperty(FlywayConstant.FLYWAY_PASSWORD);
             TempDataSource tempDataSource = new TempDataSource(driverClassName, flywayUrl, user, password);
+            log.info(SysLog.compact("The last execution of all dynamic SQL scripts"));
             DBAccessFactory.exeAll(tempDataSource);
-
+            log.info(SysLog.compact("Start Flyway migration!"));
             flyway.repair();
             flyway.migrate();
 
@@ -82,10 +86,10 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
         EjSysProperties ejSysProperties = Easy4j.getEjSysProperties();
         DynamicDataSourceProperties dynamicDataSource = ejSysProperties.getDynamicDataSource();
         if (dynamicDataSource != null && dynamicDataSource.isEnabled()) {
-
+            log.info(SysLog.compact("Multi data source migration rules: classpath:db/{datasource-name}/migrate/{datasource-type}/{flyway-sql-version-name}.sql"));
             Map<String, DataSourceProperties> datasource = dynamicDataSource.getDatasource();
             if (CollUtil.isNotEmpty(datasource)) {
-                System.out.println(SysLog.compact("dynamic datasource is enabled so begin detect migrate sql files!"));
+                log.info(SysLog.compact("dynamic datasource is enabled so begin detect migrate sql files!"));
             }
             for (Map.Entry<String, DataSourceProperties> entry : datasource.entrySet()) {
                 String dataSourceName = entry.getKey();
@@ -94,17 +98,18 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
                 }
                 DataSourceProperties value = entry.getValue();
                 if (value == null) continue;
-                String url = value.getUrl();
+                String oldUrl = value.getUrl();
+                String url = AbstractEasy4jEnvironment.getUrl(oldUrl);
                 if (StrUtil.isBlank(url)) continue;
-                String username = StrUtil.blankToDefault(value.getUsername(), AbstractEasy4jEnvironment.getUsername(url));
-                String password1 = StrUtil.blankToDefault(value.getPassword(), AbstractEasy4jEnvironment.getPassword(url));
+                String username = StrUtil.blankToDefault(value.getUsername(), AbstractEasy4jEnvironment.getUsername(oldUrl));
+                String password1 = StrUtil.blankToDefault(value.getPassword(), AbstractEasy4jEnvironment.getPassword(oldUrl));
                 String dataTypeByUrl = SqlType.getDataTypeByUrl(url);
                 String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(url);
                 DbType dbType = DbType.getDbType(dataTypeByUrl);
                 if (dbType == DbType.OTHER) continue;
                 String s = "classpath:db/" + dataSourceName + "/migration/" + dbType.getDb();
                 String historyTableName = "sys_flyway_" + dataSourceName + "_history";
-                System.out.println(SysLog.compact("dynamic datasource begin migrate 【" + s + "】 history is " + historyTableName));
+                log.info(SysLog.compact("dynamic datasource 【" + s + "】 begin migrate history table is： " + historyTableName));
                 TempDataSource tempDataSource1 = new TempDataSource(driverClassNameByUrl, url, username, password1);
                 Flyway load = Flyway.configure()
                         .locations(s)
@@ -118,6 +123,8 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
                 load.repair();
                 load.migrate();
             }
+        }else{
+            log.info(SysLog.compact("The flyway multi data source migration rule can be enabled, and the value of easy4j.dynamic data-source.enabled needs to be set to true"));
         }
     }
 }

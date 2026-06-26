@@ -28,11 +28,11 @@ import java.util.*;
  */
 public final class SqlType {
     public static String datatype1 = DbType.MYSQL.getDb();
-    public static String datatype2 = "oracle";
-    public static String datatype3 = "sqlserver";
-    public static String datatype4 = "h2";
-    public static String datatype5 = "postgresql";
-    public static String datatype6 = "db2";
+    public static String datatype2 = DbType.ORACLE.getDb();
+    public static String datatype3 = DbType.SQL_SERVER.getDb();
+    public static String datatype4 = DbType.H2.getDb();
+    public static String datatype5 = DbType.POSTGRE_SQL.getDb();
+    public static String datatype6 = DbType.DB2.getDb();
     private static final Map<String, String> DATASOURCECLASS = new HashMap<>();
     private static final Map<String, String> VALIDATIONQUERY = new HashMap<>();
 

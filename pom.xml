@@ -16,7 +16,7 @@
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j parent pom</description>
     <properties>
-        <revision>2.1.1</revision>
+        <revision>2.1.2-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -265,7 +265,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>bk</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
+                            <!--<tokenAuth>true</tokenAuth>-->
                         </configuration>
                     </plugin>
                     <!--   source源码插件 -->

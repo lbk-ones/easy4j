@@ -16,10 +16,9 @@ public class DataSourceProperties {
      */
     private String driverClassName;
 
-
-    protected Integer initialSize;
-    protected Integer maxActive;
-    protected Integer minIdle;
-    //protected Integer maxIdle;
-    protected Long maxWait;
+    private Integer initialSize;
+    private Integer maxActive;
+    private Integer minIdle;
+    //private Integer maxIdle;
+    private Long maxWait;
 }
