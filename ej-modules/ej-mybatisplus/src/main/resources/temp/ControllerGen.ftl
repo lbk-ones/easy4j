@@ -1,4 +1,4 @@
-package ${parentPackageName}.controller;
+package ${parentPackageName}.${controllerPackageName};
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import ${parentPackageName}.${controllerReqPackageName}.${domainName}ControllerReq;
 import ${parentPackageName}.${dtoPackageName}.${returnDtoName};

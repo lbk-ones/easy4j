@@ -20,6 +20,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Lists;
 
+import easy4j.infra.base.resolve.AbstractEasy4jResolve;
+import easy4j.infra.base.resolve.DataSourceUrlResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.*;
@@ -32,6 +34,7 @@ import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.module.mybatisplus.audit.AutoAudit;
 import easy4j.module.mybatisplus.codegen.AutoGen;
 import easy4j.module.mybatisplus.codegen.GenDto;
@@ -66,6 +69,17 @@ public class E4jCgController {
         String dbUrl = Easy4j.getProperty(SysConstant.DB_URL_STR);
         String userName = Easy4j.getProperty(SysConstant.DB_USER_NAME);
         String password = Easy4j.getProperty(SysConstant.DB_USER_PASSWORD);
+        Map<String, String> formDataMap = servletHandler.getFormDataMap();
+        String dbUrlStr = formDataMap.get("dbUrlStr");
+        boolean externalUrl = false;
+        if(StrUtil.isNotBlank(dbUrlStr)){
+            externalUrl = true;
+            String dbUrlUserName = formDataMap.get("dbUrlUserName");
+            String dbUrlPassword = formDataMap.get("dbUrlPassword");
+            dbUrl = AbstractEasy4jResolve.getUrl(dbUrlStr);
+            if(StrUtil.isNotBlank(dbUrlUserName)) userName=dbUrlUserName;
+            if(StrUtil.isNotBlank(dbUrlPassword)) password=dbUrlPassword;
+        }
         standRes.setUrl(dbUrl);
         standRes.setUsername(userName);
         standRes.setPassword(password);
@@ -75,11 +89,17 @@ public class E4jCgController {
         standRes.setDeleteIfExists(false);
         standRes.setAuthor("easy4j");
         standRes.setForceDelete(false);
+        Connection connection = null;
         try {
-            DataSource dataSource = SpringUtil.getBean(DataSource.class);
-            Connection connection = dataSource.getConnection();
+            DataSource dataSource =null;
+            if (externalUrl) {
+                dataSource = new TempDataSource(SqlType.getDriverClassNameByUrl(dbUrl),dbUrl, userName, password);
+            }else{
+                dataSource = SpringUtil.getBean(DataSource.class);
+            }
+            connection = dataSource.getConnection();
             DialectV2 dialectV2 = DialectFactory.get(connection);
-            List<TableMetadata> allTableInfoByTableType = dialectV2.getAllTableInfoByTableType(null, new String[]{"TABLE"});
+            List<TableMetadata> allTableInfoByTableType = dialectV2.getAllTableInfoByTableTypeNoCache(null, new String[]{"TABLE"});
             List<String> collect = allTableInfoByTableType
                     .stream()
                     .map(TableMetadata::getTableName)
@@ -88,6 +108,8 @@ public class E4jCgController {
             standRes.setAllTables(collect);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }finally {
+            JdbcHelper.close(connection);
         }
         servletHandler.responseJson(SRes.success(standRes));
     }

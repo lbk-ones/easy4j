@@ -92,91 +92,65 @@ Easy4J 框架包含以下核心模块：
 在您的 Maven 项目中根据自己的需求选择依赖添加：
 
 ```xml
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.9</version>
+        <version>3.5.15</version>
         <relativePath/>
     </parent>
-
-    <groupId>xxx.xxx.xxx</groupId>
-    <artifactId>xxx</artifactId>
+    <groupId>${groupId}</groupId>
+    <artifactId>${artifactId}</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>xxx</name>
-    <url>https://github.com/lbk-ones/easy4j</url>
+    <name>${name}</name>
+    <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
+        <ej.version>2.1.2</ej.version>
     </properties>
 
+
     <dependencies>
-
-        <!--按需选择-->
-        <!--dubbo3 (dns体系) + mybatisplus 微服务-->
-        <dependency>
-            <groupId>io.github.lbk-ones</groupId>
-            <artifactId>dubbo3-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-
-        <!--springboot封装 微服务(带数据源)-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
+            <version>${ej.version}</version>
         </dependency>
 
-        <!--springboot封装 微服务(不带数据源)-->
+        <!--使用nacos3.x做配置中心-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
-            <artifactId>ej-spring-nd-boot-starter</artifactId>
-            <version>2.0.1</version>
+            <artifactId>ej-nacos-client-3.X</artifactId>
+            <version>${ej.version}</version>
         </dependency>
 
-        <!-- spring cloud alibaba + Nacos + OpenFeign + Sentinel -->
-        <dependency>
-            <groupId>io.github.lbk-ones</groupId>
-            <artifactId>sca-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        
-        <!-- spring cloud gateway 网关 -->
-        <dependency>
-            <groupId>io.github.lbk-ones</groupId>
-            <artifactId>sca-gateway-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        
-        <!--springboot jpa封装-->
-        <dependency>
-            <groupId>io.github.lbk-ones</groupId>
-            <artifactId>jpa-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-      
-        <!--聚合文档相关-->
-        <dependency>
-          <groupId>io.github.lbk-ones</groupId>
-          <artifactId>knife4j-nacos-aggregation-starter</artifactId>
-          <version>2.0.1</version>
-        </dependency>
-      
-        <!--     注释掉上面不需要的注释      -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-    </dependencies>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
 
+
+    </dependencies>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -206,7 +180,6 @@ Easy4J 框架包含以下核心模块：
             </plugin>
         </plugins>
     </build>
-
 </project>
 ```
 

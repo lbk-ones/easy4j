@@ -134,7 +134,7 @@ public class DbGen extends AbstractGen {
                     }
                     Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize());
                     if (javaClassByTypeNameAndDbType == null) {
-                        System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() + " vs java class is null！");
+                        System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() +"【"+databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize()+"】"+ " vs java class is null！");
                         continue;
                     }
                     boolean needImport = false;

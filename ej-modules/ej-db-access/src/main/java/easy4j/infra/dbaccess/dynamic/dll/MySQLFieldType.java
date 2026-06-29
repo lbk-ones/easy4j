@@ -23,14 +23,21 @@ public enum MySQLFieldType {
     TINYINT("TINYINT", "", "", "1字节有符号整数，范围-128~127；无符号0~255", int.class, Integer.class),
     SMALLINT("SMALLINT", "", "", "2字节有符号整数，范围-32768~32767；无符号0~65535", short.class, Short.class),
     INT("INT", "", "", "4字节有符号整数，范围-2147483648~2147483647；无符号0~4294967295", int.class, Integer.class),
-    INT_UNSIGNED("INT UNSIGNED", "", "", "4字节无符号整数，范围0~4294967295", int.class, Integer.class),
     MEDIUMINT("MEDIUMINT", "", "", "3字节有符号整数，范围-8388608~8388607；无符号0~16777215", int.class, Integer.class),
     BIGINT("BIGINT", "", "", "8字节有符号整数，范围-9223372036854775808~9223372036854775807；无符号0~18446744073709551615", long.class, Long.class),
+    INT_UNSIGNED("INT UNSIGNED", "", "", "4字节无符号整数，范围0~4294967295", int.class, Integer.class),
+    BIGINT_UNSIGNED("BIGINT UNSIGNED", "", "", "8字节无符号整数，范围0~4294967295", long.class, Long.class),
+    TINYINT_UNSIGNED("TINYINT UNSIGNED", "", "", "1字节无符号整数，范围0~255", int.class, Integer.class),
+    SMALLINT_UNSIGNED("SMALLINT UNSIGNED", "", "", "2字节无符号整数，范围0~65535", int.class, Integer.class),
+    MEDIUMINT_UNSIGNED("MEDIUMINT UNSIGNED", "", "", "3字节无符号整数，范围0~16777215", int.class, Integer.class),
 
     // 小数类型
-    FLOAT("FLOAT", "", "", "4字节单精度浮点数，精度约7位小数", float.class, Float.class),
-    DOUBLE("DOUBLE", "", "", "8字节双精度浮点数，精度约15位小数", double.class, Double.class),
+    FLOAT("FLOAT", "FLOAT({0},{1})", "", "4字节单精度浮点数，精度约7位小数", float.class, Float.class),
+    FLOAT_UNSIGNED("FLOAT UNSIGNED", "FLOAT({0},{1}) UNSIGNED", "", "4字节单精度浮点数，精度约7位小数", float.class, Float.class),
+    DOUBLE("DOUBLE", "DOUBLE({0},{1})", "", "8字节双精度浮点数，精度约15位小数", double.class, Double.class),
+    DOUBLE_UNSIGNED("DOUBLE UNSIGNED", "DOUBLE({0},{1}) UNSIGNED", "", "8字节双精度浮点数，精度约15位小数", double.class, Double.class),
     DECIMAL("DECIMAL", "DECIMAL({0},{1})", "", "高精度定点数，M为总位数，D为小数位数，适合财务数据", BigDecimal.class),
+    DECIMAL_UNSIGNED("DECIMAL UNSIGNED", "DECIMAL({0},{1}) UNSIGNED", "", "高精度定点数，M为总位数，D为小数位数，适合财务数据", BigDecimal.class),
 
     // 字符串类型
     VARCHAR("VARCHAR", "VARCHAR({0})", "", "可变长度字符串，MySQL 5.0.3前M最大255，之后最大65535", String.class),

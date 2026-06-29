@@ -62,13 +62,13 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
 
     public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list) {
             return list.stream()
-            .map(MapperStruct.instance::to${entityName}Dto)
+            .map(${mapperStructClassSimpleName}.instance::to${entityName}Dto)
             .collect(Collectors.toList());
     }
 
     public List<${entityName}> list${entityName}DtoToDomain(List<${entityName}Dto> list) {
                 return list.stream()
-                .map(MapperStruct.instance::to${entityName})
+                .map(${mapperStructClassSimpleName}.instance::to${entityName})
                 .collect(Collectors.toList());
     }
 

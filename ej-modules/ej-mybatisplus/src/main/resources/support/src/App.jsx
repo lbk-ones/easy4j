@@ -575,22 +575,22 @@ function App() {
               <Row gutter={[16, 8]}>
                 <Col xs={24} md={6}>
                   <Form.Item name='url' label='jdbc url'>
-                    <Input placeholder='jdbc:mysql://localhost:3306/test' />
+                    <Input placeholder='jdbc:mysql://localhost:3306/test' autoComplete={'off'}/>
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={6}>
                   <Form.Item name='username' label='用户名'>
-                    <Input placeholder='数据库用户名' />
+                    <Input placeholder='数据库用户名' autocomplete={'off'}/>
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={6}>
                   <Form.Item name='password' label='密码'>
-                    <Input.Password placeholder='数据库密码' />
+                    <Input.Password placeholder='数据库密码' autocomplete={'new-password'}/>
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={6}>
                   <Form.Item name='tablePrefix' label='表前缀（以%结尾，和写sql一样）'>
-                    <Input placeholder='要扫描的表前缀，例如：xxx_%' />
+                    <Input placeholder='要扫描的表前缀，例如：xxx_%' autocomplete={'off'}/>
                   </Form.Item>
                 </Col>
               </Row>
@@ -636,7 +636,12 @@ function App() {
                     type={'primary'}
                     onClick={() => {
                       if (displayTables === false) {
-                        setDisplayTables(true);
+                        post('/init', {dbUrlStr:form.getFieldValue("url"),dbUrlUserName:form.getFieldValue("username"),dbUrlPassword:form.getFieldValue("password")}).then(res => {
+                          res.exclude = [];
+                          setInitData(res);
+                          form.setFieldsValue(res); // 动态赋值
+                          setDisplayTables(true);
+                        });
                       } else {
                         form.setFieldValue('exclude', []);
                         setDisplayTables(false);
@@ -816,8 +821,27 @@ function App() {
                   </Form.Item>
                 </div>
               </Col>
-            </Row>
+              <Col xs={24} md={6}>
+                <Form.Item
+                    name='packageSuffix'
+                    label='统一路径后缀修改'
+                    rules={[{ required: false, message: '统一前缀' }]}
+                >
+                  <Input placeholder='后缀' onChange={(e)=>{
+                    let value = (e.target.value || "").trim();
+                    if(value.startsWith(".")) {
+                      value = value.substring(1);
+                    }
+                    let w = ['entityPackageName','controllerPackageName','controllerReqPackageName','dtoPackageName',
+                      'mapperPackageName','mapperXmlPackageName','serviceInterfacePackageName','serviceImplPackageName','mapperStructPackageName'];
+                    w.forEach(e=>{
+                      form.setFieldValue(e,initData[e]+(value?"."+value:""));
+                    })
+                  }} />
+                </Form.Item>
+              </Col>
 
+            </Row>
             <Row gutter={[16, 8]}>
               <Col xs={24} md={6}>
                 <Form.Item
