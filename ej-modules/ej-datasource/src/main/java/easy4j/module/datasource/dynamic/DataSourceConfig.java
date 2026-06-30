@@ -67,6 +67,7 @@ public class DataSourceConfig {
             String password1 = AbstractEasy4jEnvironment.getPassword(url);
             String username = StrUtil.blankToDefault(dsProps.getUsername(),username1);
             String password = StrUtil.blankToDefault(dsProps.getPassword(),password1);
+            url = AbstractEasy4jEnvironment.getUrl(url);
             if (StrUtil.hasEmpty(url, username, password, dsKey) || DataSourceContextHolder.DEFAULT_KEY.equals(dsKey)) {
                 continue;
             }

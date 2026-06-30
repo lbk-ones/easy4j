@@ -62,6 +62,26 @@ public class ListTs {
 
 
     /**
+     * 递归循环
+     *
+     * @param list 要递归的集合
+     * @param childrenFunc 获取children的方法
+     * @param consumer 消费每一个元素
+     * @param <T> 集合泛型
+     */
+    public static <T> void doLoop(List<T> list, Function<T, List<T>> childrenFunc, Consumer<T> consumer) {
+        if (CollUtil.isEmpty(list)) return;
+        for (T permissionTree : list) {
+            if (permissionTree == null) continue;
+            consumer.accept(permissionTree);
+            List<T> children = childrenFunc.apply(permissionTree);
+            if (CollUtil.isNotEmpty(children)) {
+                doLoop(children, childrenFunc, consumer);
+            }
+        }
+    }
+
+    /**
      * 从集合里面 收集string类型的参数集合 排除掉null值
      *
      * @author bokun.li
