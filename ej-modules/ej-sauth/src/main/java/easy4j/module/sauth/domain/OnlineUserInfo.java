@@ -101,6 +101,12 @@ public class OnlineUserInfo {
                     Object o1 = hp.get(REDIS_KEY_PREFIX_AUTHORITY_KEY, username);
                     if (null != o1) {
                         this.authorityList = JacksonUtil.toSet(JacksonUtil.toJson(o1), SecurityAuthority.class);
+                        // 这里还是刷一下吧
+                        if(CollUtil.isEmpty(this.authorityList)){
+                            Set<SecurityAuthority> authorityList1 = LoadAuthorityApi.getAuthorityList(username);
+                            hp.put(REDIS_KEY_PREFIX_AUTHORITY_KEY, username, authorityList1);
+                            this.authorityList = authorityList1;
+                        }
                     } else {
                         Set<SecurityAuthority> authorityList1 = LoadAuthorityApi.getAuthorityList(username);
                         hp.put(REDIS_KEY_PREFIX_AUTHORITY_KEY, username, authorityList1);

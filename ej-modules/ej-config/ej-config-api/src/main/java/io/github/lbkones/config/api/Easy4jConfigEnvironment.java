@@ -65,15 +65,6 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
             System.out.println(SysLog.compact("begin load config from config center"));
 
 
-            try {
-                ccSpi.start();
-            } catch (Exception e) {
-                System.err.println(SysLog.compact("config center start error " + e.getMessage()));
-                e.printStackTrace();
-                System.exit(1);
-                return;
-            }
-
             MutablePropertySources propertySources1 = environment.getPropertySources();
             PropertySource<?> propertySource = propertySources1.get(FIRST_ENV_NAME);
             Map<String, String> map = PropertySourceConverter.toMap(propertySource);
@@ -85,6 +76,17 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                     System.out.println(SysLog.compact(key + "=" + configEnvironment.resolvePlaceholders(value)));
                 }
             }
+
+            try {
+                ccSpi.start();
+            } catch (Exception e) {
+                System.err.println(SysLog.compact("config center start error " + e.getMessage()));
+                e.printStackTrace();
+                System.exit(1);
+                return;
+            }
+
+
             ccSpi.setBootParameters(map);
 
             ccSpi.subscribe((key, properties) -> {
