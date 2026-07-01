@@ -12,19 +12,19 @@
 > 在使用easy4j架构的服务中引入坐标比如
 ```text
 <dependency>
-  <groupId>io.github.lbk-ones</groupId>
+  <groupId>io.github.lbkones</groupId>
   <artifactId>ej-config-nacos-http</artifactId>
   <version>xxx</version>
 </dependency>
 
 <dependency>
-  <groupId>io.github.lbk-ones</groupId>
+  <groupId>io.github.lbkones</groupId>
   <artifactId>ej-nacos-client-2.X</artifactId>
   <version>xxx</version>
 </dependency>
 
 <dependency>
-  <groupId>io.github.lbk-ones</groupId>
+  <groupId>io.github.lbkones</groupId>
   <artifactId>ej-nacos-client-3.X</artifactId>
   <version>xxx</version>
 </dependency>

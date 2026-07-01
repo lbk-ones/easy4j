@@ -60,7 +60,7 @@
         </dependency>
 
         <!--        <dependency>-->
-        <!--            <groupId>io.github.lbk-ones</groupId>-->
+        <!--            <groupId>io.github.lbkones</groupId>-->
         <!--            <artifactId>ej-log</artifactId>-->
         <!--            <version>${revision}</version>-->
         <!--        </dependency>-->

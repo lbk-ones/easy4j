@@ -19,7 +19,7 @@
     <properties>
         <!-- Spring Boot 3.x最低要求JDK 17，需升级编译版本 -->
         <!-- 核心框架升级 -->
-        <spring-boot.version>3.5.15</spring-boot.version>
+        <spring-boot.version>3.5.16</spring-boot.version>
         <!-- Spring Cloud 需匹配Spring Boot 3.x的2023.x版本线 -->
         <!--        <spring-cloud.version>2023.0.3</spring-cloud.version>-->
         <!--升级至2025版本-->
@@ -36,7 +36,7 @@
         <org.mapstruct.version>1.6.0.Beta1</org.mapstruct.version> <!-- 支持Jakarta -->
         <log4j.version>2.23.1</log4j.version> <!-- 安全更新 -->
         <mybatis-plus-dynamicdatasource.version>4.3.1</mybatis-plus-dynamicdatasource.version>
-        <hutool.version>5.8.26</hutool.version> <!-- 兼容Java 17 -->
+        <hutool.version>5.8.46</hutool.version> <!-- 兼容Java 17 -->
         <alibaba.ttl.version>2.14.1</alibaba.ttl.version> <!-- 最新稳定版 -->
         <flyway2.version>10.15.0</flyway2.version> <!-- 升级大版本，支持Jakarta -->
         <jodd.version>5.3.0</jodd.version> <!-- 支持Java 17 -->
@@ -447,6 +447,18 @@
             <dependency>
                 <groupId>io.github.lbk-ones</groupId>
                 <artifactId>ej-sentinel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-encryption</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.lbk-ones</groupId>
+                <artifactId>ej-pure</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

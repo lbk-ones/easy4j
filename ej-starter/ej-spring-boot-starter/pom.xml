@@ -12,10 +12,9 @@
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j ej-spring-boot-starter 单服务</description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <easy4j.infra.version>1.0-SNAPSHOT</easy4j.infra.version>
     </properties>
     <dependencies>
         <dependency>
@@ -23,25 +22,12 @@
             <artifactId>ej-base</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--DNS-->
-        <!--        <dependency>-->
-        <!--            <groupId>easy4j.module.dnspom</groupId>-->
-        <!--            <artifactId>ej-dnspom</artifactId>-->
-        <!--            <version>${revision}</version>-->
-        <!--        </dependency>-->
-        <!--datasource-->
+
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-datasource</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!--jaeger-->
-        <!--        <dependency>-->
-        <!--            <groupId>easy4j.module.jaeger</groupId>-->
-        <!--            <artifactId>ej-jaeger</artifactId>-->
-        <!--            <version>${revision}</version>-->
-        <!--        </dependency>-->
-        <!--mapstruct-->
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mapstruct</artifactId>
@@ -63,6 +49,12 @@
         <dependency>
             <groupId>io.github.lbk-ones</groupId>
             <artifactId>ej-mybatisplus</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-encryption</artifactId>
             <version>${revision}</version>
         </dependency>
 
@@ -104,11 +96,6 @@
             <version>${revision}</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>easy4j.module.security</groupId>-->
-        <!--            <artifactId>ej-security</artifactId>-->
-        <!--            <version>${revision}</version>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>io.github.lbk-ones</groupId>

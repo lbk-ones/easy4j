@@ -76,13 +76,13 @@ public class Application
 
     <dependencies>
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>io.github.lbkones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
             <version>${ej.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>io.github.lbkones</groupId>
             <artifactId>ej-nacos-client-3.X</artifactId>
             <version>${ej.version}</version>
         </dependency>

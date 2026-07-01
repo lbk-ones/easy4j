@@ -62,7 +62,7 @@ public class JacksonUtil {
     static {
         mapper = new ObjectMapper();
         // 配置序列化选项
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // 忽略null值
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL); // 忽略null值
         extracted(mapper);
 
         mapper2 = new ObjectMapper();

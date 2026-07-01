@@ -35,6 +35,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-pure</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

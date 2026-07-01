@@ -15,6 +15,8 @@
 package easy4j.infra.webmvc.filter;
 
 import easy4j.infra.common.utils.SysConstant;
+import io.github.lbkones.pure.ReplacedBodyRequestWrapper;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
@@ -56,8 +58,13 @@ public class RequestWrapperFilter implements Filter {
             HttpServletRequest request1 = (HttpServletRequest) request;
             if (hasRequestBody(request1)) {
                 // 包装请求，缓存请求体
-                ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper((HttpServletRequest) request, LENGTH);
-                chain.doFilter(wrappedRequest, response);
+                //ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper((HttpServletRequest) request, LENGTH);
+                if(request1 instanceof HttpServletRequestWrapper){
+                    chain.doFilter(request1, response);
+                }else{
+                    ReplacedBodyRequestWrapper replacedBodyRequestWrapper = new ReplacedBodyRequestWrapper(request1, ReplacedBodyRequestWrapper.readRequestBody(request1));
+                    chain.doFilter(replacedBodyRequestWrapper, response);
+                }
             } else {
                 chain.doFilter(request, response);
             }

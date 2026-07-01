@@ -105,8 +105,8 @@
                             <ignoredDependencies>
                                 <ignoredDependency>org.springframework*</ignoredDependency>
                                 <ignoredUsedUndeclaredDependencies>org.springframework*</ignoredUsedUndeclaredDependencies>
-                                <ignoredDependency>io.github.lbk-ones*</ignoredDependency>
-                                <ignoredUsedUndeclaredDependencies>io.github.lbk-ones*</ignoredUsedUndeclaredDependencies>
+                                <ignoredDependency>io.github.lbkones*</ignoredDependency>
+                                <ignoredUsedUndeclaredDependencies>io.github.lbkones*</ignoredUsedUndeclaredDependencies>
                             </ignoredDependencies>
                             <ignoreNonCompile>true</ignoreNonCompile>
                         </configuration>

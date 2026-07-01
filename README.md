@@ -56,6 +56,7 @@ Easy4J 框架包含以下核心模块：
 - **ej-dnspom**：dubbo dns 相关依赖整合
 - **ej-dubbo3**：dubbo3整合（默认配置，异常，jaeger链路整合）
 - **ej-elasticsearch**：es整合
+- **ej-encryption**：请求响应加解密、部分参数脱敏
 - **ej-flyway**：flyway整合
 - **ej-h2**：H2数据库整合
 - **ej-idempotent**：幂等操作模块
@@ -123,14 +124,14 @@ Easy4J 框架包含以下核心模块：
 
     <dependencies>
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>io.github.lbkones</groupId>
             <artifactId>ej-spring-boot-starter</artifactId>
             <version>${ej.version}</version>
         </dependency>
 
         <!--使用nacos3.x做配置中心-->
         <dependency>
-            <groupId>io.github.lbk-ones</groupId>
+            <groupId>io.github.lbkones</groupId>
             <artifactId>ej-nacos-client-3.X</artifactId>
             <version>${ej.version}</version>
         </dependency>
