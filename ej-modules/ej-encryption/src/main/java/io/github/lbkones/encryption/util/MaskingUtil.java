@@ -98,7 +98,7 @@ public class MaskingUtil {
                 // 对 String 字段进行脱敏
                 String masked = maskString((String) value,
                         annotation.prefixLength(),
-                        annotation.suffixLength());
+                        annotation.suffixLength(), annotation.padding());
                 ReflectUtil.setFieldValue(object,field,masked);
                 classHasMask = true;
             } else if (value != null && !isSkippableType(field.getType())) {
@@ -136,9 +136,10 @@ public class MaskingUtil {
      * @param value        原始值
      * @param prefixLength 保留前多少位
      * @param suffixLength 保留后多少位
+     * @param padding 填充符号
      * @return 脱敏后的值
      */
-    public static String maskString(String value, int prefixLength, int suffixLength) {
+    public static String maskString(String value, int prefixLength, int suffixLength, String padding) {
         if (value == null || value.isEmpty()) {
             return value;
         }
@@ -156,7 +157,7 @@ public class MaskingUtil {
         int maskLength = length - prefixLength - suffixLength;
 
         return value.substring(0, prefixLength)
-                + "*".repeat(maskLength)
+                + padding.repeat(maskLength)
                 + (suffixLength > 0 ? value.substring(length - suffixLength) : "");
     }
 

@@ -13,6 +13,11 @@ public @interface MaskField {
     int prefixLength() default 0;
 
     /**
+     * 填充符号 默认是*
+     */
+    String padding() default "*";
+
+    /**
      * 保留后多少位，默认0
      */
     int suffixLength() default 0;

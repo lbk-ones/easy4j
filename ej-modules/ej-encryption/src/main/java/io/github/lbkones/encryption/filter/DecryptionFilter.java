@@ -123,42 +123,5 @@ public class DecryptionFilter implements Filter {
      */
     private HttpServletRequest wrapRequest(HttpServletRequest request, String decryptedBody) {
         return new ReplacedBodyRequestWrapper(request,decryptedBody);
-//        return new HttpServletRequestWrapper(request) {
-//            private byte[] cachedBody;
-//
-//            @Override
-//            public ServletInputStream getInputStream() throws IOException {
-//                if (cachedBody == null) {
-//                    cachedBody = decryptedBody.getBytes(StandardCharsets.UTF_8);
-//                }
-//                return new ServletInputStream() {
-//                    private final ByteArrayInputStream inputStream = new ByteArrayInputStream(cachedBody);
-//
-//                    @Override
-//                    public int read() throws IOException {
-//                        return inputStream.read();
-//                    }
-//
-//                    @Override
-//                    public boolean isFinished() {
-//                        return inputStream.available() == 0;
-//                    }
-//
-//                    @Override
-//                    public boolean isReady() {
-//                        return true;
-//                    }
-//
-//                    @Override
-//                    public void setReadListener(ReadListener listener) {
-//                    }
-//                };
-//            }
-//
-//            @Override
-//            public BufferedReader getReader() throws IOException {
-//                return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
-//            }
-//        };
     }
 }
