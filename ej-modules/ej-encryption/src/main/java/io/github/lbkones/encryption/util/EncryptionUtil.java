@@ -14,18 +14,25 @@ public class EncryptionUtil {
 
     /**
      * 加密对象
+     * @param object 要加密的对象
+     * @param provider 加解密提供者
+     * @param isMask 是否需要脱敏字段
+     * @return 加密之后的对象
+     * @param <T> 泛型约束
      */
-    public static <T> EncryptedResponse<T> encryptObject(T object, EncryptionProvider provider) {
+    public static <T> EncryptedResponse encryptObject(T object, EncryptionProvider provider, boolean isMask) {
         if (object == null || provider == null) {
-            return new EncryptedResponse<>(null);
+            return new EncryptedResponse(null);
         }
 
         try {
-            // 先对字段进行脱敏
-            object = MaskingUtil.maskFields(object);
+            if(isMask){
+                // 先对字段进行脱敏
+                object = MaskingUtil.maskFields(object);
+            }
             String json = objectMapper.writeValueAsString(object);
             String encrypted = provider.encrypt(json);
-            return new EncryptedResponse<>(encrypted);
+            return new EncryptedResponse(encrypted);
         } catch (Exception e) {
             throw new RuntimeException("Failed to encrypt object", e);
         }
@@ -34,7 +41,7 @@ public class EncryptionUtil {
     /**
      * 解密对象
      */
-    public static <T> T decryptObject(EncryptedRequest<T> request, Class<T> targetClass, EncryptionProvider provider) {
+    public static <T> T decryptObject(EncryptedRequest request, Class<T> targetClass, EncryptionProvider provider) {
         if (request == null || request.getData() == null || provider == null) {
             return null;
         }

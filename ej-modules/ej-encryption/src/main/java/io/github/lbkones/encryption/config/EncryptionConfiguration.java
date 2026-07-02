@@ -1,16 +1,21 @@
 package io.github.lbkones.encryption.config;
 
+import cn.hutool.core.util.ServiceLoaderUtil;
+import cn.hutool.core.util.StrUtil;
 import io.github.lbkones.encryption.advice.EncryptionResponseBodyAdvice;
 import io.github.lbkones.encryption.filter.DecryptionFilter;
+import io.github.lbkones.encryption.provider.EncryptionProvider;
 import io.github.lbkones.encryption.provider.EncryptionProviderFactory;
-import io.github.lbkones.encryption.provider.RsaEncryptionProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.util.List;
 
 /**
  * 加密模块配置类
@@ -18,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @Configuration
 @ConditionalOnProperty(prefix = "easy4j.encryption", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties({EncryptionProperties.class})
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class EncryptionConfiguration {
 
     private final EncryptionProperties encryptionProperties;
@@ -31,13 +37,14 @@ public class EncryptionConfiguration {
      * 初始化加密提供者
      */
     private void initializeEncryptionProviders() throws Exception {
-        String encryptionType = encryptionProperties.getEncryptionType();
-
-        if ("rsa".equalsIgnoreCase(encryptionType)) {
-            RsaEncryptionProvider rsaProvider = new RsaEncryptionProvider(
-                    encryptionProperties.getPrivateKey()
-            );
-            EncryptionProviderFactory.register("rsa", rsaProvider);
+        List<EncryptionProvider> load = ServiceLoaderUtil.loadList(EncryptionProvider.class);
+        for (EncryptionProvider encryptionProvider : load) {
+            String name = encryptionProvider.getName();
+            if(StrUtil.isNotBlank(name)) {
+                encryptionProvider.setPrivateKey(this.encryptionProperties.getPrivateKey());
+                encryptionProvider.setPublicKey(this.encryptionProperties.getPublicKey());
+                EncryptionProviderFactory.register(name , encryptionProvider);
+            }
         }
     }
 

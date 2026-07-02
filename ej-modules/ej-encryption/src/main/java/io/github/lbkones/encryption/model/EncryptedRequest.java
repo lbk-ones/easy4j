@@ -1,11 +1,15 @@
 package io.github.lbkones.encryption.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 加密的请求体
  */
-public class EncryptedRequest<T> {
+@Setter
+@Getter
+public class EncryptedRequest {
 
     @JsonProperty("data")
     private String data;
@@ -17,11 +21,4 @@ public class EncryptedRequest<T> {
         this.data = data;
     }
 
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
 }

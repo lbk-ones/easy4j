@@ -42,16 +42,23 @@ easy4j:
   encryption:
     enabled: true
     encryption-type: rsa
+    disabled-api-enc: false
+    rsa-block-size: 245
     private-key: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDTrxxxxxx  # 基于 Base64 编码的私钥
+    public-key: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDTrxxxxxx  # 基于 Base64 编码的私钥
 ```
 
 ## 配置说明
 
-| 配置项 | 说明 | 必需 | 默认值 |
-|--------|------|------|--------|
-| `easy4j.encryption.enabled` | 是否启用加解密功能 | 否 | false |
-| `easy4j.encryption.encryption-type` | 加密方式 | 否 | rsa |
-| `easy4j.encryption.private-key` | RSA 私钥（Base64编码） | 是（启用时） | - |
+| 配置项                                  | 说明                                     | 必需     | 默认值         |
+|--------------------------------------|----------------------------------------|--------|-------------|
+| `easy4j.encryption.enabled`          | 是否启用加解密功能                              | 否      | false       |
+| `easy4j.encryption.encryption-type`  | 加解密方式                                  | 否      | rsa-private |
+| `easy4j.encryption.private-key`      | RSA 私钥（Base64编码）                       | 是（启用时） | -           |
+| `easy4j.encryption.public-key`       | RSA 公钥（Base64编码）                       | 否（启用时） | -           |
+| `easy4j.encryption.disabled-api-enc` | 禁用接口加解密，只保留接口响应字段脱敏                    | 否      | true        |
+| `easy4j.encryption.rsa-block-size`   | rsa算法分块加解密每一块儿大小,RSA-1024和RSA-2048值不一样 | 是      | 245         |
+| `easy4j.encryption.skip-list`        | 跳过加解密的包                                | 否      | -           |
 
 ## 注解使用
 
@@ -123,6 +130,16 @@ public class UserResponse {
 public class AesEncryptionProvider implements EncryptionProvider {
 
     @Override
+    public void setPrivateKey(String key) {
+        // 密钥赋值回调
+    }
+
+    @Override
+    public void setPublicKey(String key) {
+        // 密钥赋值回调
+    }
+    
+    @Override
     public String getName() {
         return "aes";
     }
@@ -170,11 +187,11 @@ public class UserService {
     private EncryptionProperties encryptionProperties;
     
     public void example() {
-        EncryptionProvider provider = EncryptionProviderFactory.get("rsa");
+        EncryptionProvider provider = EncryptionProviderFactory.get("rsa-private");
         
         // 加密对象
         User user = new User();
-        EncryptedResponse<User> encrypted = EncryptionUtil.encryptObject(user, provider);
+        EncryptedResponse<User> encrypted = EncryptionUtil.encryptObject(user, provider,true);
         
         // 解密对象
         EncryptedRequest<User> request = new EncryptedRequest<>(encryptedData);
@@ -216,7 +233,7 @@ public class UserService {
 
 ```java
 void main() {
-    io.github.lbkones.encryption.util.RsaKeyGenerator.main(new String[]{});
+    io.github.lbkones.encryption.util.RsaKeyGenerator.gen(1024 || 2048 || null);
 }
 ```
 

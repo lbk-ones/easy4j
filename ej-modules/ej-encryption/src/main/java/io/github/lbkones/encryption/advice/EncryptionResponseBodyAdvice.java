@@ -1,5 +1,7 @@
 package io.github.lbkones.encryption.advice;
 
+import cn.hutool.core.text.StrPool;
+import cn.hutool.core.util.StrUtil;
 import io.github.lbkones.encryption.annotation.NoEncrypt;
 import io.github.lbkones.encryption.config.EncryptionProperties;
 import io.github.lbkones.encryption.provider.EncryptionProvider;
@@ -14,6 +16,8 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+
+import java.util.List;
 
 /**
  * 响应加密和字段脱敏 Advice
@@ -38,8 +42,17 @@ public class EncryptionResponseBodyAdvice implements ResponseBodyAdvice<Object> 
         if (methodAnnotation != null) {
             return false;
         }
-
-        NoEncrypt classAnnotation = returnType.getContainingClass().getAnnotation(NoEncrypt.class);
+        Class<?> containingClass = returnType.getContainingClass();
+        // 查看是否跳过
+        String skipList = encryptionProperties.getSkipList();
+        List<String> split = StrUtil.split(skipList, StrPool.COMMA);
+        String name = containingClass.getName();
+        for (String s : split) {
+            if(StrUtil.startWith(name,s)){
+                return false;
+            }
+        }
+        NoEncrypt classAnnotation = containingClass.getAnnotation(NoEncrypt.class);
         return classAnnotation == null;
     }
 
@@ -53,14 +66,19 @@ public class EncryptionResponseBodyAdvice implements ResponseBodyAdvice<Object> 
 
         // 获取加密提供者
         EncryptionProvider provider = EncryptionProviderFactory.get(encryptionProperties.getEncryptionType());
-        if (provider == null) {
+        if (provider == null || !encryptionProperties.isEnabled()) {
             return body;
         }
 
         // 先进行字段脱敏
         body = MaskingUtil.maskFields(body);
 
+        // 如果禁用了 接口加解密 那么只保留响应字段脱敏功能
+        if (encryptionProperties.isDisabledApiEnc()) {
+            return body;
+        }
+
         // 然后进行加密
-        return EncryptionUtil.encryptObject(body, provider);
+        return EncryptionUtil.encryptObject(body, provider, false);
     }
 }

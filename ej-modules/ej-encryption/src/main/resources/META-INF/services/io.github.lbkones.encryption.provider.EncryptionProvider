@@ -1,0 +1,2 @@
+io.github.lbkones.encryption.provider.RsaEncryptionProvider
+io.github.lbkones.encryption.provider.RsaPubEncryptionProvider

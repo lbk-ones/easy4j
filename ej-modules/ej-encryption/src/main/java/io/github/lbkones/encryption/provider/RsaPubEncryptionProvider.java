@@ -1,61 +1,78 @@
 package io.github.lbkones.encryption.provider;
 
-import io.github.lbkones.encryption.config.EncryptionProperties;
+import cn.hutool.core.util.StrUtil;
 import io.github.lbkones.encryption.enums.EncryptProviderType;
 import io.github.lbkones.encryption.util.SUtils;
 
 import javax.crypto.Cipher;
-import java.security.*;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 /**
- * RSA加密提供者实现（使用私钥）
- * 后端使用私钥用于：
- * 1. 解密客户端发送的请求数据（客户端使用公钥加密）
- * 2. 加密服务端返回的响应数据
+ * RSA公钥加密解密
  */
-public class RsaEncryptionProvider implements EncryptionProvider {
+public class RsaPubEncryptionProvider implements EncryptionProvider {
 
-    private PrivateKey privateKey;
+    private PublicKey publicKey;
+
 
     @Override
     public void setPrivateKey(String key) {
-        try {
-            this.privateKey = loadPrivateKey(key);
 
+    }
+    @Override
+    public void setPublicKey(String key) {
+        try {
+            this.publicKey = loadPublicKey(key);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-    }
-
-    @Override
-    public void setPublicKey(String key) {
-
     }
 
 
     @Override
     public String getName() {
-        return EncryptProviderType.RSA_PRIVATE.getCode();
+        return EncryptProviderType.RSA_PUBLIC.getCode();
     }
 
     @Override
     public String encrypt(String plaintext) {
-        if (plaintext == null || plaintext.isEmpty() || privateKey == null) {
+        if (plaintext == null || plaintext.isEmpty() || publicKey == null) {
             return plaintext;
         }
         try {
-            EncryptionProperties encryptProperties = SUtils.getEncryptProperties();
-            Integer rsaBlockSize = encryptProperties.getRsaBlockSize();
-            byte[] bytes = encryptLongData(plaintext.getBytes(), rsaBlockSize-11);
+            byte[] bytes = encryptLongData(plaintext.getBytes(), SUtils.getEncryptProperties().getRsaBlockSize()-11);
             return Base64.getEncoder().encodeToString(bytes);
         } catch (Exception e) {
             throw new RuntimeException("RSA encryption failed", e);
         }
     }
 
+    @Override
+    public String decrypt(String ciphertext) {
+        if (ciphertext == null || ciphertext.isEmpty() || publicKey == null) {
+            return ciphertext;
+        }
+        try {
+            byte[] decoded = Base64.getDecoder().decode(ciphertext);
+            byte[] plaintext = decryptLongData(decoded, SUtils.getEncryptProperties().getRsaBlockSize());
+            return new String(plaintext);
+        } catch (Exception e) {
+            throw new RuntimeException("RSA decryption failed", e);
+        }
+    }
+
+    private PublicKey loadPublicKey(String publicKeyStr) throws Exception {
+        if (publicKeyStr == null || publicKeyStr.isEmpty()) {
+            return null;
+        }
+        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(keySpec);
+    }
 
     /**
      * 分块加密长数据
@@ -64,16 +81,14 @@ public class RsaEncryptionProvider implements EncryptionProvider {
      */
     private byte[] encryptLongData(byte[] data, int blockSize)
             throws Exception {
+        int dataLength = data.length;
         // 默认P1
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-        int dataLength = data.length;
-
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         // 如果数据不超过块大小，直接加密
         if (dataLength <= blockSize) {
             return cipher.doFinal(data);
         }
-
         // 分块加密
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         int offset = 0;
@@ -88,35 +103,16 @@ public class RsaEncryptionProvider implements EncryptionProvider {
         return baos.toByteArray();
     }
 
-
-
-    @Override
-    public String decrypt(String ciphertext) {
-        if (ciphertext == null || ciphertext.isEmpty() || privateKey == null) {
-            return ciphertext;
-        }
-        try {
-
-            byte[] decoded = Base64.getDecoder().decode(ciphertext);
-            EncryptionProperties encryptProperties = SUtils.getEncryptProperties();
-            Integer rsaBlockSize = encryptProperties.getRsaBlockSize();
-            byte[] plaintext = decryptLongData(decoded, rsaBlockSize);
-            return new String(plaintext);
-        } catch (Exception e) {
-            throw new RuntimeException("RSA decryption failed", e);
-        }
-    }
-
     /**
      * 分块解密长数据
      * @param data 密文数据
      * @param blockSize 分块大小（RSA-2048 为 256）
      */
     private byte[] decryptLongData( byte[] data, int blockSize)
-
             throws Exception {
+        // 默认P1
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        cipher.init(Cipher.DECRYPT_MODE, publicKey);
         int dataLength = data.length;
 
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -130,16 +126,6 @@ public class RsaEncryptionProvider implements EncryptionProvider {
         }
 
         return baos.toByteArray();
-    }
-
-    private PrivateKey loadPrivateKey(String privateKeyStr) throws Exception {
-        if (privateKeyStr == null || privateKeyStr.isEmpty()) {
-            return null;
-        }
-        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return keyFactory.generatePrivate(keySpec);
     }
 }
 

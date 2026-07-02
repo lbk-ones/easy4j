@@ -9,7 +9,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class EncryptedResponse<T> {
+public class EncryptedResponse {
 
     @JsonProperty("data")
     private String data;

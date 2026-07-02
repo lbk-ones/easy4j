@@ -19,7 +19,8 @@ public class RsaEncryptionProviderTest {
     public void setUp() throws Exception {
         KeyPair keyPair = io.github.lbkones.encryption.util.RsaKeyGenerator.generateKeyPair(512);
         testPrivateKey = io.github.lbkones.encryption.util.RsaKeyGenerator.getPrivateKeyBase64(keyPair);
-        provider = new RsaEncryptionProvider(testPrivateKey);
+        provider = new RsaEncryptionProvider();
+        provider.setPrivateKey(testPrivateKey);
     }
 
     @Test

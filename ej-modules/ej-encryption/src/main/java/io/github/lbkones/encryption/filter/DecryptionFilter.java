@@ -1,5 +1,7 @@
 package io.github.lbkones.encryption.filter;
 
+import cn.hutool.core.text.StrPool;
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.lbkones.encryption.annotation.NoEncrypt;
 import io.github.lbkones.encryption.config.EncryptionProperties;
@@ -12,9 +14,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -36,7 +37,7 @@ public class DecryptionFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        if (!encryptionProperties.isEnabled() || !(request instanceof HttpServletRequest httpRequest)) {
+        if (!encryptionProperties.isEnabled() || encryptionProperties.isDisabledApiEnc() || !(request instanceof HttpServletRequest httpRequest)) {
             chain.doFilter(request, response);
             return;
         }
@@ -80,22 +81,26 @@ public class DecryptionFilter implements Filter {
                 if (methodAnnotation != null) {
                     return false;
                 }
+                Class<?> beanType = handlerMethod.getBeanType();
+                String skipList = encryptionProperties.getSkipList();
+                List<String> split = StrUtil.split(skipList, StrPool.COMMA);
+                String name = beanType.getName();
+                for (String s : split) {
+                    if(StrUtil.startWith(name,s)){
+                        return false;
+                    }
+                }
 
                 // 检查类上的 @NoEncrypt
-                NoEncrypt classAnnotation = handlerMethod.getBeanType().getAnnotation(NoEncrypt.class);
+                NoEncrypt classAnnotation = beanType.getAnnotation(NoEncrypt.class);
                 return classAnnotation == null;
             }
             return true;
         } catch (Exception e) {
-            // 如果获取 handler 失败，继续处理
-            return true;
+            // 如果获取 handler 失败，就不解密了
+            return false;
         }
     }
-
-    /**
-     * 读取请求体
-     */
-
 
     /**
      * 解密请求体
@@ -107,7 +112,7 @@ public class DecryptionFilter implements Filter {
         }
 
         // 解析加密的请求
-        EncryptedRequest<?> encryptedRequest = objectMapper.readValue(encryptedData, EncryptedRequest.class);
+        EncryptedRequest encryptedRequest = objectMapper.readValue(encryptedData, EncryptedRequest.class);
 
         // 解密数据
         return provider.decrypt(encryptedRequest.getData());

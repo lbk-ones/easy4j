@@ -46,8 +46,9 @@ public class RsaKeyGenerator {
     /**
      * 生成并打印 RSA 密钥对（用于初始化）
      */
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        KeyPair keyPair = generateKeyPair(1024);
+    public static void gen(Integer blockSize) throws NoSuchAlgorithmException {
+        blockSize = blockSize == null ? 1024 : 2048;
+        KeyPair keyPair = generateKeyPair(blockSize);
         String publicKey = getPublicKeyBase64(keyPair);
         String privateKey = getPrivateKeyBase64(keyPair);
 
@@ -66,5 +67,11 @@ public class RsaKeyGenerator {
         System.out.println("    encryption-type: rsa");
         System.out.println("    private-key: " + privateKey);
     }
+
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+        gen(2048);
+    }
+
+
 }
 
