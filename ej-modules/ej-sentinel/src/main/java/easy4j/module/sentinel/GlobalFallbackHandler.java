@@ -43,7 +43,7 @@ public class GlobalFallbackHandler {
             } else if (ex instanceof DegradeException) {
                 errorMsg = BusCode.A00023;
             }
-            return EasyResult.parseFromI18n(1, errorMsg);
+            return EasyResult.parseFromI18n(errorMsg);
         }
 
     }

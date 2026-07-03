@@ -53,6 +53,7 @@
         <module>ej-config</module>
         <module>ej-encryption</module>
         <module>ej-pure</module>
+        <module>ej-spring-cloud</module>
     </modules>
     <name>ej-modules</name>
     <url>https://github.com/lbk-ones/easy4j</url>

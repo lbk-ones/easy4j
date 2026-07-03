@@ -1,6 +1,7 @@
 package io.github.lbkones.encryption.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.lbkones.encryption.util.EncryptionJson;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,4 +22,9 @@ public class EncryptedResponse {
         this.data = data;
     }
 
+
+    @Override
+    public String toString() {
+        return EncryptionJson.toJson(this);
+    }
 }

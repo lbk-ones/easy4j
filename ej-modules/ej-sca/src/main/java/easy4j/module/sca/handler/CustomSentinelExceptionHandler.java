@@ -22,7 +22,6 @@ import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowException;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.infra.common.utils.SysConstant;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,7 +59,7 @@ public class CustomSentinelExceptionHandler implements BlockExceptionHandler {
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-Type", "application/json;charset=utf-8");
         response.setContentType("application/json;charset=utf-8");
-        EasyResult<Object> result = EasyResult.parseFromI18n(1, msg);
+        EasyResult<Object> result = EasyResult.parseFromI18n(msg);
         response.getWriter().write(result.toString());
     }
 

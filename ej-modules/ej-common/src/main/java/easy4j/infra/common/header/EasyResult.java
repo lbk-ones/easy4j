@@ -29,7 +29,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -116,7 +115,7 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode, T data) {
+    public static <T> EasyResult<T> parseI18nWithData(String i18nCode, T data) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
         //easyResult.setError(error);
@@ -126,7 +125,7 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-    public static <T> EasyResult<T> parseFromI18n(int error, String i18nCode, String... args) {
+    public static <T> EasyResult<T> parseFromI18n(String i18nCode, String... args) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
         //easyResult.setError(error);

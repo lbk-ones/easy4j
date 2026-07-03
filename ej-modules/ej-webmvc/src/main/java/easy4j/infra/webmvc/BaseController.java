@@ -25,10 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * base controller
  */
@@ -92,7 +88,7 @@ public class BaseController {
      * @return success result code
      */
     public EasyResult success(String msg) {
-        return EasyResult.parseFromI18n(0, msg);
+        return EasyResult.parseFromI18n(msg);
     }
 
 

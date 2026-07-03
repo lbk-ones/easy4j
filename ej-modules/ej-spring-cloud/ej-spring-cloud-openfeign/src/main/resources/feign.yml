@@ -1,0 +1,31 @@
+spring:
+  # ========== openfeign默认配置 ==========
+  cloud:
+    # OpenFeign 声明式HTTP客户端配置
+    openfeign:
+      # HTTP 连接池配置 使用hc5
+      httpclient:
+        hc5:
+          enabled: true
+        # 连接池最大连接数，控制同时可建立的HTTP连接总数
+        # 根据服务器资源和并发需求调整，默认值较小，生产环境通常需要增大
+        max-connections: 200
+        # 连接的生存时间（秒），连接空闲超过此时间会被关闭并回收到连接池
+        # 避免长期占用连接资源，建议设置为 900-1800 秒
+        time-to-live: 900
+        # time-to-live 的时间单位，这里使用秒（seconds）
+        time-to-live-unit: seconds
+        # OkHttp 连接池的超时配置
+      # Feign 客户端全局和单个客户端的配置
+      client:
+        config:
+          # default 表示全局默认配置，对所有 @FeignClient 生效
+          default:
+            # 连接超时时间（毫秒）
+            # 表示建立 TCP 连接的最长等待时间
+            # 600000ms = 600 秒 = 10 分钟（设置较长以应对网络不稳定）
+            connect-timeout: 600000
+            # 读取超时时间（毫秒）
+            # 表示等待服务器响应的最长时间
+            # 1200000ms = 1200 秒 = 20 分钟（用于处理耗时业务操作）
+            read-timeout: 1200000

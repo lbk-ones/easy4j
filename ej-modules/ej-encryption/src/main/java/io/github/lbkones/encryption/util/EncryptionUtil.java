@@ -1,9 +1,11 @@
 package io.github.lbkones.encryption.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.lbkones.encryption.config.EncryptionProperties;
 import io.github.lbkones.encryption.model.EncryptedRequest;
 import io.github.lbkones.encryption.model.EncryptedResponse;
 import io.github.lbkones.encryption.provider.EncryptionProvider;
+import io.github.lbkones.encryption.provider.EncryptionProviderFactory;
 
 /**
  * 加密处理工具类
@@ -72,5 +74,24 @@ public class EncryptionUtil {
             return ciphertext;
         }
         return provider.decrypt(ciphertext);
+    }
+
+    /**
+     * 自动根据全局配置来判断是否应该加密
+     */
+    public static Object autoEncrypt(Object object){
+        EncryptionProperties encryptionProperties = SUtils.getEncryptProperties();
+        EncryptionProvider provider = EncryptionProviderFactory.get(encryptionProperties.getEncryptionType());
+        if (provider == null || !encryptionProperties.isEnabled()) {
+            return object;
+        }
+        // 先进行字段脱敏
+        object = MaskingUtil.maskFields(object);
+        // 如果禁用了 接口加解密 那么只保留响应字段脱敏功能
+        if (encryptionProperties.isDisabledApiEnc()) {
+            return object;
+        }
+        // 然后进行加密
+        return EncryptionUtil.encryptObject(object, provider, false);
     }
 }

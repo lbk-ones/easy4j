@@ -14,27 +14,22 @@
  */
 package easy4j.module.sentinel;
 
-import cn.hutool.core.util.StrUtil;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
-import com.alibaba.csp.sentinel.init.InitExecutor;
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.utils.SysConstant;
 import easy4j.module.sentinel.annotation2.SentinelResourceAspect;
-import lombok.Getter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 /**
  * SentinelAutoConfiguration
- *
+ * 如果使用了 spring-cloud-starter-alibaba-sentinel模块则不加载这个类
  * @author bokun.li
  * @date 2025-05
  */
 @Configuration
+@ConditionalOnMissingClass(value = "com.alibaba.cloud.sentinel.custom.SentinelAutoConfiguration")
 public class SentinelAutoConfiguration2 implements InitializingBean {
 
     @Override
