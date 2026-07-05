@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.lbkones.seata.Easy4jSeataAutoConfiguration
+org.springframework.boot.env.EnvironmentPostProcessor=\
+io.github.lbkones.seata.Easy4jSeataEnvironment
+org.springframework.boot.autoconfigure.AutoConfigurationImportFilter=\
+io.github.lbkones.seata.ImportFilter

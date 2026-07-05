@@ -445,6 +445,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             return true;
         } else {
             ClassLoader classLoader = this.getClass().getClassLoader();
+            try{
+                classLoader.loadClass("io.github.lbkones.config.nacos.ScaNacosEnvironmentFirst");
+                return true;
+            }catch (Exception ignored){
+
+            }
             try {
                 classLoader.loadClass("easy4j.module.boot.sca.Enable");
                 return true;

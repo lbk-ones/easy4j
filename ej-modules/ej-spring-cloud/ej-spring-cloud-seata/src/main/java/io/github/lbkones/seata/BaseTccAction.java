@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.sca.seata;
+package io.github.lbkones.seata;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -24,9 +24,9 @@ import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
 import org.apache.seata.core.context.RootContext;
 import org.apache.seata.rm.tcc.api.BusinessActionContext;
+import org.apache.seata.rm.tcc.api.BusinessActionContextUtil;
 import org.apache.seata.rm.tcc.api.LocalTCC;
 import org.apache.seata.rm.tcc.api.TwoPhaseBusinessAction;
-import org.apache.seata.rm.tcc.api.BusinessActionContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -42,7 +42,8 @@ import java.util.function.Supplier;
 /**
  * BaseTccAction
  * Tcc继承父类
- *
+ * 例子如下
+ * @see ej-texample/ej-example-sca/template-service/template-order/template.service.order.controller.OrderTccController
  * @author bokun.li
  * @date 2025/6/27
  */

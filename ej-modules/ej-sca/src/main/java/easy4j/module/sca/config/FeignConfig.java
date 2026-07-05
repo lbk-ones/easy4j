@@ -26,8 +26,6 @@ import easy4j.module.sca.runner.ScaRunner;
 import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
-import feign.codec.Encoder;
-import feign.form.spring.SpringFormEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.ConnectionConfig;
@@ -37,15 +35,10 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
-import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -97,19 +90,6 @@ public class FeignConfig {
     @Bean
     Logger.Level feignLoggerLevel() {
         return Logger.Level.BASIC;
-    }
-
-    /**
-     * Feign支持文件上传
-     *
-     * @param messageConverters
-     * @return
-     */
-    @Bean
-    @Primary
-    @Scope("prototype")
-    public Encoder multipartFormEncoder(ObjectProvider<FeignHttpMessageConverters> messageConverters) {
-        return new SpringFormEncoder(new SpringEncoder(messageConverters));
     }
 
     // 全局Sentinel自定义信息处理

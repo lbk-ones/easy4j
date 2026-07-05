@@ -1,0 +1,1 @@
+该模块迁移到 ej-modules/ej-spring-cloud/ej-spring-cloud-seata

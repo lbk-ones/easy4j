@@ -1,0 +1,1 @@
+# 和spring-cloud-alibaba版本中nacos版本绑定

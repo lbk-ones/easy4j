@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.lbkones.config.nacos.ScaNacosAutoConfiguration
+org.springframework.boot.env.EnvironmentPostProcessor=\
+io.github.lbkones.config.nacos.ScaNacosEnvironmentFirst,\
+io.github.lbkones.config.nacos.ScaNacosEnvironmentTwo

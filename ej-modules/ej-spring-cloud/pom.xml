@@ -15,6 +15,9 @@
     <modules>
         <module>ej-spring-cloud-openfeign</module>
         <module>ej-spring-cloud-sentinel</module>
+        <module>ej-spring-cloud-config-nacos</module>
+        <module>ej-spring-cloud-registry-nacos</module>
+        <module>ej-spring-cloud-seata</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
