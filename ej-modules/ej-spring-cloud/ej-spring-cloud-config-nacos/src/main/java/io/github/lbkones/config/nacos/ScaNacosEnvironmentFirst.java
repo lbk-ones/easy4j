@@ -23,6 +23,7 @@ import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.base.starter.env.Easy4jEnvironmentFirst;
+import easy4j.infra.base.starter.env.PropertySourceConverter;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -68,9 +72,20 @@ public class ScaNacosEnvironmentFirst extends AbstractEasy4jEnvironment {
         try{
             ClassPathResource resource = new ClassPathResource("nacos-version.txt");
             try (InputStream is = resource.getInputStream()) {
-                System.out.println(SysLog.compact("current nacos_client "+new String(is.readAllBytes(), StandardCharsets.UTF_8)));
+                System.out.println(SysLog.compact("current nacos client "+new String(is.readAllBytes(), StandardCharsets.UTF_8)));
             }
         } catch (Exception ignored) {
+        }
+        MutablePropertySources propertySources1 = this.getConfigEnvironment().getPropertySources();
+        PropertySource<?> propertySource = propertySources1.get(FIRST_ENV_NAME);
+        Map<String, String> map = PropertySourceConverter.toMap(propertySource);
+        System.out.println(SysLog.compact("print boot config keys: ↓"));
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value != null) {
+                System.out.println(SysLog.compact(key + "=" + configEnvironment.resolvePlaceholders(value)));
+            }
         }
 
         Properties properties = new Properties();

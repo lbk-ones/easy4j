@@ -16,6 +16,7 @@ package io.github.lbkones.cloud.openfeign.broadcast;
 
 import feign.Client;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,11 +37,17 @@ public class BroadcastFeign {
     @Resource
     DiscoveryClient discoveryClient;
 
+    @Autowired(required = false)
+    Client client;
+
     @Bean
     public Client feignClient() {
-        // 使用默认的 Feign Client 作为委托
-        Client defaultClient = new Client.Default(null, null);
-        return new BroadcastFeignClient(defaultClient, discoveryClient);
+        if (client == null) {
+            // 使用默认的 Feign Client 作为委托
+            client = new Client.Default(null, null);
+        }
+        if (discoveryClient == null) return client;
+        return new BroadcastFeignClient(client, discoveryClient);
     }
 
 }

@@ -340,7 +340,7 @@ public class SysLog {
         } catch (Exception ignored) {
         }
 
-        return "【EASY4J】" + format;
+        return "[[EASY4J]] -> " + format;
     }
 
     public static String getStackTraceInfo(Throwable e) {

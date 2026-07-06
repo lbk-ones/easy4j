@@ -64,7 +64,7 @@ public class DefaultWebGlobalSentinelExceptionHandler implements BlockExceptionH
         EasyResult<Object> result = EasyResult.parseFromI18n(msg);
         response.getWriter()
                 .write(
-                        EncryptionUtil.autoEncrypt(result).toString()
+                        EncryptionUtil.autoEncrypt(result,httpServletRequest).toString()
                 );
     }
 
