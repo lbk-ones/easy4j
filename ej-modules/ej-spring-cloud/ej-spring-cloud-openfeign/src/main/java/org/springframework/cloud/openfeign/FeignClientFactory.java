@@ -92,9 +92,15 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 					return (T) bean;
 				}
 			}catch (NoSuchBeanDefinitionException e2){
-				// ignore
-				return context.getBean(type);
+				try{
+					// ignore
+					return context.getBean(type);
+				}catch (NoSuchBeanDefinitionException ignored){
+
+				}
+
 			}
+			return null;
 		}
 		try {
 			return context.getBean(type);
