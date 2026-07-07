@@ -14,6 +14,7 @@
  */
 package easy4j.infra.common.utils.json;
 
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -336,6 +337,7 @@ public class JacksonUtil {
 
     public static String compress(String jsonString) {
 
+        if(StrUtil.isBlank(jsonString)) return "";
         Object json;
         try {
             json = mapper.readValue(jsonString, Object.class);

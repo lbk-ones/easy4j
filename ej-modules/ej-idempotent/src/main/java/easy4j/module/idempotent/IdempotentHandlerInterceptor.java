@@ -15,6 +15,7 @@
 package easy4j.module.idempotent;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.MD5;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
@@ -97,6 +98,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         String requestURI = request.getRequestURI();
         String method2 = request.getMethod();
         String generateKey2 = method2 + "--" + requestURI;
+        generateKey2 = MD5.create().digestHex(generateKey2);
         if (globalIdempotent) {
             return generateKey2;
         }

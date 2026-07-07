@@ -42,7 +42,11 @@ public class TransferMapper {
 
     // String 转 Integer
     public static Integer stringToInteger(String str) {
-        return str != null && !str.isEmpty() ? Integer.parseInt(str) : null;
+        try{
+            return str != null && !str.isEmpty() ? Integer.parseInt(str) : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // Integer 转 String
@@ -52,7 +56,12 @@ public class TransferMapper {
 
     // String 转 Double
     public static Double stringToDouble(String str) {
-        return str != null && !str.isEmpty() ? Double.parseDouble(str) : null;
+        try{
+            return str != null && !str.isEmpty() ? Double.parseDouble(str) : null;
+        }catch (Exception e){
+            return null;
+        }
+
     }
 
     // Double 转 String
@@ -62,7 +71,11 @@ public class TransferMapper {
 
     // String 转 Float
     public static Float stringToFloat(String str) {
-        return str != null && !str.isEmpty() ? Float.parseFloat(str) : null;
+        try{
+            return str != null && !str.isEmpty() ? Float.parseFloat(str) : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // Float 转 String
@@ -82,7 +95,11 @@ public class TransferMapper {
 
     // String 转 Long
     public static Long stringToLong(String str) {
-        return str != null && !str.isEmpty() ? Long.parseLong(str) : null;
+        try{
+            return str != null && !str.isEmpty() ? Long.parseLong(str) : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // Long 转 String
@@ -98,40 +115,64 @@ public class TransferMapper {
         try {
             return DateUtil.parse(dateStr).toJdkDate();
         } catch (Exception e) {
-            throw new IllegalArgumentException("日期解析错误， " , e);
+            return null;
         }
     }
 
     // Date 转 String
     public static String dateToString(Date date) {
-        return date != null ? DateUtil.format(date,DatePattern.NORM_DATETIME_PATTERN) : null;
+        try{
+            return date != null ? LocalDateTimeUtil.of(date).format(DatePattern.NORM_DATETIME_FORMATTER) : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // String 转 BigDecimal
     public static BigDecimal stringToBigDecimal(String str) {
-        return str != null && !str.isEmpty() ? new BigDecimal(str) : null;
+        try{
+
+            return str != null && !str.isEmpty() ? new BigDecimal(str) : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // BigDecimal 转 String
     public static String bigDecimalToString(BigDecimal num) {
-        return num != null ? num.stripTrailingZeros().toPlainString() : null;
+        try{
+
+            return num != null ? num.stripTrailingZeros().toPlainString() : null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
 
     // LocalDate 转 String
     public static String localDateToString(LocalDate localDate) {
-        if (localDate == null) {
+        try{
+
+            if (localDate == null) {
+                return null;
+            }
+            return LocalDateTimeUtil.format(localDate, DatePattern.NORM_DATE_PATTERN);
+        }catch (Exception e){
             return null;
         }
-        return LocalDateTimeUtil.format(localDate, DatePattern.NORM_DATE_PATTERN);
     }
 
     // String 转 LocalDate
     public static LocalDate stringToLocalDate(String dateStr) {
+
         if (dateStr == null) {
             return null;
         }
-        return LocalDateTimeUtil.parseDate(dateStr);
+        try{
+            return LocalDateTimeUtil.parseDate(dateStr);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // LocalDateTime 转 String
@@ -139,7 +180,11 @@ public class TransferMapper {
         if (localDateTime == null) {
             return null;
         }
-        return LocalDateTimeUtil.format(localDateTime, DatePattern.NORM_DATETIME_PATTERN);
+        try{
+            return LocalDateTimeUtil.format(localDateTime, DatePattern.NORM_DATETIME_PATTERN);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // String 转 LocalDateTime
@@ -147,7 +192,11 @@ public class TransferMapper {
         if (dateTimeStr == null) {
             return null;
         }
-        return LocalDateTimeUtil.parse(dateTimeStr);
+        try{
+            return LocalDateTimeUtil.parse(dateTimeStr);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // LocalTime 转 String
@@ -156,7 +205,11 @@ public class TransferMapper {
             return null;
         }
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        return localTime.format(dateTimeFormatter);
+        try{
+            return localTime.format(dateTimeFormatter);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     // String 转 LocalTime
@@ -164,6 +217,10 @@ public class TransferMapper {
         if (timeStr == null || StrUtil.isBlank(timeStr)) {
             return null;
         }
-        return LocalTime.parse(timeStr);
+        try{
+            return LocalTime.parse(timeStr);
+        }catch (Exception e){
+            return null;
+        }
     }
 }

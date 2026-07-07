@@ -1,7 +1,7 @@
 -- 创建表
 create table sys_key_idempotent
 (
-    ide_key   varchar2(128) not null,
+    ide_key   varchar2(512) not null,
     expire_date timestamp     not null,
     constraint sys_key_idempotent_pk primary key (ide_key)
 );

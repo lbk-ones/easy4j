@@ -12,6 +12,7 @@ import io.github.lbkones.encryption.util.EncryptionJson;
 import io.github.lbkones.pure.ReplacedBodyRequestWrapper;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import java.io.IOException;
@@ -73,6 +74,11 @@ public class DecryptionFilter implements Filter {
      */
     private boolean needsDecryption(HttpServletRequest request) {
         try {
+
+            String contentType = request.getContentType();
+            if(!StrUtil.contains(contentType,MediaType.APPLICATION_JSON_VALUE)){
+                return false;
+            }
             Object handler = Objects.requireNonNull(requestMappingHandlerMapping.getHandler(request)).getHandler();
             if (handler instanceof HandlerMethod handlerMethod) {
 

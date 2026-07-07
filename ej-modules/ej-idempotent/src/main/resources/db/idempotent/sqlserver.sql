@@ -1,6 +1,6 @@
 CREATE TABLE sys_key_idempotent
 (
-    ide_key VARCHAR(128) NOT NULL,
+    ide_key VARCHAR(512) NOT NULL,
     expire_date DATETIME NOT NULL,
     CONSTRAINT sys_key_idempotent_pk PRIMARY KEY (ide_key)
     );
