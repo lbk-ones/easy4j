@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.common.utils.*;
@@ -118,6 +119,11 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                     continue;
                 }
                 String s1 = s.getPath();
+                Class<?> autoDDLClass = s.getAutoDDLClass();
+                if(StrUtil.isBlank(s1) && autoDDLClass!=null){
+                    autoDDL(autoDDLClass);
+                    continue;
+                }
                 Connection connection = null;
                 try {
                     connection = jdbcDbAccess.getConnection();

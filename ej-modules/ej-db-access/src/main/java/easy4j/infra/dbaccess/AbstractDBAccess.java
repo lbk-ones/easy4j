@@ -34,8 +34,7 @@ import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
@@ -115,12 +114,14 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                 }
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 TableField annotation1 = field.getAnnotation(TableField.class);
+                DDLField annotation3 = field.getAnnotation(DDLField.class);
                 Column annotation2 = field.getAnnotation(Column.class);
-                if (null != annotation || null != annotation1 || annotation2 != null) {
+                if (null != annotation || null != annotation1 || annotation2 != null || annotation3 != null) {
                     if (SAVE.equals(sqlType)) {
                         boolean b = annotation != null && annotation.isPrimaryKey() && annotation.autoIncrement();
                         boolean b1 = field.isAnnotationPresent(TableId.class) && field.getAnnotation(TableId.class).type() == IdType.AUTO;
-                        if (b || b1) {
+                        boolean b3 = field.isAnnotationPresent(DDLField.class) && field.getAnnotation(DDLField.class).isPrimary() && field.getAnnotation(DDLField.class).isAutoIncrement();
+                        if (b || b1 || b3) {
                             continue;
                         }
                         String name1 = null;
@@ -130,6 +131,8 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
                             name1 = annotation1.value();
                         } else if (annotation2 != null) {
                             name1 = annotation2.name();
+                        } else if (annotation3 != null) {
+                            name1 = annotation3.name();
                         }
                         if (StrUtil.isNotBlank(name1)) {
                             nameList.add(name1);

@@ -18,6 +18,7 @@ public class UserContext {
 
 
     private String userName;
+    private Long userId;
 
     private String userNameCn;
 

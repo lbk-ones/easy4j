@@ -229,6 +229,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
         Easy4jContext context = Easy4j.getContext();
         UserContext userContext = new UserContext();
         userContext.setUserName(user.getUsername());
+        userContext.setUserId(user.getUserId());
         userContext.setUserNameCn(user.getUsernameCn());
         userContext.setTenantId(user.getTenantId());
         userContext.setRoleCodeList(user.getRoleCodeList());

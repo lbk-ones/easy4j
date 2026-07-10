@@ -17,6 +17,8 @@ import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
+import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.PGHelper;
 import easy4j.infra.dbaccess.helper.SqlPlaceholderReplacer;
 import easy4j.infra.base.starter.env.Easy4j;
@@ -212,7 +214,7 @@ public class CommonDBAccess {
             for (Field field : fields) {
                 JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
                 // compatible jpa mybatis-plus
-                if ((Objects.nonNull(annotation) && annotation.isPrimaryKey()) || field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class)) {
+                if ((Objects.nonNull(annotation) && annotation.isPrimaryKey()) || field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class) || (field.isAnnotationPresent(DDLField.class) && field.getAnnotation(DDLField.class).isPrimary())) {
                     String name = field.getName();
                     Object fieldValue = ReflectUtil.getFieldValue(object, field);
                     if (ObjectUtil.isNotEmpty(fieldValue)) {
@@ -280,6 +282,10 @@ public class CommonDBAccess {
                 Column tableField = field.getAnnotation(Column.class);
                 String value = tableField.name();
                 name = StrUtil.isBlank(value) ? name : value;
+            } else if(field.isAnnotationPresent(DDLField.class)){
+                DDLField tableField = field.getAnnotation(DDLField.class);
+                String value = tableField.name();
+                name = StrUtil.isBlank(value) ? name : value;
             }
             if (isToUnderline) {
                 name = StrUtil.toUnderlineCase(name);
@@ -317,6 +323,7 @@ public class CommonDBAccess {
             } else return field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class);
         });
         return Arrays.stream(fields).map(e -> {
+
             if (e.isAnnotationPresent(JdbcColumn.class)) {
                 JdbcColumn annotation = e.getAnnotation(JdbcColumn.class);
                 String name = annotation.name();
@@ -331,6 +338,12 @@ public class CommonDBAccess {
                 }
             } else if (e.isAnnotationPresent(Id.class)) {
                 return e.getName();
+            }else if (e.isAnnotationPresent(DDLField.class)) {
+                DDLField annotation2 = e.getAnnotation(DDLField.class);
+                String s = annotation2.name();
+                if(StrUtil.isNotBlank(s)){
+                    return s;
+                }
             }
             return e.getName();
         }).collect(Collectors.toList());
@@ -363,6 +376,12 @@ public class CommonDBAccess {
                     if (StrUtil.isNotBlank(value)) {
                         return value;
                     }
+                }
+            }else if (clazz.isAnnotationPresent(DDLTable.class)){
+                DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
+                String s = annotation2.tableName();
+                if(StrUtil.isNotBlank(s)){
+                    return s;
                 }
             }
             String simpleName = clazz.getSimpleName();

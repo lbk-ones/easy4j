@@ -504,10 +504,16 @@ public class EjSysProperties {
     private String simpleAuthTokenUseCookieSameSite = "Lax";
 
     /**
-     * 是否启用RequestLog注解进行请求日志收集 默认启用false关闭
+     * 是否启用RequestLog注解进行请求日志收集 默认启用,false=关闭
      */
-    @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用false关闭")
+    @SpringVs(desc = "是否启用RequestLog注解进行请求日志收集 默认启用,false=关闭")
     private boolean dbRequestLogEnable = true;
+
+    /**
+     * 是否启用RequestLog注解进行请求日志收集 默认启用,false=关闭
+     */
+    @SpringVs(desc = "是否启用@OperateLog注解进行操作日志收集 默认启用,false=关闭")
+    private boolean operateLogEnable = true;
 
     /**
      * 是否开启系统sql日志记录 true 代表开启，默认开启
