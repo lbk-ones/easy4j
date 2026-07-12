@@ -12,27 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.infra.dbaccess.condition;
+package easy4j.infra.dbaccess.orm.conditions;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.dialect.AbstractDialect;
-import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
-import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.orm.AccessUtils;
+import easy4j.infra.dbaccess.orm.RuntimeContext;
 import jodd.util.StringPool;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,6 +76,7 @@ import java.util.stream.Collectors;
  * @author bokun.li
  */
 public class WhereBuild implements Serializable {
+    
     @Getter
     private List<Condition> conditions = new ArrayList<>();
     @Getter
@@ -102,20 +98,11 @@ public class WhereBuild implements Serializable {
     private boolean isSubSql = false;
 
     @Getter
+    private String last;
+
+    @Getter
     private boolean isDistinct;
 
-    @JsonIgnore
-    public Connection connection;
-
-    @JsonIgnore
-    public Dialect dialect;
-
-    private final OpConfig opConfig = new OpConfig();
-
-
-    @Setter
-    @Getter
-    public boolean toUnderLine = true;
 
     public void setConditions(List<Condition> conditions) {
         if (null != conditions) {
@@ -129,38 +116,10 @@ public class WhereBuild implements Serializable {
         }
     }
 
-
-    @JsonIgnore
-    public List<String> getSelectFieldsStr() {
-        return selectFields.stream()
-                .peek(e -> e.setToUnderLine(this.toUnderLine))
-                .map(e -> opConfig.escapeCn(e.getColumn(),this.connection,false))
-                .filter(StrUtil::isNotBlank)
-                .collect(Collectors.toList());
-    }
-
     public void clearSelectFields() {
         this.selectFields.clear();
     }
 
-    public Dialect getDialect() {
-        if (this.dialect != null) {
-            return this.dialect;
-        } else if (this.connection != null) {
-            this.dialect = JdbcHelper.getDialect(this.connection);
-            return this.dialect;
-        } else {
-            return new AbstractDialect();
-        }
-    }
-
-    public void bind(Connection connection) {
-        this.connection = connection;
-    }
-
-    public void bind(Dialect dialect) {
-        this.dialect = dialect;
-    }
 
     // 设置逻辑运算符
     public WhereBuild withLogicOperator(LogicOperator operator) {
@@ -169,7 +128,7 @@ public class WhereBuild implements Serializable {
     }
 
     // 基础比较条件方法
-    public WhereBuild equal(String column, Object value) {
+    public WhereBuild eq(String column, Object value) {
         conditions.add(new Condition(column, CompareOperator.EQUAL, value));
         return this;
     }
@@ -260,6 +219,11 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+    public WhereBuild last(String last){
+        this.last = last;
+        return this;
+    }
+
     public WhereBuild distinct() {
         this.isDistinct = true;
         return this;
@@ -328,8 +292,6 @@ public class WhereBuild implements Serializable {
     // 构建子条件
     public WhereBuild and(WhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.AND);
-        subBuilder.bind(this.dialect);
-        subBuilder.bind(this.connection);
         subBuilder.isSubSql = true;
         subBuilders.add(subBuilder);
         return this;
@@ -339,8 +301,6 @@ public class WhereBuild implements Serializable {
         WhereBuild whereBuild = get();
         subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.AND);
-        whereBuild.bind(this.dialect);
-        whereBuild.bind(this.connection);
         whereBuild.isSubSql = true;
         subBuilders.add(whereBuild);
         return this;
@@ -348,8 +308,6 @@ public class WhereBuild implements Serializable {
 
     public WhereBuild or(WhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.OR);
-        subBuilder.bind(this.dialect);
-        subBuilder.bind(this.connection);
         subBuilders.add(subBuilder);
         subBuilder.isSubSql = true;
         return this;
@@ -359,8 +317,6 @@ public class WhereBuild implements Serializable {
         WhereBuild whereBuild = get();
         subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.OR);
-        whereBuild.bind(this.dialect);
-        whereBuild.bind(this.connection);
         subBuilders.add(whereBuild);
         whereBuild.isSubSql = true;
         return this;
@@ -369,8 +325,6 @@ public class WhereBuild implements Serializable {
     public WhereBuild not(WhereBuild subBuilder) {
         subBuilder.isSubSql = true;
         subBuilder.withLogicOperator(LogicOperator.NOT);
-        subBuilder.bind(this.dialect);
-        subBuilder.bind(this.connection);
         subBuilders.add(subBuilder);
         return this;
     }
@@ -380,8 +334,6 @@ public class WhereBuild implements Serializable {
         subBuilder.accept(whereBuild);
         whereBuild.isSubSql = true;
         whereBuild.withLogicOperator(LogicOperator.NOT);
-        whereBuild.bind(this.dialect);
-        whereBuild.bind(this.connection);
         subBuilders.add(whereBuild);
         return this;
     }
@@ -398,30 +350,17 @@ public class WhereBuild implements Serializable {
     }
 
     // 构建最终 SQL 条件
-    public String build(List<Object> argsList) {
-
-        /*if (conditions.isEmpty() && subBuilders.isEmpty()) {
-            return "";
-        }*/
-
-        if (this.connection == null) {
-            throw new EasyException("condition is not bind connection please bind a connection");
-        }
-        Dialect sqlDialect = getDialect();
+    public String build(List<Object> whereArgs,RuntimeContext<?> runtimeContext) {
 
 
         List<String> parts = new ArrayList<>();
         // 添加基本条件
         for (Condition condition : conditions) {
-            condition.setToUnderLine(this.toUnderLine);
-            parts.add(condition.getSqlSegment(argsList, sqlDialect,this.opConfig,this.connection));
+            parts.add(condition.getSqlSegment(whereArgs, runtimeContext));
         }
         // 添加子条件
         for (WhereBuild subBuilder : subBuilders) {
-            subBuilder.setToUnderLine(this.toUnderLine);
-            subBuilder.bind(sqlDialect);
-            subBuilder.bind(connection);
-            String subCondition = subBuilder.build(argsList);
+            String subCondition = subBuilder.build(whereArgs,runtimeContext);
             if (!subCondition.isEmpty()) {
                 if (subBuilder.logicOperator == LogicOperator.NOT) {
                     parts.add("NOT (" + subCondition + ")");
@@ -434,11 +373,10 @@ public class WhereBuild implements Serializable {
         // 使用逻辑运算符连接所有条件
         String operator = logicOperator == LogicOperator.AND ? " AND " : " OR ";
         String join = String.join(operator, parts);
-
+        AccessUtils accessUtils = runtimeContext.getAccessUtils();
         String groupBySegment = groupBy.stream().map(e -> {
-            e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
-            return opConfig.escapeCn(column,this.connection,false);
+            return accessUtils.escapeCn(column, runtimeContext.getDialectV2(), false);
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(groupBySegment)) {
@@ -448,7 +386,7 @@ public class WhereBuild implements Serializable {
         if (CollUtil.isNotEmpty(havingList)) {
             StringBuilder builder = new StringBuilder();
             for (Condition condition : havingList) {
-                builder.append(SP.SPACE).append(condition.getSqlSegment(argsList, dialect,this.opConfig,this.connection));
+                builder.append(SP.SPACE).append(condition.getSqlSegment(whereArgs, runtimeContext));
             }
             if (!builder.toString().isEmpty()) {
                 join += " HAVING" + builder;
@@ -456,10 +394,9 @@ public class WhereBuild implements Serializable {
         }
 
         String orderBySegment = orderBy.stream().map(e -> {
-            e.setToUnderLine(this.toUnderLine);
             String column = e.getColumn();
             String value = Convert.toStr(e.getValue());
-            return opConfig.escapeCn(column,this.connection,false) + StringPool.SPACE + value;
+            return accessUtils.escapeCn(column, runtimeContext.getDialectV2(), false) + StringPool.SPACE + value;
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(orderBySegment)) {
@@ -471,20 +408,5 @@ public class WhereBuild implements Serializable {
     // 静态工厂方法
     public static WhereBuild get() {
         return new WhereBuild();
-    }
-
-    public static WhereBuild get(Connection connection, Dialect dialect) {
-
-        WhereBuild whereBuilder = new WhereBuild();
-        whereBuilder.bind(connection);
-        whereBuilder.bind(dialect);
-        return whereBuilder;
-    }
-
-    public static WhereBuild get(Connection connection) {
-
-        WhereBuild whereBuilder = new WhereBuild();
-        whereBuilder.bind(connection);
-        return whereBuilder;
     }
 }

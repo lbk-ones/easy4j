@@ -16,6 +16,7 @@ package easy4j.infra.dbaccess;
 
 import cn.hutool.core.lang.Dict;
 import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.infra.dbaccess.domain.PageRes;
 import org.springframework.core.io.Resource;
 
 import java.sql.Connection;
@@ -172,6 +173,16 @@ public interface DBAccess {
      * @throws SQLException
      */
     <T> List<T> selectListByPage(Page<T> page, QueryFilter filter, Class<T> clazz, String sql, Object... args);
+
+    /**
+     * 分页查询
+     * @param page 分页参数
+     * @param where 条件构造器
+     * @param clazz class对象
+     * @return
+     * @param <T>
+     */
+    <T> PageRes selectPage(Page<T> page, WhereBuild where, Class<T> clazz);
 
     /**
      * 根据主键查询某对象

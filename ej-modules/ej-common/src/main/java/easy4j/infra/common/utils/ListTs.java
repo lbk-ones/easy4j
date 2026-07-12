@@ -64,10 +64,10 @@ public class ListTs {
     /**
      * 递归循环
      *
-     * @param list 要递归的集合
+     * @param list         要递归的集合
      * @param childrenFunc 获取children的方法
-     * @param consumer 消费每一个元素
-     * @param <T> 集合泛型
+     * @param consumer     消费每一个元素
+     * @param <T>          集合泛型
      */
     public static <T> void doLoop(List<T> list, Function<T, List<T>> childrenFunc, Consumer<T> consumer) {
         if (CollUtil.isEmpty(list)) return;
@@ -650,11 +650,11 @@ public class ListTs {
         return arrayList;
     }
 
-    public static String join(String s, List<?> map) {
+    public static String join(String s, Collection<?> map) {
         if (isEmpty(map)) {
             return "";
         }
-        return map.stream().map(String::valueOf).collect(Collectors.joining(s));
+        return map.stream().filter(Objects::nonNull).map(String::valueOf).collect(Collectors.joining(s));
     }
 
     public static String join(String s, Set<?> map) {
@@ -722,9 +722,16 @@ public class ListTs {
 
     }
 
-    public static <T> void addAll(Collection<T> res, Collection<T> objs) {
+    public static <T> void addAll(Collection<T> res, Iterable<T> objs) {
         if (ObjectUtil.isNotEmpty(objs) && res != null) {
-            List<T> collect = objs.stream().filter(Objects::nonNull).toList();
+            Iterator<T> iterator = objs.iterator();
+            List<T> collect = new ArrayList<>();
+            while (iterator.hasNext()) {
+                T next = iterator.next();
+                if (next != null) {
+                    collect.add(next);
+                }
+            }
             if (isNotEmpty(collect)) res.addAll(collect);
         }
     }

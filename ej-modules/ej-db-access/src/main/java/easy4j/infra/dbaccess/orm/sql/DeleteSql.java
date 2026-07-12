@@ -1,0 +1,31 @@
+package easy4j.infra.dbaccess.orm.sql;
+
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.orm.AccessField;
+import easy4j.infra.dbaccess.orm.OperateType;
+import easy4j.infra.dbaccess.orm.RuntimeContext;
+
+import java.util.List;
+
+// delete table where id in (x1,x2,x3)
+public class DeleteSql implements ISql{
+    @Override
+    public <T> boolean match(RuntimeContext<T> runtimeContext) {
+        return runtimeContext.getOperateType() == OperateType.DELETE;
+    }
+
+    @Override
+    public <T> String build(RuntimeContext<T> runtimeContext) {
+        String schema = runtimeContext.getSchema();
+        String tableName = runtimeContext.getTableName();
+        String whereSql = runtimeContext.getWhereSql();
+
+        return "delete from " +
+                ListTs.join(SP.DOT, ListTs.asList(schema, tableName)) +
+                SP.SPACE +
+                "where" +
+                SP.SPACE +
+                whereSql;
+    }
+}

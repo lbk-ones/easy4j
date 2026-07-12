@@ -1,0 +1,327 @@
+package easy4j.infra.dbaccess.orm;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.annotations.JdbcIgnore;
+import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dynamic.dll.DDLField;
+import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.conditions.Condition;
+import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.Data;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+
+import javax.sql.DataSource;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 工具类不存放任何属性 只存放 AccessConfig
+ */
+@Data
+public class AccessUtils implements Serializable {
+
+
+    private AccessConfig accessConfig;
+
+    public AccessUtils(AccessConfig accessConfig) {
+        this.accessConfig = accessConfig;
+    }
+
+
+    public Connection getConnection() {
+        DataSource dataSource = accessConfig.getDataSource();
+        try {
+            Assert.notNull(dataSource);
+            if (this.accessConfig.isInTransaction()) {
+                return DataSourceUtils.getConnection(dataSource);
+            } else {
+                Connection connection = dataSource.getConnection();
+                connection.setAutoCommit(true);
+                return connection;
+            }
+        } catch (SQLException e) {
+            throw JdbcHelper.translateSqlException("getConnection", null, e);
+        }
+    }
+
+    /**
+     * 根据配置，来决定是否要转下划线
+     *
+     * @param name 字段/表 的名称
+     * @return
+     */
+    public String fn(String name) {
+        if (accessConfig.isFieldNameToUnderline()) {
+            return StrUtil.toUnderlineCase(name);
+        }
+        return name;
+    }
+
+    /**
+     * 获取表名 注解里面的表名统一原样返回
+     *
+     * @param clazz 对象类型
+     * @return 表名
+     */
+    public String getTableName(Class<?> clazz, DialectV2 dialect) {
+        if (clazz == null) return null;
+        StringBuilder sb = new StringBuilder();
+        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
+
+        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
+            sb.append(annotation.name());
+        } else {
+            if (clazz.isAnnotationPresent(TableName.class)) {
+                TableName annotation1 = clazz.getAnnotation(TableName.class);
+                if (Objects.nonNull(annotation1)) {
+                    String value = annotation1.value();
+                    if (StrUtil.isNotBlank(value)) {
+                        return value;
+                    }
+                }
+            } else if (clazz.isAnnotationPresent(Table.class)) {
+                Table table = clazz.getAnnotation(Table.class);
+                if (Objects.nonNull(table)) {
+                    String value = table.name();
+                    if (StrUtil.isNotBlank(value)) {
+                        return value;
+                    }
+                }
+            } else if (clazz.isAnnotationPresent(DDLTable.class)) {
+                DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
+                String s = annotation2.tableName();
+                if (StrUtil.isNotBlank(s)) {
+                    return s;
+                }
+            }
+            String simpleName = clazz.getSimpleName();
+            String underlineCase = dialect.escape(fn(simpleName)).toLowerCase();
+            sb.append(underlineCase);
+        }
+        return sb.toString();
+    }
+
+    public boolean isPk(Field field) {
+        if (field.isAnnotationPresent(JdbcColumn.class)) {
+            JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
+            return annotation.isPrimaryKey();
+        } else if (field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class)) {
+            return true;
+        } else if (field.isAnnotationPresent(DDLField.class)) {
+            return field.getAnnotation(DDLField.class).isPrimary();
+        }
+        return false;
+    }
+
+    public boolean isAutoIncrement(Field field) {
+        if (field.isAnnotationPresent(JdbcColumn.class)) {
+            JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
+            return annotation.isPrimaryKey() && annotation.autoIncrement();
+        } else if (field.isAnnotationPresent(TableId.class) && field.getAnnotation(TableId.class).type() == IdType.AUTO) {
+            return true;
+        } else if (field.isAnnotationPresent(DDLField.class)) {
+            DDLField annotation = field.getAnnotation(DDLField.class);
+            return annotation.isPrimary() && annotation.isAutoIncrement();
+        }
+        return false;
+    }
+
+
+    public String getSchema(Class<?> clazz) {
+        if (clazz == null) return "";
+        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
+
+        StringBuilder sb = new StringBuilder();
+        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
+            String schema = annotation.schema();
+            if (StrUtil.isNotBlank(schema)) {
+                sb.append(schema);
+            }
+        } else {
+            if (clazz.isAnnotationPresent(TableName.class)) {
+                TableName annotation1 = clazz.getAnnotation(TableName.class);
+                if (Objects.nonNull(annotation1)) {
+                    String schema = annotation1.schema();
+                    if (StrUtil.isNotBlank(schema)) {
+                        sb.append(schema);
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    public String getColumnNameFormField(Field field) {
+        if (field.isAnnotationPresent(TableField.class)) {
+            return field.getAnnotation(TableField.class).value();
+        } else if (field.isAnnotationPresent(DDLField.class)) {
+            return field.getAnnotation(DDLField.class).name();
+        } else if (field.isAnnotationPresent(JdbcColumn.class)) {
+            return field.getAnnotation(JdbcColumn.class).name();
+        } else if (field.isAnnotationPresent(Column.class)) {
+            return field.getAnnotation(Column.class).name();
+        }
+        return fn(field.getName());
+    }
+
+    public boolean skipColumn(Field field) {
+        int modifiers = field.getModifiers();
+
+        if (
+                Modifier.isStatic(modifiers) ||
+                        Modifier.isFinal(modifiers) ||
+                        Modifier.isTransient(modifiers)
+        ) {
+            return true;
+        }
+        boolean skip = false;
+        if (field.isAnnotationPresent(TableField.class)) {
+            TableField annotation = field.getAnnotation(TableField.class);
+            if (!annotation.exist()) {
+                skip = true;
+            }
+        }
+        return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class) || skip;
+    }
+
+    public <T> RuntimeContext<T> parse(Access<T> access) {
+        Class<T> clazz = access.getClazz();
+        T params = access.getParam();
+        Iterable<T> params2 = access.getParams();
+        OperateType operateType = access.getOperateType();
+        List<T> p = new ArrayList<>();
+        ListTs.add(p, params);
+        ListTs.addAll(p, params2);
+        Field[] fields = new Field[]{};
+        if (clazz != null) {
+            fields = ReflectUtil.getFields(clazz);
+        }
+        List<AccessField> fieldList = new ArrayList<>();
+        List<AccessField> updateList = new ArrayList<>();
+        for (Field field : fields) {
+            if (skipColumn(field)) continue;
+            boolean pk = isPk(field);
+            boolean isAutoIncrement = isAutoIncrement(field);
+            String columnField = getColumnNameFormField(field);
+            int index = 0;
+            if (CollUtil.isEmpty(p)) {
+                AccessField accessField = new AccessField();
+                accessField.setColumnName(columnField);
+                accessField.setColumnValue(null);
+                accessField.setField(field);
+                accessField.setGroup(index);
+                accessField.setPkIs(pk);
+                accessField.setAutoIncrementIs(isAutoIncrement);
+                fieldList.add(accessField);
+            }
+            for (T t : p) {
+                Object fieldValue = ReflectUtil.getFieldValue(t, field);
+                AccessField accessField = new AccessField();
+                accessField.setField(field);
+                accessField.setColumnName(columnField);
+                accessField.setColumnValue(fieldValue);
+                accessField.setGroup(index);
+                accessField.setPkIs(pk);
+                accessField.setAutoIncrementIs(isAutoIncrement);
+                if (operateType == OperateType.UPDATE) {
+                    if (access.isSkipNullIs()) {
+                        if (!ObjectUtil.isEmpty(fieldValue)) updateList.add(accessField);
+                    } else {
+                        updateList.add(accessField);
+                    }
+                }
+                fieldList.add(accessField);
+                index++;
+            }
+        }
+
+        // obtain datasource connection
+        Connection connection = getConnection();
+        DialectV2 dialectV2 = DialectFactory.get(connection);
+        String dbType = dialectV2.getDbType();
+        return new RuntimeContext<T>()
+                .setSql(access.getSql())
+                .setPage(access.getPage())
+                .setAccess(access)
+                .setAccessUtils(this)
+                .setClazz(clazz)
+                .setDbType(dbType)
+                .setParams(p)
+                .setConnection(connection)
+                .setOperateType(operateType)
+                .setUpdateFields(updateList)
+                .setColumns(fieldList)
+                .setDialectV2(dialectV2)
+                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName()))
+                .setSchema(StrUtil.blankToDefault(getSchema(clazz), access.getSchema()));
+
+    }
+
+    /**
+     * 解析WhereBuild
+     *
+     * @param where   条件构造器
+     * @param context 上下文
+     * @param <T>     泛型
+     */
+    public <T> void parseWhere(WhereBuild where, RuntimeContext<T> context) {
+        List<Object> whereArgs = new ArrayList<>();
+        String whereSql = null;
+        List<String> selectFieldName = new ArrayList<>();
+        if (where != null) {
+            whereSql = where.build(whereArgs, context);
+            List<Condition> selectFields = where.getSelectFields();
+            if (CollUtil.isNotEmpty(selectFields)) {
+                selectFieldName = selectFields.stream()
+                        .filter(e -> StrUtil.isNotBlank(e.getColumn()))
+                        .map(e -> fn(e.getColumn()))
+                        .toList();
+            }
+
+            String last = where.getLast();
+            context.setLastSql(last);
+        }
+        context.setWhereSql(whereSql);
+        context.setSelectFields(selectFieldName);
+        context.setWhereArgs(whereArgs);
+    }
+
+
+    /**
+     * 转义
+     *
+     * @author bokun.li
+     * @date 2025/9/4
+     */
+    public String escapeCn(String name, DialectV2 dialectV2, boolean forceEscape) {
+        if (forceEscape) {
+            return dialectV2.forceEscape(name);
+        } else {
+            return dialectV2.escape(name);
+        }
+    }
+
+}
