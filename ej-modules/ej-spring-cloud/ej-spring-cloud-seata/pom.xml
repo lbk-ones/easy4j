@@ -11,6 +11,10 @@
 
     <artifactId>ej-spring-cloud-seata</artifactId>
 
+    <name>ej-spring-cloud-seata</name>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra spring-cloud-seata</description>
+
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>

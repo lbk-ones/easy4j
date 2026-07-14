@@ -10,7 +10,9 @@
     </parent>
 
     <artifactId>ej-pure</artifactId>
-
+    <name>ej-pure</name>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra pure</description>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>

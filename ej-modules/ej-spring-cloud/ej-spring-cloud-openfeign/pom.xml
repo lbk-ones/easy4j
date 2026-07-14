@@ -10,7 +10,9 @@
     </parent>
 
     <artifactId>ej-spring-cloud-openfeign</artifactId>
-
+    <name>ej-spring-cloud-openfeign</name>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra spring-cloud-openfeign</description>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>

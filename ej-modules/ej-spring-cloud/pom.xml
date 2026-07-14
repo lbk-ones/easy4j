@@ -11,6 +11,9 @@
 
     <packaging>pom</packaging>
     <artifactId>ej-spring-cloud</artifactId>
+    <name>ej-spring-cloud</name>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra spring-cloud</description>
 
     <modules>
         <module>ej-spring-cloud-openfeign</module>

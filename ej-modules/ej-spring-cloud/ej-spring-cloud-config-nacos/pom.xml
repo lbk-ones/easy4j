@@ -10,6 +10,9 @@
     </parent>
 
     <artifactId>ej-spring-cloud-config-nacos</artifactId>
+    <name>ej-spring-cloud-config-nacos</name>
+    <url>https://github.com/lbk-ones/easy4j</url>
+    <description>easy4j infra spring-cloud-config-nacos</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
