@@ -18,6 +18,7 @@
         <module>ej-spring-cloud-config-nacos</module>
         <module>ej-spring-cloud-registry-nacos</module>
         <module>ej-spring-cloud-seata</module>
+        <module>ej-spring-cloud-pure-nacos</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

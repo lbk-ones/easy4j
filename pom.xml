@@ -16,7 +16,7 @@
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j parent pom</description>
     <properties>
-        <revision>2.1.2-SNAPSHOT</revision>
+        <revision>2.1.2</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
