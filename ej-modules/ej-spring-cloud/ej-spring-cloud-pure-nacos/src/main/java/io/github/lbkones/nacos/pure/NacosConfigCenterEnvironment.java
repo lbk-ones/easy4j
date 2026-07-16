@@ -1,6 +1,7 @@
 package io.github.lbkones.nacos.pure;
 
 import cn.hutool.core.thread.NamedThreadFactory;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
@@ -29,11 +30,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+/**
+ * 不兼容easy4j体系，只兼容标准参数
+ */
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER + 1)
 public class NacosConfigCenterEnvironment implements EnvironmentPostProcessor {
 
-    public static ConfigService configService;
-    private final Map<String, Object> lastKeyMap = new ConcurrentHashMap<>();
+    private static ConfigService configService;
+    private static final Map<String, Object> lastKeyMap = new ConcurrentHashMap<>();
+    private static boolean hasStarted = false;
 
     private Properties buildNacosProperties(NacosStandProperties parse) {
         Properties properties = new Properties();
@@ -121,52 +126,51 @@ public class NacosConfigCenterEnvironment implements EnvironmentPostProcessor {
                 PropertySource<?> propertySource = SCPropertySourceUtils.autoParse(resourceName, config);
                 MutablePropertySources propertySources = environment.getPropertySources();
                 propertySources.addLast(propertySource);
-
                 setLastKey(propertySource, null);
 
                 log(false, "begin listener " + resourceName);
-                configService.addListener(dataId_, group, new Listener() {
+                // 决定是否开启参数刷新
+                String refreshEnabled = StrUtil.blankToDefault(dataId.getQueryMap().get("refreshEnabled"), String.valueOf(parse.isCloudRefreshEnabled()));
+                if (Objects.equals(refreshEnabled, "true")) {
+                    configService.addListener(dataId_, group, new Listener() {
 
-
-                    @Override
-                    public Executor getExecutor() {
-                        return Executors.newSingleThreadExecutor(new NamedThreadFactory("ncl-", true));
-                    }
-
-                    @Override
-                    public void receiveConfigInfo(String configInfo) {
-                        log(false, "nacos client receive config ===> " + configInfo);
-                        String trim = configInfo.trim();
-                        if (!StringUtils.hasText(trim)) return;
-
-                        Set<String> keys = new HashSet<>();
-                        PropertySource<?> propertySource = SCPropertySourceUtils.autoParse(resourceName, configInfo);
-                        MutablePropertySources propertySources = environment.getPropertySources();
-                        if (propertySources.contains(resourceName)) {
-                            propertySources.replace(resourceName, propertySource);
-                            log(false, "nacos environment has been replace");
-                        } else {
-                            propertySources.addLast(propertySource);
-                            log(false, "nacos environment has been add last");
+                        @Override
+                        public Executor getExecutor() {
+                            return Executors.newSingleThreadExecutor(new NamedThreadFactory("ncl-", true));
                         }
-                        setLastKey(propertySource, keys);
-                        CloudPropertiesRefresh cloudPropertiesRefresh = CloudPropertiesRefreshHolder.cloudPropertiesRefresh;
-                        if (cloudPropertiesRefresh != null) {
-                            log(false, "begin notify spring cloud context ,the keys size is " + keys.size());
-                            long beginTime = System.currentTimeMillis();
-                            cloudPropertiesRefresh.sendRefreshEvent(keys);
-                            long endTime = System.currentTimeMillis();
-                            log(false, "notify cost " + (endTime - beginTime) + "ms");
+
+                        @Override
+                        public void receiveConfigInfo(String configInfo) {
+                            log(false, "nacos client receive config ===> " + configInfo);
+                            String trim = configInfo.trim();
+                            if (!StringUtils.hasText(trim)) return;
+                            Set<String> keys = new HashSet<>();
+                            PropertySource<?> propertySource = SCPropertySourceUtils.autoParse(resourceName, configInfo);
+                            setLastKey(propertySource, keys);
+                            CloudPropertiesRefresh cloudPropertiesRefresh = CloudPropertiesRefreshHolder.cloudPropertiesRefresh;
+                            if (cloudPropertiesRefresh != null) {
+                                log(false, "begin notify spring cloud context ,the keys size is " + keys.size());
+                                long beginTime = System.currentTimeMillis();
+                                cloudPropertiesRefresh.sendRefreshEvent(keys);
+                                long endTime = System.currentTimeMillis();
+                                log(false, "notify cost " + (endTime - beginTime) + "ms");
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                hasStarted = true;
             }
             if (exit) {
                 log(true, "Please add the configuration in the nacos configuration center，");
                 System.exit(1);
             }
-        } catch (NacosException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            // prevent infinite loops
+            if (!hasStarted) {
+                throw new RuntimeException(e);
+            } else {
+                log(true, "appear exception " + e.getMessage());
+            }
         }
 
 

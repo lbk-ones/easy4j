@@ -24,12 +24,16 @@ public class NacosStandProperties {
     public String nacosConfigGroup;
     public String nacosConfigPassword;
     public String nacosConfigServerAddr;
+    public boolean cloudRefreshEnabled;
     private List<DataId> dataIds;
+
+
 
     @Data
     public static class DataId {
         private String dataId;
         private String group;
+        private Map<String, String> queryMap = new HashMap<>();
     }
 
     public static String blankToDefault(String text, String dtxt) {
@@ -73,7 +77,8 @@ public class NacosStandProperties {
         String nacosConfigUsername = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_USERNAME);
         String nacosConfigPassword = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_PASSWORD);
         String nacosConfigGroup = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_GROUP);
-        boolean configEnabled = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_ENABLED, boolean.class, true);
+        boolean cloudRefreshEnabled = environment.getProperty(NacosConfigConstants.CLOUD_REFRESHED,Boolean.class,true);
+        boolean configEnabled = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_ENABLED, Boolean.class, true);
         nacosConfigGroup = blankToDefault(nacosConfigGroup, "DEFAULT_GROUP");
         String springConfigImport = environment.getProperty(NacosConfigConstants.SPRING_CONFIG_IMPORT);
         String nacosConfigServerAddr = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_SERVER_ADDR);
@@ -110,6 +115,7 @@ public class NacosStandProperties {
                 DataId dataId1 = new DataId();
                 dataId1.setGroup(StrUtil.blankToDefault(group, nacosConfigGroup));
                 dataId1.setDataId(dataIdRes);
+                dataId1.setQueryMap(queryMap);
                 dataIds_.add(dataId1);
             }
             if (dataIds_.isEmpty()) {
@@ -119,6 +125,7 @@ public class NacosStandProperties {
             defaultDataId(prefix + applicationName + suffix, configFileExtension, nacosConfigGroup, dataIds_);
         }
         NacosStandProperties nacosStandProperties = new NacosStandProperties();
+        nacosStandProperties.setCloudRefreshEnabled(cloudRefreshEnabled);
         nacosStandProperties.setConfigEnabled(configEnabled);
         nacosStandProperties.setNacosConfigFileExtension(configFileExtension);
         nacosStandProperties.setApplicationName(applicationName);

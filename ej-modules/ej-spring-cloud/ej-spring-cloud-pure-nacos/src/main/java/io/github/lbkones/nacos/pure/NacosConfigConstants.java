@@ -17,6 +17,7 @@ public class NacosConfigConstants {
     public static final String NACOS_SERVER_ADDR = "spring.cloud.nacos.server-addr";
     public static final String NACOS_USERNAME = "spring.cloud.nacos.username";
     public static final String NACOS_PASSWORD = "spring.cloud.nacos.password";
+    public static final String CLOUD_REFRESHED = "spring.cloud.refresh.enabled";
 
     /**
      * Nacos 配置管理配置

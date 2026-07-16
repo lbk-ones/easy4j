@@ -1,1 +1,5 @@
-# 这个用来升级已有项目nacos版本
+- 这个主要用来在不动spring-cloud大版本的情况下升级nacos-client版本，完成对接高版本nacos-server的目的
+- 从配置中心获取启动参数 
+- 兼容bootstrap模式
+- 监听配置中心变更
+- 动态刷新上下文 @RefreshScope的配置也会同步更新生效

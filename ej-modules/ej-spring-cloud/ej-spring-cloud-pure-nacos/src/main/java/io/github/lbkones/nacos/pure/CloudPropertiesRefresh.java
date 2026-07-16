@@ -1,21 +1,23 @@
 package io.github.lbkones.nacos.pure;
 
+import cn.hutool.core.util.ReflectUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
+@Slf4j
 public class CloudPropertiesRefresh implements ApplicationContextAware {
     private static boolean hasSpringCloudEnvironment = false;
 
-    private static volatile Constructor<?> constructor = null;
+
+    private static Class<?> aClass;
 
     static {
         try {
-            CloudPropertiesRefresh.class.getClassLoader().loadClass("org.springframework.cloud.context.environment.EnvironmentChangeEvent");
+            aClass = CloudPropertiesRefresh.class.getClassLoader().loadClass("org.springframework.cloud.context.refresh.ContextRefresher");
             hasSpringCloudEnvironment = true;
         } catch (ClassNotFoundException ignored) {
         }
@@ -29,30 +31,17 @@ public class CloudPropertiesRefresh implements ApplicationContextAware {
     }
 
     public void sendRefreshEvent(Set<String> keys) {
+
         if (keys == null || keys.isEmpty()) return;
         if (hasSpringCloudEnvironment) {
-            if (constructor == null) {
-                synchronized (CloudPropertiesRefresh.class) {
-                    if (constructor == null) {
-                        try {
-                            Class<?> aClass = Class.forName("org.springframework.cloud.context.environment.EnvironmentChangeEvent");
-                            constructor = aClass.getConstructor(Set.class);
-                        } catch (ClassNotFoundException | NoSuchMethodException ignored) {
-                        }
-                    }
-                }
-            }
             try {
-                if (constructor == null) return;
-                Object o = constructor.newInstance(keys);
-                applicationContext.publishEvent(o);
-            } catch (InvocationTargetException |
-                     InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                log.info("-------------begin refresh keys------------- {},{}", keys,(aClass!=null?aClass.getName():""));
+                Object bean = applicationContext.getBean(aClass);
+                Object refresh = ReflectUtil.invoke(bean, "refresh");
+                log.info("-------------already refresh keys------------- {}", refresh);
+            } catch (Exception ignored) {
             }
-
         }
-
     }
 
 }

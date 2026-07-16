@@ -32,6 +32,7 @@ import java.util.Set;
 
 /**
  * 配置中心初始化 紧随 Easy4jEnvironmentFirst 之后执行
+ * 兼容springcloud
  */
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 2)
 public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
@@ -39,6 +40,7 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
     public static final String EASY4j_ENV_NAME = "easy4j-config-environment";
 
     public static final String E_NAME_2 = "easy4j-cc-";
+    private static final Map<CcSpi,String> hasStart = Maps.newConcurrentMap();
 
     @Override
     public String getName() {
@@ -58,8 +60,10 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
         // 如果没有使用sca架构的话这里只会执行一次
         // 从这里加载远程配置文件
         // 不允许二次执行
-        if (INIT_IS) return;
-        INIT_IS = true;
+        if (!SpringCloudContextRefresher.hasSpringCloudEnvironment) {
+            if (INIT_IS) return;
+            INIT_IS = true;
+        }
         CcSpi ccSpi = CcSpiFactory.get();
         if (!StrUtil.equals(DefaultCcSpi.DEFAULT_SPI, ccSpi.getName())) {
             System.out.println(SysLog.compact("begin load config from config center"));
@@ -76,44 +80,49 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                     System.out.println(SysLog.compact(key + "=" + configEnvironment.resolvePlaceholders(value)));
                 }
             }
-
-            try {
-                ccSpi.start();
-            } catch (Exception e) {
-                System.err.println(SysLog.compact("config center start error " + e.getMessage()));
-                e.printStackTrace();
-                System.exit(1);
-                return;
-            }
-
-
-            ccSpi.setBootParameters(map);
-
-            ccSpi.subscribe((key, properties) -> {
-                if (StrUtil.isBlank(key) || properties == null || properties.isEmpty()) return;
-                ConfigurableEnvironment environment1 = (ConfigurableEnvironment) Easy4j.environment;
-                MutablePropertySources propertySources = environment1.getPropertySources();
-                String s = E_NAME_2 + key;
-                boolean contains = propertySources.contains(s);
-                if (contains) {
-                    Map<String, Object> mapProperties = Maps.newHashMap();
-                    for (String keyStr : properties.keySet()) {
-                        Object vp = properties.get(keyStr);
-                        if (null != vp) {
-                            String value = environment.resolvePlaceholders(vp.toString());
-                            mapProperties.put(keyStr, value);
+            // 只进行一次启动和监听
+            String b = hasStart.get(ccSpi);
+            boolean first = b == null;
+            if(first){
+                hasStart.put(ccSpi,"1");
+                try {
+                    ccSpi.start();
+                    ccSpi.subscribe((key, properties) -> {
+                        if (StrUtil.isBlank(key) || properties == null || properties.isEmpty()) return;
+                        boolean refresh = SpringCloudContextRefresher.refresh();
+                        // 没有springcloud环境需要手动刷新
+                        if(!refresh){
+                            ConfigurableEnvironment environment1 = (ConfigurableEnvironment) Easy4j.environment;
+                            MutablePropertySources propertySources = environment1.getPropertySources();
+                            String s = E_NAME_2 + key;
+                            boolean contains = propertySources.contains(s);
+                            if (contains) {
+                                Map<String, Object> mapProperties = Maps.newHashMap();
+                                for (String keyStr : properties.keySet()) {
+                                    Object vp = properties.get(keyStr);
+                                    if (null != vp) {
+                                        String value = environment.resolvePlaceholders(vp.toString());
+                                        mapProperties.put(keyStr, value);
+                                    }
+                                }
+                                // fix: 这里也需要转换 不然和启动的时候参数对应不上
+                                BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
+                                bootStrapSpecialVsResolve.handler(mapProperties, null);
+                                MapPropertySource mapPropertySource = new MapPropertySource(s, properties);
+                                propertySources.replace(s, mapPropertySource);
+                            }
                         }
-                    }
-                    // fix: 这里也需要转换 不然和启动的时候参数对应不上
-                    BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
-                    bootStrapSpecialVsResolve.handler(mapProperties, null);
-                    MapPropertySource mapPropertySource = new MapPropertySource(s, properties);
-                    propertySources.replace(s, mapPropertySource);
+                    });
+                    Runtime.getRuntime().addShutdownHook(new Thread(ccSpi::destroy));
+                } catch (Exception e) {
+                    System.err.println(SysLog.compact("config center start error " + e.getMessage()));
+                    e.printStackTrace();
+                    System.exit(1);
+                    return;
                 }
-            });
-
-            Runtime.getRuntime().addShutdownHook(new Thread(ccSpi::destroy));
-
+            }
+            ccSpi.setBootParameters(map);
+            // 从远程真正获取
             Map<String, Properties> config = ccSpi.getConfig();
             if (config != null && !config.isEmpty()) {
                 Set<String> keySet = config.keySet();
@@ -122,7 +131,7 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                     String key_ = E_NAME_2 + key;
                     Properties bootConfig = config.get(key);
                     if (bootConfig != null && !bootConfig.isEmpty()) {
-                        System.out.println(SysLog.compact("from config center ["+key+"] read "+bootConfig.keySet().size()+" keys"));
+                        System.out.println(SysLog.compact("from config center ["+key+"] read "+ bootConfig.size()+" keys"));
                         Map<String, Object> mapProperties = Maps.newHashMap();
                         for (Object keyStr : bootConfig.keySet()) {
                             String keyS = keyStr.toString();
@@ -145,8 +154,10 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                     }
                 }
             }else{
-                System.err.println(SysLog.compact("not found keys from config center，please check config!"));
-                System.exit(1);
+                if(first){
+                    System.err.println(SysLog.compact("not found keys from config center，please check config!"));
+                    System.exit(1);
+                }
             }
         }
     }
