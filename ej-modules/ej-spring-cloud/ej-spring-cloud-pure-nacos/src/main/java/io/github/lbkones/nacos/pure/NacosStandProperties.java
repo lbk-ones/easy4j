@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
  */
 @Data
 public class NacosStandProperties {
+    private static String prefix;
+    private static String suffix;
     private boolean configEnabled;
     private String applicationName;
     private String nacosConfigFileExtension;
@@ -26,7 +28,6 @@ public class NacosStandProperties {
     public String nacosConfigServerAddr;
     public boolean cloudRefreshEnabled;
     private List<DataId> dataIds;
-
 
 
     @Data
@@ -62,12 +63,16 @@ public class NacosStandProperties {
     }
 
     public static NacosStandProperties parse(Environment environment, SpringApplication application) {
+        // fix: when context fresh, maybe the mainApplicationClass is null
         Class<?> mainApplicationClass = application.getMainApplicationClass();
-        boolean annotationPresent = mainApplicationClass.isAnnotationPresent(EnableNacosConfigCenter.class);
-        if (!annotationPresent) return null;
-        EnableNacosConfigCenter annotation = mainApplicationClass.getAnnotation(EnableNacosConfigCenter.class);
-        String prefix = environment.resolvePlaceholders(annotation.dataIdPrefix());
-        String suffix = environment.resolvePlaceholders(annotation.dataIdSuffix());
+        if (mainApplicationClass != null) {
+            boolean annotationPresent = mainApplicationClass.isAnnotationPresent(EnableNacosConfigCenter.class);
+            if (!annotationPresent) return null;
+            EnableNacosConfigCenter annotation = mainApplicationClass.getAnnotation(EnableNacosConfigCenter.class);
+            prefix = environment.resolvePlaceholders(annotation.dataIdPrefix());
+            suffix = environment.resolvePlaceholders(annotation.dataIdSuffix());
+        }
+
         String applicationName = environment.getProperty(NacosConfigConstants.SPRING_APPLICATION_NAME);
         String addr = environment.getProperty(NacosConfigConstants.NACOS_SERVER_ADDR);
         String userName = environment.getProperty(NacosConfigConstants.NACOS_USERNAME);
@@ -77,7 +82,7 @@ public class NacosStandProperties {
         String nacosConfigUsername = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_USERNAME);
         String nacosConfigPassword = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_PASSWORD);
         String nacosConfigGroup = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_GROUP);
-        boolean cloudRefreshEnabled = environment.getProperty(NacosConfigConstants.CLOUD_REFRESHED,Boolean.class,true);
+        boolean cloudRefreshEnabled = environment.getProperty(NacosConfigConstants.CLOUD_REFRESHED, Boolean.class, true);
         boolean configEnabled = environment.getProperty(NacosConfigConstants.NACOS_CONFIG_ENABLED, Boolean.class, true);
         nacosConfigGroup = blankToDefault(nacosConfigGroup, "DEFAULT_GROUP");
         String springConfigImport = environment.getProperty(NacosConfigConstants.SPRING_CONFIG_IMPORT);

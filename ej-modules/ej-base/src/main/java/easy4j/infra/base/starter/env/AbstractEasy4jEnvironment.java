@@ -164,10 +164,22 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                 Resource resource = getResourceFromName(name);
                 if (null != resource && resource.exists() && null != loader) {
                     try {
-                        PropertySource<?> propertySource = loader.load(name, resource).get(0);
-                        environment.getPropertySources().addLast(propertySource);
-                        getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
-                        isPost = true;
+                        List<PropertySource<?>> load = loader.load(name, resource);
+                        PropertySource<?> propertySource = null;
+                        if (load.size() == 1) {
+                            propertySource = load.get(0);
+                        } else if (load.size() > 1) {
+                            CompositePropertySource compositePropertySource = new CompositePropertySource(name);
+                            for (PropertySource<?> source : load) {
+                                compositePropertySource.addPropertySource(source);
+                            }
+                            propertySource = compositePropertySource;
+                        }
+                        if (propertySource != null) {
+                            environment.getPropertySources().addLast(propertySource);
+                            getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
+                            isPost = true;
+                        }
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to load custom YAML configuration", e);
                     }
@@ -211,12 +223,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         if (propertySource == null) {
             // 处理 spring.profiles.active
             String property = getInitParameterValue(SysConstant.SPRING_PROFILE_ACTIVE);
-            if(StrUtil.isNotBlank(property)){
+            if (StrUtil.isNotBlank(property)) {
                 list.add(property);
             }
             // 处理 spring.profiles.include
-            String property2 =getInitParameterValue(SysConstant.SPRING_PROFILE_INCLUDES);
-            if(StrUtil.isNotBlank(property2)){
+            String property2 = getInitParameterValue(SysConstant.SPRING_PROFILE_INCLUDES);
+            if (StrUtil.isNotBlank(property2)) {
                 list.add(property2);
             }
         } else {
@@ -237,15 +249,17 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
     /**
      * 从 命令行参数、-D、env  中拿取
      * 优先级 命令行参数  >  -D > env
+     *
      * @param name 参数名称
      */
-    public String getInitParameterValue(String name){
+    public String getInitParameterValue(String name) {
         Map<String, String> argsMap = Easy4j.getSpringInputArgsMap();
         String var1 = argsMap.get(name);
         String var2 = System.getProperty(name);
         String var3 = System.getenv(name);
         return StrUtil.firstNonBlank(var1, var2, var3);
     }
+
     /**
      * 不借助springboot提前加载配置文件
      * 这个时候springboot 参数还没开始初始化 在这里一股脑把所有easy4j 开头的参数全部扔进去 且优先级最高
@@ -274,11 +288,11 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         sbcl.loadConfigs(configLocation, additionalLocation, configImport);
         sbcl.printLoadSummary();
         LinkedList<PropertySource<?>> locationProperties = sbcl.getPropertyResolvers();
-        ListTs.addAll(allProperties,locationProperties);
+        ListTs.addAll(allProperties, locationProperties);
 
         // get from jvm env
         Set<String> envProfileActive = getProfileNameList(null);
-        System.out.println(SysLog.compact("env profile active "+String.join(SP.COMMA,envProfileActive)));
+        System.out.println(SysLog.compact("env profile active " + String.join(SP.COMMA, envProfileActive)));
 
         String fileNameInit = "application";
         String originFileNameInit = fileNameInit;
@@ -286,7 +300,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         // load default properties
         PropertySource<?> defaultProperties = loadPropertySource(fileNameInit);
         if (defaultProperties != null) {
-            System.out.println(SysLog.compact("find config file："+defaultProperties.getName()));
+            System.out.println(SysLog.compact("find config file：" + defaultProperties.getName()));
             allProperties.add(defaultProperties);
             defaultProfileNameList = getProfileNameList(defaultProperties);
         }
@@ -318,7 +332,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             for (String s1 : defaultProfileNameList) {
                 PropertySource<?> loadPropertySource2 = loadPropertySource(originFileNameInit + StringPool.DASH + s1);
                 if (loadPropertySource2 != null) {
-                    System.out.println(SysLog.compact("find default config file："+defaultProperties.getName()));
+                    System.out.println(SysLog.compact("find default config file：" + defaultProperties.getName()));
 
                     allProperties.add(loadPropertySource2);
                 }
@@ -336,11 +350,11 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                 String key = object.toString();
                 String v = properties.getProperty(key);
                 String prefix = SysConstant.PARAM_PREFIX + SP.DOT;
-                if(StrUtil.startWith(key,prefix) && ObjectUtil.isEmpty(mapProperties.get(key))){
+                if (StrUtil.startWith(key, prefix) && ObjectUtil.isEmpty(mapProperties.get(key))) {
                     String iv = getInitParameterValue(key);
-                    if(StrUtil.isNotBlank(iv)){
+                    if (StrUtil.isNotBlank(iv)) {
                         // fix: need resolve placeholders
-                        mapProperties.put(key,configEnvironment.resolvePlaceholders(iv));
+                        mapProperties.put(key, configEnvironment.resolvePlaceholders(iv));
                         return;
                     }
                     // fix: need resolve placeholders
@@ -353,7 +367,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         if (!mapProperties.isEmpty()) {
             BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
             bootStrapSpecialVsResolve.handler(mapProperties, null);
-            System.out.println(SysLog.compact("final "+mapProperties.size()+" properties will be inject env"));
+            System.out.println(SysLog.compact("final " + mapProperties.size() + " properties will be inject env"));
             // fix: if enable redis server.port...attrs confusion
             if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES)) {
                 propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES, new MapPropertySource(FIRST_ENV_NAME, mapProperties));
@@ -370,22 +384,22 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
 
         try {
             String jarDir = JarPathUtil.getJarDirectory();
-            if(StrUtil.isNotBlank(jarDir)){
+            if (StrUtil.isNotBlank(jarDir)) {
                 // 先检查当前目录 在检查 config目录
                 for (String path_ : ListTs.asList("", "config")) {
                     // 检查 properties yml yaml 文件
                     for (String suffix : ListTs.asList(SP.PROPERTIES_SUFFIX, SP.YML_SUFFIX, SP.YAML_SUFFIX)) {
                         String fileName = fileNameInit + suffix;
                         Path path = null;
-                        if(StrUtil.isEmpty(path_)){
+                        if (StrUtil.isEmpty(path_)) {
                             path = Paths.get(jarDir, fileName);
-                        }else{
-                            path = Paths.get(jarDir,path_, fileName);
+                        } else {
+                            path = Paths.get(jarDir, path_, fileName);
                         }
                         File file = new File(path.toUri());
                         String filePath = file.getAbsolutePath();
                         if (file.exists()) {
-                            System.out.println(SysLog.compact("external configuration file found "+String.join(File.separator,ListTs.asList(path_,fileName))));
+                            System.out.println(SysLog.compact("external configuration file found " + String.join(File.separator, ListTs.asList(path_, fileName))));
                             FileSystemResource fResource = new FileSystemResource(file);
                             if (SP.PROPERTIES_SUFFIX.equals(suffix)) {
                                 Properties properties = PropertiesLoaderUtils.loadProperties(fResource);
@@ -409,7 +423,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             ClassPathResource resource = new ClassPathResource(defaultFileNameWIthSuffix);
             if (resource.exists()) {
                 Properties properties = PropertiesLoaderUtils.loadProperties(resource);
-                loadPropertySource = new PropertiesPropertySource("classpath:"+defaultFileNameWIthSuffix, properties);
+                loadPropertySource = new PropertiesPropertySource("classpath:" + defaultFileNameWIthSuffix, properties);
                 // propertySources.addLast(new PropertiesPropertySource("sca-early-config", properties));
             } else {
                 String name = fileNameInit + ".yml";
@@ -425,7 +439,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                     }
                 }
                 YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-                loadPropertySource = loader.load("classpath:"+name, resource1).get(0);
+                loadPropertySource = loader.load("classpath:" + name, resource1).get(0);
             }
         } catch (IOException e) {
             throw new RuntimeException("加载 配置文件 失败", e);
@@ -445,10 +459,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             return true;
         } else {
             ClassLoader classLoader = this.getClass().getClassLoader();
-            try{
+            try {
                 classLoader.loadClass("io.github.lbkones.config.nacos.ScaNacosEnvironmentFirst");
                 return true;
-            }catch (Exception ignored){
+            } catch (Exception ignored) {
 
             }
             try {
