@@ -33,7 +33,7 @@ public interface IDBAccess {
      * @param <T>    泛型
      * @return 写入后的数据
      */
-    <T> T save(Iterable<T> params, Class<T> clazz);
+    <T> List<T> save(Iterable<T> params, Class<T> clazz);
 
     /**
      * 根据条件删除

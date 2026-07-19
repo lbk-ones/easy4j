@@ -469,13 +469,25 @@ public class ListTs {
         return ReflectUtil.newInstance(clazz);
     }
 
-    public static <T> T get(List<T> reqs, int i) {
-        try {
-            if (CollUtil.isNotEmpty(reqs)) {
-                return reqs.get(i);
-            }
-        } catch (Exception ignored) {
 
+    public static <T> T get(Iterable<T> collection, int index) {
+
+        if (CollUtil.isNotEmpty(collection)) {
+            Iterator<T> iterator = collection.iterator();
+            int i = 0;
+            if (collection instanceof Collection<T> col) {
+                int size = col.size();
+                if (size == 0 || size - 1 < index) {
+                    return null;
+                }
+            }
+            while (iterator.hasNext()) {
+                T next = iterator.next();
+                if (i == index) {
+                    return next;
+                }
+                i++;
+            }
         }
         return null;
     }

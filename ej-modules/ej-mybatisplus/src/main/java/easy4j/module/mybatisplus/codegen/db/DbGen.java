@@ -23,7 +23,7 @@ import easy4j.module.mybatisplus.codegen.servlet.PreviewRes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.ibatis.type.JdbcType;
+
 import org.springframework.jdbc.support.JdbcUtils;
 
 import java.io.File;

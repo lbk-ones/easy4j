@@ -18,17 +18,15 @@ public class UpdateSql implements ISql {
 
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
-        String schema = runtimeContext.getSchema();
-        String tableName = runtimeContext.getTableName();
         String whereSql = runtimeContext.getWhereSql();
-        List<AccessField> updateFields = runtimeContext.getUpdateFields();
+        List<AccessField> updateFields = runtimeContext.getColumnInfoList(runtimeContext.getUpdateFields());
         String lastSql = runtimeContext.getLastSql();
         String s = "update " +
-                ListTs.join(SP.DOT, ListTs.asList(schema, tableName)) +
+                runtimeContext.getDotTableName() +
                 SP.SPACE +
                 "set" +
                 SP.SPACE +
-                ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getColumnName() + " = ? ").toList());
+                ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getEscapeColumnName() + " = ? ").toList());
         if (StrUtil.isNotBlank(whereSql)) {
             s += SP.SPACE +
                     "where" +

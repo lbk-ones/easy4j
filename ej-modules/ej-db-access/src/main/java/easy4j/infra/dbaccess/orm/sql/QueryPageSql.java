@@ -4,18 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 
 import java.util.List;
 
 // select * from table where xxx
-public class QuerySql implements ISql {
+public class QueryPageSql implements ISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
-        return runtimeContext.getOperateType() == OperateType.SELECT;
+        return runtimeContext.getOperateType() == OperateType.SELECT_PAGE;
     }
 
     @Override
@@ -44,6 +43,6 @@ public class QuerySql implements ISql {
         if (StrUtil.isNotBlank(lastSql)) {
             TEMP += SP.SPACE + lastSql;
         }
-        return TEMP.trim();
+        return runtimeContext.getDialectV2().getPageSql(TEMP.trim(), runtimeContext.getPage());
     }
 }

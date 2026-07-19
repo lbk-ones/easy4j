@@ -47,4 +47,6 @@ public class Access<T> {
 
     private boolean resultFieldToCame;
 
+    private boolean returnMap = false;
+
 }

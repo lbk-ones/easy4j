@@ -11,6 +11,8 @@ public class AccessField {
     private Field field;
     // 字段名称
     private String columnName;
+    // 转义之后的字段名称
+    private String escapeColumnName;
     // 字段值
     private Object columnValue;
     // 数据行数

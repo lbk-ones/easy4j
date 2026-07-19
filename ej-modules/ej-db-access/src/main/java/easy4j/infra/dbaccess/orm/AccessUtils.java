@@ -20,6 +20,8 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.runner.SqlRunner;
+import easy4j.infra.dbaccess.orm.sql.SqlFactory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -34,6 +36,7 @@ import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -207,7 +210,7 @@ public class AccessUtils implements Serializable {
         return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class) || skip;
     }
 
-    public <T> RuntimeContext<T> parse(Access<T> access) {
+    public <T> RuntimeContext<T> toContext(Access<T> access) {
         Class<T> clazz = access.getClazz();
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
@@ -219,29 +222,37 @@ public class AccessUtils implements Serializable {
         if (clazz != null) {
             fields = ReflectUtil.getFields(clazz);
         }
-        List<AccessField> fieldList = new ArrayList<>();
-        List<AccessField> updateList = new ArrayList<>();
+        // obtain datasource connection
+        Connection connection = getConnection();
+        DialectV2 dialectV2 = DialectFactory.get(connection);
+        String dbType = dialectV2.getDbType();
+        List<AccessField> columnInfoList = new ArrayList<>();
+        List<AccessField> updateList = new LinkedList<>();
+        // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
+        List<AccessField> insertList = new LinkedList<>();
         for (Field field : fields) {
             if (skipColumn(field)) continue;
             boolean pk = isPk(field);
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
             int index = 0;
-            if (CollUtil.isEmpty(p)) {
-                AccessField accessField = new AccessField();
-                accessField.setColumnName(columnField);
-                accessField.setColumnValue(null);
-                accessField.setField(field);
-                accessField.setGroup(index);
-                accessField.setPkIs(pk);
-                accessField.setAutoIncrementIs(isAutoIncrement);
-                fieldList.add(accessField);
-            }
+
+            AccessField columnInfo = new AccessField();
+            columnInfo.setColumnName(columnField);
+            columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
+            columnInfo.setColumnValue(null);
+            columnInfo.setField(field);
+            columnInfo.setGroup(index);
+            columnInfo.setPkIs(pk);
+            columnInfo.setAutoIncrementIs(isAutoIncrement);
+            columnInfoList.add(columnInfo);
+
             for (T t : p) {
                 Object fieldValue = ReflectUtil.getFieldValue(t, field);
                 AccessField accessField = new AccessField();
                 accessField.setField(field);
                 accessField.setColumnName(columnField);
+                accessField.setEscapeColumnName(dialectV2.escape(columnField));
                 accessField.setColumnValue(fieldValue);
                 accessField.setGroup(index);
                 accessField.setPkIs(pk);
@@ -252,16 +263,21 @@ public class AccessUtils implements Serializable {
                     } else {
                         updateList.add(accessField);
                     }
+                } else if (operateType == OperateType.INSERT) {
+                    if (isAutoIncrement) {
+                        Object columnValue = accessField.getColumnValue();
+                        if (!ObjectUtil.isEmpty(columnValue)) {
+                            insertList.add(accessField);
+                        }
+                    } else {
+                        insertList.add(accessField);
+                    }
                 }
-                fieldList.add(accessField);
                 index++;
             }
         }
 
-        // obtain datasource connection
-        Connection connection = getConnection();
-        DialectV2 dialectV2 = DialectFactory.get(connection);
-        String dbType = dialectV2.getDbType();
+
         return new RuntimeContext<T>()
                 .setSql(access.getSql())
                 .setPage(access.getPage())
@@ -269,14 +285,16 @@ public class AccessUtils implements Serializable {
                 .setAccessUtils(this)
                 .setClazz(clazz)
                 .setDbType(dbType)
+                .setReturnMap(access.isReturnMap())
                 .setParams(p)
                 .setConnection(connection)
                 .setOperateType(operateType)
                 .setUpdateFields(updateList)
-                .setColumns(fieldList)
+                .setColumnInfoList(columnInfoList)
+                .setInsertFields(insertList)
                 .setDialectV2(dialectV2)
-                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName()))
-                .setSchema(StrUtil.blankToDefault(getSchema(clazz), access.getSchema()));
+                .setTableName(dialectV2.escape(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName())))
+                .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), access.getSchema())));
 
     }
 
@@ -306,7 +324,20 @@ public class AccessUtils implements Serializable {
         }
         context.setWhereSql(whereSql);
         context.setSelectFields(selectFieldName);
+        DialectV2 dialectV2 = context.getDialectV2();
+        context.setEscapeSelectFields(selectFieldName.stream().map(dialectV2::escape).toList());
         context.setWhereArgs(whereArgs);
+    }
+
+    // 解析sql并执行
+    public <T> void parseSql(RuntimeContext<T> context) {
+        SqlFactory.parse(context);
+        String sql = context.getSql();
+        if(StrUtil.isBlank(sql)){
+            throw new AccessException("sql is not be empty!");
+        }
+        SqlRunner sqlRunner = new SqlRunner();
+        sqlRunner.run(context);
     }
 
 
