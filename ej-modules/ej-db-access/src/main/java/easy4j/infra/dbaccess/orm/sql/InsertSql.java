@@ -34,10 +34,10 @@ public class InsertSql implements ISql {
             sql += "(" + ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields) + ")";
         }
         sql += " values ";
-        Map<Integer, List<AccessField>> integerListMap = ListTs.groupBy(insertFields1, AccessField::getGroup);
+        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields1, e->String.valueOf(e.getGroup()));
         List<String> valueList = new ArrayList<>();
 
-        for (Map.Entry<Integer, List<AccessField>> integerListEntry : integerListMap.entrySet()) {
+        for (Map.Entry<String, List<AccessField>> integerListEntry : integerListMap.entrySet()) {
             List<AccessField> value = integerListEntry.getValue();
             String te = "(";
             te += value.stream().map(e -> SP.QUESTION_MARK).collect(Collectors.joining(SP.COMMA));

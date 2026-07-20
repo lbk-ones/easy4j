@@ -124,19 +124,24 @@ public class RuntimeContext<T> {
 
     public List<Object> getArgs() {
         List<Object> args = new LinkedList<>();
-        if (operateType == OperateType.SELECT) {
-            ListTs.addAll(args, whereArgs);
-        } else if (operateType == OperateType.SELECT_COUNT) {
-            ListTs.addAll(args, whereArgs);
-        } else if (operateType == OperateType.SELECT_EXIST) {
-            ListTs.addAll(args, whereArgs);
-        } else if (operateType == OperateType.SELECT_PAGE) {
+        if (
+                operateType == OperateType.SELECT ||
+                operateType == OperateType.SELECT_COUNT ||
+                operateType == OperateType.SELECT_EXIST ||
+                operateType == OperateType.SELECT_PAGE
+        ) {
             ListTs.addAll(args, whereArgs);
         } else if (operateType == OperateType.INSERT) {
-            for (AccessField insertField : insertFields) {
-                ListTs.add(args, insertField.getColumnValue());
+            Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields, e -> String.valueOf(e.getGroup()));
+            Set<Map.Entry<String, List<AccessField>>> entries = integerListMap.entrySet();
+            for (Map.Entry<String, List<AccessField>> entry : entries) {
+                List<AccessField> value = entry.getValue();
+                for (AccessField insertField : value) {
+                    ListTs.add(args, insertField.getColumnValue());
+                }
             }
         } else if (operateType == OperateType.UPDATE) {
+            // update暂且不弄批量更新 目前是循环更新 所以不用分组
             for (AccessField u : updateFields) {
                 ListTs.add(args, u.getColumnValue());
             }
