@@ -285,6 +285,7 @@ public class AccessUtils implements Serializable {
                 .setDbType(dbType)
                 .setReturnMap(access.isReturnMap())
                 .setParams(p)
+                .setResultFieldToCamel(access.isResultFieldToCame())
                 .setConnection(connection)
                 .setOperateType(operateType)
                 .setUpdateFields(updateList)

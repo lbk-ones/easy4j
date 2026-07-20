@@ -24,6 +24,7 @@ import easy4j.infra.dbaccess.orm.RuntimeContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class Condition {
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
             return String.format("%s %s", column2, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
-            if (value instanceof List<?> list) {
+            if (value instanceof Collection<?> list) {
                 String values = list.stream()
                         .map(v -> {
                             argsList.add(v);
@@ -89,9 +90,9 @@ public class Condition {
                 }
             }
         } else if (operator == CompareOperator.BETWEEN) {
-            if (value instanceof List<?> list && list.size() == 2) {
-                Object v1 = list.get(0);
-                Object v2 = list.get(1);
+            if (value instanceof Collection<?> list && list.size() == 2) {
+                Object v1 = ListTs.get(list, 0);
+                Object v2 = ListTs.get(list, 1);
                 argsList.add(v1);
                 argsList.add(v2);
                 return String.format("%s %s %s AND %s", column2, operator.getSymbol(), "?", "?");

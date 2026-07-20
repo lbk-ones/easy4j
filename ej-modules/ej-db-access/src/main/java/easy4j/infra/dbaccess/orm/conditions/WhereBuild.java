@@ -30,6 +30,7 @@ import lombok.Getter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -133,8 +134,22 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+    public WhereBuild eq(boolean option, String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.EQUAL, value));
+        }
+        return this;
+    }
+
     public WhereBuild ne(String column, Object value) {
         conditions.add(new Condition(column, CompareOperator.NOT_EQUAL, value));
+        return this;
+    }
+
+    public WhereBuild ne(boolean option,String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.NOT_EQUAL, value));
+        }
         return this;
     }
 
@@ -142,9 +157,21 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.GREATER_THAN, value));
         return this;
     }
+    public WhereBuild gt(boolean option,String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.GREATER_THAN, value));
+        }
+        return this;
+    }
 
     public WhereBuild lt(String column, Object value) {
         conditions.add(new Condition(column, CompareOperator.LESS_THAN, value));
+        return this;
+    }
+    public WhereBuild lt(boolean option,String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.LESS_THAN, value));
+        }
         return this;
     }
 
@@ -152,9 +179,21 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.GREATER_OR_EQUAL, value));
         return this;
     }
+    public WhereBuild gte(boolean option,String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.GREATER_OR_EQUAL, value));
+        }
+        return this;
+    }
 
     public WhereBuild lte(String column, Object value) {
         conditions.add(new Condition(column, CompareOperator.LESS_OR_EQUAL, value));
+        return this;
+    }
+    public WhereBuild lte(boolean option,String column, Object value) {
+        if(option){
+            conditions.add(new Condition(column, CompareOperator.LESS_OR_EQUAL, value));
+        }
         return this;
     }
 
@@ -164,8 +203,17 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+    public WhereBuild like(boolean option,String column, String value) {
+        if(option) conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value + "%"));
+        return this;
+    }
+
     public WhereBuild likeLeft(String column, String value) {
         conditions.add(new Condition(column, CompareOperator.LIKE, value + "%"));
+        return this;
+    }
+    public WhereBuild likeLeft(boolean option,String column, String value) {
+        if(option) conditions.add(new Condition(column, CompareOperator.LIKE, value + "%"));
         return this;
     }
 
@@ -173,15 +221,27 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value));
         return this;
     }
+    public WhereBuild likeRight(boolean option,String column, String value) {
+        if(option) conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value));
+        return this;
+    }
 
     public WhereBuild notLike(String column, String value) {
         conditions.add(new Condition(column, CompareOperator.NOT_LIKE, "%" + value + "%"));
         return this;
     }
+    public WhereBuild notLike(boolean option,String column, String value) {
+        if(option) conditions.add(new Condition(column, CompareOperator.NOT_LIKE, "%" + value + "%"));
+        return this;
+    }
 
     // IN 条件
-    public WhereBuild in(String column, List<?> values) {
+    public WhereBuild in(String column, Collection<?> values) {
         conditions.add(new Condition(column, CompareOperator.IN, values));
+        return this;
+    }
+    public WhereBuild in(boolean option,String column, Collection<?> values) {
+        if(option) conditions.add(new Condition(column, CompareOperator.IN, values));
         return this;
     }
 
@@ -189,9 +249,17 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.IN, Arrays.asList(values)));
         return this;
     }
+    public WhereBuild inArray(boolean option,String column, Object... values) {
+        if(option) conditions.add(new Condition(column, CompareOperator.IN, Arrays.asList(values)));
+        return this;
+    }
 
-    public WhereBuild notIn(String column, List<?> values) {
+    public WhereBuild notIn(String column, Collection<?> values) {
         conditions.add(new Condition(column, CompareOperator.NOT_IN, values));
+        return this;
+    }
+    public WhereBuild notIn(boolean option,String column, Collection<?> values) {
+        if(option) conditions.add(new Condition(column, CompareOperator.NOT_IN, values));
         return this;
     }
 
@@ -199,10 +267,18 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.NOT_IN, Arrays.asList(values)));
         return this;
     }
+    public WhereBuild notIn(boolean option,String column, Object... values) {
+        if(option) conditions.add(new Condition(column, CompareOperator.NOT_IN, Arrays.asList(values)));
+        return this;
+    }
 
     // BETWEEN 条件
     public WhereBuild between(String column, Object value1, Object value2) {
         conditions.add(new Condition(column, CompareOperator.BETWEEN, Arrays.asList(value1, value2)));
+        return this;
+    }
+    public WhereBuild between(boolean option,String column, Object value1, Object value2) {
+        if(option) conditions.add(new Condition(column, CompareOperator.BETWEEN, Arrays.asList(value1, value2)));
         return this;
     }
 
@@ -212,10 +288,20 @@ public class WhereBuild implements Serializable {
         conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
         return this;
     }
+    @JsonIgnore
+    public WhereBuild isNull(boolean option,String column) {
+        if(option) conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
+        return this;
+    }
 
     @JsonIgnore
     public WhereBuild isNotNull(String column) {
         conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
+        return this;
+    }
+    @JsonIgnore
+    public WhereBuild isNotNull(boolean option,String column) {
+        if(option) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
         return this;
     }
 

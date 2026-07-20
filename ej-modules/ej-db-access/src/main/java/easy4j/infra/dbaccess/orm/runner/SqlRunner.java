@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.orm.runner;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.BeanPropertyHandler;
 import easy4j.infra.dbaccess.orm.OperateType;
@@ -10,8 +11,7 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlRunner {
 
@@ -35,7 +35,21 @@ public class SqlRunner {
                 if(context.isReturnMap()){
                     MapListHandler mapHandler = new MapListHandler();
                     List<Map<String, Object>> handle1 = mapHandler.handle(query);
-                    List<EasyMap<String, Object>> list = handle1.stream().map(EasyMap::of).toList();
+                    List<EasyMap<String, Object>> list = new ArrayList<>();
+                    if (context.isResultFieldToCamel()) {
+                        for (Map<String, Object> stringObjectMap : handle1) {
+                            EasyMap<String, Object> objectObjectEasyMap = EasyMap.get();
+                            Set<Map.Entry<String, Object>> entries = stringObjectMap.entrySet();
+                            for (Map.Entry<String, Object> entry : entries) {
+                                String key = entry.getKey();
+                                Object value = entry.getValue();
+                                objectObjectEasyMap.put(StrUtil.toCamelCase(key.toLowerCase()),value);
+                            }
+                            list.add(objectObjectEasyMap);
+                        }
+                    }else{
+                        list = handle1.stream().map(EasyMap::of).toList();
+                    }
                     context.setResultMapList(list);
                 }else{
                     BeanPropertyHandler<T> tBeanListHandler = new BeanPropertyHandler<>(clazz);

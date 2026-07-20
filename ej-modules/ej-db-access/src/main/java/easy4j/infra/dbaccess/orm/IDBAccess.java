@@ -5,10 +5,7 @@ import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 /**
  * 支持增删改查
@@ -136,7 +133,7 @@ public interface IDBAccess {
      * @param <T>  泛型
      * @return 对象集合
      */
-    <T> EasyMap<String, Object> queryMap(String sql, Object... args);
+    <T> EasyMap<String, Object> queryMapListBySql(String sql, Object... args);
 
     /**
      * 传入表名和查询条件将查询结果以Map的结果返回（根据传入的表名自动查询这个表的字段集合）whereBuild=null则是全查询
@@ -145,9 +142,19 @@ public interface IDBAccess {
      * @param tableName         表名
      * @param resultFieldToCame 是否将结果字段转为驼峰
      * @param whereBuild        条件构造器
+     * @param queryRealFields   是否从数据库查询真实字段信息
      * @return 返回结果
      */
-    EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild);
+    EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields);
+
+    /**
+     * 根据条件构造器来查询结果集合，集合元素以Map形式返回
+     *
+     * @param whereBuild 条件构造器
+     * @param resultFieldToCame    是否转为驼峰
+     * @return List<EasyMap<String,Object>>
+     */
+    List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields);
 
     /**
      * 根据条件构造器来查询结果集合
@@ -159,14 +166,7 @@ public interface IDBAccess {
      */
     <T> List<T> query(WhereBuild whereBuild, Class<T> clazz);
 
-    /**
-     * 根据条件构造器来查询结果集合，集合元素以Map形式返回
-     *
-     * @param whereBuild 条件构造器
-     * @param toCamel    是否转为驼峰
-     * @return List<EasyMap<String,Object>>
-     */
-    List<EasyMap<String, Object>> queryMap(WhereBuild whereBuild, boolean toCamel);
+
 
     /**
      * 根据条件构造器来查询单个结果

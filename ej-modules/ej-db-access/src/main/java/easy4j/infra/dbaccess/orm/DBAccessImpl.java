@@ -5,11 +5,15 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -267,7 +271,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> EasyMap<String, Object> queryMap(String sql, Object... args) {
+    public <T> EasyMap<String, Object> queryMapListBySql(String sql, Object... args) {
         if(StrUtil.isBlank(sql)) return null;
         Access<T> tAccess = new Access<T>()
                 .setSql(sql)
@@ -283,7 +287,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild) {
+    public EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields) {
         if(StrUtil.isBlank(tableName)) return EasyMap.get();
         if(whereBuild == null) return EasyMap.get();
         Access<Object> tAccess = new Access<>()
@@ -294,12 +298,55 @@ public class DBAccessImpl implements IDBAccess {
                 .setReturnMap(true)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<Object> context = accessUtils.toContext(tAccess);
+        List<Condition> selectFields = whereBuild.getSelectFields();
+        flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
         return exeCallback(context, e -> {
             accessUtils.parseWhere(whereBuild, e);
             accessUtils.parseSql(e, false);
             return ListTs.get(e.getResultMapList(), 0);
         });
 
+    }
+
+    @Override
+    public List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields) {
+        List<EasyMap<String, Object>> empty = new ArrayList<>();
+        if(whereBuild == null) return empty;
+        Access<Object> tAccess = new Access<>()
+                .setWhere(whereBuild)
+                .setResultFieldToCame(resultFieldToCame)
+                .setTableName(tableName)
+                .setSchema(schema)
+                .setReturnMap(true)
+                .setOperateType(OperateType.SELECT);
+        RuntimeContext<Object> context = accessUtils.toContext(tAccess);
+        List<Condition> selectFields = whereBuild.getSelectFields();
+        flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
+
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e, false);
+            return e.getResultMapList();
+        });
+
+    }
+
+    private static void flushRealFields(String schema, String tableName, WhereBuild whereBuild, boolean queryRealFields, List<Condition> selectFields, RuntimeContext<Object> context) {
+        // 如果没字段则把字段查出来
+        if(selectFields.isEmpty() && queryRealFields){
+            DialectV2 dialectV2 = context.getDialectV2();
+            Connection connection = context.getConnection();
+            String catalog = null;
+            try {
+                catalog = connection.getCatalog();
+            } catch (SQLException ignored) {
+            }
+            // 不带缓存
+            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(catalog, schema, tableName);
+            for (DatabaseColumnMetadata databaseColumnMetadata : columnsNoCacheQuiet) {
+                whereBuild.select(databaseColumnMetadata.getColumnName());
+            }
+        }
     }
 
     @Override
@@ -321,24 +368,7 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
-    @Override
-    public List<EasyMap<String, Object>> queryMap(WhereBuild whereBuild, boolean resultFieldToCame) {
-        List<EasyMap<String, Object>> empty = new ArrayList<>();
-        if(whereBuild == null) return empty;
 
-        Access<Object> tAccess = new Access<Object>()
-                .setWhere(whereBuild)
-                .setResultFieldToCame(resultFieldToCame)
-                .setReturnMap(true)
-                .setOperateType(OperateType.SELECT);
-        RuntimeContext<Object> context = accessUtils.toContext(tAccess);
-        return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
-            return e.getResultMapList();
-        });
-
-    }
 
     @Override
     public <T> T queryOne(WhereBuild whereBuild, Class<T> clazz) {
