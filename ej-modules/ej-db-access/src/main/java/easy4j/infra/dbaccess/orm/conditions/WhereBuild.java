@@ -80,6 +80,7 @@ public class WhereBuild implements Serializable {
     
     @Getter
     private List<Condition> conditions = new ArrayList<>();
+
     @Getter
     private final List<Condition> groupBy = new ArrayList<>();
     @Getter

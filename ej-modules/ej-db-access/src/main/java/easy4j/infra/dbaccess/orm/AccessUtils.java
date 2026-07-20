@@ -19,6 +19,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
+import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
@@ -426,6 +427,35 @@ public class AccessUtils implements Serializable {
             String last = where.getLast();
             context.setLastSql(last);
         }
+        context.setWhereSql(whereSql);
+        context.setSelectFields(selectFieldName);
+        DialectV2 dialectV2 = context.getDialectV2();
+        context.setEscapeSelectFields(selectFieldName.stream().map(dialectV2::escape).toList());
+        context.setWhereArgs(whereArgs);
+    }
+
+    /**
+     * 解析UpdateBuild
+     *
+     * @param update   条件构造器
+     * @param context 上下文
+     * @param <T>     泛型
+     */
+    public <T> void parseUpdate(UpdateBuild update, RuntimeContext<T> context) {
+        List<Object> whereArgs = new ArrayList<>();
+        List<String> selectFieldName = new ArrayList<>();
+        String whereSql = update.build(whereArgs, context);
+        List<Condition> selectFields = update.getSelectFields();
+        if (CollUtil.isNotEmpty(selectFields)) {
+            selectFieldName = selectFields.stream()
+                    .filter(e -> StrUtil.isNotBlank(e.getColumn()))
+                    .map(e -> fn(e.getColumn()))
+                    .toList();
+        }
+        String last = update.getLast();
+        context.setLastSql(last);
+        context.setSqlSet(update.getSqlSet());
+        context.setUpdateArgs(update.getArgs());
         context.setWhereSql(whereSql);
         context.setSelectFields(selectFieldName);
         DialectV2 dialectV2 = context.getDialectV2();

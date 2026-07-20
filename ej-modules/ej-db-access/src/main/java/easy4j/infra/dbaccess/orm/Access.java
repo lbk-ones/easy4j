@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -34,6 +35,7 @@ public class Access<T> {
     private String sql;
 
     private WhereBuild where;
+    private UpdateBuild update;
 
     private boolean skipNullIs;
 

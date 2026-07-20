@@ -21,12 +21,18 @@ public class UpdateSql implements ISql {
         String whereSql = runtimeContext.getWhereSql();
         List<AccessField> updateFields = runtimeContext.getColumnInfoList(runtimeContext.getUpdateFields());
         String lastSql = runtimeContext.getLastSql();
-        String s = "update " +
-                runtimeContext.getDotTableName() +
-                SP.SPACE +
-                "set" +
-                SP.SPACE +
-                ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getEscapeColumnName() + " = ? ").toList());
+        String s;
+        if (!updateFields.isEmpty()) {
+            s = "update " +
+                    runtimeContext.getDotTableName() +
+                    SP.SPACE +
+                    "set" +
+                    SP.SPACE +
+                    ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getEscapeColumnName() + " = ? ").toList());
+        } else {
+            s = "update " + runtimeContext.getDotTableName() + SP.SPACE + ListTs.join(SP.COMMA, runtimeContext.getSqlSet());
+        }
+
         if (StrUtil.isNotBlank(whereSql)) {
             s += SP.SPACE +
                     "where" +

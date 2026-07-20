@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
@@ -47,7 +48,6 @@ public interface IDBAccess {
      * 根据主键删除数据
      *
      * @param params 对象实例
-     * @param idGet  获取id的函数
      * @param clazz  对象类型
      * @param <T>    泛型约束
      * @return 删除条数
@@ -76,6 +76,15 @@ public interface IDBAccess {
      * @return 更新影响条数
      */
     <T> int update(T params, boolean isSkipNull, WhereBuild whereBuild, Class<T> clazz);
+
+    /**
+     * 使用UpdateBuild进行更新
+     * @param updateBuild 更新构造器
+     * @param clazz 类
+     * @return 受影响条数
+     * @param <T> 泛型
+     */
+    <T> int update(UpdateBuild updateBuild, Class<T> clazz);
 
     /**
      * 根据主键更新

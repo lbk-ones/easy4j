@@ -44,6 +44,8 @@ public class RuntimeContext<T> {
 
     // where后面sql的参数值
     private List<Object> whereArgs;
+    // 更新有可能传入值
+    private List<Object> updateArgs;
 
     // 表名
     private String tableName;
@@ -63,6 +65,9 @@ public class RuntimeContext<T> {
 
     // 查询的字段
     private List<String> selectFields;
+
+    // 更新时候的 sqlSet
+    private List<String> sqlSet;
 
     // 转义的查询字段
     private List<String> escapeSelectFields;
@@ -146,10 +151,12 @@ public class RuntimeContext<T> {
                 }
             }
         } else if (operateType == OperateType.UPDATE) {
+            ListTs.addAll(args, updateArgs);
             // update暂且不弄批量更新 目前是循环更新 所以不用分组
             for (AccessField u : updateFields) {
                 ListTs.add(args, u.getColumnValue());
             }
+
             ListTs.addAll(args, whereArgs);
 
         } else if (operateType == OperateType.DELETE) {
