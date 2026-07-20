@@ -218,7 +218,9 @@ public class AccessUtils implements Serializable {
 
     public <T> RuntimeContext<T> toContext(Access<T> access) {
         Class<T> clazz = access.getClazz();
-        assertNotNull(clazz, "clazz");
+        if (!access.isReturnMap()) {
+            assertNotNull(clazz, "clazz");
+        }
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
         OperateType operateType = access.getOperateType();
@@ -362,9 +364,9 @@ public class AccessUtils implements Serializable {
      * @param <T>     泛型
      */
     public <T> void refreshContextByParam(RuntimeContext<T> context, T param) {
-        assertNotNull(param,"param");
         DialectV2 dialectV2 = context.getDialectV2();
         Class<T> clazz = context.getClazz();
+        if (clazz == null || param == null) return;
         Field[] fields = ReflectUtil.getFields(clazz);
         OperateType operateType = context.getOperateType();
         Access<T> access = context.getAccess();
@@ -392,6 +394,7 @@ public class AccessUtils implements Serializable {
                     insertList
             );
         }
+        context.setSql(null);
         context.setIdList(idlist);
         context.setUpdateFields(updateList);
         context.setInsertFields(insertList);
@@ -430,9 +433,11 @@ public class AccessUtils implements Serializable {
     }
 
     // 解析sql并执行
-    public <T> void parseSql(RuntimeContext<T> context) {
+    public <T> void parseSql(RuntimeContext<T> context, boolean skipParseSql) {
         LogSql.init(context);
-        SqlFactory.parse(context);
+        if (!skipParseSql) {
+            SqlFactory.parse(context);
+        }
         String sql = context.getSql();
         if (StrUtil.isBlank(sql)) {
             throw new AccessException("sql is not be empty!");

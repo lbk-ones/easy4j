@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.orm;
 
+import cn.hutool.core.collection.CollUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
@@ -153,6 +154,13 @@ public class RuntimeContext<T> {
 
         } else if (operateType == OperateType.DELETE) {
             ListTs.addAll(args, whereArgs);
+        }
+        Access<T> access1 = getAccess();
+        if (access1 != null) {
+            List<Object> args1 = access1.getArgs();
+            if (CollUtil.isNotEmpty(args1)) {
+                ListTs.addAll(args, args1);
+            }
         }
         return args;
     }
