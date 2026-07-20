@@ -211,8 +211,13 @@ public class AccessUtils implements Serializable {
         return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class) || skip;
     }
 
+    public void assertNotNull(Object object, String name) {
+        if (object == null) throw new AccessException(name + " param is not null");
+    }
+
     public <T> RuntimeContext<T> toContext(Access<T> access) {
         Class<T> clazz = access.getClazz();
+        assertNotNull(clazz, "clazz");
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
         OperateType operateType = access.getOperateType();
@@ -231,13 +236,13 @@ public class AccessUtils implements Serializable {
         List<AccessField> updateList = new LinkedList<>();
         // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
         List<AccessField> insertList = new LinkedList<>();
+        List<AccessField> idlist = new LinkedList<>();
         for (Field field : fields) {
             if (skipColumn(field)) continue;
             boolean pk = isPk(field);
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
             int index = 0;
-
             AccessField columnInfo = new AccessField();
             columnInfo.setColumnName(columnField);
             columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
@@ -249,31 +254,20 @@ public class AccessUtils implements Serializable {
             columnInfoList.add(columnInfo);
 
             for (T t : p) {
-                Object fieldValue = ReflectUtil.getFieldValue(t, field);
-                AccessField accessField = new AccessField();
-                accessField.setField(field);
-                accessField.setColumnName(columnField);
-                accessField.setEscapeColumnName(dialectV2.escape(columnField));
-                accessField.setColumnValue(fieldValue);
-                accessField.setGroup(index);
-                accessField.setPkIs(pk);
-                accessField.setAutoIncrementIs(isAutoIncrement);
-                if (operateType == OperateType.UPDATE) {
-                    if (access.isSkipNullIs()) {
-                        if (!ObjectUtil.isEmpty(fieldValue)) updateList.add(accessField);
-                    } else {
-                        updateList.add(accessField);
-                    }
-                } else if (operateType == OperateType.INSERT) {
-                    if (isAutoIncrement) {
-                        Object columnValue = accessField.getColumnValue();
-                        if (!ObjectUtil.isEmpty(columnValue)) {
-                            insertList.add(accessField);
-                        }
-                    } else {
-                        insertList.add(accessField);
-                    }
-                }
+                refreshParam(
+                        ReflectUtil.getFieldValue(t, field),
+                        field,
+                        columnField,
+                        dialectV2,
+                        index,
+                        pk,
+                        isAutoIncrement,
+                        idlist,
+                        operateType,
+                        access.isSkipNullIs(),
+                        updateList,
+                        insertList
+                );
                 index++;
             }
         }
@@ -292,10 +286,114 @@ public class AccessUtils implements Serializable {
                 .setOperateType(operateType)
                 .setUpdateFields(updateList)
                 .setColumnInfoList(columnInfoList)
+                .setIdList(idlist)
                 .setInsertFields(insertList)
                 .setDialectV2(dialectV2)
                 .setTableName(dialectV2.escape(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName())))
                 .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), access.getSchema())));
+
+    }
+
+    /**
+     * 刷新一个参数
+     *
+     * @param fieldValue      参数的值
+     * @param field           参数字段类型
+     * @param columnField     参数的名称
+     * @param dialectV2       方言
+     * @param index           第几个参数
+     * @param pk              是否主键
+     * @param isAutoIncrement 是否自动递增
+     * @param idlist          主键列表
+     * @param operateType     操作类型
+     * @param access          传参
+     * @param updateList      更新列表
+     * @param insertList      写入列表
+     * @param <T>             泛型
+     */
+    private static <T> void refreshParam(
+            Object fieldValue,
+            Field field,
+            String columnField,
+            DialectV2 dialectV2,
+            int index,
+            boolean pk,
+            boolean isAutoIncrement,
+            List<AccessField> idlist,
+            OperateType operateType,
+            boolean access,
+            List<AccessField> updateList,
+            List<AccessField> insertList) {
+        AccessField accessField = new AccessField();
+        accessField.setField(field);
+        accessField.setColumnName(columnField);
+        accessField.setEscapeColumnName(dialectV2.escape(columnField));
+        accessField.setColumnValue(fieldValue);
+        accessField.setGroup(index);
+        accessField.setPkIs(pk);
+        accessField.setAutoIncrementIs(isAutoIncrement);
+        if (pk) {
+            idlist.add(accessField);
+        }
+        if (operateType == OperateType.UPDATE) {
+            if (access) {
+                if (!ObjectUtil.isEmpty(fieldValue)) updateList.add(accessField);
+            } else {
+                updateList.add(accessField);
+            }
+        } else if (operateType == OperateType.INSERT) {
+            if (isAutoIncrement) {
+                Object columnValue = accessField.getColumnValue();
+                if (!ObjectUtil.isEmpty(columnValue)) {
+                    insertList.add(accessField);
+                }
+            } else {
+                insertList.add(accessField);
+            }
+        }
+    }
+
+    /**
+     * 根据传入参数重新刷新上下文列表
+     *
+     * @param context 上下文
+     * @param param   参数
+     * @param <T>     泛型
+     */
+    public <T> void refreshContextByParam(RuntimeContext<T> context, T param) {
+        assertNotNull(param,"param");
+        DialectV2 dialectV2 = context.getDialectV2();
+        Class<T> clazz = context.getClazz();
+        Field[] fields = ReflectUtil.getFields(clazz);
+        OperateType operateType = context.getOperateType();
+        Access<T> access = context.getAccess();
+        List<AccessField> idlist = new LinkedList<>();
+        List<AccessField> updateList = new LinkedList<>();
+        // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
+        List<AccessField> insertList = new LinkedList<>();
+        for (Field field : fields) {
+            if (skipColumn(field)) continue;
+            boolean pk = isPk(field);
+            boolean isAutoIncrement = isAutoIncrement(field);
+            String columnField = getColumnNameFormField(field);
+            refreshParam(
+                    ReflectUtil.getFieldValue(param, field),
+                    field,
+                    columnField,
+                    dialectV2,
+                    0,
+                    pk,
+                    isAutoIncrement,
+                    idlist,
+                    operateType,
+                    access.isSkipNullIs(),
+                    updateList,
+                    insertList
+            );
+        }
+        context.setIdList(idlist);
+        context.setUpdateFields(updateList);
+        context.setInsertFields(insertList);
 
     }
 

@@ -91,28 +91,9 @@ public interface IDBAccess {
      */
     <T> int updateById(T params, boolean isSkipNull, Class<T> clazz);
 
-    /**
-     * 根据主键更新，如果传入的idGet=null则默认自动推断主键
-     *
-     * @param params     要更新的参数
-     * @param idGet      获取id的函数
-     * @param isSkipNull 是否更新null值
-     * @param clazz      对象类型
-     * @param <T>        泛型约束
-     * @return 更新影响条数
-     */
-    <T> int updateById(T params, boolean isSkipNull, Class<T> clazz);
 
-    /**
-     * 根据主键批量更新(默认自动推断主键)
-     *
-     * @param params     要更新的集合
-     * @param isSkipNull 是否更新null值
-     * @param clazz      对象类型
-     * @param <T>        泛型约束
-     * @return 更新影响条数
-     */
-    <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
+
+
 
     /**
      * 根据主键批量更新
@@ -194,6 +175,24 @@ public interface IDBAccess {
      * @return T
      */
     <T> T queryOne(WhereBuild whereBuild, Class<T> clazz);
+
+    /**
+     * 查询数量
+     * @param whereBuild 条件构造器
+     * @param clazz 类型
+     * @return 总数
+     * @param <T> 泛型
+     */
+    <T> long count(WhereBuild whereBuild, Class<T> clazz);
+
+    /**
+     * 是否存在
+     * @param whereBuild 条件构造器
+     * @param clazz 类型
+     * @return boolean
+     * @param <T> 泛型
+     */
+    <T> boolean exists(WhereBuild whereBuild, Class<T> clazz);
 
     /**
      * 根据条件构造器来查询单个结果,以map形式返回

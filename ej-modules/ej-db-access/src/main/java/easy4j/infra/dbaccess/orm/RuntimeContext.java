@@ -59,9 +59,6 @@ public class RuntimeContext<T> {
     // 对象类型
     private Class<T> clazz;
 
-    // 主键获取函数
-    private Function<T, Serializable> idget;
-
     // 查询的字段
     private List<String> selectFields;
 
@@ -74,6 +71,9 @@ public class RuntimeContext<T> {
 
     // 所有字段信息
     private List<AccessField> columnInfoList;
+
+    // 主键值
+    private List<AccessField> idList;
 
     // 要更新的字段 以group字段来区分条数
     private List<AccessField> updateFields;
