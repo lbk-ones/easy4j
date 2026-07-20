@@ -217,9 +217,9 @@ public class SysConstant {
 
 
 
-    public static final int SUCCESSCODE = 0;
+    public static final int SUCCESS_CODE = 0;
 
-    public static final int ERRORCODE = 1;
+    public static final int ERROR_CODE = 1;
 
     public static final String CHINESESUCCESS = "操作成功";
 

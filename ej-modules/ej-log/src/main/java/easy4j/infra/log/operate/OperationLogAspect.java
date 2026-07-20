@@ -73,10 +73,16 @@ public class OperationLogAspect {
 
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
+    public static final String POOL_NAME = "log-thread";
+
     public OperationLogAspect() {
         operateLogRepository = new DbOperate();
         operateLogRepository.init();
-        threadPoolTaskExecutor = ThreadPoolUtils.getThreadPoolTaskExecutor("op-log", 4, 8, 10);
+        threadPoolTaskExecutor = getThreadPool();
+    }
+
+    public static ThreadPoolTaskExecutor getThreadPool(){
+        return ThreadPoolUtils.getThreadPoolTaskExecutor(POOL_NAME, 4, 8, 10);
     }
 
     /**

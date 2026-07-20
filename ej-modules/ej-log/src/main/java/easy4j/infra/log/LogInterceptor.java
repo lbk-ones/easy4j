@@ -5,13 +5,16 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.ThreadPoolUtils;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.log.operate.OperationLogAspect;
 import easy4j.infra.webmvc.AbstractEasy4JWebMvcHandler;
 import io.github.lbkones.pure.ReplacedBodyRequestWrapper;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
@@ -42,11 +45,11 @@ public class LogInterceptor extends AbstractEasy4JWebMvcHandler {
             String tag = annotation.tag();
             String tagDesc = annotation.tagDesc();
             String requestBody = "";
-            if (request instanceof HttpServletRequestWrapper request1)  {
+            if (request instanceof HttpServletRequestWrapper request1) {
                 ServletRequest request2 = request1.getRequest();
                 if (request2 instanceof ReplacedBodyRequestWrapper request3) {
                     requestBody = request3.getOriginBody();
-                }else{
+                } else {
                     try {
                         requestBody = ReplacedBodyRequestWrapper.readRequestBody(request);
                     } catch (IOException ignored) {
@@ -69,11 +72,16 @@ public class LogInterceptor extends AbstractEasy4JWebMvcHandler {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handlerMethod) {
-        try {
-            DbLog.endLog(ex);
-        } finally {
-            DbLog.removeThread();
-        }
+        // 改为异步写入 和操作日志共用一个线程池
+        OperationLogAspect.getThreadPool()
+                .submit(() -> {
+                    try {
+                        DbLog.endLog(ex);
+                    } finally {
+                        DbLog.removeThread();
+                    }
+                });
+
     }
 
 }

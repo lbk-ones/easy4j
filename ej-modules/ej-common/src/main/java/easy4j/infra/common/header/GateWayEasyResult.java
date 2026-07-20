@@ -74,7 +74,7 @@ public class GateWayEasyResult<T> implements Serializable {
     @JsonIgnore
     public static <T> GateWayEasyResult<T> error(String message) {
         GateWayEasyResult<T> easyResult = new GateWayEasyResult<T>();
-        easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
+        easyResult.setCode(String.valueOf(SysConstant.ERROR_CODE));
         easyResult.setMessage(message);
         easyResult.setData(null);
         return easyResult;

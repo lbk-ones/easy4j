@@ -28,6 +28,7 @@ import jodd.util.StringPool;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
@@ -43,14 +44,10 @@ import java.util.Locale;
 @Schema(description = "通用信息返回实体", name = "EasyResult")
 public class EasyResult<T> implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 6095433538316185020L;
-    // 1 代表错误 0 代表正常返回
-    @JsonIgnore
-    @Schema(description = "1 代表错误 0 代表正常返回")
-    private int error;
 
     // 业务状态码
-
     @Schema(description = "业务状态码（0=成功，非0=错误）")
     private String code;
 
@@ -71,11 +68,8 @@ public class EasyResult<T> implements Serializable {
 
 
     public static <T> EasyResult<T> ok(T data) {
-
         EasyResult<T> easyResult = new EasyResult<T>();
-
         easyResult.setData(data);
-        //easyResult.setMessage(I18nUtils.getOperateSuccessStr());
         return easyResult;
     }
 
@@ -92,24 +86,17 @@ public class EasyResult<T> implements Serializable {
         return easyResult;
     }
 
-   /* public static <T> EasyResult<T> ok(T data, String code) {
+    public static <T> EasyResult<T> ok(T data, String message) {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setData(data);
-        easyResult.setCode(code);
-        easyResult.setMessage(I18nUtils.getOperateSuccessStr());
+        easyResult.setMessage(message);
         return easyResult;
-    }*/
-   public static <T> EasyResult<T> ok(T data, String message) {
-       EasyResult<T> easyResult = new EasyResult<T>();
-       easyResult.setData(data);
-       easyResult.setMessage(message);
-       return easyResult;
-   }
+    }
 
     @JsonIgnore
     public static <T> EasyResult<T> error(String message) {
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
+        easyResult.setCode(BusCode.A00003);
         easyResult.setMessage(message);
         easyResult.setData(null);
         return easyResult;
@@ -118,7 +105,6 @@ public class EasyResult<T> implements Serializable {
     public static <T> EasyResult<T> parseI18nWithData(String i18nCode, T data) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
-        //easyResult.setError(error);
         easyResult.setCode(i18nCode);
         easyResult.setMessage(I18nUtils.getMessage(i18nCode));
         easyResult.setData(data);
@@ -128,7 +114,6 @@ public class EasyResult<T> implements Serializable {
     public static <T> EasyResult<T> parseFromI18n(String i18nCode, String... args) {
 
         EasyResult<T> easyResult = new EasyResult<T>();
-        //easyResult.setError(error);
         easyResult.setCode(i18nCode);
         easyResult.setMessage(I18nUtils.getMessage(i18nCode, args));
         easyResult.setData(null);
@@ -152,11 +137,11 @@ public class EasyResult<T> implements Serializable {
         result.setErrorInfo(errorInfo);
         return result;
     }
+
     @JsonIgnore
     public static <T> EasyResult<T> error(Throwable e) {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setCode(BusCode.A00003);
-        //easyResult.setError(SysConstant.ERRORCODE);
         easyResult.setMessage(I18nUtils.getOperateErrorStr());
         if (!(e instanceof EasyException)) {
             easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
@@ -164,33 +149,15 @@ public class EasyResult<T> implements Serializable {
         easyResult.setData(null);
         return easyResult;
     }
+
     @JsonIgnore
     public static <T> EasyResult<T> errorGateway(Throwable e) {
         EasyResult<T> easyResult = new EasyResult<T>();
         easyResult.setCode(BusCode.A00061);
-        //easyResult.setError(SysConstant.ERRORCODE);
         easyResult.setMessage(e.getMessage());
         if (!(e instanceof EasyException)) {
             easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
         }
-        easyResult.setData(null);
-        return easyResult;
-    }
-
-    /**
-     * 接收rpc的报错异常
-     *
-     * @param e
-     * @param <T>
-     * @return
-     */
-    public static <T> EasyResult<T> rpcErrorInfo(Exception e) {
-        EasyResult<T> easyResult = new EasyResult<>();
-        easyResult.setCode("A00003");
-        String message1 = e.getMessage();
-        easyResult.setMessage(message1);
-        easyResult.setError(SysConstant.ERRORCODE);
-        easyResult.setErrorInfo("");
         easyResult.setData(null);
         return easyResult;
     }
@@ -242,7 +209,7 @@ public class EasyResult<T> implements Serializable {
                 }
             }
         }
-        String code = "A00003";
+        String code = BusCode.A00003;
         // 不允许使用自己定义的内容发布异常
         if (msg.isEmpty()) {
             msg = isEasy4j ? e.getMessage() : I18nUtils.getMessage(code, local);
@@ -250,7 +217,7 @@ public class EasyResult<T> implements Serializable {
             code = msgKey;
         }
         EasyResult<T> easyResult = new EasyResult<T>();
-        easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
+        //easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
         easyResult.setMessage(msg);
         easyResult.setCode(code);
         if (!(e instanceof EasyException)) {
@@ -262,47 +229,28 @@ public class EasyResult<T> implements Serializable {
     }
 
     public EasyResult() {
-        this.code = "0"; // 默认成功
+        this.code = String.valueOf(SysConstant.SUCCESS_CODE); // 默认成功
         this.message = I18nUtils.getOperateSuccessStr();
-        //setError(SysConstant.SUCCESSCODE);
-        //setCode("A00001");
-        //setMessage(I18nBean.getOperateSuccessStr());
     }
 
 
     @JsonIgnore
     public boolean isSuccess() {
-        return "0".equals(code);
-        //return error == 0;
+        return String.valueOf(SysConstant.SUCCESS_CODE).equals(code);
     }
 
-    public EasyResult(int error, String code, String message, T data) {
-        this.error = error;
+    public EasyResult(String code, String message, T data) {
         this.code = code;
         this.message = message;
         this.data = data;
     }
-
-    /*public EasyResult(int error) {
-        this.error = error;
-    }*/
-  public EasyResult(int error) {
-      this.code = String.valueOf(error);
-  }
 
     public EasyResult(String code) {
         this.code = code;
     }
 
 
-
-    public EasyResult(int error, String code) {
-        this.error = error;
-        this.code = code;
-    }
-
-    public EasyResult(int error, String code, String message) {
-        this.error = error;
+    public EasyResult(String code, String message) {
         this.code = code;
         this.message = message;
     }

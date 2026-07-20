@@ -17,15 +17,13 @@ package easy4j.infra.webmvc;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import easy4j.infra.base.starter.Easy4JStarterNd;
-import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.exception.ExceptionList;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.i18n.I18nUtils;
 import easy4j.infra.common.utils.BusCode;
-import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,7 +42,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -66,8 +64,21 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public EasyResult<Object> appErrorHandler(HttpServletRequest req, EasyException e) throws Exception {
         log.info("运行时自定义异常-------" + e.getMessage());
-        return EasyResult.toI18n(e);
+        return exceptionIs(e,EasyResult.toI18n(e));
     }
+
+    private EasyResult<Object> exceptionIs(Exception e, EasyResult<Object> i18n) {
+        // 非0的接口代表是异常接口
+        if (!Objects.equals(i18n.getCode(), String.valueOf(SysConstant.SUCCESS_CODE))) {
+            try {
+                Easy4jDbLog easy4jDbLog = easy4jContext.get(Easy4jDbLog.class);
+                easy4jDbLog.setException(e);
+            } catch (Exception ignored) {
+            }
+        }
+        return i18n;
+    }
+
     /**
      * 专门处理 @RequestParam(required=true) 这种情况
      */
@@ -75,7 +86,7 @@ public class GlobalExceptionHandler {
     public EasyResult<Object> handleMissingParamException(MissingServletRequestParameterException ex) {
         // 只记录一条简洁的警告日志
         log.error("缺少请求参数: {}，{}", ex.getParameterName(),ex.getParameterType());
-        return EasyResult.error(I18nUtils.getMessage(BusCode.A00004, ex.getParameterName()));
+        return exceptionIs(ex,EasyResult.error(I18nUtils.getMessage(BusCode.A00004, ex.getParameterName())));
     }
 
     @ExceptionHandler(value = Exception.class)
@@ -87,36 +98,25 @@ public class GlobalExceptionHandler {
         if ("/.well-known/appspecific/com.chrome.devtools.json".equals(requestURI)) {
             return EasyResult.ok("ok");
         }
-        log.error("不可预期的异常：【" + requestURI + "】" + e.getMessage(), e);
+        log.error("不可预期的异常：【{}】{}", requestURI, e.getMessage(), e);
         if (e instanceof EasyException) {
-            return EasyResult.rpcErrorInfo(e);
+            return exceptionIs(e,EasyResult.toI18n(e));
         } else {
             // fix: unexpected exception cannot be recorded to db
             try {
                 Easy4jDbLog easy4jDbLog = easy4jContext.get(Easy4jDbLog.class);
                 easy4jDbLog.setException(e);
-            } catch (Exception e2) {
-                if (Easy4j.mainClass != null && !Easy4j.mainClass.isAnnotationPresent(Easy4JStarterNd.class)) {
-                    Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
-                    e.printStackTrace();
-                }
+            } catch (Exception ignored) {
             }
             return EasyResult.error(e);
         }
     }
 
 
-//    @ExceptionHandler(value = AspectValidateException.class)
-//    @ResponseBody
-//    public Map<String, Object> aspectValidateExceptionHandler(HttpServletRequest req, AspectValidateException e) throws Exception {
-//        log.info("验证数据时产生异常-------"+e.getMessage());
-//        return new RestResult().createResult("", e.getMessage(), e.getError());
-//    }
-
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseBody
     public EasyResult<Object> methodArgumentNotValidExceptionHandler(HttpServletRequest req, MethodArgumentNotValidException e) throws Exception {
-        log.info("Controller验证数据时产生异常-------" + e.getMessage());
+        log.error("接口传参验证失败-------{}", e.getMessage());
         ExceptionList<String> list = new ExceptionList<String>();
         for (ObjectError o : e.getBindingResult().getAllErrors()) {
             String fieldValue = Convert.toStr(ReflectUtil.getFieldValue(o, "field"), "");
@@ -127,9 +127,7 @@ public class GlobalExceptionHandler {
             String message = e.getMessage();
             RuntimeException wrapException = new RuntimeException(message);
             easy4jDbLog.setException(wrapException);
-        } catch (Exception e2) {
-            Easy4j.info(SysLog.compact("context get has a error:" + e2.getMessage()));
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         return EasyResult.error(list.toString());
     }
@@ -183,21 +181,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     @ResponseBody
     public EasyResult<Object> httpErrorHandler(HttpServletRequest req, HttpMessageNotReadableException e) throws Exception {
-        log.info("HTTP请求参数异常-------" + e.getMessage());
-        return EasyResult.error(I18nUtils.getMessage(BusCode.A00005, e.getMessage()));
+        log.error("HTTP请求参数异常-------{}",e.getMessage());
+        return exceptionIs(e,EasyResult.error(I18nUtils.getMessage(BusCode.A00005, e.getMessage())));
     }
 
     @ExceptionHandler(value = HttpMediaTypeNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMediaTypeNotSupportedExceptionHandler(HttpServletRequest req, HttpMediaTypeNotSupportedException e) throws Exception {
-        log.info("HTTP请求ContentType异常-------" + e.getMessage());
-        return EasyResult.error(I18nUtils.getMessage(BusCode.A00006));
+        log.error("HTTP请求ContentType异常-------{}",e.getMessage());
+        return exceptionIs(e,EasyResult.error(I18nUtils.getMessage(BusCode.A00006)));
     }
 
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
     @ResponseBody
     public EasyResult<Object> httpMethodErrorHandler(HttpServletRequest req, HttpRequestMethodNotSupportedException e) throws Exception {
-        return EasyResult.error(I18nUtils.getMessage(BusCode.A00007, e.getMessage()));
+        log.error("不允许使用此HTTP方法请求接口数据-------{}", e.getMessage());
+        return exceptionIs(e,EasyResult.error(I18nUtils.getMessage(BusCode.A00007, e.getMessage())));
     }
 }
 
