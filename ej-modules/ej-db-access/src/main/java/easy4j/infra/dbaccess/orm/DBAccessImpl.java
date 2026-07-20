@@ -29,8 +29,20 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.INSERT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getParams(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getParams(), 0);
+        });
+
+
+    }
+
+    private  <T, R> R exeCallback(RuntimeContext<T> access, Function<RuntimeContext<T>, R> function) {
+        try {
+            return function.apply(access);
+        } finally {
+            accessUtils.releaseConnection(access);
+        }
     }
 
     @Override
@@ -40,8 +52,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.INSERT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getParams();
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return e.getParams();
+        });
+
+
     }
 
     @Override
@@ -51,57 +67,41 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return e.getEffectRows();
+        });
+
     }
 
     @Override
-    public <T> int deleteById(Serializable id, Class<T> clazz) {
+    public <T> int deleteById(T param, Class<T> clazz) {
         Access<T> tAccess = new Access<T>()
-                .setId(id)
+                .setParam(param)
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return e.getEffectRows();
+        });
+
     }
 
     @Override
-    public <T> int deleteById(T params, Function<T, Serializable> idGet, Class<T> clazz) {
-        Access<T> tAccess = new Access<T>()
-                .setParam(params)
-                .setIdGet(idGet)
-                .setClazz(clazz)
-                .setOperateType(OperateType.DELETE);
-        RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-
-        return context.getEffectRows();
-    }
-
-    @Override
-    public <T> int deleteByIds(Iterable<Serializable> ids, Class<T> clazz) {
-        Access<T> tAccess = new Access<T>()
-                .setIds(ids)
-                .setClazz(clazz)
-                .setOperateType(OperateType.DELETE);
-        RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-
-        return context.getEffectRows();
-    }
-
-    @Override
-    public <T> int deleteByIds(Iterable<T> params, Function<T, Serializable> idGet, Class<T> clazz) {
+    public <T> int deleteByIds(Iterable<T> params, Class<T> clazz) {
         Access<T> tAccess = new Access<T>()
                 .setParams(params)
-                .setIdGet(idGet)
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+
+            return e.getEffectRows();
+        });
+
     }
 
     @Override
@@ -112,49 +112,43 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        return updateByIdWith(context,true);
+
     }
 
-    @Override
-    public <T> int updateById(T param, Function<T, Serializable> idGet, boolean isSkipNull, Class<T> clazz) {
-        Access<T> tAccess = new Access<T>()
-                .setParam(param)
-                .setIdGet(idGet)
-                .setSkipNullIs(isSkipNull)
-                .setClazz(clazz)
-                .setOperateType(OperateType.UPDATE);
+    private <T> Integer updateByIdWith( RuntimeContext<T> context,boolean callback) {
 
-        RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        if(callback){
+            return exeCallback(context, e -> {
+                accessUtils.parseSql(e);
+                return e.getEffectRows();
+            });
+        }else{
+            accessUtils.parseSql(context);
+            return context.getEffectRows();
+        }
+
     }
 
+
+    // 为了简单批量直接循环
     @Override
     public <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz) {
         Access<T> tAccess = new Access<T>()
-                .setParams(params)
                 .setSkipNullIs(isSkipNull)
                 .setClazz(clazz)
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
-    }
-
-    @Override
-    public <T> int updateByIds(Iterable<T> params, Function<T, Serializable> idGet, boolean isSkipNull, Class<T> clazz) {
-        Access<T> tAccess = new Access<T>()
-                .setParams(params)
-                .setIdGet(idGet)
-                .setSkipNullIs(isSkipNull)
-                .setClazz(clazz)
-                .setOperateType(OperateType.UPDATE);
-
-        RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-
-        return context.getEffectRows();
+        try{
+            int i = 0;
+            for (T param : params) {
+                context.setParams(ListTs.asList(param));
+                i += updateByIdWith(context,false);
+            }
+            return i;
+        }finally {
+            accessUtils.releaseConnection(context);
+        }
     }
 
     @Override
@@ -165,11 +159,13 @@ public class DBAccessImpl implements IDBAccess {
                 .setSkipNullIs(isSkipNull)
                 .setClazz(clazz)
                 .setOperateType(OperateType.UPDATE);
-
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return context.getEffectRows();
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return e.getEffectRows();
+        });
+
     }
 
     @Override
@@ -180,10 +176,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return e.getResultList();
+        });
 
 
-        return context.getResultList();
     }
 
     @Override
@@ -195,8 +193,10 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
 
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getResultList(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getResultList(), 0);
+        });
     }
 
     @Override
@@ -207,8 +207,11 @@ public class DBAccessImpl implements IDBAccess {
                 .setReturnMap(true)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getResultMapList(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getResultMapList(), 0);
+        });
+
     }
 
     @Override
@@ -221,9 +224,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setReturnMap(true)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<Object> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getResultMapList(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getResultMapList(), 0);
+        });
+
     }
 
     @Override
@@ -234,10 +240,13 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
 
-        return context.getResultList();
+            return e.getResultList();
+        });
+
     }
 
     @Override
@@ -250,9 +259,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setReturnMap(true)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<Object> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return context.getResultMapList();
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return e.getResultMapList();
+        });
+
     }
 
     @Override
@@ -262,9 +274,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getResultList(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getResultList(), 0);
+        });
+
     }
 
     @Override
@@ -276,9 +291,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setResultFieldToCame(resultFieldToCame)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        return ListTs.get(context.getResultMapList(), 0);
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            return ListTs.get(e.getResultMapList(), 0);
+        });
+
     }
 
     @Override
@@ -289,20 +307,24 @@ public class DBAccessImpl implements IDBAccess {
                 .setPage(page)
                 .setOperateType(OperateType.SELECT_COUNT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        accessUtils.parseWhere(whereBuild, context);
-        accessUtils.parseSql(context);
-        long count = context.getCount();
-        PageRes pageRes = new PageRes();
-        pageRes.setPageNo(page.getPageNo());
-        pageRes.setPageSize(page.getPageSize());
-        if (count <= 0) {
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e);
+            long count = e.getCount();
+            PageRes pageRes = new PageRes();
+            pageRes.setPageNo(page.getPageNo());
+            pageRes.setPageSize(page.getPageSize());
+            if (count <= 0) {
+                return pageRes;
+            }
+            pageRes.setTotal(count);
+            e.setOperateType(OperateType.SELECT_PAGE);
+            accessUtils.parseSql(e);
+            List<T> resultList = e.getResultList();
+            pageRes.setRecords(resultList);
             return pageRes;
-        }
-        pageRes.setTotal(count);
-        context.setOperateType(OperateType.SELECT_PAGE);
-        accessUtils.parseSql(context);
-        List<T> resultList = context.getResultList();
-        pageRes.setRecords(resultList);
-        return pageRes;
+        });
+
+
     }
 }

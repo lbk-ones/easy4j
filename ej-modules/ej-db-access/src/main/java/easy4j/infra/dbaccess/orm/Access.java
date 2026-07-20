@@ -33,13 +33,7 @@ public class Access<T> {
 
     private String sql;
 
-    private Serializable id;
-
-    private Iterable<Serializable> ids;
-
     private WhereBuild where;
-
-    private Function<T, Serializable> idGet;
 
     private boolean skipNullIs;
 

@@ -34,9 +34,9 @@ public class InsertSql implements ISql {
             sql += "(" + ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields) + ")";
         }
         sql += " values ";
-
         Map<Integer, List<AccessField>> integerListMap = ListTs.groupBy(insertFields1, AccessField::getGroup);
         List<String> valueList = new ArrayList<>();
+
         for (Map.Entry<Integer, List<AccessField>> integerListEntry : integerListMap.entrySet()) {
             List<AccessField> value = integerListEntry.getValue();
             String te = "(";

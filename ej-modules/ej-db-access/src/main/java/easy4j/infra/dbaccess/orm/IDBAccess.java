@@ -45,15 +45,6 @@ public interface IDBAccess {
      */
     <T> int delete(WhereBuild whereBuild, Class<T> clazz);
 
-    /**
-     * 根据主键删除
-     *
-     * @param id    主键
-     * @param clazz 对象类型
-     * @param <T>   泛型
-     * @return 删除的条数
-     */
-    <T> int deleteById(Serializable id, Class<T> clazz);
 
     /**
      * 根据主键删除数据
@@ -64,7 +55,7 @@ public interface IDBAccess {
      * @param <T>    泛型约束
      * @return 删除条数
      */
-    <T> int deleteById(T params, Function<T, Serializable> idGet, Class<T> clazz);
+    <T> int deleteById(T params,  Class<T> clazz);
 
     /**
      * 根据主键批量删除
@@ -74,18 +65,7 @@ public interface IDBAccess {
      * @param <T>   泛型
      * @return 删除的条数
      */
-    <T> int deleteByIds(Iterable<Serializable> ids, Class<T> clazz);
-
-    /**
-     * 根据主键批量删除，如果传入的idGet=null则默认自动推断主键
-     *
-     * @param ids   主键
-     * @param idGet 获取id的函数
-     * @param clazz 对象类型
-     * @param <T>   泛型
-     * @return 删除的条数
-     */
-    <T> int deleteByIds(Iterable<T> ids, Function<T, Serializable> idGet, Class<T> clazz);
+    <T> int deleteByIds(Iterable<T> ids, Class<T> clazz);
 
 
     /**
@@ -121,7 +101,7 @@ public interface IDBAccess {
      * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int updateById(T params, Function<T, Serializable> idGet, boolean isSkipNull, Class<T> clazz);
+    <T> int updateById(T params, boolean isSkipNull, Class<T> clazz);
 
     /**
      * 根据主键批量更新(默认自动推断主键)
@@ -135,7 +115,7 @@ public interface IDBAccess {
     <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
 
     /**
-     * 根据主键批量更新，如果传入的idGet=null则默认自动推断主键
+     * 根据主键批量更新
      *
      * @param params     要更新的集合
      * @param isSkipNull 是否更新null值
@@ -143,7 +123,7 @@ public interface IDBAccess {
      * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int updateByIds(Iterable<T> params, Function<T, Serializable> idGet, boolean isSkipNull, Class<T> clazz);
+    <T> int updateByIds(Iterable<T> params,  boolean isSkipNull, Class<T> clazz);
 
     /**
      * 传入sql查询对象集合

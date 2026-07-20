@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -333,7 +334,7 @@ public class AccessUtils implements Serializable {
     public <T> void parseSql(RuntimeContext<T> context) {
         SqlFactory.parse(context);
         String sql = context.getSql();
-        if(StrUtil.isBlank(sql)){
+        if (StrUtil.isBlank(sql)) {
             throw new AccessException("sql is not be empty!");
         }
         SqlRunner sqlRunner = new SqlRunner();
@@ -355,4 +356,31 @@ public class AccessUtils implements Serializable {
         }
     }
 
+    /**
+     * 释放连接
+     *
+     * @param context
+     * @param <T>
+     */
+    public <T> void releaseConnection(RuntimeContext<T> context) {
+        if (context != null) {
+            Connection connection = context.getConnection();
+            DataSourceUtils.releaseConnection(connection, context.getAccessUtils().getAccessConfig().getDataSource());
+        }
+    }
+
+    /**
+     * 关闭resultset
+     *
+     * @param rs
+     */
+    public void close(ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (Exception ignored) {
+
+            }
+        }
+    }
 }
