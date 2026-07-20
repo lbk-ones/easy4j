@@ -22,6 +22,8 @@ public class SqlRunner {
 
     public <T> void run(RuntimeContext<T> context) {
         Connection connection = context.getConnection();
+        context.getAccessUtils().assertNotNull(connection,"connection");
+        LogSql.begin(context);
         JdbcUtils jdbcUtils = new JdbcUtils(connection);
         Class<T> clazz = context.getClazz();
         OperateType operateType = context.getOperateType();
@@ -52,6 +54,7 @@ public class SqlRunner {
                 throw new RuntimeException(e);
             }
             context.setCount(count);
+            context.setEffectRows(Math.toIntExact(count));
         }else if(OperateType.SELECT_EXIST == operateType){
             ScalarHandler<Long> tBeanListHandler = new ScalarHandler<>(1);
             Long count;
@@ -65,5 +68,6 @@ public class SqlRunner {
             int update = jdbcUtils.update(context);
             context.setEffectRows(update);
         }
+        LogSql.print(context);
     }
 }

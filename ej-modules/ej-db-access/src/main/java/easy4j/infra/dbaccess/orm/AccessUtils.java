@@ -20,6 +20,7 @@ import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
 import easy4j.infra.dbaccess.orm.sql.SqlFactory;
 import jakarta.persistence.Column;
@@ -430,6 +431,7 @@ public class AccessUtils implements Serializable {
 
     // 解析sql并执行
     public <T> void parseSql(RuntimeContext<T> context) {
+        LogSql.init(context);
         SqlFactory.parse(context);
         String sql = context.getSql();
         if (StrUtil.isBlank(sql)) {
@@ -463,7 +465,7 @@ public class AccessUtils implements Serializable {
     public <T> void releaseConnection(RuntimeContext<T> context) {
         if (context != null) {
             Connection connection = context.getConnection();
-            DataSourceUtils.releaseConnection(connection, context.getAccessUtils().getAccessConfig().getDataSource());
+            DataSourceUtils.releaseConnection(connection, context.getConfig().getDataSource());
         }
     }
 

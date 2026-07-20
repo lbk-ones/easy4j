@@ -15,15 +15,13 @@ public class AccessConfig {
     private DataSource dataSource;
 
     // 是否加入当前事务
-    private boolean inTransaction;
+    private boolean inTransaction = false;
 
-    // 是否打印sql
-    private boolean printSqlIs;
+    // 是否打印sql 默认打印
+    private boolean printSqlIs = true;
 
     // 字段名称是否转下划线
-    private boolean fieldNameToUnderline;
-
-    private String dbType;
+    private boolean fieldNameToUnderline = true;
 
     /**
      * 设置 JDBC 驱动从数据库服务端「单次批量拉取多少条结果集数据」，用来控制游标批量读取行数，优化大结果集内存占用与网络 IO。

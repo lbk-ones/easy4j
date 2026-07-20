@@ -5,6 +5,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.orm.runner.LogResult;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -97,6 +98,9 @@ public class RuntimeContext<T> {
     // 是否返回map
     private boolean returnMap;
 
+    // 执行结果
+    private LogResult logResult;
+
     private List<EasyMap<String, Object>> resultMapList;
     private List<T> resultList;
     private int effectRows;
@@ -126,9 +130,9 @@ public class RuntimeContext<T> {
         List<Object> args = new LinkedList<>();
         if (
                 operateType == OperateType.SELECT ||
-                operateType == OperateType.SELECT_COUNT ||
-                operateType == OperateType.SELECT_EXIST ||
-                operateType == OperateType.SELECT_PAGE
+                        operateType == OperateType.SELECT_COUNT ||
+                        operateType == OperateType.SELECT_EXIST ||
+                        operateType == OperateType.SELECT_PAGE
         ) {
             ListTs.addAll(args, whereArgs);
         } else if (operateType == OperateType.INSERT) {
@@ -153,5 +157,17 @@ public class RuntimeContext<T> {
         return args;
     }
 
+
+    public AccessConfig getConfig() {
+        AccessConfig accessConfig = null;
+        AccessUtils accessUtils1 = this.getAccessUtils();
+        if (accessUtils1 != null) {
+            accessConfig = accessUtils1.getAccessConfig();
+        }
+        if (accessConfig == null) {
+            accessConfig = new AccessConfig();
+        }
+        return accessConfig;
+    }
 
 }

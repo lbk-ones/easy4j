@@ -58,7 +58,7 @@ public class Condition {
 
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
-        boolean fieldNameToUnderline = accessUtils.getAccessConfig().isFieldNameToUnderline();
+        boolean fieldNameToUnderline = runtimeContext.getConfig().isFieldNameToUnderline();
         String column1 = getColumn();
         if (fieldNameToUnderline) {
             column1 = StrUtil.toUnderlineCase(column1);

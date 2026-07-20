@@ -106,7 +106,7 @@ public class JdbcUtils {
         try (
                 PreparedStatement ps = conn.prepareStatement(sql)
         ) {
-            Integer fetchSize = runtimeContext.getAccessUtils().getAccessConfig().getFetchSize();
+            Integer fetchSize = runtimeContext.getConfig().getFetchSize();
             if (fetchSize != null) {
                 ps.setFetchSize(fetchSize);
             }
