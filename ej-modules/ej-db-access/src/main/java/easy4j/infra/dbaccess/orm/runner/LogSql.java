@@ -46,7 +46,7 @@ public class LogSql {
                 logResult.setCostTime(System.currentTimeMillis() - logResult.getBeginTime());
                 logResult.setEffectRows(runtimeContext.getEffectRows());
                 if (log.isInfoEnabled()) {
-                    log.info(" [SQL] begin:{} {}ms {} rows => {}", DateUtil.formatTime(logResult.getExeBeginTime()), logResult.getCostTime(), runtimeContext.getEffectRows(), logResult.getSql());
+                    log.info("[SQL] {}ms {} rows => {}", logResult.getCostTime(), runtimeContext.getEffectRows(), logResult.getSql());
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());

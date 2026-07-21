@@ -79,7 +79,9 @@ import java.util.stream.Collectors;
  * </pre>
  *
  * @author bokun.li
+ * @deprecated 自版本 2.1.4 起过期 请使用 {@link easy4j.infra.dbaccess.orm.conditions.WhereBuild} 替代
  */
+@Deprecated
 public class WhereBuild implements Serializable {
     @Getter
     private List<Condition> conditions = new ArrayList<>();

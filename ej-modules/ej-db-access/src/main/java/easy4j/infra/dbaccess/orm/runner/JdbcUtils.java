@@ -32,7 +32,7 @@ public class JdbcUtils {
      *
      * @return 影响行数
      */
-    public int update(RuntimeContext<?> runtimeContext) {
+    public PsRes update(RuntimeContext<?> runtimeContext) {
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         Connection connection1 = getConnection();
@@ -41,80 +41,89 @@ public class JdbcUtils {
         boolean isInsert = operateType == OperateType.INSERT;
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
         ResultSet generatedKeys = null;
-        if (isInsert) {
-            try (
-                    PreparedStatement ps = connection1.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
-            ) {
-                StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
-                int i = ps.executeUpdate();
-                // 回写
-                generatedKeys = ps.getGeneratedKeys();
-                if (generatedKeys == null) return i;
-                MapListHandler mapListHandler = new MapListHandler();
-                List<Map<String, Object>> handle = mapListHandler.handle(generatedKeys);
-                for (int i1 = 0; i1 < params.size(); i1++) {
-                    Object param = params.get(i1);
-                    Class<?> aClass = param.getClass();
-                    Map<String, Object> stringObjectMap = handle.get(i1);
-                    if (stringObjectMap == null) continue;
-                    for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
-                        String fieldName = stringObjectEntry.getKey();
-                        Object value = stringObjectEntry.getValue();
-                        String camelCase = StrUtil.toCamelCase(fieldName.toLowerCase());
-                        Field field = ReflectUtil.getField(aClass, camelCase);
-                        if (field != null) {
-                            Object convert = Convert.convert(field.getType(), value);
-                            ReflectUtil.setFieldValue(param, camelCase, convert);
-                        } else {
-                            field = ReflectUtil.getField(aClass, fieldName);
+        PreparedStatement ps = null;
+        int effectRows = 0;
+        k:try{
+            if (isInsert) {
+                try {
+                    ps = connection1.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
+                    effectRows = ps.executeUpdate();
+                    // 回写
+                    generatedKeys = ps.getGeneratedKeys();
+                    if (generatedKeys == null) break k;
+                    MapListHandler mapListHandler = new MapListHandler();
+                    List<Map<String, Object>> handle = mapListHandler.handle(generatedKeys);
+                    for (int i1 = 0; i1 < params.size(); i1++) {
+                        Object param = params.get(i1);
+                        // 讲道理这里不会为null 但是严谨一点 还是判断一下
+                        if (param == null) continue;
+                        Class<?> aClass = param.getClass();
+                        Map<String, Object> stringObjectMap = handle.get(i1);
+                        if (stringObjectMap == null) continue;
+                        for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
+                            String fieldName = stringObjectEntry.getKey();
+                            Object value = stringObjectEntry.getValue();
+                            String camelCase = StrUtil.toCamelCase(fieldName.toLowerCase());
+                            Field field = ReflectUtil.getField(aClass, camelCase);
                             if (field != null) {
                                 Object convert = Convert.convert(field.getType(), value);
-                                ReflectUtil.setFieldValue(param, fieldName, convert);
+                                ReflectUtil.setFieldValue(param, camelCase, convert);
                             } else {
-                                log.info("not found auto increment keys {}", fieldName);
+                                field = ReflectUtil.getField(aClass, fieldName);
+                                if (field != null) {
+                                    Object convert = Convert.convert(field.getType(), value);
+                                    ReflectUtil.setFieldValue(param, fieldName, convert);
+                                } else {
+                                    log.info("not found auto increment keys {}", fieldName);
+                                }
                             }
                         }
                     }
+                } catch (SQLException e) {
+                    throw new AccessException(e);
+                } finally {
+                    accessUtils.close(generatedKeys);
                 }
-                return i;
-            } catch (SQLException e) {
-                throw new AccessException(e);
-            } finally {
-                accessUtils.close(generatedKeys);
-            }
-        } else {
-            try (
-                    PreparedStatement ps = connection1.prepareStatement(sql)
-            ) {
-                StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
+            } else {
+                try {
+                    ps = connection1.prepareStatement(sql);
+                    StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
 
-                return ps.executeUpdate();
-            } catch (SQLException e) {
-                throw new AccessException(e);
+                    effectRows = ps.executeUpdate();
+                } catch (SQLException e) {
+                    throw new AccessException(e);
+                }
             }
+        }finally {
+
         }
+        return new PsRes().setStatement(ps).setEffectRows(effectRows);
+
 
     }
 
 
-    public ResultSet query(
+    public PsRes query(
             RuntimeContext<?> runtimeContext
     ) {
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         Connection conn = getConnection();
-        try (
-                PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        PreparedStatement ps =  null;
+        ResultSet resultSet = null;
+        try {
+            ps = conn.prepareStatement(sql);
             Integer fetchSize = runtimeContext.getConfig().getFetchSize();
             if (fetchSize != null) {
                 ps.setFetchSize(fetchSize);
             }
             StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
-            return ps.executeQuery();
+            resultSet = ps.executeQuery();
         } catch (SQLException e) {
             throw new AccessException(e);
         }
+        return new PsRes(resultSet,ps);
     }
 
 

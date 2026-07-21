@@ -19,9 +19,7 @@ public class QueryPageSql implements ISql {
 
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
-        String sql = runtimeContext.getSql();
-        if (StrUtil.isNotBlank(sql)) return sql;
-        String TEMP = "SELECT";
+        String TEMP = "select";
         List<String> selectFields = runtimeContext.getEscapeSelectFields();
         // 1
         if (CollUtil.isNotEmpty(selectFields)) {
@@ -29,7 +27,7 @@ public class QueryPageSql implements ISql {
         } else {
             TEMP = TEMP + SP.SPACE + "*";
         }
-        TEMP += " FROM ";
+        TEMP += " from ";
 
         // 2
         TEMP += runtimeContext.getDotTableName();
@@ -37,7 +35,7 @@ public class QueryPageSql implements ISql {
         // 3
         String whereSql = runtimeContext.getWhereSql();
         if (!whereSql.isEmpty()) {
-            TEMP = TEMP + " WHERE " + whereSql;
+            TEMP = TEMP + " where " + whereSql;
         }
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {

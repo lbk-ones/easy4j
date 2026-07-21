@@ -29,7 +29,9 @@ import java.util.Map;
  *
  * @author bokun.li
  * @date 2025-05
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.IDBAccess} 替代
  */
+@Deprecated
 public interface DBAccess {
     void init(Object object);
 

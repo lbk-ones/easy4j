@@ -42,6 +42,7 @@ import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.condition.LogicOperator;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -62,11 +63,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * AbstractDBAccess
- *
  * @author bokun.li
  * @date 2025-05
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link IDBAccess} 替代
  */
+@Deprecated
 @Slf4j
 public abstract class AbstractDBAccess extends CommonDBAccess implements DBAccess {
 

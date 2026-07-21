@@ -59,17 +59,9 @@ public class Condition {
 
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
-        boolean fieldNameToUnderline = runtimeContext.getConfig().isFieldNameToUnderline();
-        String column1 = getColumn();
-        if (fieldNameToUnderline) {
-            column1 = StrUtil.toUnderlineCase(column1);
-        }
-        String column2 = accessUtils.escapeCn(
-                column1,
-                runtimeContext.getDialectV2(),
-                false);
+        String column = accessUtils.escapeCn(accessUtils.fn(getColumn()),runtimeContext.getDialectV2(),false);
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
-            return String.format("%s %s", column2, operator.getSymbol());
+            return String.format("%s %s", column, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
             if (value instanceof Collection<?> list) {
                 String values = list.stream()
@@ -78,7 +70,7 @@ public class Condition {
                             return "?";
                         })
                         .collect(Collectors.joining(", "));
-                return String.format("%s %s (%s)", column2, operator.getSymbol(), values);
+                return String.format("%s %s (%s)", column, operator.getSymbol(), values);
             } else {
                 if (value instanceof CharSequence) {
                     String values = ListTs.asList(value).stream().map(v -> {
@@ -86,7 +78,7 @@ public class Condition {
                                 return "?";
                             })
                             .collect(Collectors.joining(", "));
-                    return String.format("%s %s (%s)", column2, operator.getSymbol(), values);
+                    return String.format("%s %s (%s)", column, operator.getSymbol(), values);
                 }
             }
         } else if (operator == CompareOperator.BETWEEN) {
@@ -95,12 +87,12 @@ public class Condition {
                 Object v2 = ListTs.get(list, 1);
                 argsList.add(v1);
                 argsList.add(v2);
-                return String.format("%s %s %s AND %s", column2, operator.getSymbol(), "?", "?");
+                return String.format("%s %s %s AND %s", column, operator.getSymbol(), "?", "?");
             }
         } else if (operator == CompareOperator.LIKE_LEFT || operator == CompareOperator.LIKE_RIGHT) {
             operator = CompareOperator.LIKE;
         }
         argsList.add(value);
-        return String.format("%s %s %s", column2, operator.getSymbol(), "?");
+        return String.format("%s %s %s", column, operator.getSymbol(), "?");
     }
 }

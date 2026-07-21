@@ -1,14 +1,18 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.orm.runner.LogResult;
+import jodd.bean.BeanUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -104,6 +108,8 @@ public class RuntimeContext<T> {
     // 是否返回map
     private boolean returnMap;
 
+    private boolean skipTail = false;
+
     // 执行结果
     private LogResult logResult;
 
@@ -118,17 +124,19 @@ public class RuntimeContext<T> {
     }
 
     public List<AccessField> getColumnInfoList(List<AccessField> candidateList) {
+        List<AccessField> objects = ListTs.newArrayList();
         Map<Integer, List<AccessField>> integerListMap = ListTs.groupBy(candidateList, AccessField::getGroup);
-        Set<Map.Entry<Integer, List<AccessField>>> entries = integerListMap.entrySet();
+        TreeMap<Integer, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
+        Set<Map.Entry<Integer, List<AccessField>>> entries = treeMap.entrySet();
         Map.Entry<Integer, List<AccessField>> integerListEntry = ListTs.get(entries, 0);
         if (integerListEntry != null) {
             List<AccessField> value = integerListEntry.getValue();
             for (AccessField accessField : value) {
-                accessField.setColumnValue(null);
+                AccessField accessField1 = accessField.cloneNew();
+                objects.add(accessField1);
             }
-            return value;
         }
-        return new ArrayList<>();
+        return objects;
 
     }
 
@@ -140,33 +148,42 @@ public class RuntimeContext<T> {
                         operateType == OperateType.SELECT_EXIST ||
                         operateType == OperateType.SELECT_PAGE
         ) {
-            ListTs.addAll(args, whereArgs);
+            if(CollUtil.isNotEmpty(whereArgs)){
+                args.addAll(whereArgs);
+            }
         } else if (operateType == OperateType.INSERT) {
             Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields, e -> String.valueOf(e.getGroup()));
-            Set<Map.Entry<String, List<AccessField>>> entries = integerListMap.entrySet();
+            TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
+            Set<Map.Entry<String, List<AccessField>>> entries = treeMap.entrySet();
             for (Map.Entry<String, List<AccessField>> entry : entries) {
                 List<AccessField> value = entry.getValue();
+                value.sort(Comparator.comparing(AccessField::getColumnName));
                 for (AccessField insertField : value) {
-                    ListTs.add(args, insertField.getColumnValue());
+                    args.add(insertField.getColumnValue());
                 }
             }
         } else if (operateType == OperateType.UPDATE) {
-            ListTs.addAll(args, updateArgs);
+            if(CollUtil.isNotEmpty(updateArgs)){
+                args.addAll(updateArgs);
+            }
             // update暂且不弄批量更新 目前是循环更新 所以不用分组
             for (AccessField u : updateFields) {
-                ListTs.add(args, u.getColumnValue());
+                args.add(u.getColumnValue());
+            }
+            if(CollUtil.isNotEmpty(whereArgs)){
+                args.addAll(whereArgs);
             }
 
-            ListTs.addAll(args, whereArgs);
-
         } else if (operateType == OperateType.DELETE) {
-            ListTs.addAll(args, whereArgs);
+            if(CollUtil.isNotEmpty(whereArgs)){
+                args.addAll(whereArgs);
+            }
         }
         Access<T> access1 = getAccess();
         if (access1 != null) {
             List<Object> args1 = access1.getArgs();
             if (CollUtil.isNotEmpty(args1)) {
-                ListTs.addAll(args, args1);
+                args.addAll(args1);
             }
         }
         return args;

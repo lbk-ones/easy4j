@@ -36,7 +36,8 @@ public class DBAccessImpl implements IDBAccess {
     public <T> T save(T params, Class<T> clazz) {
         if (params == null) return null;
         if (clazz == null) return null;
-        Access<T> tAccess = new Access<T>().setParam(params)
+        Access<T> tAccess = new Access<T>()
+                .setParam(params)
                 .setClazz(clazz)
                 .setOperateType(OperateType.INSERT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
@@ -466,6 +467,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_COUNT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
+            e.setSkipTail(true);
             accessUtils.parseWhere(whereBuild, e);
             accessUtils.parseSql(e, false);
             long count = e.getCount();
@@ -477,6 +479,8 @@ public class DBAccessImpl implements IDBAccess {
             }
             pageRes.setTotal(count);
             e.setOperateType(OperateType.SELECT_PAGE);
+            e.setSkipTail(false);
+            accessUtils.parseWhere(whereBuild, e);
             accessUtils.parseSql(e, false);
             List<T> resultList = e.getResultList();
             pageRes.setRecords(resultList);

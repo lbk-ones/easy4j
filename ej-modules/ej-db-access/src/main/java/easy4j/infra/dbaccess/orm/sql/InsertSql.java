@@ -22,10 +22,11 @@ public class InsertSql implements ISql {
     public <T> String build(RuntimeContext<T> runtimeContext) {
         String dotTableName = runtimeContext.getDotTableName();
 
-        String sql = "insert into " + dotTableName;
-        List<AccessField> insertFields1 = runtimeContext.getInsertFields();
-        List<AccessField> insertFields = runtimeContext.getColumnInfoList(insertFields1);
-        Set<String> fields = new HashSet<>();
+        String sql = "insert into " + dotTableName + SP.SPACE;
+        List<AccessField> insertFieldsList = runtimeContext.getInsertFields();
+        List<AccessField> insertFields = runtimeContext.getColumnInfoList(insertFieldsList);
+        List<String> fields = new ArrayList<>();
+        insertFields.sort(Comparator.comparing(AccessField::getColumnName));
         for (AccessField insertField : insertFields) {
             String escapeColumnName = insertField.getEscapeColumnName();
             fields.add(escapeColumnName);
@@ -34,13 +35,13 @@ public class InsertSql implements ISql {
             sql += "(" + ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields) + ")";
         }
         sql += " values ";
-        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields1, e->String.valueOf(e.getGroup()));
+        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFieldsList, e->String.valueOf(e.getGroup()));
+        TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
         List<String> valueList = new ArrayList<>();
-
-        for (Map.Entry<String, List<AccessField>> integerListEntry : integerListMap.entrySet()) {
+        for (Map.Entry<String, List<AccessField>> integerListEntry : treeMap.entrySet()) {
             List<AccessField> value = integerListEntry.getValue();
             String te = "(";
-            te += value.stream().map(e -> SP.QUESTION_MARK).collect(Collectors.joining(SP.COMMA));
+            te += value.stream().map(AccessField::getPlaceHolder).collect(Collectors.joining(SP.COMMA));
             te += ")";
             valueList.add(te);
         }

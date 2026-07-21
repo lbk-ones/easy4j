@@ -23,4 +23,18 @@ public class AccessField {
     private boolean pkIs;
     // 是否递增
     private boolean autoIncrementIs;
+
+
+    public AccessField cloneNew() {
+        AccessField accessField1 = new AccessField();
+        accessField1.setField(this.getField());
+        accessField1.setColumnName(this.getColumnName());
+        accessField1.setEscapeColumnName(this.getEscapeColumnName());
+        accessField1.setColumnValue(this.getColumnValue());
+        accessField1.setGroup(this.getGroup());
+        accessField1.setPlaceHolder(this.getPlaceHolder());
+        accessField1.setPkIs(this.isPkIs());
+        accessField1.setAutoIncrementIs(this.isAutoIncrementIs());
+        return accessField1;
+    }
 }

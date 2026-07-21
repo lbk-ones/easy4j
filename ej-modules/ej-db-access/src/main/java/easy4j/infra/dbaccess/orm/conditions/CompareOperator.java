@@ -29,16 +29,16 @@ public enum CompareOperator {
     LESS_THAN("<"),
     GREATER_OR_EQUAL(">="),
     LESS_OR_EQUAL("<="),
-    LIKE("LIKE"),
-    LIKE_LEFT("LIKE LEFT"),
-    LIKE_RIGHT("LIKE RIGHT"),
-    NOT_LIKE("NOT LIKE"),
-    IN("IN"),
-    NOT_IN("NOT IN"),
-    BETWEEN("BETWEEN"),
-    IS_NULL("IS NULL"),
-    IS_NOT_NULL("IS NOT NULL"),
-    EMPTY("EMPTY");
+    LIKE("like"),
+    LIKE_LEFT("like left"),
+    LIKE_RIGHT("like right"),
+    NOT_LIKE("not like"),
+    IN("in"),
+    NOT_IN("not in"),
+    BETWEEN("between"),
+    IS_NULL("is null"),
+    IS_NOT_NULL("is not null"),
+    EMPTY("empty");
 
     private final String symbol;
 

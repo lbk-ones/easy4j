@@ -22,6 +22,7 @@ import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
+import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
 import easy4j.infra.dbaccess.orm.sql.SqlFactory;
 import jakarta.persistence.Column;
@@ -35,9 +36,7 @@ import javax.sql.DataSource;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -241,42 +240,46 @@ public class AccessUtils implements Serializable {
         // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
         List<AccessField> insertList = new LinkedList<>();
         List<AccessField> idlist = new LinkedList<>();
-        for (Field field : fields) {
-            if (skipColumn(field)) continue;
-            boolean pk = isPk(field);
-            boolean isAutoIncrement = isAutoIncrement(field);
-            String columnField = getColumnNameFormField(field);
-            int index = 0;
-            AccessField columnInfo = new AccessField();
-            columnInfo.setColumnName(columnField);
-            columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
-            columnInfo.setColumnValue(null);
-            columnInfo.setField(field);
-            columnInfo.setGroup(index);
-            columnInfo.setPkIs(pk);
-            columnInfo.setAutoIncrementIs(isAutoIncrement);
-            columnInfoList.add(columnInfo);
-
+        int index = 0;
+        // 如果没有参数则只记录字段信息 字段信息的值是null
+        if(p.isEmpty()){
+            for (Field field : fields) {
+                if (skipColumn(field)) continue;
+                boolean pk = isPk(field);
+                boolean isAutoIncrement = isAutoIncrement(field);
+                String columnField = getColumnNameFormField(field);
+                patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
+            }
+        }else{
             for (T t : p) {
-                refreshParam(
-                        ReflectUtil.getFieldValue(t, field),
-                        field,
-                        columnField,
-                        dialectV2,
-                        index,
-                        pk,
-                        isAutoIncrement,
-                        idlist,
-                        operateType,
-                        access.isSkipNullIs(),
-                        updateList,
-                        insertList
-                );
+                for (Field field : fields) {
+                    if (skipColumn(field)) continue;
+                    boolean pk = isPk(field);
+                    boolean isAutoIncrement = isAutoIncrement(field);
+                    String columnField = getColumnNameFormField(field);
+                    if(index == 0){
+                        patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
+                    }
+                    refreshParam(
+                            ReflectUtil.getFieldValue(t,field),
+                            field,
+                            columnField,
+                            dialectV2,
+                            index,
+                            pk,
+                            isAutoIncrement,
+                            idlist,
+                            operateType,
+                            access.isSkipNullIs(),
+                            updateList,
+                            insertList
+                    );
+                }
                 index++;
             }
         }
 
-
+        String schema = access.getSchema();
         return new RuntimeContext<T>()
                 .setSql(access.getSql())
                 .setPage(access.getPage())
@@ -295,15 +298,27 @@ public class AccessUtils implements Serializable {
                 .setInsertFields(insertList)
                 .setDialectV2(dialectV2)
                 .setTableName(dialectV2.escape(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName())))
-                .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), access.getSchema())));
+                .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), schema)));
 
+    }
+
+    private void patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
+        AccessField columnInfo = new AccessField();
+        columnInfo.setColumnName(columnField);
+        columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
+        columnInfo.setColumnValue(null);
+        columnInfo.setField(field);
+        columnInfo.setGroup(index);
+        columnInfo.setPkIs(pk);
+        columnInfo.setAutoIncrementIs(isAutoIncrement);
+        columnInfoList.add(columnInfo);
     }
 
     /**
      * 刷新一个参数
      *
      * @param fieldValue      参数的值
-     * @param field           参数字段类型
+     * @param parentField     参数的field对象
      * @param columnField     参数的名称
      * @param dialectV2       方言
      * @param index           第几个参数
@@ -318,7 +333,7 @@ public class AccessUtils implements Serializable {
      */
     private static <T> void refreshParam(
             Object fieldValue,
-            Field field,
+            Field parentField,
             String columnField,
             DialectV2 dialectV2,
             int index,
@@ -330,7 +345,7 @@ public class AccessUtils implements Serializable {
             List<AccessField> updateList,
             List<AccessField> insertList) {
         AccessField accessField = new AccessField();
-        accessField.setField(field);
+        accessField.setField(parentField);
         accessField.setColumnName(columnField);
         accessField.setEscapeColumnName(dialectV2.escape(columnField));
         accessField.setColumnValue(fieldValue);
@@ -356,6 +371,7 @@ public class AccessUtils implements Serializable {
                 insertList.add(accessField);
             }
         }
+
     }
 
     /**
@@ -382,7 +398,7 @@ public class AccessUtils implements Serializable {
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
             refreshParam(
-                    ReflectUtil.getFieldValue(param, field),
+                    ReflectUtil.getFieldValue(param,field),
                     field,
                     columnField,
                     dialectV2,
@@ -415,7 +431,7 @@ public class AccessUtils implements Serializable {
         String whereSql = null;
         List<String> selectFieldName = new ArrayList<>();
         if (where != null) {
-            whereSql = where.build(whereArgs, context);
+            whereSql = where.build(whereArgs, context, context.isSkipTail());
             List<Condition> selectFields = where.getSelectFields();
             if (CollUtil.isNotEmpty(selectFields)) {
                 selectFieldName = selectFields.stream()
@@ -437,14 +453,14 @@ public class AccessUtils implements Serializable {
     /**
      * 解析UpdateBuild
      *
-     * @param update   条件构造器
+     * @param update  条件构造器
      * @param context 上下文
      * @param <T>     泛型
      */
     public <T> void parseUpdate(UpdateBuild update, RuntimeContext<T> context) {
         List<Object> whereArgs = new ArrayList<>();
         List<String> selectFieldName = new ArrayList<>();
-        String whereSql = update.build(whereArgs, context);
+        String whereSql = update.build(whereArgs, context, context.isSkipTail());
         List<Condition> selectFields = update.getSelectFields();
         if (CollUtil.isNotEmpty(selectFields)) {
             selectFieldName = selectFields.stream()
@@ -463,7 +479,12 @@ public class AccessUtils implements Serializable {
         context.setWhereArgs(whereArgs);
     }
 
-    // 解析sql并执行
+    /**
+     * 解析sql并执行
+     * @param context 上下文
+     * @param skipParseSql 是否跳过解析sql,因为有些sql是从外部传进来的 有必要做这个判断
+     * @param <T> 泛型
+     */
     public <T> void parseSql(RuntimeContext<T> context, boolean skipParseSql) {
         LogSql.init(context);
         if (!skipParseSql) {
@@ -518,5 +539,26 @@ public class AccessUtils implements Serializable {
 
             }
         }
+    }
+
+    public void close(Statement rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (Exception ignored) {
+
+            }
+        }
+    }
+
+    public void close(PsRes psRes){
+        if (psRes == null) {
+            return;
+        }
+        Statement statement = psRes.getStatement();
+        ResultSet resultSet = psRes.getResultSet();
+        close(resultSet);
+        close(statement);
+
     }
 }

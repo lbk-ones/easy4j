@@ -35,6 +35,7 @@ public class Access<T> {
     private String sql;
 
     private WhereBuild where;
+
     private UpdateBuild update;
 
     private boolean skipNullIs;

@@ -2,6 +2,9 @@ package easy4j.infra.dbaccess;
 
 import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.dbaccess.orm.AccessConfig;
+import easy4j.infra.dbaccess.orm.DBAccessImpl;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +22,12 @@ public class Config implements AutoRegisterContext {
     @Bean
     public DBAccess dbAccess() {
         return DBAccessFactory.getDBAccess(dataSource, true, true);
+    }
+
+    @Bean
+    public IDBAccess idbAccess() {
+        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource).setInTransaction(true).setPrintSqlIs(true);
+        return new DBAccessImpl(accessConfig);
     }
 
     @Override
