@@ -42,7 +42,9 @@ import static org.springframework.jdbc.datasource.init.ScriptUtils.*;
  *
  * @author bokun.li
  * @date 2025-05
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.IDBAccess} 替代
  */
+@Deprecated
 @Slf4j
 public class JdbcDbAccess extends AbstractDBAccess implements DBAccess {
 

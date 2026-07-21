@@ -21,7 +21,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * 比较运算法
  *
  * @author bokun.li
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.conditions.CompareOperator} 替代
  */
+@Deprecated
 public enum CompareOperator {
     EQUAL("="),
     NOT_EQUAL("!="),

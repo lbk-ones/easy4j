@@ -29,6 +29,7 @@ import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.common.exception.EasyException;
 import jodd.util.StringPool;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  * SQL 字符串条件构建器，支持 AND、OR、NOT 等逻辑组合，以及各种比较条件。
  * 生成预编译的sql含占位符
  * 字段名称会自动转下化线
- * <p>
+ * <pre>
  * // 示例 1：简单条件
  * String condition1 = SqlBuilder.get()
  * .equal("age", 30)
@@ -75,10 +76,12 @@ import java.util.stream.Collectors;
  * // 示例 3：用于 SQL 查询
  * String sql = "SELECT * FROM employees WHERE " + condition1;
  * System.out.println("完整 SQL: " + sql);
- * <p>
+ * </pre>
  *
  * @author bokun.li
+ * @deprecated 自版本 2.1.4 起过期 请使用 {@link easy4j.infra.dbaccess.orm.conditions.WhereBuild} 替代
  */
+@Deprecated
 public class WhereBuild implements Serializable {
     @Getter
     private List<Condition> conditions = new ArrayList<>();
@@ -112,6 +115,7 @@ public class WhereBuild implements Serializable {
     private final OpConfig opConfig = new OpConfig();
 
 
+    @Setter
     @Getter
     public boolean toUnderLine = true;
 
@@ -125,10 +129,6 @@ public class WhereBuild implements Serializable {
         if (null != orderBy) {
             this.orderBy = orderBy;
         }
-    }
-
-    public void setToUnderLine(boolean toUnderLine) {
-        this.toUnderLine = toUnderLine;
     }
 
 

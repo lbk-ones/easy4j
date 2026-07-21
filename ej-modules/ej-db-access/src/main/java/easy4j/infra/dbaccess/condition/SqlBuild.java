@@ -32,7 +32,9 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  * @date 2025/6/3
+ * @deprecated 自版本 2.1.4 起过期
  */
+@Deprecated
 public class SqlBuild extends CommonDBAccess {
 
 

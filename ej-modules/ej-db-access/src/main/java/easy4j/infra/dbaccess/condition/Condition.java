@@ -33,9 +33,11 @@ import java.util.stream.Collectors;
  * 条件
  *
  * @author bokun.li
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.conditions.Condition} 替代
  */
 @Schema(description = "条件")
 @Data
+@Deprecated
 public class Condition {
 
     public static final String PG_TYPE = "@pgconvert::pgconvert@";

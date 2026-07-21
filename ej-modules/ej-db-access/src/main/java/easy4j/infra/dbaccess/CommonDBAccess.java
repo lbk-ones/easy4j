@@ -13,10 +13,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
-import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.PGHelper;
@@ -25,6 +25,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import jodd.util.StringPool;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -41,7 +42,10 @@ import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link IDBAccess} 替代
+ */
+@Deprecated
 public class CommonDBAccess {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

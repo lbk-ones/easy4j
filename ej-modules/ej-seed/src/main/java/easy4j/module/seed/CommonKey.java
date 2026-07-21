@@ -28,6 +28,7 @@ import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -80,13 +81,13 @@ public class CommonKey implements SnowSeed {
         String ipSegment = Easy4j.getEjSysProperties().getSeedIpSegment();
         log.info(SysLog.compact("分布式雪花主键策略IP前缀为：" + ipSegment));
 
-        DBAccess dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        IDBAccess dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
 
         boolean enabled = false;
         // 所有节点的 ip num 不能一样
         List<String> notHhIpList = localIpList.stream().filter(e -> !HH_IP.equals(e)).collect(Collectors.toList());
         try {
-            List<SYS_WORK_IP> allWorkIpList = dbAccess.selectAll(SYS_WORK_IP.class);
+            List<SYS_WORK_IP> allWorkIpList = dbAccess.queryAll(SYS_WORK_IP.class);
             //List<SYS_WORK_IP> allWorkIpList = jdbcTemplate.query("SELECT * FROM SYS_WORK_IP", BeanPropertyRowMapper.newInstance(SYS_WORK_IP.class));
             ListTs.foreach(allWorkIpList, e -> {
                 if (Objects.isNull(e.getNum())) {
@@ -116,11 +117,13 @@ public class CommonKey implements SnowSeed {
                         SYS_WORK_IP workIp = new SYS_WORK_IP();
                         workIp.setIp(masterIp);
                         workIp.setNum(Integer.parseInt(nextNum));
-                        int i = dbAccess.saveOne(workIp, SYS_WORK_IP.class);
+                        dbAccess.save(workIp, SYS_WORK_IP.class);
                         //jdbcTemplate.update("INSERT INTO SYS_WORK_IP (IP,NUM) VALUES (?,?)", masterIp, nextNum);
                     } else {
+                        SYS_WORK_IP sysWorkIp = new SYS_WORK_IP();
+                        sysWorkIp.setIp(masterIp);
                         // k8s 重启 ip是不会延续原来的 但是这里兼容一下这种情况 万一不用 k8s捏 对吧
-                        SYS_WORK_IP workip = dbAccess.selectByPrimaryKey(masterIp, SYS_WORK_IP.class);
+                        SYS_WORK_IP workip = dbAccess.queryById(sysWorkIp, SYS_WORK_IP.class);
                         if (Objects.nonNull(workip)) {
                             workerId = workip.getNum();
                         }

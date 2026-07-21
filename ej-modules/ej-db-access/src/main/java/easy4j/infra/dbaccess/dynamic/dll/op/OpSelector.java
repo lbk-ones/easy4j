@@ -20,10 +20,7 @@ import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.MysqlOpDdlAlter;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.OracleOpDdlAlter;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.PgOpDdlAlter;
-import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.SqlServerOpDdlAlter;
+import easy4j.infra.dbaccess.dynamic.dll.op.impl.al.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.ct.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.idx.CommonOpDdlIndexImpl;
@@ -85,6 +82,7 @@ public class OpSelector {
         opDdlAlterList.add(new MysqlOpDdlAlter());
         opDdlAlterList.add(new OracleOpDdlAlter());
         opDdlAlterList.add(new PgOpDdlAlter());
+        opDdlAlterList.add(new H2OpDdlAlter());
         opDdlAlterList.add(new SqlServerOpDdlAlter());
         opDdlAlterList.sort(Comparator.comparingInt(IOpContext::getSort));
     }

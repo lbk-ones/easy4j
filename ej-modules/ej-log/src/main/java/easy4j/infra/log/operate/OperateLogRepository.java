@@ -1,6 +1,8 @@
 package easy4j.infra.log.operate;
-import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.domain.OperationLogs;
+import easy4j.infra.dbaccess.domain.PageRes;
+import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 
 import java.util.List;
 
@@ -11,5 +13,5 @@ public interface OperateLogRepository {
     void init();
 
     List<OperationLogs> queryBy(WhereBuild whereBuilder);
-    List<OperationLogs> page(WhereBuild whereBuilder);
+    PageRes page(WhereBuild whereBuilder, Page<OperationLogs> page);
 }

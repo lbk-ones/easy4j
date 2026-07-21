@@ -28,6 +28,7 @@ import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.SqlFileEnums;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.module.seed.CommonKey;
 import easy4j.module.seed.leaf.LeafGenIdService;
 import easy4j.modules.ltl.transactional.LocalMessage;
@@ -59,7 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Aspect
 @Slf4j
 public class LtTransactionalAspect implements InitializingBean, CommandLineRunner {
-    private DBAccess dbAccess;
+    private IDBAccess dbAccess;
     private static final ConcurrentLinkedDeque<LocalMessage> LINKED_DEQUE = new ConcurrentLinkedDeque<>();
 
     private static final List<LocalMessage> POLL_LIST = new CopyOnWriteArrayList<>();

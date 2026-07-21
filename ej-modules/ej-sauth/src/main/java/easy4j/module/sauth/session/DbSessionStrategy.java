@@ -30,6 +30,9 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.orm.IDBAccess;
+import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.NacosInvokerApi;
@@ -61,7 +64,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
     public static final String REFRESH_SESSION = "/sauth/refreshSession";
     public static final String GET_SESSION_BY_USER_NAME = "/sauth/getSessionByUserName";
 
-    private static DBAccess dbAccess;
+    private static IDBAccess dbAccess;
 
     @Resource
     SecurityContext securityContext;
@@ -134,9 +137,8 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         } else {
             ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
             if(session == null){
-                Dict dict = Dict.create()
-                        .set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-                SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
+                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
+                SecuritySession securitySession = dbAccess.queryOne(eq, SecuritySession.class);
                 securityContext.setSessionByToken(token,securitySession);
                 return securitySession;
             }else{
@@ -171,8 +173,8 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
             return securitySession1;
         } else {
             super.saveSession(securitySession);
-            int i = dbAccess.saveOne(securitySession, SecuritySession.class);
-            if (i > 0) {
+            SecuritySession save = dbAccess.save(securitySession, SecuritySession.class);
+            if (save!=null) {
                 return securitySession;
             }
             return null;
@@ -203,8 +205,8 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                 securityContext.removeSession();
             }
         } else {
-            Dict dict = Dict.create().set(LambdaUtil.getFieldName(SecuritySession::getShaToken), token);
-            dbAccess.deleteByMap(dict, SecuritySession.class);
+            FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
+            dbAccess.delete(eq, SecuritySession.class);
         }
 
     }
@@ -238,17 +240,15 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         } else {
             ISecurityEasy4jSession o = securityContext.getSession();
             if (o == null) {
-                Dict dict = Dict.create()
-                        .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
-                SecuritySession securitySession = dbAccess.selectOneByMap(dict, SecuritySession.class);
+                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
+                SecuritySession securitySession = dbAccess.queryOne(eq, SecuritySession.class);
                 securityContext.setSession(securitySession);
                 return securitySession;
             }else if(StrUtil.equals(o.getUsername(),userName)){
                 return Convert.convert(SecuritySession.class, o);
             }else{
-                Dict dict = Dict.create()
-                        .set(LambdaUtil.getFieldName(SecuritySession::getUsername), userName);
-                return dbAccess.selectOneByMap(dict, SecuritySession.class);
+                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
+                return dbAccess.queryOne(eq, SecuritySession.class);
             }
 
         }

@@ -30,7 +30,9 @@ import java.util.List;
  *
  * @author bokun.li
  * @date 2025-05-31 17:41:28
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.conditions.FWhereBuild} 替代
  */
+@Deprecated
 public class FWhereBuild<T> extends WhereBuild {
 
     public String getName(Func1<T, ?> func) {

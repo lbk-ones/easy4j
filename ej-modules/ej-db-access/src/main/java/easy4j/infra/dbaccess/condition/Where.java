@@ -25,7 +25,9 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  * @date 2025/8/27
+ * @deprecated 自版本 2.1.4 起过期
  */
+@Deprecated
 @Data
 @Accessors(chain = true)
 public class Where {

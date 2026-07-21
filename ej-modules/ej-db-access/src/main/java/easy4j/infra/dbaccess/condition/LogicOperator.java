@@ -21,7 +21,9 @@ import jodd.util.StringPool;
  * LogicOperator
  *
  * @author bokun.li
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link easy4j.infra.dbaccess.orm.conditions.LogicOperator} 替代
  */
+@Deprecated
 public enum LogicOperator {
     AND, OR, NOT;
 

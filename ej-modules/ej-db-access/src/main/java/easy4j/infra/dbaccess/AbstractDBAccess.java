@@ -34,6 +34,7 @@ import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -41,6 +42,7 @@ import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.condition.LogicOperator;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -61,11 +63,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * AbstractDBAccess
- *
  * @author bokun.li
  * @date 2025-05
+ * @deprecated 自版本 2.1.4 起过期，请使用 {@link IDBAccess} 替代
  */
+@Deprecated
 @Slf4j
 public abstract class AbstractDBAccess extends CommonDBAccess implements DBAccess {
 
@@ -604,6 +606,22 @@ public abstract class AbstractDBAccess extends CommonDBAccess implements DBAcces
             log.error(e.getMessage(), e);
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public <T> PageRes selectPage(Page<T> page, WhereBuild where, Class<T> clazz) {
+        Connection connection = getConnection();
+        where.bind(connection);
+        List<Object> objects = new ArrayList<>();
+        Dialect dialect = JdbcHelper.getDialect(connection);
+        dialect.printPrintLog(this.isPrintLog());
+        String tableName = getTableName(clazz, dialect);
+        String sql = where.build(objects);
+        sql = DDlLine(SELECT, tableName, where(sql));
+        sql = dialect.getPageSql(sql, page);
+
+        List<T> list = selectList(sql, clazz, objects);
+        return null;
     }
 
     // 只能传值进来

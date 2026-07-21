@@ -175,8 +175,13 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
 
     public Map<String, String> getDropTableMap(String tableName) {
         Map<@Nullable String, @Nullable String> res = Maps.newHashMap();
-        String schema = this.getOpContext().getSchema();
-        String joinStr = ListTs.asList(schema, tableName).stream().filter(StrUtil::isNotBlank).collect(Collectors.joining(SP.DOT));
+        OpContext opContext1 = this.getOpContext();
+        OpConfig opConfig = opContext1.getOpConfig();
+        Connection connection = opContext1.getConnection();
+        String tablename2 = opConfig.escapeCn(tableName, connection, false);
+        String schema = opContext1.getSchema();
+        String schema2 = opConfig.escapeCn(schema, connection, false);
+        String joinStr = ListTs.asList(schema2, tablename2).stream().filter(StrUtil::isNotBlank).collect(Collectors.joining(SP.DOT));
         res.put(TABLE_NAME, joinStr);
         return res;
     }
@@ -186,7 +191,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
         OpContext opContext1 = this.getOpContext();
         Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
         DialectV2 select = DialectFactory.get(connection);
-        List<TableMetadata> tableInfos = select.getAllTableInfoByTableType(tableName, new String[]{"TABLE"});
+        List<TableMetadata> tableInfos = select.getAllTableInfoByTableTypeNoCache(tableName, new String[]{"TABLE"});
         String s = this.getOpContext().getOpConfig().patchStrWithTemplate(tableName, this.getDropTableTemplate(), COLUMN_MAP, EXT_MAP, this::getDropTableMap);
         if (ListTs.isEmpty(tableInfos)) {
             return s;

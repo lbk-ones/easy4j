@@ -24,6 +24,7 @@ import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.SqlFileEnums;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,7 +49,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
 
     public static final String DB_EASY4J_IDEMPOTENT_KEY = "db-easy4j-idempotent-key";
 
-    private DBAccess dbAccess;
+    private IDBAccess dbAccess;
 
 
 //    @Autowired
@@ -81,7 +82,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
                     Easy4jKeyIdempotent keyIdempotent = iterator.next();
                     if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
                         try {
-                            dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
+                            dbAccess.deleteById(keyIdempotent, Easy4jKeyIdempotent.class);
                             iterator.remove();
                         } catch (Exception e) {
                             log.error(SysLog.compact("幂等表删除失败"), e);
@@ -89,12 +90,12 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
                     }
                 }
             } else {
-                List<Easy4jKeyIdempotent> all = dbAccess.selectAll(Easy4jKeyIdempotent.class);
+                List<Easy4jKeyIdempotent> all = dbAccess.queryAll(Easy4jKeyIdempotent.class);
                 //Iterable<Easy4jKeyIdempotent> all = easy4jIdempotentDao.findAll();
                 for (Easy4jKeyIdempotent keyIdempotent : all) {
                     if (keyIdempotent.getExpireDate().getTime() < System.currentTimeMillis()) {
                         try {
-                            dbAccess.deleteByPrimaryKey(keyIdempotent, Easy4jKeyIdempotent.class);
+                            dbAccess.deleteById(keyIdempotent, Easy4jKeyIdempotent.class);
                         } catch (Exception e) {
                             log.error(SysLog.compact("幂等表删除失败"), e);
                         }
@@ -120,7 +121,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
             long time = date.getTime() + (expireSeconds * 1000L);
             Date da = new Date(time);
             easy4jKeyIdempotent.setExpireDate(da);
-            dbAccess.saveOne(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
+            dbAccess.save(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
             cache.add(easy4jKeyIdempotent);
             request.setAttribute(IS_LOCK, "1");
         } catch (DuplicateKeyException e) {
@@ -134,7 +135,7 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
         if (StrUtil.isEmpty(key)) return;
         Easy4jKeyIdempotent easy4jKeyIdempotent = new Easy4jKeyIdempotent();
         easy4jKeyIdempotent.setIdeKey(key);
-        dbAccess.deleteByPrimaryKey(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
+        dbAccess.deleteById(easy4jKeyIdempotent, Easy4jKeyIdempotent.class);
         cache.removeIf(e -> e.getIdeKey().equals(key));
     }
 }

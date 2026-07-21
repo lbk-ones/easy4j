@@ -23,6 +23,9 @@ import easy4j.infra.common.utils.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.AccessConfig;
+import easy4j.infra.dbaccess.orm.DBAccessImpl;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -59,12 +62,10 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
      * @param mixTransaction
      * @return
      */
-    public static DBAccess getDBAccess(DataSource dataSource, boolean mixTransaction, boolean isPrintLog) {
+    public static IDBAccess getDBAccess(DataSource dataSource, boolean mixTransaction, boolean isPrintLog) {
 
-        JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
-        jdbcDbAccess.init(dataSource);
-        jdbcDbAccess.setInTransaction(mixTransaction);
-        jdbcDbAccess.setPrintLog(isPrintLog);
+        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource).setInTransaction(mixTransaction).setPrintSqlIs(isPrintLog);
+        IDBAccess jdbcDbAccess = new DBAccessImpl(accessConfig);
         init(jdbcDbAccess);
         return jdbcDbAccess;
     }
@@ -75,11 +76,9 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
      * @param dataSource
      * @return
      */
-    public static DBAccess getDBAccess(DataSource dataSource) {
-        JdbcDbAccess jdbcDbAccess = new JdbcDbAccess();
-        jdbcDbAccess.init(dataSource);
-        // 默认打印日志
-        jdbcDbAccess.setPrintLog(true);
+    public static IDBAccess getDBAccess(DataSource dataSource) {
+        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource);
+        IDBAccess jdbcDbAccess = new DBAccessImpl(accessConfig);
         init(jdbcDbAccess);
         return jdbcDbAccess;
     }
@@ -102,7 +101,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                 INIT_DB_FILE_PATH.addAll(collect);
             }
         }
-        DBAccess dbAccess = getDBAccess(dataSource);
+        IDBAccess dbAccess = getDBAccess(dataSource);
         init(dbAccess);
     }
 
@@ -111,7 +110,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
      *
      * @param jdbcDbAccess
      */
-    public static void init(DBAccess jdbcDbAccess) {
+    public static void init(IDBAccess jdbcDbAccess) {
         synchronized (INIT_DB_FILE_PATH) {
             for (SqlFileEnums s : INIT_DB_FILE_PATH) {
                 boolean contains = INITED_FILE_PATH.contains(s);

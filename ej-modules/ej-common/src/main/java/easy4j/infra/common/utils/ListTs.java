@@ -64,10 +64,10 @@ public class ListTs {
     /**
      * 递归循环
      *
-     * @param list 要递归的集合
+     * @param list         要递归的集合
      * @param childrenFunc 获取children的方法
-     * @param consumer 消费每一个元素
-     * @param <T> 集合泛型
+     * @param consumer     消费每一个元素
+     * @param <T>          集合泛型
      */
     public static <T> void doLoop(List<T> list, Function<T, List<T>> childrenFunc, Consumer<T> consumer) {
         if (CollUtil.isEmpty(list)) return;
@@ -469,13 +469,25 @@ public class ListTs {
         return ReflectUtil.newInstance(clazz);
     }
 
-    public static <T> T get(List<T> reqs, int i) {
-        try {
-            if (CollUtil.isNotEmpty(reqs)) {
-                return reqs.get(i);
-            }
-        } catch (Exception ignored) {
 
+    public static <T> T get(Iterable<T> collection, int index) {
+
+        if (CollUtil.isNotEmpty(collection)) {
+            Iterator<T> iterator = collection.iterator();
+            int i = 0;
+            if (collection instanceof Collection<T> col) {
+                int size = col.size();
+                if (size == 0 || size - 1 < index) {
+                    return null;
+                }
+            }
+            while (iterator.hasNext()) {
+                T next = iterator.next();
+                if (i == index) {
+                    return next;
+                }
+                i++;
+            }
         }
         return null;
     }
@@ -650,11 +662,11 @@ public class ListTs {
         return arrayList;
     }
 
-    public static String join(String s, List<?> map) {
+    public static String join(String s, Collection<?> map) {
         if (isEmpty(map)) {
             return "";
         }
-        return map.stream().map(String::valueOf).collect(Collectors.joining(s));
+        return map.stream().filter(Objects::nonNull).map(String::valueOf).collect(Collectors.joining(s));
     }
 
     public static String join(String s, Set<?> map) {
@@ -722,9 +734,16 @@ public class ListTs {
 
     }
 
-    public static <T> void addAll(Collection<T> res, Collection<T> objs) {
+    public static <T> void addAll(Collection<T> res, Iterable<T> objs) {
         if (ObjectUtil.isNotEmpty(objs) && res != null) {
-            List<T> collect = objs.stream().filter(Objects::nonNull).toList();
+            Iterator<T> iterator = objs.iterator();
+            List<T> collect = new ArrayList<>();
+            while (iterator.hasNext()) {
+                T next = iterator.next();
+                if (next != null) {
+                    collect.add(next);
+                }
+            }
             if (isNotEmpty(collect)) res.addAll(collect);
         }
     }
