@@ -20,6 +20,7 @@ public interface IDBAccess {
 
     /**
      * 获取数据库连接
+     *
      * @return
      */
     Connection getConnection();
@@ -27,22 +28,23 @@ public interface IDBAccess {
 
     /**
      * 执行sql脚本
-     * @param connection 数据库连接不穿则自动从连接池获取
-     * @param ddlSql 文本形式的sql脚本
-     * @param path 路径名称 可以是绝对路径也可以是相对类路径
+     *
+     * @param connection        数据库连接不穿则自动从连接池获取
+     * @param ddlSql            文本形式的sql脚本
+     * @param path              路径名称 可以是绝对路径也可以是相对类路径
      * @param isCloseConnection 执行完是否关闭链接
      * @throws IOException
      */
-    void runScript(Connection connection,String ddlSql,List<String> path,boolean isCloseConnection) throws IOException;
+    void runScript(Connection connection, String ddlSql, List<String> path, boolean isCloseConnection) throws IOException;
 
-            /**
-             * 写入一条数据
-             *
-             * @param params 要写入的数据
-             * @param clazz  要写入的字节码对象
-             * @param <T>    泛型
-             * @return 写入后的数据
-             */
+    /**
+     * 写入一条数据
+     *
+     * @param params 要写入的数据
+     * @param clazz  要写入的字节码对象
+     * @param <T>    泛型
+     * @return 写入后的数据
+     */
     <T> T save(T params, Class<T> clazz);
 
     /**
@@ -67,9 +69,10 @@ public interface IDBAccess {
 
     /**
      * 删除所有
+     *
      * @param clazz
-     * @return
      * @param <T>
+     * @return
      */
     <T> int deleteAll(Class<T> clazz);
 
@@ -82,7 +85,7 @@ public interface IDBAccess {
      * @param <T>    泛型约束
      * @return 删除条数
      */
-    <T> int deleteById(T params,  Class<T> clazz);
+    <T> int deleteById(T params, Class<T> clazz);
 
     /**
      * 根据主键批量删除
@@ -109,10 +112,11 @@ public interface IDBAccess {
 
     /**
      * 使用UpdateBuild进行更新
+     *
      * @param updateBuild 更新构造器
-     * @param clazz 类
+     * @param clazz       类
+     * @param <T>         泛型
      * @return 受影响条数
-     * @param <T> 泛型
      */
     <T> int update(UpdateBuild updateBuild, Class<T> clazz);
 
@@ -128,9 +132,6 @@ public interface IDBAccess {
     <T> int updateById(T params, boolean isSkipNull, Class<T> clazz);
 
 
-
-
-
     /**
      * 根据主键批量更新
      *
@@ -140,7 +141,7 @@ public interface IDBAccess {
      * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int updateByIds(Iterable<T> params,  boolean isSkipNull, Class<T> clazz);
+    <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
 
     /**
      * 传入sql查询对象集合
@@ -189,8 +190,8 @@ public interface IDBAccess {
     /**
      * 根据条件构造器来查询结果集合，集合元素以Map形式返回
      *
-     * @param whereBuild 条件构造器
-     * @param resultFieldToCame    是否转为驼峰
+     * @param whereBuild        条件构造器
+     * @param resultFieldToCame 是否转为驼峰
      * @return List<EasyMap<String,Object>>
      */
     List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields);
@@ -207,12 +208,12 @@ public interface IDBAccess {
 
     /**
      * 查询所有
+     *
      * @param clazz
-     * @return
      * @param <T>
+     * @return
      */
     <T> List<T> queryAll(Class<T> clazz);
-
 
 
     /**
@@ -225,19 +226,21 @@ public interface IDBAccess {
 
     /**
      * 查询数量
+     *
      * @param whereBuild 条件构造器
-     * @param clazz 类型
+     * @param clazz      类型
+     * @param <T>        泛型
      * @return 总数
-     * @param <T> 泛型
      */
     <T> long count(WhereBuild whereBuild, Class<T> clazz);
 
     /**
      * 是否存在
+     *
      * @param whereBuild 条件构造器
-     * @param clazz 类型
+     * @param clazz      类型
+     * @param <T>        泛型
      * @return boolean
-     * @param <T> 泛型
      */
     <T> boolean exists(WhereBuild whereBuild, Class<T> clazz);
 
@@ -262,10 +265,11 @@ public interface IDBAccess {
 
     /**
      * 根据ID查询
+     *
      * @param param
      * @param clazz
-     * @return
      * @param <T>
+     * @return
      */
     <T> T queryById(T param, Class<T> clazz);
 

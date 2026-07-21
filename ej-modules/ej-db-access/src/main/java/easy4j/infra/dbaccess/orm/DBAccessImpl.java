@@ -5,9 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
-import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
@@ -43,8 +41,8 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public void runScript(Connection connection,String ddlSql,List<String> path,boolean isCloseConnection) throws IOException {
-        DDlHelper.execDDL(connection == null?getConnection():connection, ddlSql, path, isCloseConnection);
+    public void runScript(Connection connection, String ddlSql, List<String> path, boolean isCloseConnection) throws IOException {
+        DDlHelper.execDDL(connection == null ? getConnection() : connection, ddlSql, path, isCloseConnection);
     }
 
     @Override
@@ -540,6 +538,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         WhereBuild whereBuild = idEq(context);
+        if (whereBuild == null) return null;
         return exeCallback(context, e -> {
             accessUtils.parseWhere(whereBuild, e);
             accessUtils.parseSql(e, false);

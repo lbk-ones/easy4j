@@ -28,7 +28,7 @@ public class UpdateSql implements ISql {
                     SP.SPACE +
                     "set" +
                     SP.SPACE +
-                    ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getEscapeColumnName() + " = ? ").toList());
+                    ListTs.join(SP.COMMA, updateFields.stream().map(e -> e.getEscapeColumnName() + " = "+e.getPlaceHolder()+" ").toList());
         } else {
             s = "update " + runtimeContext.getDotTableName() + SP.SPACE + "set" + SP.SPACE + ListTs.join(SP.COMMA, runtimeContext.getSqlSet());
         }
