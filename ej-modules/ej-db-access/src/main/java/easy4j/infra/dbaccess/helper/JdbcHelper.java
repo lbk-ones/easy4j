@@ -333,6 +333,19 @@ public abstract class JdbcHelper {
         return translate;
     }
 
+    public static DataAccessException translateSqlException(String task, String sql, SQLException sqlException,DataSource dataSource) {
+        DataAccessException translate = null;
+        try {
+            sqlErrorCodeSQLExceptionTranslator.setDataSource(dataSource);
+            translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
+        } catch (Exception ignored) {
+        }
+        if (translate == null) {
+            throw new DbAccessException(sqlException.getMessage(), sqlException.getSQLState(), sqlException.getCause());
+        }
+        return translate;
+    }
+
     /**
      * 根据连接对象获取数据库方言
      *

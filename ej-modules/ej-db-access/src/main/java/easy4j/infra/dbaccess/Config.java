@@ -18,11 +18,6 @@ public class Config implements AutoRegisterContext {
     @Resource
     private DataSource dataSource;
 
-    // 默认与当前事务绑定
-    @Bean
-    public DBAccess dbAccess() {
-        return DBAccessFactory.getDBAccess(dataSource, true, true);
-    }
 
     @Bean
     public IDBAccess idbAccess() {
@@ -32,6 +27,6 @@ public class Config implements AutoRegisterContext {
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
-        easy4jContext.register(dbAccess());
+        easy4jContext.register(idbAccess());
     }
 }

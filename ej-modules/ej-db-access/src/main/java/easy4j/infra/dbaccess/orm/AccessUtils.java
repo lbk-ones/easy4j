@@ -541,6 +541,16 @@ public class AccessUtils implements Serializable {
         }
     }
 
+    public void close(Connection rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (Exception ignored) {
+
+            }
+        }
+    }
+
     public void close(Statement rs) {
         if (rs != null) {
             try {

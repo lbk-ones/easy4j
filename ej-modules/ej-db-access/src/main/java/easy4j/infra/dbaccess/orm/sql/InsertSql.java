@@ -26,7 +26,7 @@ public class InsertSql implements ISql {
         List<AccessField> insertFieldsList = runtimeContext.getInsertFields();
         List<AccessField> insertFields = runtimeContext.getColumnInfoList(insertFieldsList);
         List<String> fields = new ArrayList<>();
-        insertFields.sort(Comparator.comparing(AccessField::getColumnName));
+
         for (AccessField insertField : insertFields) {
             String escapeColumnName = insertField.getEscapeColumnName();
             fields.add(escapeColumnName);

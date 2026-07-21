@@ -36,7 +36,12 @@ public class QuerySql implements ISql {
         // 3
         String whereSql = runtimeContext.getWhereSql();
         if (!whereSql.isEmpty()) {
-            TEMP = TEMP + " where " + whereSql;
+            String trim = whereSql.trim();
+            if (StrUtil.startWithIgnoreCase(trim, "order by") || StrUtil.startWithIgnoreCase(trim, "group by")) {
+                TEMP = TEMP + whereSql;
+            } else {
+                TEMP = TEMP + " where " + whereSql;
+            }
         }
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {

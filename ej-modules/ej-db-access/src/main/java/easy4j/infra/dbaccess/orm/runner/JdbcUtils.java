@@ -4,11 +4,10 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.orm.AccessException;
-import easy4j.infra.dbaccess.orm.AccessUtils;
-import easy4j.infra.dbaccess.orm.OperateType;
-import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.handlers.MapListHandler;
@@ -20,6 +19,8 @@ import java.util.*;
 @Slf4j
 @Getter
 public class JdbcUtils {
+
+    public static final String STAND_GENERATED_KEY_NAME = "GENERATED_KEY";
 
     private final Connection connection;
 
@@ -43,9 +44,15 @@ public class JdbcUtils {
         ResultSet generatedKeys = null;
         PreparedStatement ps = null;
         int effectRows = 0;
-        k:try{
+        k:
+        {
             if (isInsert) {
                 try {
+                    List<AccessField> autoIncrementColumns = runtimeContext
+                            .getColumnInfoList()
+                            .stream()
+                            .filter(AccessField::isAutoIncrementIs)
+                            .toList();
                     ps = connection1.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                     StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
                     effectRows = ps.executeUpdate();
@@ -61,9 +68,33 @@ public class JdbcUtils {
                         Class<?> aClass = param.getClass();
                         Map<String, Object> stringObjectMap = handle.get(i1);
                         if (stringObjectMap == null) continue;
+                        int lastIndex = 0;
                         for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
                             String fieldName = stringObjectEntry.getKey();
                             Object value = stringObjectEntry.getValue();
+                            // 标准名称
+                            if (StrUtil.equals(STAND_GENERATED_KEY_NAME, fieldName)) {
+                                if (autoIncrementColumns.size() == 1) {
+                                    AccessField accessField = autoIncrementColumns.get(lastIndex);
+                                    Field field = accessField.getField();
+                                    Object convert = Convert.convert(field.getType(), value);
+                                    ReflectUtil.setFieldValue(param, field, convert);
+                                } else if (autoIncrementColumns.size() > 1) {
+                                    AccessField accessField = ListTs.get(autoIncrementColumns, lastIndex);
+                                    if (accessField != null) {
+                                        Field field = accessField.getField();
+                                        Object convert = Convert.convert(field.getType(), value);
+                                        ReflectUtil.setFieldValue(param, field, convert);
+                                    }
+                                    if (lastIndex == autoIncrementColumns.size() - 1) {
+                                        lastIndex = 0;
+                                    } else {
+                                        lastIndex++;
+                                    }
+                                }
+                                continue;
+                            }
+                            // 非标准名称处理
                             String camelCase = StrUtil.toCamelCase(fieldName.toLowerCase());
                             Field field = ReflectUtil.getField(aClass, camelCase);
                             if (field != null) {
@@ -81,7 +112,7 @@ public class JdbcUtils {
                         }
                     }
                 } catch (SQLException e) {
-                    throw new AccessException(e);
+                    throw JdbcHelper.translateSqlException("update",sql,e,runtimeContext.getConfig().getDataSource());
                 } finally {
                     accessUtils.close(generatedKeys);
                 }
@@ -92,11 +123,9 @@ public class JdbcUtils {
 
                     effectRows = ps.executeUpdate();
                 } catch (SQLException e) {
-                    throw new AccessException(e);
+                    throw JdbcHelper.translateSqlException("update",sql,e,runtimeContext.getConfig().getDataSource());
                 }
             }
-        }finally {
-
         }
         return new PsRes().setStatement(ps).setEffectRows(effectRows);
 
@@ -110,7 +139,7 @@ public class JdbcUtils {
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         Connection conn = getConnection();
-        PreparedStatement ps =  null;
+        PreparedStatement ps = null;
         ResultSet resultSet = null;
         try {
             ps = conn.prepareStatement(sql);
@@ -121,9 +150,10 @@ public class JdbcUtils {
             StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
             resultSet = ps.executeQuery();
         } catch (SQLException e) {
-            throw new AccessException(e);
+            throw JdbcHelper.translateSqlException("query",sql,e,runtimeContext.getConfig().getDataSource());
+
         }
-        return new PsRes(resultSet,ps);
+        return new PsRes(resultSet, ps);
     }
 
 

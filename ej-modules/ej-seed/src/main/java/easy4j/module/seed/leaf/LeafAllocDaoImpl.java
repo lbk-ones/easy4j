@@ -19,6 +19,7 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.SqlFileEnums;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ import java.util.List;
 @Service
 public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
-    private DBAccess dbaccess;
+    private IDBAccess dbaccess;
 
     @Autowired
     DataSource dataSource;
@@ -53,12 +54,12 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     private LeafAllocDomain getByBizTag(String bizTag) {
         LeafAllocDomain leafAllocDomain = new LeafAllocDomain();
         leafAllocDomain.setBizTag(bizTag);
-        return dbaccess.selectByPrimaryKey(leafAllocDomain, LeafAllocDomain.class);
+        return dbaccess.queryById(leafAllocDomain, LeafAllocDomain.class);
     }
 
 
     public List<String> getAllTags() {
-        return ListTs.tListToListString(dbaccess.selectAll(LeafAllocDomain.class), LeafAllocDomain::getBizTag);
+        return ListTs.tListToListString(dbaccess.queryAll(LeafAllocDomain.class), LeafAllocDomain::getBizTag);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -66,7 +67,8 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
     public LeafAllocDomain updateMaxIdAndGetLeafAlloc(String bizTag) {
         LeafAllocDomain domain = getByBizTag(bizTag);
         domain.setMaxId(domain.getMaxId() + domain.getStep());
-        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
+        dbaccess.updateById(domain,true, LeafAllocDomain.class);
+        return dbaccess.queryById(domain, LeafAllocDomain.class);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -78,7 +80,8 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
         long maxId = domain.getStep() + domain.getMaxId();
         leafAllocDomain.setMaxId(maxId);
         leafAllocDomain.setUpdateTime(new Date());
-        return dbaccess.updateByPrimaryKeySelective(domain, LeafAllocDomain.class, true);
+        dbaccess.updateById(domain,true, LeafAllocDomain.class);
+        return dbaccess.queryById(domain, LeafAllocDomain.class);
     }
 
 

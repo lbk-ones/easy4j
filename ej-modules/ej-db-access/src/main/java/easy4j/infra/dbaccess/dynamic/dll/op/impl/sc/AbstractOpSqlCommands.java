@@ -285,7 +285,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
         String sqlSegment = null;
         OpDdlCreateTable opDdlCreateTable = OpSelector.selectOpCreateTable(opContext1);
-
         if (CollUtil.isNotEmpty(dbColumns)) {
             // pick need add columns
             OpDdlAlter opDdlAlter = OpSelector.selectOpDdlAlter(opContext1);

@@ -19,6 +19,8 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.SqlFileEnums;
+import easy4j.infra.dbaccess.orm.IDBAccess;
+import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.modules.ltl.transactional.LocalMessage;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -35,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @date 2025-05
  */
 public class LtlTransactionService implements InitializingBean {
-    private DBAccess dbAccess;
+    private IDBAccess dbAccess;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -44,15 +46,17 @@ public class LtlTransactionService implements InitializingBean {
     }
 
     public void insertLocalMessage(LocalMessage localMessage) throws SQLException {
-        dbAccess.saveOne(localMessage, LocalMessage.class);
+        dbAccess.save(localMessage, LocalMessage.class);
     }
 
     public void delete(LocalMessage localMessage) throws SQLException {
-        dbAccess.deleteByPrimaryKey(localMessage, LocalMessage.class);
+        dbAccess.deleteById(localMessage, LocalMessage.class);
     }
 
     public LocalMessage findById(String id) throws SQLException {
-        LocalMessage byId = dbAccess.selectByPrimaryKey(id, LocalMessage.class);
+        LocalMessage localMessage = new LocalMessage();
+        localMessage.setMsgId(id);
+        LocalMessage byId = dbAccess.queryById(localMessage, LocalMessage.class);
         //Optional<LocalMessage> byId = ltlTransactionMapper.findById(id);
         AtomicReference<LocalMessage> res = new AtomicReference<>(null);
         res.set(byId);
@@ -60,11 +64,9 @@ public class LtlTransactionService implements InitializingBean {
     }
 
     public List<LocalMessage> findAllFailed() {
-        LocalMessage localMessage = new LocalMessage();
-        localMessage.setIsFreeze("is null");
-        List<LocalMessage> all = ListTs.newArrayList();
-        all = dbAccess.selectByObject(localMessage, LocalMessage.class);
-
+        List<LocalMessage> all;
+        WhereBuild isFreeze = WhereBuild.get().isNull("isFreeze");
+        all = dbAccess.query(isFreeze, LocalMessage.class);
         return all;
     }
 
@@ -72,7 +74,6 @@ public class LtlTransactionService implements InitializingBean {
         for (LocalMessage localMessage : list) {
             localMessage.setIsFreeze("1");
         }
-        dbAccess.updateListByPrimaryKey(list, LocalMessage.class);
-
+        dbAccess.updateByIds(list,true, LocalMessage.class);
     }
 }

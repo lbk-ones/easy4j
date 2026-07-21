@@ -5,14 +5,18 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,6 +34,17 @@ public class DBAccessImpl implements IDBAccess {
         if (dataSource == null) {
             throw new AccessException("datasource is not allow null!");
         }
+    }
+
+
+    @Override
+    public Connection getConnection() {
+        return accessUtils.getConnection();
+    }
+
+    @Override
+    public void runScript(Connection connection,String ddlSql,List<String> path,boolean isCloseConnection) throws IOException {
+        DDlHelper.execDDL(connection == null?getConnection():connection, ddlSql, path, isCloseConnection);
     }
 
     @Override
@@ -73,6 +88,19 @@ public class DBAccessImpl implements IDBAccess {
         });
 
 
+    }
+
+    @Override
+    public <T> int deleteAll(Class<T> clazz) {
+        if (clazz == null) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setClazz(clazz)
+                .setOperateType(OperateType.DELETE);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e, false);
+            return e.getEffectRows();
+        });
     }
 
     @Override
@@ -386,6 +414,19 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
+    @Override
+    public <T> List<T> queryAll(Class<T> clazz) {
+        List<T> empty = new ArrayList<>();
+        if (clazz == null) return empty;
+        Access<T> tAccess = new Access<T>()
+                .setClazz(clazz)
+                .setOperateType(OperateType.SELECT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e, false);
+            return e.getResultList();
+        });
+    }
 
     @Override
     public <T> T queryOne(WhereBuild whereBuild, Class<T> clazz) {
@@ -488,5 +529,21 @@ public class DBAccessImpl implements IDBAccess {
         });
 
 
+    }
+
+    @Override
+    public <T> T queryById(T param, Class<T> clazz) {
+        if (param == null) return null;
+        if (clazz == null) return null;
+        Access<T> tAccess = new Access<T>()
+                .setClazz(clazz)
+                .setOperateType(OperateType.SELECT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        WhereBuild whereBuild = idEq(context);
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e, false);
+            return ListTs.get(e.getResultList(), 0);
+        });
     }
 }

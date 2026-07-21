@@ -4,6 +4,8 @@ import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,29 +31,41 @@ class DBAccessImplTest {
     IDBAccess idbAccess;
     DynamicDDL dynamicDDL = null;
 
+    DialectV2 dialectV2;
+
     @BeforeEach
-    void setUp() {
+    synchronized void setUp() {
+
         AccessConfig accessConfig = new AccessConfig();
-        DataSource dataSource = getH2DataSource();
+        DataSource dataSource = getMysql8DataSource();
         accessConfig.setDataSource(dataSource);
         idbAccess = new DBAccessImpl(accessConfig);
-        String s = null;
         dynamicDDL = new DynamicDDL(dataSource, null, OperationLogs.class);
-        dynamicDDL.autoDDLByJavaClass(true);
+        Connection connection = dynamicDDL.getOpContext().getConnection();
+        String s = dynamicDDL.autoDDLByJavaClass(true);
+        dialectV2 = DialectFactory.get(connection);
 
     }
 
+    public String fn(String name) {
+        return dialectV2.escape(name);
+    }
+
     @AfterEach
-    void after() {
+    synchronized void after() {
         if (dynamicDDL != null) {
-            dynamicDDL.close();
+            idbAccess.delete(WhereBuild.get(), OperationLogs.class);
+            //dynamicDDL.close();
         }
     }
 
     public DataSource getMysql8DataSource() {
-        String jdbcUrl = "jdbc:mysql://219.100.186.4:3306/user_test";
+        String mysqlDbUrl = System.getenv("MYSQL_DB_URL");
+        String userName = System.getenv("MYSQL_DB_USERNAME");
+        String password = System.getenv("MYSQL_DB_PASSWORD");
+        String jdbcUrl = "jdbc:mysql://"+mysqlDbUrl+"/ts_schema";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
-        return new TempDataSource(driverClassNameByUrl, jdbcUrl, "root", "xx");
+        return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
 
     public DataSource getH2DataSource() {
@@ -64,15 +79,16 @@ class DBAccessImplTest {
         ArrayList<OperationLogs> objects = ListTs.newArrayList();
         for (int i = 0; i < 100; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            operationLogs.setModule("test"+i);
-            operationLogs.setBusinessNo("wtqtq"+i);
-            operationLogs.setOperatorId((long)i);
-            operationLogs.setOperatorName("user"+i);
+            operationLogs.setModule("test" + i);
+            operationLogs.setBusinessNo("wtqtq" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setOperatorName("user" + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
             objects.add(operationLogs);
         }
         List<OperationLogs> save = idbAccess.save(objects, OperationLogs.class);
+
         assertNotNull(save);
         assertEquals(100, save.size());
         assertTrue(save.get(0).getId() > 0);
@@ -90,6 +106,7 @@ class DBAccessImplTest {
         operationLogs.setCreatedAt(new Date());
 
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
+
         assertNotNull(saved);
         assertNotNull(saved.getId());
         assertTrue(saved.getId() > 0);
@@ -104,7 +121,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 5; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("deleteTest");
-            operationLogs.setBusinessNo("del"+i);
+            operationLogs.setBusinessNo("del" + i);
             operationLogs.setOperatorId(100L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -115,6 +132,7 @@ class DBAccessImplTest {
         // Delete by condition
         WhereBuild whereBuild = WhereBuild.get().eq("module", "deleteTest");
         int deleted = idbAccess.delete(whereBuild, OperationLogs.class);
+
         assertEquals(5, deleted);
     }
 
@@ -140,6 +158,7 @@ class DBAccessImplTest {
         // Verify deletion
         WhereBuild whereBuild = WhereBuild.get().eq("id", id);
         long count = idbAccess.count(whereBuild, OperationLogs.class);
+
         assertEquals(0, count);
     }
 
@@ -151,7 +170,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 3; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("deleteByIdsTest");
-            operationLogs.setBusinessNo("delByIds"+i);
+            operationLogs.setBusinessNo("delByIds" + i);
             operationLogs.setOperatorId(300L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -166,6 +185,7 @@ class DBAccessImplTest {
         }).toList();
         // Delete by ids
         int deleted = idbAccess.deleteByIds(list, OperationLogs.class);
+
         assertEquals(3, deleted);
     }
 
@@ -192,6 +212,7 @@ class DBAccessImplTest {
 
         // Verify update
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
+
         assertEquals("updatedName", result.getOperatorName());
         assertEquals(0, result.getSuccess());
     }
@@ -210,11 +231,12 @@ class DBAccessImplTest {
 
         // Update using UpdateBuild
         UpdateBuild updateBuild = UpdateBuild.get()
-                .setSql(true, "\"operator_name\" = ?", "updateBuildName")
-                .setSql(true, "\"success\" = ?", 0);
+                .setSql(true, fn("operator_name") + " = ?", "updateBuildName")
+                .setSql(true, fn("success") + " = ?", 0);
         updateBuild.eq("id", saved.getId());
 
         int updated = idbAccess.update(updateBuild, OperationLogs.class);
+
         assertEquals(1, updated);
     }
 
@@ -243,6 +265,7 @@ class DBAccessImplTest {
         // Verify update
         WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
+
         assertEquals("updatedById", result.getOperatorName());
     }
 
@@ -254,7 +277,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 2; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("updateByIdsTest");
-            operationLogs.setBusinessNo("upd00"+i);
+            operationLogs.setBusinessNo("upd00" + i);
             operationLogs.setOperatorId(700L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -274,6 +297,7 @@ class DBAccessImplTest {
         }
 
         int updated = idbAccess.updateByIds(updateParams, true, OperationLogs.class);
+
         assertEquals(2, updated);
     }
 
@@ -291,8 +315,9 @@ class DBAccessImplTest {
         idbAccess.save(operationLogs, OperationLogs.class);
 
         // Query by sql
-        String sql = "SELECT * FROM \"sys_operation_logs\" WHERE \"module\" = ? AND \"business_no\" = ?";
+        String sql = "SELECT * FROM " + fn("sys_operation_logs") + " WHERE " + fn("module") + " = ? AND " + fn("business_no") + " = ?";
         List<OperationLogs> results = idbAccess.query(sql, OperationLogs.class, "sqlQueryTest", "sql001");
+
 
         assertNotNull(results);
         assertTrue(results.size() > 0);
@@ -312,8 +337,9 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         // Query one by sql
-        String sql = "SELECT * FROM \"sys_operation_logs\" WHERE \"id\" = ?";
+        String sql = "SELECT * FROM " + fn("sys_operation_logs") + " WHERE " + fn("id") + " = ?";
         OperationLogs result = idbAccess.queryOne(sql, OperationLogs.class, saved.getId());
+
 
         assertNotNull(result);
         assertEquals(saved.getId(), result.getId());
@@ -333,8 +359,9 @@ class DBAccessImplTest {
         idbAccess.save(operationLogs, OperationLogs.class);
 
         // Query as map
-        String sql = "SELECT * FROM \"sys_operation_logs\" WHERE \"module\" = ?";
+        String sql = "SELECT * FROM " + fn("sys_operation_logs") + " WHERE " + fn("module") + " = ?";
         EasyMap<String, Object> result = idbAccess.queryMapListBySql(sql, "mapQueryTest");
+
 
         assertNotNull(result);
     }
@@ -346,7 +373,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 3; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("whereQueryTest");
-            operationLogs.setBusinessNo("where"+i);
+            operationLogs.setBusinessNo("where" + i);
             operationLogs.setOperatorId(1100L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -360,6 +387,7 @@ class DBAccessImplTest {
                 .gte("operatorId", 1100L);
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
         assertNotNull(results);
         assertTrue(results.size() >= 3);
     }
@@ -380,6 +408,7 @@ class DBAccessImplTest {
         WhereBuild whereBuild = WhereBuild.get().eq("business_no", "whereOne001");
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
 
+
         assertNotNull(result);
         assertEquals(saved.getId(), result.getId());
     }
@@ -391,7 +420,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 5; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("countTest");
-            operationLogs.setBusinessNo("count"+i);
+            operationLogs.setBusinessNo("count" + i);
             operationLogs.setOperatorId(1300L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -402,6 +431,7 @@ class DBAccessImplTest {
         // Count
         WhereBuild whereBuild = WhereBuild.get().eq("module", "countTest");
         long count = idbAccess.count(whereBuild, OperationLogs.class);
+
 
         assertEquals(5, count);
     }
@@ -426,6 +456,7 @@ class DBAccessImplTest {
         // Check non-exists
         WhereBuild whereNotExists = WhereBuild.get().eq("business_no", "notExist");
         boolean notExists = idbAccess.exists(whereNotExists, OperationLogs.class);
+
         assertFalse(notExists);
     }
 
@@ -446,6 +477,7 @@ class DBAccessImplTest {
         WhereBuild whereBuild = WhereBuild.get().eq("business_no", "mapOne001");
         EasyMap<String, Object> result = idbAccess.queryOneMap(whereBuild, OperationLogs.class, true);
 
+
         assertNotNull(result);
         assertTrue(result.containsKey("module") || result.containsKey("moduleName"));
     }
@@ -457,7 +489,7 @@ class DBAccessImplTest {
         for (int i = 0; i < 15; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("pageQueryTest");
-            operationLogs.setBusinessNo("page"+i);
+            operationLogs.setBusinessNo("page" + i);
             operationLogs.setOperatorId(1600L + i);
             operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
@@ -472,8 +504,9 @@ class DBAccessImplTest {
 
         PageRes pageRes = idbAccess.queryPage(whereBuild, page, OperationLogs.class);
 
+
         assertNotNull(pageRes);
-        assertEquals(5,pageRes.getRecords(OperationLogs.class).size());
+        assertEquals(5, pageRes.getRecords(OperationLogs.class).size());
     }
 
     @Test
@@ -501,6 +534,7 @@ class DBAccessImplTest {
 
         // Verify
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
+
         assertEquals("newName", result.getOperatorName());
         // originalIp should be null (not updated)
         assertNull(result.getOperatorIp());
@@ -513,8 +547,8 @@ class DBAccessImplTest {
         for (int i = 0; i < 5; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("complexTest");
-            operationLogs.setBusinessNo("complex"+i);
-            operationLogs.setOperatorId((long)i);
+            operationLogs.setBusinessNo("complex" + i);
+            operationLogs.setOperatorId((long) i);
             operationLogs.setSuccess(i % 2 == 0 ? 1 : 0);
             operationLogs.setCreatedAt(new Date());
             objects.add(operationLogs);
@@ -526,7 +560,456 @@ class DBAccessImplTest {
                 .and(wb -> wb.eq("module", "complexTest").gte("operatorId", 2L).eq("success", 1));
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
         assertNotNull(results);
         assertTrue(results.size() > 0);
+    }
+
+    @Test
+    void testWhereBuilderNotEqual() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("neTest");
+            operationLogs.setBusinessNo("ne" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setSuccess(i == 1 ? 0 : 1);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "neTest")
+                .ne("success", 0);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void testWhereBuilderGreaterThan() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("gtTest");
+            operationLogs.setBusinessNo("gt" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "gtTest")
+                .gt("operatorId", 2L);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void testWhereBuilderLessThan() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("ltTest");
+            operationLogs.setBusinessNo("lt" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "ltTest")
+                .lt("operatorId", 3L);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderBetween() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 10; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("betweenTest");
+            operationLogs.setBusinessNo("between" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "betweenTest")
+                .between("operatorId", 3L, 7L);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(5, results.size());
+    }
+
+    @Test
+    void testWhereBuilderLike() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("likeModuleTest" + i);
+            operationLogs.setBusinessNo("like" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .like("module", "ModuleTest");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderLikeLeft() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("testLikeLeft" + i);
+            operationLogs.setBusinessNo("likeLeft" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .likeLeft("module", "testLikeLeft");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderLikeRight() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("LikeRightTest");
+            operationLogs.setBusinessNo("likeRight" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .likeRight("module", "Test");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderIn() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("inTest");
+            operationLogs.setBusinessNo("in" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "inTest")
+                .inArray("operatorId", 1L, 2L, 3L);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderNotIn() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("notInTest");
+            operationLogs.setBusinessNo("notIn" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "notInTest")
+                .notIn("operatorId", 1L, 2L);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    void testWhereBuilderIsNull() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        OperationLogs log1 = new OperationLogs();
+        log1.setModule("nullTest");
+        log1.setBusinessNo("null1");
+        log1.setOperatorId(1L);
+        log1.setOperatorName(null);
+        log1.setCreatedAt(new Date());
+        objects.add(log1);
+
+        OperationLogs log2 = new OperationLogs();
+        log2.setModule("nullTest");
+        log2.setBusinessNo("null2");
+        log2.setOperatorId(2L);
+        log2.setOperatorName("testUser");
+        log2.setCreatedAt(new Date());
+        objects.add(log2);
+
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "nullTest")
+                .isNull("operatorName");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    void testWhereBuilderIsNotNull() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        OperationLogs log1 = new OperationLogs();
+        log1.setModule("notNullTest");
+        log1.setBusinessNo("notNull1");
+        log1.setOperatorId(1L);
+        log1.setOperatorName(null);
+        log1.setCreatedAt(new Date());
+        objects.add(log1);
+
+        OperationLogs log2 = new OperationLogs();
+        log2.setModule("notNullTest");
+        log2.setBusinessNo("notNull2");
+        log2.setOperatorId(2L);
+        log2.setOperatorName("testUser");
+        log2.setCreatedAt(new Date());
+        objects.add(log2);
+
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "notNullTest")
+                .isNotNull("operatorName");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    void testWhereBuilderOrderBy() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("orderTest");
+            operationLogs.setBusinessNo("order" + i);
+            operationLogs.setOperatorId((long) (5 - i));
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "orderTest")
+                .asc("operatorId");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(5, results.size());
+        assertEquals(1L, results.get(0).getOperatorId());
+        assertEquals(5L, results.get(4).getOperatorId());
+    }
+
+    @Test
+    void testWhereBuilderOrderByDesc() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("orderDescTest");
+            operationLogs.setBusinessNo("orderDesc" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "orderDescTest")
+                .desc("operatorId");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(5, results.size());
+        assertEquals(4L, results.get(0).getOperatorId());
+        assertEquals(0L, results.get(4).getOperatorId());
+    }
+
+    @Test
+    void testWhereBuilderOrLogic() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule(i < 2 ? "module1" : "module2");
+            operationLogs.setBusinessNo("orTest" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .or(wb -> wb.eq("module", "module1").or(wb2 -> wb2.eq("module", "module2")));
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(5, results.size());
+    }
+
+    @Test
+    void testWhereBuilderNotLogic() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("notTest");
+            operationLogs.setBusinessNo("not" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setSuccess(i == 0 ? 1 : 0);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "notTest")
+                .not(wb -> wb.eq("success", 1));
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void testUpdateBuildWithSetSql() {
+        OperationLogs operationLogs = new OperationLogs();
+        operationLogs.setModule("updateBuildSqlTest");
+        operationLogs.setBusinessNo("ubSql001");
+        operationLogs.setOperatorId(2000L);
+        operationLogs.setSuccess(1);
+        operationLogs.setCreatedAt(new Date());
+
+        OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
+
+        UpdateBuild updateBuild = UpdateBuild.get()
+                .setSql(true, fn("success") + " = ?", 0);
+        updateBuild.eq("id", saved.getId());
+
+        int updated = idbAccess.update(updateBuild, OperationLogs.class);
+        assertEquals(1, updated);
+
+        WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
+        OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
+
+        assertEquals(0, result.getSuccess());
+    }
+
+    @Test
+    void testConditionalEq() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule("condEqTest");
+            operationLogs.setBusinessNo("condEq" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setSuccess(i % 2);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        boolean addCondition = true;
+        WhereBuild whereBuild = WhereBuild.get()
+                .eq("module", "condEqTest")
+                .eq(addCondition, "success", 1);
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+        assertEquals(1, results.size());
+
+        boolean skipCondition = false;
+        WhereBuild whereBuild2 = WhereBuild.get()
+                .eq("module", "condEqTest")
+                .eq(skipCondition, "success", 1);
+
+        List<OperationLogs> results2 = idbAccess.query(whereBuild2, OperationLogs.class);
+
+        assertEquals(3, results2.size());
+    }
+
+    @Test
+    void testWhereBuilderNotLike() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 5; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule(i < 2 ? "notLikeMatchTest" : "notLikeOtherTest");
+            operationLogs.setBusinessNo("notLike" + i);
+            operationLogs.setOperatorId((long) i);
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .notLike("module", "Match");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(3, results.size());
+
+    }
+
+    @Test
+    void testWhereBuilderMultipleOrderBy() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        for (int i = 0; i < 6; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            operationLogs.setCreatedAt(new Date());
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        WhereBuild whereBuild = WhereBuild.get()
+                .desc("module")
+                .asc("operatorId");
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(6, results.size());
     }
 }

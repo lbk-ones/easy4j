@@ -30,12 +30,12 @@ import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.context.api.seed.DefaultEasy4jSeed;
 import easy4j.infra.context.api.seed.Easy4jSeed;
-import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
-import easy4j.infra.dbaccess.condition.FWhereBuild;
-import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.IDBAccess;
+import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import jodd.exception.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -63,7 +63,7 @@ public class DbLog implements Easy4jDbLog {
 
     public static final String DB_LOCK_ID = "delete-sys-log-record-lock";
     public static final String DB_LOCK_ID_INIT = "delete-sys-log-record-lock-init";
-    private static final DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
+    private static final IDBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
 
     private static final ThreadLocal<Deque<SysLogRecord>> threadLocalMap = new TransmittableThreadLocal<>();
 
@@ -278,7 +278,7 @@ public class DbLog implements Easy4jDbLog {
             if (StrUtil.isBlank(s) && StrUtil.isNotBlank(_id)) {
                 SysLogRecord logRecord1 = new SysLogRecord();
                 logRecord1.setId(_id);
-                last = dbAccess.selectByPrimaryKey(_id, SysLogRecord.class);
+                last = dbAccess.queryById(logRecord1, SysLogRecord.class);
             }
             if (Objects.isNull(last) || StrUtil.isBlank(last.getId())) {
                 return;
@@ -311,7 +311,7 @@ public class DbLog implements Easy4jDbLog {
             } else {
                 logRecord.setStatus(_status);
             }
-            dbAccess.updateByPrimaryKeySelective(logRecord, SysLogRecord.class, false);
+            dbAccess.updateById(logRecord,true, SysLogRecord.class);
         } catch (Throwable e) {
             log.error("日志完成写入失败", e);
         } finally {
@@ -339,10 +339,10 @@ public class DbLog implements Easy4jDbLog {
         String id = easy4jSeed.nextIdStr();
         logRecord.setId(id);
         try {
-            dbAccess.saveOne(logRecord, SysLogRecord.class);
+            dbAccess.save(logRecord, SysLogRecord.class);
         } catch (DuplicateKeyException exception) {
             logRecord.setId(easy4jSeed.nextIdStr());
-            dbAccess.saveOne(logRecord, SysLogRecord.class);
+            dbAccess.save(logRecord, SysLogRecord.class);
         }
         return id;
     }
@@ -418,9 +418,9 @@ public class DbLog implements Easy4jDbLog {
             WhereBuild lte1 = FWhereBuild.get(SysLogRecord.class)
                     .lte(SysLogRecord::getCreateDate, startTime);
 
-            long i = dbAccess.countByCondition(lte1, SysLogRecord.class);
+            long i = dbAccess.count(lte1, SysLogRecord.class);
 
-            dbAccess.deleteByCondition(lte1, SysLogRecord.class);
+            dbAccess.delete(lte1, SysLogRecord.class);
             logRecord.setRemark("日志定时删除" + i + "条");
             log.info("日志定时删除" + i + "条");
             long endTime = System.currentTimeMillis();

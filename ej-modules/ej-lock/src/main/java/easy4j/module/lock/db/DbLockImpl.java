@@ -12,6 +12,7 @@ import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -20,7 +21,7 @@ import java.util.Date;
 @Slf4j
 public class DbLockImpl implements DbLock, AutoRegisterContext {
 
-    private final static DBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, false);
+    private final static IDBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, false);
 
     @Override
     public void lock(String key, Integer expire) {
@@ -44,11 +45,14 @@ public class DbLockImpl implements DbLock, AutoRegisterContext {
         easy4jSysLock.setExpireDate(DateUtil.offsetMinute(date1, minutes));
         easy4jSysLock.setRemark(remark);
         try {
-            dbAccess.saveOne(easy4jSysLock, SysLock.class);
+            dbAccess.save(easy4jSysLock, SysLock.class);
             log.debug("The resource has been locked successfully:" + resourceId + ":" + remark);
         } catch (DuplicateKeyException e) {
-            SysLock objectByPrimaryKey = dbAccess.selectByPrimaryKey(resourceId, SysLock.class);
-            Date expireDate = objectByPrimaryKey.getExpireDate();
+            SysLock sysLock = new SysLock();
+            sysLock.setId(resourceId);
+            SysLock sysLock1 = dbAccess.queryById(sysLock,SysLock.class);
+            int i  = dbAccess.deleteById(sysLock, SysLock.class);
+            Date expireDate = sysLock1.getExpireDate();
             // expireDate == null always lock
             if (expireDate != null && new Date().after(expireDate)) {
                 log.error("Failed to lock the resource:" + resourceId + ":" + remark + ":" + "but the old lock is expired");
@@ -58,15 +62,15 @@ public class DbLockImpl implements DbLock, AutoRegisterContext {
                 easy4jSysLock.setExpireDate(DateUtil.offsetMinute(date, 5));
                 // lock again
                 try {
-                    dbAccess.saveOne(easy4jSysLock, SysLock.class);
+                    dbAccess.save(easy4jSysLock, SysLock.class);
                     log.debug("The resource has been locked successfully:" + resourceId + ":" + remark);
                     return;
                 } catch (Exception e1) {
                     log.error("Failed to lock the resource:" + resourceId + ":" + remark);
-                    throw EasyException.wrap(BusCode.A00039, resourceId, objectByPrimaryKey.getRemark());
+                    throw EasyException.wrap(BusCode.A00039, resourceId, sysLock1.getRemark());
                 }
             }
-            throw EasyException.wrap(BusCode.A00039, resourceId, objectByPrimaryKey.getRemark());
+            throw EasyException.wrap(BusCode.A00039, resourceId, sysLock1.getRemark());
         }
     }
 
@@ -76,7 +80,7 @@ public class DbLockImpl implements DbLock, AutoRegisterContext {
         }
         SysLock sysLock = new SysLock();
         sysLock.setId(key);
-        dbAccess.deleteByPrimaryKey(sysLock, SysLock.class);
+        dbAccess.deleteById(sysLock, SysLock.class);
     }
 
     @Override

@@ -2,10 +2,14 @@ package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -13,14 +17,32 @@ import java.util.List;
  */
 public interface IDBAccess {
 
+
     /**
-     * 写入一条数据
-     *
-     * @param params 要写入的数据
-     * @param clazz  要写入的字节码对象
-     * @param <T>    泛型
-     * @return 写入后的数据
+     * 获取数据库连接
+     * @return
      */
+    Connection getConnection();
+
+
+    /**
+     * 执行sql脚本
+     * @param connection 数据库连接不穿则自动从连接池获取
+     * @param ddlSql 文本形式的sql脚本
+     * @param path 路径名称 可以是绝对路径也可以是相对类路径
+     * @param isCloseConnection 执行完是否关闭链接
+     * @throws IOException
+     */
+    void runScript(Connection connection,String ddlSql,List<String> path,boolean isCloseConnection) throws IOException;
+
+            /**
+             * 写入一条数据
+             *
+             * @param params 要写入的数据
+             * @param clazz  要写入的字节码对象
+             * @param <T>    泛型
+             * @return 写入后的数据
+             */
     <T> T save(T params, Class<T> clazz);
 
     /**
@@ -42,6 +64,14 @@ public interface IDBAccess {
      * @return 删除的条数
      */
     <T> int delete(WhereBuild whereBuild, Class<T> clazz);
+
+    /**
+     * 删除所有
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    <T> int deleteAll(Class<T> clazz);
 
 
     /**
@@ -175,6 +205,14 @@ public interface IDBAccess {
      */
     <T> List<T> query(WhereBuild whereBuild, Class<T> clazz);
 
+    /**
+     * 查询所有
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    <T> List<T> queryAll(Class<T> clazz);
+
 
 
     /**
@@ -221,5 +259,14 @@ public interface IDBAccess {
      * @return T
      */
     <T> PageRes queryPage(WhereBuild whereBuild, Page<T> page, Class<T> clazz);
+
+    /**
+     * 根据ID查询
+     * @param param
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    <T> T queryById(T param, Class<T> clazz);
 
 }

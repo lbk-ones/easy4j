@@ -128,7 +128,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         }
         ddlTableInfo.setTableName(getTableName(aclass));
         DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
-        List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
+        List<DatabaseColumnMetadata> columns = opDbMeta.getColumnsNoCache(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setDbColumns(columns);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setPrimaryKes(primaryKes);
