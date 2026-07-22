@@ -93,6 +93,17 @@ public class FWhereBuild<T> extends WhereBuild {
     }
 
 
+    public FWhereBuild<T> sql(boolean option,String sql,Object ...args){
+        if(option) super.sql(option,sql,args);
+        return this;
+    }
+
+    public FWhereBuild<T> sql(String sql,Object ...args){
+        super.sql(sql,args);
+        return this;
+    }
+
+
     @SafeVarargs
     public final <R> FWhereBuild<T> inArray(Func1<T, R> column, R... values) {
         super.inArray(getName(column), (Object[]) values);

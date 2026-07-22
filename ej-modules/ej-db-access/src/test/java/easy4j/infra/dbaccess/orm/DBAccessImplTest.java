@@ -253,8 +253,8 @@ class DBAccessImplTest {
         // Update using UpdateBuild
         UpdateBuild updateBuild = UpdateBuild.get()
                 .setSql(true, fn("operator_name") + " = ?", "updateBuildName")
-                .setSql(true, fn("success") + " = ?", 0);
-        updateBuild.eq("id", saved.getId());
+                .setSql(true, fn("success") + " = ?", 0)
+                .eq("id",saved.getId());
 
         int updated = idbAccess.update(updateBuild, OperationLogs.class);
 

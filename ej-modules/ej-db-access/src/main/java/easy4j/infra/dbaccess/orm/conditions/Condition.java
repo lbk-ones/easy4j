@@ -24,6 +24,7 @@ import easy4j.infra.dbaccess.orm.RuntimeContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 public class Condition {
 
     @Schema(description = "字段名称，驼峰和下划线都支持")
+    @JsonProperty("column")
     private String column;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -46,20 +48,31 @@ public class Condition {
 
 
     @Schema(description = "字段值，如果是 IN,NOT IN,BETWEEN 查询那么就是集合")
+    @JsonProperty("value")
     private Object value;
 
 
-    @JsonCreator
-    public Condition(@JsonProperty("column") String column, @JsonProperty("operator") CompareOperator operator, @JsonProperty("value") Object value) {
+    @Schema(description = "字段值，如果是 IN,NOT IN,BETWEEN 查询那么就是集合")
+    @JsonProperty("values")
+    private Object[] values;
+
+    public Condition() {
+    }
+
+    public Condition(String column, CompareOperator operator, Object... value) {
         this.column = column;
         this.operator = operator;
-        this.value = value;
+        if (operator == CompareOperator.UNKNOW) {
+            this.values = value;
+        } else {
+            this.value = ListTs.get(value, 0);
+        }
     }
 
 
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
-        String column = accessUtils.escapeCn(accessUtils.fn(getColumn()),runtimeContext.getDialectV2(),false);
+        String column = accessUtils.escapeCn(accessUtils.fn(getColumn()), runtimeContext.getDialectV2(), false);
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
             return String.format("%s %s", column, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
@@ -91,6 +104,10 @@ public class Condition {
             }
         } else if (operator == CompareOperator.LIKE_LEFT || operator == CompareOperator.LIKE_RIGHT) {
             operator = CompareOperator.LIKE;
+        } else if (operator == CompareOperator.UNKNOW) {
+            argsList.addAll(Arrays.asList(values));
+            // 不转义 直接返回
+            return this.column;
         }
         argsList.add(value);
         return String.format("%s %s %s", column, operator.getSymbol(), "?");

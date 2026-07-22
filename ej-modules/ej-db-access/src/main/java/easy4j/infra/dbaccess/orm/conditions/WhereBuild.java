@@ -27,10 +27,7 @@ import jodd.util.StringPool;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -319,6 +316,18 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+
+    public WhereBuild sql(boolean option,String sql,Object ...args_){
+        if(option) {
+            conditions.add(new Condition(sql, CompareOperator.UNKNOW, args_));
+        }
+        return this;
+    }
+    public WhereBuild sql(String sql,Object ...args_){
+        conditions.add(new Condition(sql, CompareOperator.UNKNOW, args_));
+        return this;
+    }
+
     public WhereBuild last(String last) {
         this.last = last;
         return this;
@@ -341,6 +350,7 @@ public class WhereBuild implements Serializable {
         }
         return this;
     }
+
 
 
     public WhereBuild groupBy(String... column) {

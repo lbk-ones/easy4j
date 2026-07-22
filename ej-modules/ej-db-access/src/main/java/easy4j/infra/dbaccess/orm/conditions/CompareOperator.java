@@ -38,7 +38,10 @@ public enum CompareOperator {
     BETWEEN("between"),
     IS_NULL("is null"),
     IS_NOT_NULL("is not null"),
-    EMPTY("empty");
+    EMPTY("empty"),
+    // 自定义sql
+    UNKNOW("unknow");
+
 
     private final String symbol;
 
