@@ -9,6 +9,7 @@ import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.util.List;
 
@@ -86,6 +87,15 @@ public interface IDBAccess {
      * @return 删除条数
      */
     <T> int deleteById(T params, Class<T> clazz);
+
+    /**
+     * 根据主键删除直接传入主键，只适用于单主键那种表
+     * @param primaryKey 主键的值
+     * @param clazz 类字节码对象
+     * @return 受影响的条数
+     * @param <T> 泛型约束
+     */
+    <T> int deleteByPrimaryKey(Serializable primaryKey, Class<T> clazz);
 
     /**
      * 根据主键批量删除
@@ -272,6 +282,16 @@ public interface IDBAccess {
      * @return 返回结果
      */
     <T> T queryById(T param, Class<T> clazz);
+
+    /**
+     * 根据ID的值查询 只适用于单主键那种表
+     *
+     * @param primaryKey
+     * @param clazz
+     * @param <T>
+     * @return 返回结果
+     */
+    <T> T queryByPrimaryKey(Serializable primaryKey, Class<T> clazz);
 
     /**
      * 截断表

@@ -15,6 +15,7 @@ import easy4j.infra.dbaccess.domain.PageRes;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -131,6 +132,20 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
+    @Override
+    public <T> int deleteByPrimaryKey(Serializable key, Class<T> clazz) {
+        if (key == null) return 0;
+        if (clazz == null) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setPrimaryKey(key)
+                .setClazz(clazz)
+                .setOperateType(OperateType.DELETE);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        WhereBuild whereBuild = idEq(context);
+        if (whereBuild == null) return 0;
+        return deleteByIdWith(context, whereBuild, true);
+    }
+
     private <T> Integer deleteByIdWith(RuntimeContext<T> context, WhereBuild whereBuild, boolean callback) {
         if (callback) {
             return exeCallback(context, e -> {
@@ -167,17 +182,21 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        Iterator<T> iterator = params.iterator();
-        int i = 0;
-        while (iterator.hasNext()) {
-            T next = iterator.next();
-            context.setParams(ListTs.asList(next));
-            accessUtils.refreshContextByParam(context, next);
-            WhereBuild whereBuild = idEq(context);
-            if (whereBuild == null) continue;
-            i += deleteByIdWith(context, whereBuild, false);
+        try{
+            Iterator<T> iterator = params.iterator();
+            int i = 0;
+            while (iterator.hasNext()) {
+                T next = iterator.next();
+                context.setParams(ListTs.asList(next));
+                accessUtils.refreshContextByParam(context, next);
+                WhereBuild whereBuild = idEq(context);
+                if (whereBuild == null) continue;
+                i += deleteByIdWith(context, whereBuild, false);
+            }
+            return i;
+        }finally {
+            accessUtils.releaseConnection(context);
         }
-        return i;
     }
 
     @Override
@@ -532,6 +551,24 @@ public class DBAccessImpl implements IDBAccess {
         if (param == null) return null;
         if (clazz == null) return null;
         Access<T> tAccess = new Access<T>()
+                .setClazz(clazz)
+                .setOperateType(OperateType.SELECT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        WhereBuild whereBuild = idEq(context);
+        if (whereBuild == null) return null;
+        return exeCallback(context, e -> {
+            accessUtils.parseWhere(whereBuild, e);
+            accessUtils.parseSql(e, false);
+            return ListTs.get(e.getResultList(), 0);
+        });
+    }
+
+    @Override
+    public <T> T queryByPrimaryKey(Serializable primaryKey, Class<T> clazz) {
+        if (primaryKey == null) return null;
+        if (clazz == null) return null;
+        Access<T> tAccess = new Access<T>()
+                .setPrimaryKey(primaryKey)
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);

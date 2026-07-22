@@ -20,6 +20,8 @@ public class Access<T> {
 
     private T param;
 
+    private Serializable primaryKey;
+
     private Iterable<T> params;
 
     private Class<T> clazz;

@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -252,7 +253,17 @@ public class AccessUtils implements Serializable {
                 boolean pk = isPk(field);
                 boolean isAutoIncrement = isAutoIncrement(field);
                 String columnField = getColumnNameFormField(field);
-                patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
+                AccessField accessField = patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
+
+                // feat: 新增按主键值查询的功能
+                Serializable primaryKey = access.getPrimaryKey();
+                if (pk && primaryKey != null && accessField != null) {
+                    AccessField accessField1 = accessField.cloneNew();
+                    Field field1 = accessField1.getField();
+                    Object convert = Convert.convert(field1.getType(), primaryKey);
+                    accessField1.setColumnValue(convert);
+                    idlist.add(accessField1);
+                }
             }
         } else {
             for (T t : p) {
@@ -306,7 +317,7 @@ public class AccessUtils implements Serializable {
 
     }
 
-    private void patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
+    private AccessField patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
         AccessField columnInfo = new AccessField();
         columnInfo.setColumnName(columnField);
         columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
@@ -316,6 +327,7 @@ public class AccessUtils implements Serializable {
         columnInfo.setPkIs(pk);
         columnInfo.setAutoIncrementIs(isAutoIncrement);
         columnInfoList.add(columnInfo);
+        return columnInfo;
     }
 
     /**
@@ -595,7 +607,8 @@ public class AccessUtils implements Serializable {
 
     /**
      * 拼接 where 语句
-     * @param prefix 前缀
+     *
+     * @param prefix   前缀
      * @param whereTxt where条件字符串
      * @return 拼接之后的词
      */

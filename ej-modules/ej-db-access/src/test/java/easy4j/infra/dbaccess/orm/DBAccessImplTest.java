@@ -1033,4 +1033,37 @@ class DBAccessImplTest {
 
         assertEquals(6, results.size());
     }
+
+
+    @Test
+    void deleteByPrimaryKey() {
+        OperationLogs operationLogs = new OperationLogs();
+        operationLogs.setModule("updateBuildSqlTest");
+        operationLogs.setBusinessNo("ubSql001");
+        operationLogs.setOperatorId(2000L);
+        operationLogs.setSuccess(1);
+        operationLogs.setCreatedAt(new Date());
+
+        idbAccess.save(operationLogs, OperationLogs.class);
+        Long id = operationLogs.getId();
+        int i = idbAccess.deleteByPrimaryKey(id, OperationLogs.class);
+        assertEquals(1, i);
+
+    }
+
+    @Test
+    void queryByPrimaryKey() {
+        OperationLogs operationLogs = new OperationLogs();
+        operationLogs.setModule("updateBuildSqlTest");
+        operationLogs.setBusinessNo("ubSql001");
+        operationLogs.setOperatorId(2000L);
+        operationLogs.setSuccess(1);
+        operationLogs.setCreatedAt(new Date());
+
+        idbAccess.save(operationLogs, OperationLogs.class);
+        Long id = operationLogs.getId();
+        OperationLogs i = idbAccess.queryByPrimaryKey(id, OperationLogs.class);
+        assertNotNull(i);
+        assertEquals(id,i.getId());
+    }
 }
