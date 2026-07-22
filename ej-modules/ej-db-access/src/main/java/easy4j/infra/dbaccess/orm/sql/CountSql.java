@@ -5,7 +5,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 
-public class CountSql implements ISql{
+public class CountSql implements ISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
@@ -17,11 +17,10 @@ public class CountSql implements ISql{
         String whereSql = runtimeContext.getWhereSql();
 
         String sql = "select count(1) from " +
-                runtimeContext.getDotTableName() +
-                SP.SPACE +
-                "where" +
-                SP.SPACE +
-                whereSql;
+                runtimeContext.getDotTableName();
+
+        sql = runtimeContext.getAccessUtils().appendWhere(sql,whereSql);
+
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {
             sql += SP.SPACE + lastSql;

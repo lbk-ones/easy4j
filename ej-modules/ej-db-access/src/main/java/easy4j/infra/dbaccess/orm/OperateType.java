@@ -15,5 +15,7 @@ public enum OperateType {
     // 写入
     INSERT,
     // 删除
-    DELETE
+    DELETE,
+    // TRUNCATE操作
+    TRUNCATE
 }

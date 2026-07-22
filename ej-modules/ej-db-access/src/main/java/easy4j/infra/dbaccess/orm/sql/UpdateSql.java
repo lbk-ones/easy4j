@@ -33,12 +33,8 @@ public class UpdateSql implements ISql {
             s = "update " + runtimeContext.getDotTableName() + SP.SPACE + "set" + SP.SPACE + ListTs.join(SP.COMMA, runtimeContext.getSqlSet());
         }
 
-        if (StrUtil.isNotBlank(whereSql)) {
-            s += SP.SPACE +
-                    "where" +
-                    SP.SPACE +
-                    whereSql;
-        }
+        s = runtimeContext.getAccessUtils().appendWhere(s,whereSql);
+
         if (StrUtil.isNotBlank(lastSql)) {
             s += SP.SPACE + lastSql;
         }

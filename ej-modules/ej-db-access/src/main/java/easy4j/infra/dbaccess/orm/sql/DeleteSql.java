@@ -22,13 +22,7 @@ public class DeleteSql implements ISql {
 
         String sql = "delete from " +
                 runtimeContext.getDotTableName();
-        if (StrUtil.isNotBlank(whereSql)) {
-            sql +=
-                    SP.SPACE +
-                            "where" +
-                            SP.SPACE +
-                            whereSql;
-        }
+        sql = runtimeContext.getAccessUtils().appendWhere(sql,whereSql);
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {
             sql += SP.SPACE + lastSql;

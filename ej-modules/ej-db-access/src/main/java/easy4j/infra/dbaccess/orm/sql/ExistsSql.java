@@ -17,11 +17,10 @@ public class ExistsSql implements ISql {
         String whereSql = runtimeContext.getWhereSql();
 
         String sql = "select count(1) from " +
-                runtimeContext.getDotTableName() +
-                SP.SPACE +
-                "where" +
-                SP.SPACE +
-                whereSql;
+                runtimeContext.getDotTableName();
+
+        sql = runtimeContext.getAccessUtils().appendWhere(sql,whereSql);
+
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {
             sql += SP.SPACE + lastSql;

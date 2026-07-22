@@ -17,6 +17,7 @@ public class SqlFactory {
         sqlList.add(new CountSql());
         sqlList.add(new ExistsSql());
         sqlList.add(new QueryPageSql());
+        sqlList.add(new TruncateSql());
         sqlList = Collections.unmodifiableList(sqlList);
     }
 

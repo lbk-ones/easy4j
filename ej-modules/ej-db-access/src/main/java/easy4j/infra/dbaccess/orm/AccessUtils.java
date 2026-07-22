@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
@@ -245,7 +246,7 @@ public class AccessUtils implements Serializable {
         List<AccessField> idlist = new LinkedList<>();
         int index = 0;
         // 如果没有参数则只记录字段信息 字段信息的值是null
-        if(p.isEmpty()){
+        if (p.isEmpty()) {
             for (Field field : fields) {
                 if (skipColumn(field)) continue;
                 boolean pk = isPk(field);
@@ -253,18 +254,18 @@ public class AccessUtils implements Serializable {
                 String columnField = getColumnNameFormField(field);
                 patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
             }
-        }else{
+        } else {
             for (T t : p) {
                 for (Field field : fields) {
                     if (skipColumn(field)) continue;
                     boolean pk = isPk(field);
                     boolean isAutoIncrement = isAutoIncrement(field);
                     String columnField = getColumnNameFormField(field);
-                    if(index == 0){
+                    if (index == 0) {
                         patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
-                            ReflectUtil.getFieldValue(t,field),
+                            ReflectUtil.getFieldValue(t, field),
                             field,
                             columnField,
                             dialectV2,
@@ -401,7 +402,7 @@ public class AccessUtils implements Serializable {
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
             refreshParam(
-                    ReflectUtil.getFieldValue(param,field),
+                    ReflectUtil.getFieldValue(param, field),
                     field,
                     columnField,
                     dialectV2,
@@ -484,9 +485,10 @@ public class AccessUtils implements Serializable {
 
     /**
      * 解析sql并执行
-     * @param context 上下文
+     *
+     * @param context      上下文
      * @param skipParseSql 是否跳过解析sql,因为有些sql是从外部传进来的 有必要做这个判断
-     * @param <T> 泛型
+     * @param <T>          泛型
      */
     public <T> void parseSql(RuntimeContext<T> context, boolean skipParseSql) {
         LogSql.init(context);
@@ -564,7 +566,7 @@ public class AccessUtils implements Serializable {
         }
     }
 
-    public void close(PsRes psRes){
+    public void close(PsRes psRes) {
         if (psRes == null) {
             return;
         }
@@ -578,7 +580,7 @@ public class AccessUtils implements Serializable {
     private static final SQLErrorCodeSQLExceptionTranslator sqlErrorCodeSQLExceptionTranslator = new SQLErrorCodeSQLExceptionTranslator();
 
 
-    public static DataAccessException translate(String task, String sql, SQLException sqlException,DataSource dataSource) {
+    public static DataAccessException translate(String task, String sql, SQLException sqlException, DataSource dataSource) {
         DataAccessException translate = null;
         try {
             sqlErrorCodeSQLExceptionTranslator.setDataSource(dataSource);
@@ -589,5 +591,27 @@ public class AccessUtils implements Serializable {
             throw new AccessException(sqlException);
         }
         return translate;
+    }
+
+    /**
+     * 拼接 where 语句
+     * @param prefix 前缀
+     * @param whereTxt where条件字符串
+     * @return 拼接之后的词
+     */
+    public String appendWhere(String prefix, String whereTxt) {
+        String TEMP = prefix;
+        if (!StrUtil.endWith(TEMP, SP.SPACE)) {
+            TEMP += SP.SPACE;
+        }
+        if (StrUtil.isNotBlank(whereTxt)) {
+            String trim = whereTxt.trim();
+            if (StrUtil.startWithIgnoreCase(trim, "order by") || StrUtil.startWithIgnoreCase(trim, "group by")) {
+                TEMP += whereTxt;
+            } else {
+                TEMP += "where" + SP.SPACE + whereTxt;
+            }
+        }
+        return TEMP;
     }
 }

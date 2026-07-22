@@ -58,8 +58,6 @@ public class DBAccessImpl implements IDBAccess {
             accessUtils.parseSql(e, false);
             return ListTs.get(e.getParams(), 0);
         });
-
-
     }
 
     private <T, R> R exeCallback(RuntimeContext<T> access, Function<RuntimeContext<T>, R> function) {
@@ -543,6 +541,19 @@ public class DBAccessImpl implements IDBAccess {
             accessUtils.parseWhere(whereBuild, e);
             accessUtils.parseSql(e, false);
             return ListTs.get(e.getResultList(), 0);
+        });
+    }
+
+    @Override
+    public <T> int truncate(Class<T> clazz) {
+        if (clazz == null) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setClazz(clazz)
+                .setOperateType(OperateType.TRUNCATE);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e, false);
+            return e.getEffectRows();
         });
     }
 }

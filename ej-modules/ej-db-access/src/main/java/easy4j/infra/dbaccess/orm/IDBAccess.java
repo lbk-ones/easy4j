@@ -269,8 +269,16 @@ public interface IDBAccess {
      * @param param
      * @param clazz
      * @param <T>
-     * @return
+     * @return 返回结果
      */
     <T> T queryById(T param, Class<T> clazz);
+
+    /**
+     * 截断表
+     * @param clazz
+     * @param <T>
+     * @return 返回受影响条数
+     */
+    <T> int truncate(Class<T> clazz);
 
 }

@@ -54,7 +54,8 @@ class DBAccessImplTest {
     @AfterEach
     synchronized void after() {
         if (dynamicDDL != null) {
-            idbAccess.delete(WhereBuild.get(), OperationLogs.class);
+            int truncate = idbAccess.truncate(OperationLogs.class);
+            System.out.println("截断::"+truncate);
             //dynamicDDL.close();
         }
     }
