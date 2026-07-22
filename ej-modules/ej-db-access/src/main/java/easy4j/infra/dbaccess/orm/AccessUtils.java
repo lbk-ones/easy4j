@@ -17,6 +17,7 @@ import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
+import easy4j.infra.dbaccess.exception.DbAccessException;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
@@ -30,7 +31,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
@@ -355,7 +358,7 @@ public class AccessUtils implements Serializable {
         if (pk) {
             idlist.add(accessField);
         }
-        if (operateType == OperateType.UPDATE) {
+        if (operateType == OperateType.UPDATE && !pk) {
             if (access) {
                 if (!ObjectUtil.isEmpty(fieldValue)) updateList.add(accessField);
             } else {
@@ -570,5 +573,21 @@ public class AccessUtils implements Serializable {
         close(resultSet);
         close(statement);
 
+    }
+
+    private static final SQLErrorCodeSQLExceptionTranslator sqlErrorCodeSQLExceptionTranslator = new SQLErrorCodeSQLExceptionTranslator();
+
+
+    public static DataAccessException translate(String task, String sql, SQLException sqlException,DataSource dataSource) {
+        DataAccessException translate = null;
+        try {
+            sqlErrorCodeSQLExceptionTranslator.setDataSource(dataSource);
+            translate = sqlErrorCodeSQLExceptionTranslator.translate(task, sql, sqlException);
+        } catch (Exception ignored) {
+        }
+        if (translate == null) {
+            throw new AccessException(sqlException);
+        }
+        return translate;
     }
 }

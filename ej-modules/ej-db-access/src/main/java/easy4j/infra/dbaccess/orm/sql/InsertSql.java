@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.orm.sql;
 
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
@@ -22,7 +23,7 @@ public class InsertSql implements ISql {
     public <T> String build(RuntimeContext<T> runtimeContext) {
         String dotTableName = runtimeContext.getDotTableName();
 
-        String sql = "insert into " + dotTableName + SP.SPACE;
+        StringBuilder sql = new StringBuilder("insert into " + dotTableName + SP.SPACE);
         List<AccessField> insertFieldsList = runtimeContext.getInsertFields();
         List<AccessField> insertFields = runtimeContext.getColumnInfoList(insertFieldsList);
         List<String> fields = new ArrayList<>();
@@ -32,10 +33,31 @@ public class InsertSql implements ISql {
             fields.add(escapeColumnName);
         }
         if (!fields.isEmpty()) {
-            sql += "(" + ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields) + ")";
+            sql.append("(").append(ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields)).append(")");
         }
-        sql += " values ";
-        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFieldsList, e->String.valueOf(e.getGroup()));
+        // sql server 的自增需要单独处理
+        if (Objects.equals(runtimeContext.getDbType(), DbType.SQL_SERVER.getDb())) {
+            sql.append(SP.SPACE);
+            List<AccessField> list = runtimeContext.getColumnInfoList().stream().filter(AccessField::isAutoIncrementIs).toList();
+            if (!list.isEmpty()) {
+                sql.append("output");
+                int i = 0;
+                for (AccessField accessField : list) {
+                    if (i == 0) {
+                        sql.append(" ");
+                    } else {
+                        sql.append(",");
+                    }
+                    sql.append("inserted.").append(accessField.getEscapeColumnName());
+                    i++;
+                }
+            }
+        }
+        sql.append(SP.SPACE);
+        sql.append("values");
+        sql.append(SP.SPACE);
+
+        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFieldsList, e -> String.valueOf(e.getGroup()));
         TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
         List<String> valueList = new ArrayList<>();
         for (Map.Entry<String, List<AccessField>> integerListEntry : treeMap.entrySet()) {
@@ -46,11 +68,11 @@ public class InsertSql implements ISql {
             valueList.add(te);
         }
         String join = ListTs.join(SP.COMMA, valueList);
-        sql += join;
+        sql.append(join);
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {
-            sql += SP.SPACE + lastSql;
+            sql.append(SP.SPACE).append(lastSql);
         }
-        return sql;
+        return sql.toString();
     }
 }

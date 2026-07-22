@@ -1,10 +1,9 @@
 package easy4j.infra.dbaccess.orm.runner;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.BeanPropertyHandler;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
-import easy4j.infra.dbaccess.orm.AccessException;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
@@ -66,30 +65,31 @@ public class SqlRunner {
                         context.setEffectRows(handle.size());
                     }
                 } catch (SQLException e) {
-                    throw JdbcHelper.translateSqlException("select_run",context.getSql(),e,context.getConfig().getDataSource());
+                    throw AccessUtils.translate("select_run",context.getSql(),e,context.getConfig().getDataSource());
 
                 }
             }else if(OperateType.SELECT_COUNT == operateType ){
-                ScalarHandler<Long> tBeanListHandler = new ScalarHandler<>(1);
+                ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
                 psRes = jdbcUtils.query(context);
                 try {
-                    count = tBeanListHandler.handle(psRes.getResultSet());
+                    Object handle = tBeanListHandler.handle(psRes.getResultSet());
+                    count = Convert.convert(Long.class,handle);
                 } catch (SQLException e) {
-                    throw JdbcHelper.translateSqlException("select_count",context.getSql(),e,context.getConfig().getDataSource());
+                    throw AccessUtils.translate("select_count",context.getSql(),e,context.getConfig().getDataSource());
 
                 }
                 context.setCount(count);
                 context.setEffectRows(Math.toIntExact(count));
             }else if(OperateType.SELECT_EXIST == operateType){
-                ScalarHandler<Long> tBeanListHandler = new ScalarHandler<>(1);
+                ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
                 psRes = jdbcUtils.query(context);
                 try {
-                    count = tBeanListHandler.handle(psRes.getResultSet());
+                    Object handle = tBeanListHandler.handle(psRes.getResultSet());
+                    count = Convert.convert(Long.class,handle);
                 } catch (SQLException e) {
-                    throw JdbcHelper.translateSqlException("select_exist",context.getSql(),e,context.getConfig().getDataSource());
-
+                    throw AccessUtils.translate("select_exist",context.getSql(),e,context.getConfig().getDataSource());
                 }
                 context.setExists(count>0);
                 context.setEffectRows(Math.toIntExact(count));

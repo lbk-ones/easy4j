@@ -20,7 +20,7 @@ import java.util.*;
 @Getter
 public class JdbcUtils {
 
-    public static final String STAND_GENERATED_KEY_NAME = "GENERATED_KEY";
+    public static final List<String> KEY_NAME = ListTs.asList("GENERATED_KEYS","GENERATED_KEY");
 
     private final Connection connection;
 
@@ -66,14 +66,14 @@ public class JdbcUtils {
                         // 讲道理这里不会为null 但是严谨一点 还是判断一下
                         if (param == null) continue;
                         Class<?> aClass = param.getClass();
-                        Map<String, Object> stringObjectMap = handle.get(i1);
+                        Map<String, Object> stringObjectMap = ListTs.get(handle, i1);
                         if (stringObjectMap == null) continue;
                         int lastIndex = 0;
                         for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
                             String fieldName = stringObjectEntry.getKey();
                             Object value = stringObjectEntry.getValue();
                             // 标准名称
-                            if (StrUtil.equals(STAND_GENERATED_KEY_NAME, fieldName)) {
+                            if (KEY_NAME.stream().anyMatch(e->StrUtil.equals(fieldName,e))) {
                                 if (autoIncrementColumns.size() == 1) {
                                     AccessField accessField = autoIncrementColumns.get(lastIndex);
                                     Field field = accessField.getField();
@@ -112,7 +112,7 @@ public class JdbcUtils {
                         }
                     }
                 } catch (SQLException e) {
-                    throw JdbcHelper.translateSqlException("update",sql,e,runtimeContext.getConfig().getDataSource());
+                    throw AccessUtils.translate("update",sql,e,runtimeContext.getConfig().getDataSource());
                 } finally {
                     accessUtils.close(generatedKeys);
                 }
@@ -123,7 +123,7 @@ public class JdbcUtils {
 
                     effectRows = ps.executeUpdate();
                 } catch (SQLException e) {
-                    throw JdbcHelper.translateSqlException("update",sql,e,runtimeContext.getConfig().getDataSource());
+                    throw AccessUtils.translate("update",sql,e,runtimeContext.getConfig().getDataSource());
                 }
             }
         }
@@ -150,7 +150,7 @@ public class JdbcUtils {
             StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
             resultSet = ps.executeQuery();
         } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("query",sql,e,runtimeContext.getConfig().getDataSource());
+            throw AccessUtils.translate("query",sql,e,runtimeContext.getConfig().getDataSource());
 
         }
         return new PsRes(resultSet, ps);

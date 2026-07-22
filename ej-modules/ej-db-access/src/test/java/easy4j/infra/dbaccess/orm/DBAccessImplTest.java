@@ -37,7 +37,7 @@ class DBAccessImplTest {
     synchronized void setUp() {
 
         AccessConfig accessConfig = new AccessConfig();
-        DataSource dataSource = getMysql8DataSource();
+        DataSource dataSource = getH2DataSource();
         accessConfig.setDataSource(dataSource);
         idbAccess = new DBAccessImpl(accessConfig);
         dynamicDDL = new DynamicDDL(dataSource, null, OperationLogs.class);
@@ -68,6 +68,25 @@ class DBAccessImplTest {
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
 
+    public DataSource getPg15DataSource() {
+        String pgDbUrl = System.getenv("PG_DB_URL");
+        String userName = System.getenv("PG_DB_USERNAME");
+        String password = System.getenv("PG_DB_PASSWORD");
+
+        String jdbcUrl = "jdbc:postgresql://"+pgDbUrl+"/ts_schema";
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
+    }
+
+    public DataSource getMs2025DataSource() {
+        String msUrl = System.getenv("MS_DB_URL");
+        String userName = System.getenv("MS_DB_USERNAME");
+        String password = System.getenv("MS_DB_PASSWORD");
+        String jdbcUrl = "jdbc:sqlserver://"+msUrl+";database=ts_schema;encrypt=false";
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
+    }
+
     public DataSource getH2DataSource() {
         String jdbcUrl = "jdbc:h2:mem:testdb";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
@@ -77,7 +96,7 @@ class DBAccessImplTest {
     @Test
     void save() {
         ArrayList<OperationLogs> objects = ListTs.newArrayList();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             OperationLogs operationLogs = new OperationLogs();
             operationLogs.setModule("test" + i);
             operationLogs.setBusinessNo("wtqtq" + i);
@@ -90,9 +109,10 @@ class DBAccessImplTest {
         List<OperationLogs> save = idbAccess.save(objects, OperationLogs.class);
 
         assertNotNull(save);
-        assertEquals(100, save.size());
-        assertTrue(save.get(0).getId() > 0);
-        System.out.println("save batch test passed");
+        assertEquals(20, save.size());
+        for (OperationLogs operationLogs : save) {
+            assertTrue(operationLogs.getId() > 0);
+        }
     }
 
     @Test

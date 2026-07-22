@@ -44,7 +44,7 @@ public class PostgresqlDialect extends AbstractDialectV2 {
         StringBuilder pageSql = new StringBuilder(sql.length() + 100);
         pageSql.append(sql);
         int start = (page.getPageNo() - 1) * page.getPageSize();
-        pageSql.append(" limit ").append(start).append(",").append(page.getPageSize());
+        pageSql.append(" limit ").append(page.getPageSize()).append(" offset ").append(start);
         return pageSql.toString();
     }
 
