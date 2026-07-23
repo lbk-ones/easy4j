@@ -26,16 +26,18 @@ public class SqlRunner {
         Connection connection = context.getConnection();
         AccessUtils accessUtils = context.getAccessUtils();
         accessUtils.assertNotNull(connection,"connection");
-        LogSql.begin(context);
+
         JdbcUtils jdbcUtils = new JdbcUtils(connection);
         Class<T> clazz = context.getClazz();
         OperateType operateType = context.getOperateType();
         PsRes psRes = null;
         try{
             // query
-            if (OperateType.SELECT == operateType || OperateType.SELECT_PAGE == operateType) {
+            if (OperateType.SELECT == operateType || OperateType.SELECT_PAGE == operateType  || OperateType.SELECT_JOIN == operateType) {
                 List<T> handle;
+                LogSql.exeBegin(context);
                 psRes = jdbcUtils.query(context);
+                LogSql.exeEnd(context);
                 try {
                     // 返回map
                     if(context.isReturnMap()){
@@ -71,7 +73,9 @@ public class SqlRunner {
             }else if(OperateType.SELECT_COUNT == operateType ){
                 ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
+                LogSql.exeBegin(context);
                 psRes = jdbcUtils.query(context);
+                LogSql.exeEnd(context);
                 try {
                     Object handle = tBeanListHandler.handle(psRes.getResultSet());
                     count = Convert.convert(Long.class,handle);
@@ -84,7 +88,9 @@ public class SqlRunner {
             }else if(OperateType.SELECT_EXIST == operateType){
                 ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
+                LogSql.exeBegin(context);
                 psRes = jdbcUtils.query(context);
+                LogSql.exeEnd(context);
                 try {
                     Object handle = tBeanListHandler.handle(psRes.getResultSet());
                     count = Convert.convert(Long.class,handle);
@@ -94,7 +100,9 @@ public class SqlRunner {
                 context.setExists(count>0);
                 context.setEffectRows(Math.toIntExact(count));
             } else {
+                LogSql.exeBegin(context);
                 psRes = jdbcUtils.update(context);
+                LogSql.exeEnd(context);
                 context.setEffectRows(psRes.getEffectRows());
             }
             LogSql.print(context);

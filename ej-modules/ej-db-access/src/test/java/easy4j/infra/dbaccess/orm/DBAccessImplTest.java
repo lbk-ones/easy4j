@@ -9,6 +9,7 @@ import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.common.utils.EasyMap;
@@ -22,6 +23,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +57,7 @@ class DBAccessImplTest {
     synchronized void after() {
         if (dynamicDDL != null) {
             int truncate = idbAccess.truncate(OperationLogs.class);
-            System.out.println("截断::"+truncate);
+            System.out.println("截断::" + truncate);
             //dynamicDDL.close();
         }
     }
@@ -64,7 +66,7 @@ class DBAccessImplTest {
         String mysqlDbUrl = System.getenv("MYSQL_DB_URL");
         String userName = System.getenv("MYSQL_DB_USERNAME");
         String password = System.getenv("MYSQL_DB_PASSWORD");
-        String jdbcUrl = "jdbc:mysql://"+mysqlDbUrl+"/ts_schema";
+        String jdbcUrl = "jdbc:mysql://" + mysqlDbUrl + "/ts_schema";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
@@ -74,7 +76,7 @@ class DBAccessImplTest {
         String userName = System.getenv("PG_DB_USERNAME");
         String password = System.getenv("PG_DB_PASSWORD");
 
-        String jdbcUrl = "jdbc:postgresql://"+pgDbUrl+"/ts_schema";
+        String jdbcUrl = "jdbc:postgresql://" + pgDbUrl + "/ts_schema";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
@@ -83,7 +85,7 @@ class DBAccessImplTest {
         String msUrl = System.getenv("MS_DB_URL");
         String userName = System.getenv("MS_DB_USERNAME");
         String password = System.getenv("MS_DB_PASSWORD");
-        String jdbcUrl = "jdbc:sqlserver://"+msUrl+";database=ts_schema;encrypt=false";
+        String jdbcUrl = "jdbc:sqlserver://" + msUrl + ";database=ts_schema;encrypt=false";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
@@ -254,10 +256,15 @@ class DBAccessImplTest {
         UpdateBuild updateBuild = UpdateBuild.get()
                 .setSql(true, fn("operator_name") + " = ?", "updateBuildName")
                 .setSql(true, fn("success") + " = ?", 0)
-                .eq("id",saved.getId());
+                .eq("id", saved.getId());
 
         int updated = idbAccess.update(updateBuild, OperationLogs.class);
 
+        OperationLogs query = idbAccess.queryOne(updateBuild, OperationLogs.class);
+
+        assertNotNull(query);
+        assertEquals("updateBuildName",query.getOperatorName());
+        assertEquals(0,query.getSuccess());
         assertEquals(1, updated);
     }
 
@@ -381,7 +388,7 @@ class DBAccessImplTest {
 
         // Query as map
         String sql = "SELECT * FROM " + fn("sys_operation_logs") + " WHERE " + fn("module") + " = ?";
-        EasyMap<String, Object> result = idbAccess.queryMapListBySql(sql, "mapQueryTest");
+        EasyMap<String, Object> result = idbAccess.queryMapListBySql(sql, true, "mapQueryTest");
 
 
         assertNotNull(result);
@@ -607,6 +614,31 @@ class DBAccessImplTest {
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
 
         assertEquals(2, results.size());
+    }
+
+    @Test
+    void testDate() {
+        // Insert test data
+        Date date = new Date();
+        OperationLogs operationLogs = new OperationLogs();
+        operationLogs.setModule("skipNullTest");
+        operationLogs.setBusinessNo("skipNull001");
+        operationLogs.setOperatorId(1700L);
+        operationLogs.setOperatorName("originalName");
+        operationLogs.setSuccess(1);
+        operationLogs.setCreatedAt(date);
+
+        idbAccess.save(operationLogs, OperationLogs.class);
+
+        FWhereBuild<OperationLogs> whereBuild = FWhereBuild.get(OperationLogs.class)
+                .orConsumer(e->{
+                    e.eq(OperationLogs::getCreatedAt,date);
+                    e.gte(OperationLogs::getCreatedAt,date);
+                });
+
+        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+
+        assertEquals(1, results.size());
     }
 
     @Test
@@ -946,14 +978,14 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         UpdateBuild updateBuild = UpdateBuild.get()
-                .setSql(true, fn("success") + " = ?", 0);
-        updateBuild.eq("id", saved.getId());
+                .set(true, "success" , 0)
+                .eq("id",saved.getId());
 
         int updated = idbAccess.update(updateBuild, OperationLogs.class);
         assertEquals(1, updated);
 
-        WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
-        OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
+
+        OperationLogs result = idbAccess.queryOne(updateBuild, OperationLogs.class);
 
         assertEquals(0, result.getSuccess());
     }
@@ -1064,6 +1096,66 @@ class DBAccessImplTest {
         Long id = operationLogs.getId();
         OperationLogs i = idbAccess.queryByPrimaryKey(id, OperationLogs.class);
         assertNotNull(i);
-        assertEquals(id,i.getId());
+        assertEquals(id, i.getId());
+    }
+
+    @Test
+    void queryJoin() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        Date last = null;
+        for (int i = 0; i < 6; i++) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(100L);
+            } catch (InterruptedException e) {
+            }
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            last = new Date();
+            operationLogs.setCreatedAt(last);
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        List<OperationLogs> operationLogs = idbAccess.queryJoin(new SqlWrapper(
+                SqlItem.of(OperationLogs::getId, OperationLogs.class)
+        ).where(
+                FWhereBuild.get(OperationLogs.class)
+                        .sql("a."+fn("module")+" = ?","multiOrder2")
+        ), OperationLogs.class);
+
+        assertNotNull(operationLogs);
+
+    }
+
+    @Test
+    void queryMapJoin() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        Date last = null;
+        for (int i = 0; i < 6; i++) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(100L);
+            } catch (InterruptedException e) {
+            }
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            last = new Date();
+            operationLogs.setCreatedAt(last);
+            objects.add(operationLogs);
+        }
+        idbAccess.save(objects, OperationLogs.class);
+
+        List<EasyMap<String,Object>> operationLogs = idbAccess.queryMapJoin(new SqlWrapper(
+                SqlItem.of(OperationLogs::getId, OperationLogs.class)
+        ).where(
+                FWhereBuild.get(OperationLogs.class)
+                        .sql("a."+fn("module")+" = ?","multiOrder2")
+        ), false);
+
+        assertNotNull(operationLogs);
+        assertFalse(operationLogs.isEmpty());
     }
 }

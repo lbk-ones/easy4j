@@ -15,10 +15,10 @@
 package easy4j.infra.dbaccess.orm.conditions;
 
 import cn.hutool.core.util.StrUtil;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -52,7 +52,7 @@ public class Condition {
     private Object value;
 
 
-    @Schema(description = "字段值，如果是 IN,NOT IN,BETWEEN 查询那么就是集合")
+    @Schema(description = "自定义条件的参数值放这里")
     @JsonProperty("values")
     private Object[] values;
 
@@ -73,6 +73,17 @@ public class Condition {
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
         String column = accessUtils.escapeCn(accessUtils.fn(getColumn()), runtimeContext.getDialectV2(), false);
+        // 给参数加前缀
+        String argNamePrefix = runtimeContext.getArgNamePrefix();
+        if (StrUtil.isNotBlank(argNamePrefix)) {
+            if (column.indexOf(".") <= 0) {
+                if (StrUtil.endWith(argNamePrefix, SP.DOT)) {
+                    column = argNamePrefix + column;
+                } else {
+                    column = argNamePrefix + SP.DOT + column;
+                }
+            }
+        }
         if (operator == CompareOperator.IS_NULL || operator == CompareOperator.IS_NOT_NULL) {
             return String.format("%s %s", column, operator.getSymbol());
         } else if (operator == CompareOperator.IN || operator == CompareOperator.NOT_IN) {
@@ -105,9 +116,17 @@ public class Condition {
         } else if (operator == CompareOperator.LIKE_LEFT || operator == CompareOperator.LIKE_RIGHT) {
             operator = CompareOperator.LIKE;
         } else if (operator == CompareOperator.UNKNOW) {
-            argsList.addAll(Arrays.asList(values));
+            if (values != null && values.length > 0) {
+                argsList.addAll(Arrays.asList(values));
+            }
             // 不转义 直接返回
             return this.column;
+        }else if (operator == CompareOperator.DECR_BY) {
+            // 没有参数
+            return String.format(operator.getSymbol(), column, column,value);
+        }else if (operator == CompareOperator.INCR_BY) {
+            // 没有参数
+            return String.format(operator.getSymbol(), column, column,value);
         }
         argsList.add(value);
         return String.format("%s %s %s", column, operator.getSymbol(), "?");

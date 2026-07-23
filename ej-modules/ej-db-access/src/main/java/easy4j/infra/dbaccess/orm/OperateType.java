@@ -10,6 +10,8 @@ public enum OperateType {
     SELECT_EXIST,
     // 查询数量
     SELECT_COUNT,
+    // 带join的查询
+    SELECT_JOIN,
     // 更新
     UPDATE,
     // 写入

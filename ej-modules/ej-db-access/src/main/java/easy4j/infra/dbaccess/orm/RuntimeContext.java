@@ -1,23 +1,17 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.tree.Tree;
-import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.orm.runner.LogResult;
-import jodd.bean.BeanUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.beans.BeanUtils;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * 这是运行时包装类
@@ -99,6 +93,12 @@ public class RuntimeContext<T> {
     // 请求传参
     private Access<T> access;
 
+    // join查询构造器
+    private SqlWrapper sqlWrapper;
+
+    // 参数名称前缀
+    private String argNamePrefix;
+
     // 最后追加的sql
     private String lastSql = "";
 
@@ -147,7 +147,8 @@ public class RuntimeContext<T> {
                 operateType == OperateType.SELECT ||
                         operateType == OperateType.SELECT_COUNT ||
                         operateType == OperateType.SELECT_EXIST ||
-                        operateType == OperateType.SELECT_PAGE
+                        operateType == OperateType.SELECT_PAGE ||
+                        operateType == OperateType.SELECT_JOIN
         ) {
             if(CollUtil.isNotEmpty(whereArgs)){
                 args.addAll(whereArgs);

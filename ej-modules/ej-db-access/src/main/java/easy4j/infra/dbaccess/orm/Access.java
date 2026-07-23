@@ -38,6 +38,8 @@ public class Access<T> {
 
     private WhereBuild where;
 
+    private SqlWrapper sqlWrapper;
+
     private UpdateBuild update;
 
     private boolean skipNullIs;

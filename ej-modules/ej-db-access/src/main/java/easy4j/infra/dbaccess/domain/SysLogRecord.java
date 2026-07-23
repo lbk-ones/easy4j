@@ -19,6 +19,7 @@ import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -32,6 +33,7 @@ import java.util.Date;
 @Data
 public class SysLogRecord implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     // 主键

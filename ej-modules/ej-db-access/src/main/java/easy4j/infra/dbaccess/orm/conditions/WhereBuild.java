@@ -25,6 +25,7 @@ import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 import jodd.util.StringPool;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.*;
@@ -78,6 +79,9 @@ public class WhereBuild implements Serializable {
     private List<Condition> conditions = new ArrayList<>();
 
     @Getter
+    private List<Condition> updateConditions = new ArrayList<>();
+
+    @Getter
     private final List<Condition> groupBy = new ArrayList<>();
     @Getter
     private List<Condition> orderBy = new ArrayList<>();
@@ -93,6 +97,8 @@ public class WhereBuild implements Serializable {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LogicOperator logicOperator = LogicOperator.AND; // 默认使用 AND 连接条件
+
+    @Setter
     private boolean isSubSql = false;
 
     @Getter
@@ -517,6 +523,17 @@ public class WhereBuild implements Serializable {
             join += " order by " + orderBySegment;
         }
         return join;
+    }
+
+    public <T> List<String> parseUpdateConditions(List<Object> argList,RuntimeContext<T> context){
+        List<String> updateSet = new ArrayList<>();
+        for (Condition updateCondition : updateConditions) {
+            String sqlSegment = updateCondition.getSqlSegment(argList, context);
+            if(StrUtil.isNotBlank(sqlSegment)){
+                updateSet.add(sqlSegment);
+            }
+        }
+        return updateSet;
     }
 
     // 静态工厂方法

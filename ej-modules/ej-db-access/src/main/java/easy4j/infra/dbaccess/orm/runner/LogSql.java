@@ -19,12 +19,24 @@ public class LogSql {
         runtimeContext.setLogResult(logResult);
     }
 
-    public static void begin(RuntimeContext<?> runtimeContext) {
+    public static void exeBegin(RuntimeContext<?> runtimeContext){
         LogResult logResult = runtimeContext.getLogResult();
 
         logResult.setExeBeginTime(new Date());
         runtimeContext.setLogResult(logResult);
     }
+
+    public static void exeEnd(RuntimeContext<?> runtimeContext){
+        LogResult logResult = runtimeContext.getLogResult();
+        Date exeBeginTime = logResult.getExeBeginTime();
+        if(exeBeginTime!=null){
+            long time = exeBeginTime.getTime();
+            long l = System.currentTimeMillis() - time;
+            logResult.setExeTime(l);
+        }
+        runtimeContext.setLogResult(logResult);
+    }
+
 
     public static void print(RuntimeContext<?> runtimeContext) {
         boolean printSqlIs = runtimeContext.getConfig().isPrintSqlIs();
@@ -46,7 +58,7 @@ public class LogSql {
                 logResult.setCostTime(System.currentTimeMillis() - logResult.getBeginTime());
                 logResult.setEffectRows(runtimeContext.getEffectRows());
                 if (log.isInfoEnabled()) {
-                    log.info("[SQL] {}ms {} rows => {}", logResult.getCostTime(), runtimeContext.getEffectRows(), logResult.getSql());
+                    log.info("[SQL] [{}ms {}ms] {} rows => {}", logResult.getCostTime(),logResult.getExeTime(), runtimeContext.getEffectRows(), logResult.getSql());
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());

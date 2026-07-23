@@ -296,6 +296,38 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
+    public <T> List<T> queryJoin(SqlWrapper sql, Class<T> clazz) {
+        List<T> empty = new ArrayList<>();
+        if (clazz == null) return empty;
+        if (sql == null) return empty;
+        Access<T> tAccess = new Access<T>()
+                .setSqlWrapper(sql)
+                .setClazz(clazz)
+                .setOperateType(OperateType.SELECT_JOIN);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e, false);
+            return e.getResultList();
+        });
+    }
+
+    @Override
+    public <T> List<EasyMap<String, Object>> queryMapJoin(SqlWrapper sql, boolean resultFieldToCame) {
+        List<EasyMap<String, Object>> empty = new ArrayList<>();
+        if (sql == null) return empty;
+        Access<T> tAccess = new Access<T>()
+                .setSqlWrapper(sql)
+                .setReturnMap(true)
+                .setResultFieldToCame(resultFieldToCame)
+                .setOperateType(OperateType.SELECT_JOIN);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.parseSql(e, false);
+            return e.getResultMapList();
+        });
+    }
+
+    @Override
     public <T> List<T> query(String sql, Class<T> clazz, Object... args) {
         List<T> empty = new ArrayList<>();
         if (StrUtil.isBlank(sql)) return empty;
@@ -332,11 +364,12 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> EasyMap<String, Object> queryMapListBySql(String sql, Object... args) {
+    public <T> EasyMap<String, Object> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args) {
         if (StrUtil.isBlank(sql)) return null;
         Access<T> tAccess = new Access<T>()
                 .setSql(sql)
                 .setArgs(ListTs.asList(args))
+                .setResultFieldToCame(resultFieldToCame)
                 .setReturnMap(true)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);

@@ -5,18 +5,21 @@ import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Setter;
+
 import java.util.Collection;
 import java.util.function.Consumer;
 
 public class FUpdateBuild<T> extends UpdateBuild {
-
+    @Setter
+    private Class<T> aclass = null;
     private String getName(Func1<T, ?> func) {
         return LambdaUtil.getFieldName(func);
     }
 
     public FUpdateBuild<T> updateBuild = this;
 
-    public FUpdateBuild<T> set(boolean condition, Func1<T, ?> column, String val) {
+    public FUpdateBuild<T> set(boolean condition, Func1<T, ?> column, Object val) {
         return this.maybeDo2(condition, () -> {
             String name = getName(column);
             super.set(condition, name, val);
@@ -247,40 +250,60 @@ public class FUpdateBuild<T> extends UpdateBuild {
         return this;
     }
 
+    @Override
+    public FUpdateBuild<T> withLogicOperator(LogicOperator operator) {
+        super.withLogicOperator(operator);
+        return this;
+    }
+
     // 构建子条件
-    public FUpdateBuild<T> and(WhereBuild subBuilder) {
+    public FUpdateBuild<T> and(FUpdateBuild<T> subBuilder) {
         super.and(subBuilder);
         return this;
     }
 
-    public FUpdateBuild<T> and(Consumer<WhereBuild> subBuilder) {
-        super.and(subBuilder);
+    public FUpdateBuild<T> andFUpdateConsumer(Consumer<FUpdateBuild<T>> subBuilder) {
+        FUpdateBuild<T> whereBuild = get(aclass);
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.AND);
+        whereBuild.setSubSql(true);
+        super.getSubBuilders().add(whereBuild);
         return this;
     }
 
-    public FUpdateBuild<T> or(WhereBuild subBuilder) {
+    public FUpdateBuild<T> or(FUpdateBuild<T> subBuilder) {
         super.or(subBuilder);
         return this;
     }
 
-    public FUpdateBuild<T> or(Consumer<WhereBuild> subBuilder) {
-        super.or(subBuilder);
+    public FUpdateBuild<T> orFUpdateConsumer(Consumer<FUpdateBuild<T>> subBuilder) {
+        FUpdateBuild<T> whereBuild = get(aclass);
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.OR);
+        super.getSubBuilders().add(whereBuild);
+        whereBuild.setSubSql(true);
         return this;
     }
 
-    public FUpdateBuild<T> not(WhereBuild subBuilder) {
+    public FUpdateBuild<T> not(FUpdateBuild<T> subBuilder) {
         super.not(subBuilder);
         return this;
     }
 
-    public FUpdateBuild<T> not(Consumer<WhereBuild> subBuilder) {
-        super.not(subBuilder);
+    public FUpdateBuild<T> notFUpdateConsumer(Consumer<FUpdateBuild<T>> subBuilder) {
+        FUpdateBuild<T> whereBuild = get(aclass);
+        subBuilder.accept(whereBuild);
+        whereBuild.setSubSql(true);
+        whereBuild.withLogicOperator(LogicOperator.NOT);
+        super.getSubBuilders().add(whereBuild);
         return this;
     }
     
 
     public static <T> FUpdateBuild<T> get(Class<T> aclass) {
-        return new FUpdateBuild<>();
+        FUpdateBuild<T> fWhereBuild = new FUpdateBuild<>();
+        fWhereBuild.setAclass(aclass);
+        return fWhereBuild;
     }
 
 

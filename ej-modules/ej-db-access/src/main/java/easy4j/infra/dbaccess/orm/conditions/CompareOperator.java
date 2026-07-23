@@ -39,6 +39,8 @@ public enum CompareOperator {
     IS_NULL("is null"),
     IS_NOT_NULL("is not null"),
     EMPTY("empty"),
+    DECR_BY("%s = %s - %s"),
+    INCR_BY("%s = %s + %s"),
     // 自定义sql
     UNKNOW("unknow");
 

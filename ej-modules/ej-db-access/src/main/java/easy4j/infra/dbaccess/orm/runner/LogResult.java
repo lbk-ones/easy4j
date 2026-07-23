@@ -20,6 +20,7 @@ public class LogResult {
 
 
     private Date exeBeginTime;
+    private long exeTime;
 
     /**
      * 受影响的条数

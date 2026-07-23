@@ -109,7 +109,7 @@ public class AccessUtils implements Serializable {
                 if (Objects.nonNull(annotation1)) {
                     String value = annotation1.value();
                     if (StrUtil.isNotBlank(value)) {
-                        return value;
+                        return dialect.escape(value);
                     }
                 }
             } else if (clazz.isAnnotationPresent(Table.class)) {
@@ -117,14 +117,14 @@ public class AccessUtils implements Serializable {
                 if (Objects.nonNull(table)) {
                     String value = table.name();
                     if (StrUtil.isNotBlank(value)) {
-                        return value;
+                        return dialect.escape(value);
                     }
                 }
             } else if (clazz.isAnnotationPresent(DDLTable.class)) {
                 DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
                 String s = annotation2.tableName();
                 if (StrUtil.isNotBlank(s)) {
-                    return s;
+                    return dialect.escape(s);
                 }
             }
             String simpleName = clazz.getSimpleName();
@@ -144,6 +144,21 @@ public class AccessUtils implements Serializable {
             return field.getAnnotation(DDLField.class).isPrimary();
         }
         return false;
+    }
+    // 获取一个
+    public List<String> getIdNames(Class<?> clazz) {
+        Field[] fields = ReflectUtil.getFields(clazz);
+        List<String> idNameList = new ArrayList<>();
+        for (Field field : fields) {
+            if(skipColumn(field)){
+                continue;
+            }
+            if (isPk(field)) {
+                String columnNameFormField = getColumnNameFormField(field);
+                idNameList.add(columnNameFormField);
+            }
+        }
+        return idNameList;
     }
 
     public boolean isAutoIncrement(Field field) {
@@ -185,16 +200,21 @@ public class AccessUtils implements Serializable {
     }
 
     public String getColumnNameFormField(Field field) {
+        String rn = null;
         if (field.isAnnotationPresent(TableField.class)) {
-            return field.getAnnotation(TableField.class).value();
+            rn = field.getAnnotation(TableField.class).value();
         } else if (field.isAnnotationPresent(DDLField.class)) {
-            return field.getAnnotation(DDLField.class).name();
+            rn = field.getAnnotation(DDLField.class).name();
         } else if (field.isAnnotationPresent(JdbcColumn.class)) {
-            return field.getAnnotation(JdbcColumn.class).name();
+            rn = field.getAnnotation(JdbcColumn.class).name();
         } else if (field.isAnnotationPresent(Column.class)) {
-            return field.getAnnotation(Column.class).name();
+            rn = field.getAnnotation(Column.class).name();
         }
-        return fn(field.getName());
+        if(StrUtil.isBlank(rn)){
+            return fn(field.getName());
+        }else {
+            return rn;
+        }
     }
 
     public boolean skipColumn(Field field) {
@@ -296,6 +316,7 @@ public class AccessUtils implements Serializable {
 
         String schema = access.getSchema();
         return new RuntimeContext<T>()
+                .setSqlWrapper(access.getSqlWrapper())
                 .setSql(access.getSql())
                 .setPage(access.getPage())
                 .setAccess(access)
@@ -467,6 +488,19 @@ public class AccessUtils implements Serializable {
     }
 
     /**
+     * 情况上下文中关于where 解析的值
+     * @param context 上下文
+     * @param <T> 泛型
+     */
+    public <T> void clearWhere(RuntimeContext<T> context){
+        context.setWhereSql(null);
+        context.setSelectFields(null);
+        context.setEscapeSelectFields(null);
+        context.setWhereArgs(null);
+        context.setArgNamePrefix(null);
+    }
+
+    /**
      * 解析UpdateBuild
      *
      * @param update  条件构造器
@@ -475,7 +509,11 @@ public class AccessUtils implements Serializable {
      */
     public <T> void parseUpdate(UpdateBuild update, RuntimeContext<T> context) {
         List<Object> whereArgs = new ArrayList<>();
+        List<Object> updateArgs = new ArrayList<>();
         List<String> selectFieldName = new ArrayList<>();
+        // 解析更新条件
+        List<String> sqlSet = update.parseUpdateConditions(updateArgs, context);
+        // 解析where条件
         String whereSql = update.build(whereArgs, context, context.isSkipTail());
         List<Condition> selectFields = update.getSelectFields();
         if (CollUtil.isNotEmpty(selectFields)) {
@@ -485,9 +523,10 @@ public class AccessUtils implements Serializable {
                     .toList();
         }
         String last = update.getLast();
+
         context.setLastSql(last);
-        context.setSqlSet(update.getSqlSet());
-        context.setUpdateArgs(update.getArgs());
+        context.setSqlSet(sqlSet);
+        context.setUpdateArgs(updateArgs);
         context.setWhereSql(whereSql);
         context.setSelectFields(selectFieldName);
         DialectV2 dialectV2 = context.getDialectV2();

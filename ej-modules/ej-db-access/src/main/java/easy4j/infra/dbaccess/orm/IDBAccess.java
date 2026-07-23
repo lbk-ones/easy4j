@@ -2,8 +2,6 @@ package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
-import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
@@ -14,7 +12,14 @@ import java.sql.Connection;
 import java.util.List;
 
 /**
- * 支持增删改查
+ * <pre>
+ * 1、支持单表的增删改查
+ * 2、支持多表联合查询
+ * 3、能执行sql脚本
+ * </pre>
+ *
+ * @since 2.1.4
+ * @author bokun.li
  */
 public interface IDBAccess {
 
@@ -154,6 +159,27 @@ public interface IDBAccess {
     <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
 
     /**
+     * 可以连表的复杂查询
+     *
+     * @param sql   带占位符的sql
+     * @param clazz 对象类型
+     * @param <T>   泛型
+     * @return 对象集合
+     */
+    <T> List<T> queryJoin(SqlWrapper sql,Class<T> clazz);
+
+
+    /**
+     * 可以连表的复杂查询
+     *
+     * @param sql   带占位符的sql
+     * @param resultFieldToCame 是否将返回map中的key转为驼峰
+     * @param <T>   泛型
+     * @return 对象集合
+     */
+    <T> List<EasyMap<String,Object>> queryMapJoin(SqlWrapper sql,boolean resultFieldToCame);
+
+    /**
      * 传入sql查询对象集合
      *
      * @param sql   带占位符的sql
@@ -178,12 +204,13 @@ public interface IDBAccess {
     /**
      * 传入sql将查询结果以Map的结果返回
      *
-     * @param sql  带占位符的sql
-     * @param args 可变参数列表
-     * @param <T>  泛型
+     * @param <T>               泛型
+     * @param sql               带占位符的sql
+     * @param resultFieldToCame 是否将返回map中的key转为驼峰
+     * @param args              可变参数列表
      * @return 对象集合
      */
-    <T> EasyMap<String, Object> queryMapListBySql(String sql, Object... args);
+    <T> EasyMap<String, Object> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args);
 
     /**
      * 传入表名和查询条件将查询结果以Map的结果返回（根据传入的表名自动查询这个表的字段集合）whereBuild=null则是全查询

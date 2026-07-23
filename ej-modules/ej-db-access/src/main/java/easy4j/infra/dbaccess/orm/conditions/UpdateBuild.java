@@ -14,56 +14,40 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * 这里的 字段名称 只进行了下划线转换，并没有进行转义处理
+ */
 public class UpdateBuild extends WhereBuild {
 
     public UpdateBuild updateBuild = this;
 
-    @Getter
-    private final List<String> sqlSet = new LinkedList<>();
-
-    @Getter
-    private final List<Object> args = new LinkedList<>();
-
-    @Setter
-    private boolean toUnderline = true;
-
-    public String formatName(String name){
-        String column_;
-        if (toUnderline) {
-            column_ = StrUtil.toUnderlineCase(name);
-        } else {
-            column_ = name;
-        }
-        return column_;
-    }
-    public UpdateBuild set(boolean condition, String column, String val) {
+    public UpdateBuild set(boolean condition, String column, Object val) {
 
         return maybeDo(condition, () -> {
-            sqlSet.add(formatName(column) + CompareOperator.EQUAL.getSymbol() + val);
+            super.getUpdateConditions().add(new Condition(column,CompareOperator.EQUAL,val));
         });
     }
 
     // col1 = ? + ? | arg1,arg2
     public UpdateBuild setSql(boolean condition, String setSql, Object... params) {
         return maybeDo(condition && StrUtil.isNotBlank(setSql), () -> {
-            sqlSet.add(setSql);
-            ListTs.addAll(args,ListTs.asList(params));
+            super.getUpdateConditions().add(new Condition(setSql,CompareOperator.UNKNOW,params));
         });
     }
 
     
     public UpdateBuild setIncrBy(boolean condition, String column, Number val) {
         return maybeDo(condition, () -> {
-            String formatName = formatName(column);
-            sqlSet.add(String.format("%s=%s + %s", formatName, formatName, val instanceof BigDecimal ? ((BigDecimal) val).toPlainString() : val));
+            String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString():String.valueOf(val);
+            super.getUpdateConditions().add(new Condition(column,CompareOperator.INCR_BY,s));
         });
     }
 
     
     public UpdateBuild setDecrBy(boolean condition, String column, Number val) {
         return maybeDo(condition, () -> {
-            String formatName = formatName(column);
-            sqlSet.add(String.format("%s=%s - %s", formatName, formatName, val instanceof BigDecimal ? ((BigDecimal) val).toPlainString() : val));
+            String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString():String.valueOf(val);
+            super.getUpdateConditions().add(new Condition(column,CompareOperator.DECR_BY,s));
         });
     }
 
@@ -269,33 +253,51 @@ public class UpdateBuild extends WhereBuild {
     }
 
     // 构建子条件
-    public UpdateBuild and(WhereBuild subBuilder) {
+    public UpdateBuild and(UpdateBuild subBuilder) {
         super.and(subBuilder);
         return this;
     }
 
-    public UpdateBuild and(Consumer<WhereBuild> subBuilder) {
-        super.and(subBuilder);
+    public UpdateBuild andUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
+        UpdateBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.AND);
+        whereBuild.setSubSql(true);
+        super.getSubBuilders().add(whereBuild);
         return this;
     }
 
-    public UpdateBuild or(WhereBuild subBuilder) {
+    public UpdateBuild or(UpdateBuild subBuilder) {
         super.or(subBuilder);
         return this;
     }
 
-    public UpdateBuild or(Consumer<WhereBuild> subBuilder) {
-        super.or(subBuilder);
+    @Override
+    public UpdateBuild withLogicOperator(LogicOperator operator) {
+        super.withLogicOperator(operator);
         return this;
     }
 
-    public UpdateBuild not(WhereBuild subBuilder) {
+    public UpdateBuild orUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
+        UpdateBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.withLogicOperator(LogicOperator.OR);
+        super.getSubBuilders().add(whereBuild);
+        whereBuild.setSubSql(true);
+        return this;
+    }
+
+    public UpdateBuild not(UpdateBuild subBuilder) {
         super.not(subBuilder);
         return this;
     }
 
-    public UpdateBuild not(Consumer<WhereBuild> subBuilder) {
-        super.not(subBuilder);
+    public UpdateBuild notUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
+        UpdateBuild whereBuild = get();
+        subBuilder.accept(whereBuild);
+        whereBuild.setSubSql(true);
+        whereBuild.withLogicOperator(LogicOperator.NOT);
+        super.getSubBuilders().add(whereBuild);
         return this;
     }
     
