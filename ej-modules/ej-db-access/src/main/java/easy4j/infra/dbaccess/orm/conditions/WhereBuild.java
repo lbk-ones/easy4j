@@ -462,6 +462,7 @@ public class WhereBuild implements Serializable {
         orderBy.clear();
         groupBy.clear();
         selectFields.clear();
+        updateConditions.clear();
         withLogicOperator(LogicOperator.AND);
     }
 

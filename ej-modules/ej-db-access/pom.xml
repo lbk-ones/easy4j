@@ -13,9 +13,6 @@
     <name>ej-db-access</name>
     <url>https://github.com/lbk-ones/easy4j</url>
     <description>easy4j infra db-access</description>
-    <properties>
-    <kotlin.version>2.3.10</kotlin.version>
-    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
