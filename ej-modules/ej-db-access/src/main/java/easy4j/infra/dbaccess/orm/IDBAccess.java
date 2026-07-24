@@ -12,10 +12,17 @@ import java.sql.Connection;
 import java.util.List;
 
 /**
+ * 一个简单的orm框架
+ *
  * <pre>
  * 1、支持单表的增删改查
- * 2、支持多表联合查询
- * 3、能执行sql脚本
+ * 2、支持多种数据库 mysql,postgresql,oracle,sqlserver,h2,db2
+ * 3、支持多表联合查询
+ * 4、能执行sql脚本
+ * 5、支持TypeHandler自定义类型转换 {@link easy4j.infra.dbaccess.orm.handler.TypeHandler}
+ * 6、可以使用Wd包装对象代替常用对象 {@link easy4j.infra.dbaccess.orm.conditions.wd.Wd}
+ * 7、支持注解式参数自定义 {@link easy4j.infra.dbaccess.orm.conditions.wd.WdField}
+ * 8、兼容mybatis注解，兼容java注解，兼容jpa等注解
  * </pre>
  *
  * @since 2.1.4
