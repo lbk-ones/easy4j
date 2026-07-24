@@ -294,8 +294,8 @@ public class AccessUtils implements Serializable {
                     }
                     accessField1.setPlaceHolder(Wd.place(primaryKey));
                     WdFieldInfo wdFieldInfo = resolveWdField(field);
-                    Object convert = Convert.convert(type, Wd.wrapIf(primaryKey,wdFieldInfo));
-                    accessField1.setColumnValue(convert);
+                    Object convert = Convert.convert(type, primaryKey);
+                    accessField1.setColumnValue(Wd.wrapIf(convert,wdFieldInfo));
                     idlist.add(accessField1);
                 }
             }
