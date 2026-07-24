@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.json.JacksonUtil;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -29,6 +30,7 @@ import java.util.*;
  * @date 2025/6/16
  */
 public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
+    @Serial
     private static final long serialVersionUID = 334636121615156130L;
 
     @JsonIgnore
@@ -41,8 +43,29 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
         super.putAll(map);
     }
 
-    public static <K1,V1> EasyMap<K1, V1> of(Map<K1, V1> map){
+    public static <K1, V1> EasyMap<K1, V1> of(Map<K1, V1> map) {
         return new EasyMap<>(map);
+    }
+
+    public static <K1, V1> EasyMap<K1, V1> of(K1 key, V1 value) {
+        EasyMap<K1, V1> objectObjectEasyMap = new EasyMap<>();
+        if (key != null) objectObjectEasyMap.put(key, value);
+        return objectObjectEasyMap;
+    }
+
+    public static <K1, V1> EasyMap<K1, V1> of(K1 key, V1 value, K1 key2, V1 value2) {
+        EasyMap<K1, V1> objectObjectEasyMap = new EasyMap<>();
+        if (key != null) objectObjectEasyMap.put(key, value);
+        if (key2 != null) objectObjectEasyMap.put(key2, value2);
+        return objectObjectEasyMap;
+    }
+
+    public static <K1, V1> EasyMap<K1, V1> of(K1 key, V1 value, K1 key2, V1 value2, K1 key3, V1 value3) {
+        EasyMap<K1, V1> objectObjectEasyMap = new EasyMap<>();
+        if (key != null) objectObjectEasyMap.put(key, value);
+        if (key2 != null) objectObjectEasyMap.put(key2, value2);
+        if (key3 != null) objectObjectEasyMap.put(key3, value3);
+        return objectObjectEasyMap;
     }
 
     /**

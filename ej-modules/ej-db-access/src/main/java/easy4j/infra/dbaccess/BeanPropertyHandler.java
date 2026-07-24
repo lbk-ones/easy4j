@@ -17,16 +17,22 @@ package easy4j.infra.dbaccess;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.utils.ObjectHolder;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.AccessUtils;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
+import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
+import easy4j.infra.dbaccess.orm.conditions.wd.WdRegister;
+import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import org.apache.commons.dbutils.handlers.AbstractListHandler;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -85,14 +91,14 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
             PropertyDescriptor pd = this.mappedFields.get(column.replaceAll(" ", "").toLowerCase());
             // fix: 如果数据库的字段名字为is_开头,对象字段里的字段又以is开头 这种情况
             boolean fieldIsPrefix = false;
-            if(pd == null && StrUtil.startWithIgnoreCase(column,"is_")){
+            if (pd == null && StrUtil.startWithIgnoreCase(column, "is_")) {
                 String newName = StrUtil.replaceFirst(
                         column.replaceAll(" ", "").toLowerCase(),
                         "is_",
                         "",
                         true);
                 pd = this.mappedFields.get(newName);
-                if(pd != null){
+                if (pd != null) {
                     // 说明数据库中的字段是 is_ 且对象里面的字段也是is开头
                     fieldIsPrefix = true;
                 }
@@ -103,15 +109,51 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
                      * 根据字段index、属性类型返回字段值
                      */
                     Class<?> propertyType = pd.getPropertyType();
-                    Object value = JdbcHelper.getResultSetValue(rs, index, propertyType);
-
+                    Wd o = null;
+                    Object value = null;
+                    Field field = ReflectUtil.getField(mappedClass, pd.getName());
+                    WdFieldInfo wdFieldInfo = AccessUtils.resolveWdField(field);
+                    // 拿取包装类真正的字段类型
+                    if (Wd.class.isAssignableFrom(propertyType)) {
+                        o = (Wd) ReflectUtil.newInstance(propertyType);
+                        Wd.setFieldInfo(wdFieldInfo, o);
+                        propertyType = (Class<?>) o.getRawType();
+                        TypeHandler<?> typeHandler = o.getTypeHandler();
+                        value = typeHandler.getResult(rs, index);
+                    } else {
+                        // 如果这个参数有注解并且有类型转换器
+                        if (wdFieldInfo != null && wdFieldInfo.getTypeHandler() != null) {
+                            Class<? extends TypeHandler<?>> typeHandler = wdFieldInfo.getTypeHandler();
+                            String name = typeHandler.getName();
+                            Object object = ObjectHolder.INSTANCE.getObject(name);
+                            if (object == null) {
+                                synchronized (ObjectHolder.INSTANCE) {
+                                    if (ObjectHolder.INSTANCE.getObject(name) == null) {
+                                        TypeHandler<?> typeHandler1 = ReflectUtil.newInstance(typeHandler);
+                                        ObjectHolder.INSTANCE.setObject(name, typeHandler1);
+                                        object = typeHandler1;
+                                    }
+                                }
+                            }
+                            if (object != null) {
+                                TypeHandler<?> object1 = (TypeHandler<?>) object;
+                                value = object1.getResult(rs, index);
+                            }
+                        } else {
+                            value = JdbcHelper.getResultSetValue(rs, index, propertyType);
+                        }
+                    }
+                    if (o != null) {
+                        o.setValue(value);
+                        value = o;
+                    }
                     try {
                         /**
                          * 使用apache-beanutils设置对象的属性
                          */
                         String name = pd.getName();
-                        if(fieldIsPrefix){
-                            name = "is"+StrUtil.upperFirst(name);
+                        if (fieldIsPrefix) {
+                            name = "is" + StrUtil.upperFirst(name);
                         }
                         BeanUtil.setProperty(mappedObject, name, value);
                     } catch (Exception e) {

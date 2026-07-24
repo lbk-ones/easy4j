@@ -12,6 +12,7 @@ import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -165,7 +166,7 @@ public class DBAccessImpl implements IDBAccess {
         List<AccessField> columnInfoList = context.getIdList();
         WhereBuild whereBuild = WhereBuild.get();
         columnInfoList.forEach(e -> {
-            whereBuild.eq(e.getColumnName(), e.getColumnValue());
+            whereBuild.eq(e.getColumnName(), Wd.value(e.getColumnValue()));
         });
         List<Condition> conditions = whereBuild.getConditions();
         if (conditions.isEmpty()) {

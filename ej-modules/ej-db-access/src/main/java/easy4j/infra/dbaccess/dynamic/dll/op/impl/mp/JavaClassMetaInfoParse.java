@@ -45,6 +45,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -245,7 +246,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
      * @date 2025/8/20
      */
     public static void fieldMetaInfoExtraParse(DDLTableInfo ddlTableInfo, Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
-        Class<?> type = field.getType();
+        Class<?> type = Wd.type(field.getType());
         ddlFieldInfo.setFieldClass(type);
         // comment
         String comment = ddlFieldInfo.getComment();

@@ -95,7 +95,7 @@ public interface IDBAccess {
 
     /**
      * 根据主键删除直接传入主键，只适用于单主键那种表
-     * @param primaryKey 主键的值
+     * @param primaryKey 主键的值 可以传入 Wd包装类
      * @param clazz 类字节码对象
      * @return 受影响的条数
      * @param <T> 泛型约束
@@ -313,7 +313,7 @@ public interface IDBAccess {
     /**
      * 根据ID的值查询 只适用于单主键那种表
      *
-     * @param primaryKey
+     * @param primaryKey 可以传入 Wd包装类
      * @param clazz
      * @param <T>
      * @return 返回结果

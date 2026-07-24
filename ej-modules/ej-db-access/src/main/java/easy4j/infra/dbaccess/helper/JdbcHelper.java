@@ -220,6 +220,105 @@ public abstract class JdbcHelper {
     }
 
     /**
+     * 根据ResultSet结果集、index列索引、字段类型requiredType获取指定类型的对象值
+     *
+     * @param rs
+     * @param columnName
+     * @param requiredType
+     * @return
+     * @throws SQLException
+     */
+    public static Object getResultSetValue(ResultSet rs, String columnName, Class<?> requiredType) throws SQLException {
+        if (requiredType == null) {
+            return getResultSetValue(rs, columnName);
+        }
+        Object value = null;
+        boolean wasNullCheck = false;
+
+        if (String.class.equals(requiredType)) {
+            value = rs.getString(columnName);
+        } else if (boolean.class.equals(requiredType) || Boolean.class.equals(requiredType)) {
+            value = rs.getBoolean(columnName);
+            wasNullCheck = true;
+        } else if (byte.class.equals(requiredType) || Byte.class.equals(requiredType)) {
+            value = rs.getByte(columnName);
+            wasNullCheck = true;
+        } else if (short.class.equals(requiredType) || Short.class.equals(requiredType)) {
+            value = rs.getShort(columnName);
+            wasNullCheck = true;
+        } else if (int.class.equals(requiredType) || Integer.class.equals(requiredType)) {
+            value = rs.getInt(columnName);
+            wasNullCheck = true;
+        } else if (long.class.equals(requiredType) || Long.class.equals(requiredType)) {
+            value = rs.getLong(columnName);
+            wasNullCheck = true;
+        } else if (float.class.equals(requiredType) || Float.class.equals(requiredType)) {
+            value = rs.getFloat(columnName);
+            wasNullCheck = true;
+        } else if (double.class.equals(requiredType) || Double.class.equals(requiredType) ||
+                Number.class.equals(requiredType)) {
+            value = rs.getDouble(columnName);
+            wasNullCheck = true;
+        } else if (byte[].class.equals(requiredType)) {
+            value = rs.getBytes(columnName);
+        } else if (Date.class.equals(requiredType)) {
+            value = rs.getDate(columnName);
+        } else if (Time.class.equals(requiredType)) {
+            value = rs.getTime(columnName);
+        } else if (Timestamp.class.equals(requiredType) || java.util.Date.class.equals(requiredType)) {
+            value = rs.getTimestamp(columnName);
+        } else if (BigDecimal.class.equals(requiredType)) {
+            value = rs.getBigDecimal(columnName);
+        } else if (Blob.class.equals(requiredType)) {
+            value = rs.getBlob(columnName);
+        } else if (Clob.class.equals(requiredType)) {
+            value = rs.getClob(columnName);
+        } else {
+            if(Map.class.isAssignableFrom(requiredType)){
+                String string = rs.getString(columnName);
+                try{
+                    value = JacksonUtil.toMap(string, String.class, Object.class);
+                }catch (Exception ignored){
+                }
+            }
+            if(value == null) value = getResultSetValue(rs, columnName);
+        }
+
+        if (wasNullCheck && rs.wasNull()) {
+            value = null;
+        }
+        return value;
+    }
+    /**
+     * 对于特殊字段类型做特殊处理
+     *
+     * @param rs
+     * @param index
+     * @return
+     * @throws SQLException
+     */
+    public static Object getResultSetValue(ResultSet rs, String index) throws SQLException {
+        Object obj = rs.getObject(index);
+        String className = null;
+        if (obj != null) {
+            className = obj.getClass().getName();
+        }
+        if (obj instanceof Blob) {
+            obj = rs.getBytes(index);
+        } else if (obj instanceof Clob) {
+            obj = rs.getString(index);
+        } else if (className != null &&
+                ("oracle.sql.TIMESTAMP".equals(className) ||
+                        "oracle.sql.TIMESTAMPTZ".equals(className))) {
+            obj = rs.getTimestamp(index);
+        } else if (className != null && className.startsWith("oracle.sql.DATE")) {
+            obj = rs.getDate(index);
+        } else if (obj != null && obj instanceof Date) {
+            obj = rs.getTimestamp(index);
+        }
+        return obj;
+    }
+    /**
      * 对于特殊字段类型做特殊处理
      *
      * @param rs

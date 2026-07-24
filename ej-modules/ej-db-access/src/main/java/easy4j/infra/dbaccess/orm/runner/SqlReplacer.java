@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.orm.runner;
 
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import org.postgresql.util.PGobject;
 
 import java.text.SimpleDateFormat;
@@ -57,8 +58,9 @@ public class SqlReplacer {
         StringBuilder result = new StringBuilder();
         int index = 0;
         while (matcher.find()) {
-            Object param = params.get(index++);
-            String paramStr = convertParamToString(param, dialectV2);
+            Object param2 = params.get(index++);
+            Object value = Wd.value(param2);
+            String paramStr = convertParamToString(value, dialectV2);
             matcher.appendReplacement(result, Matcher.quoteReplacement(paramStr));
         }
         matcher.appendTail(result);

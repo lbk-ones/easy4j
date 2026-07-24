@@ -13,6 +13,7 @@ import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.common.utils.EasyMap;
+import easy4j.infra.dbaccess.orm.conditions.wd.WdLong;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,11 +107,11 @@ class DBAccessImplTest {
             operationLogs.setOperatorId((long) i);
             operationLogs.setOperatorName("user" + i);
             operationLogs.setSuccess(1);
+            operationLogs.setDescription("这是测试0"+i);
             operationLogs.setCreatedAt(new Date());
             objects.add(operationLogs);
         }
         List<OperationLogs> save = idbAccess.save(objects, OperationLogs.class);
-
         assertNotNull(save);
         assertEquals(20, save.size());
         for (OperationLogs operationLogs : save) {
@@ -1078,7 +1079,7 @@ class DBAccessImplTest {
 
         idbAccess.save(operationLogs, OperationLogs.class);
         Long id = operationLogs.getId();
-        int i = idbAccess.deleteByPrimaryKey(id, OperationLogs.class);
+        int i = idbAccess.deleteByPrimaryKey(WdLong.v(id), OperationLogs.class);
         assertEquals(1, i);
 
     }

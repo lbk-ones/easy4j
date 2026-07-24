@@ -17,6 +17,7 @@ package easy4j.infra.dbaccess.orm.handler;
 
 import cn.hutool.db.meta.JdbcType;
 import easy4j.infra.dbaccess.orm.AccessException;
+import easy4j.infra.dbaccess.orm.runner.StatementUtils;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -39,11 +40,9 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
   @Override
   public void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
     if (parameter == null) {
-      if (jdbcType == null) {
-        throw new AccessException("JDBC requires that the JdbcType must be specified for all nullable parameters.");
-      }
       try {
-        ps.setNull(i, jdbcType.typeCode);
+        int typeOfNull = StatementUtils.getTypeOfNull(ps, i);
+        ps.setNull(i, typeOfNull);
       } catch (SQLException e) {
         throw new AccessException("Error setting null for parameter #" + i + " with JdbcType " + jdbcType + " . "
             + "Try setting a different JdbcType for this parameter or a different jdbcTypeForNull configuration property. "

@@ -19,11 +19,14 @@ import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
-import easy4j.infra.dbaccess.exception.DbAccessException;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.wd.WdField;
+import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
+import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
@@ -145,12 +148,13 @@ public class AccessUtils implements Serializable {
         }
         return false;
     }
+
     // 获取一个
     public List<String> getIdNames(Class<?> clazz) {
         Field[] fields = ReflectUtil.getFields(clazz);
         List<String> idNameList = new ArrayList<>();
         for (Field field : fields) {
-            if(skipColumn(field)){
+            if (skipColumn(field)) {
                 continue;
             }
             if (isPk(field)) {
@@ -210,9 +214,9 @@ public class AccessUtils implements Serializable {
         } else if (field.isAnnotationPresent(Column.class)) {
             rn = field.getAnnotation(Column.class).name();
         }
-        if(StrUtil.isBlank(rn)){
+        if (StrUtil.isBlank(rn)) {
             return fn(field.getName());
-        }else {
+        } else {
             return rn;
         }
     }
@@ -280,7 +284,17 @@ public class AccessUtils implements Serializable {
                 if (pk && primaryKey != null && accessField != null) {
                     AccessField accessField1 = accessField.cloneNew();
                     Field field1 = accessField1.getField();
-                    Object convert = Convert.convert(field1.getType(), primaryKey);
+                    Class<?> type = field1.getType();
+                    if (primaryKey instanceof Wd<?> wd) {
+                        Object value = wd.getValue();
+                        type = (Class<?>) wd.getRawType();
+                        if (ObjectUtil.isEmpty(value)) {
+                            throw new AccessException("primaryKey value is empty!");
+                        }
+                    }
+                    accessField1.setPlaceHolder(Wd.place(primaryKey));
+                    WdFieldInfo wdFieldInfo = resolveWdField(field);
+                    Object convert = Convert.convert(type, Wd.wrapIf(primaryKey,wdFieldInfo));
                     accessField1.setColumnValue(convert);
                     idlist.add(accessField1);
                 }
@@ -352,6 +366,24 @@ public class AccessUtils implements Serializable {
     }
 
     /**
+     * 从注解里面解析出来Wd包装类扩展信息
+     * @param field
+     * @return
+     */
+    public static WdFieldInfo resolveWdField(Field field){
+        if(field==null) return null;
+        WdFieldInfo wdFieldInfo = new WdFieldInfo();
+        if(field.isAnnotationPresent(WdField.class)){
+            WdField annotation = field.getAnnotation(WdField.class);
+            String s = annotation.placeHolder();
+            Class<? extends TypeHandler<?>> aClass = annotation.typeHandler();
+            wdFieldInfo.setPlaceHolder(s);
+            wdFieldInfo.setTypeHandler(aClass);
+            wdFieldInfo.setJdbcType(annotation.jdbcType());
+        }
+        return wdFieldInfo;
+    }
+    /**
      * 刷新一个参数
      *
      * @param fieldValue      参数的值
@@ -381,11 +413,14 @@ public class AccessUtils implements Serializable {
             boolean access,
             List<AccessField> updateList,
             List<AccessField> insertList) {
+        WdFieldInfo wdFieldInfo = resolveWdField(parentField);
         AccessField accessField = new AccessField();
         accessField.setField(parentField);
         accessField.setColumnName(columnField);
         accessField.setEscapeColumnName(dialectV2.escape(columnField));
-        accessField.setColumnValue(fieldValue);
+        Object o = Wd.wrapIf(fieldValue, wdFieldInfo);
+        accessField.setColumnValue(o);
+        accessField.setPlaceHolder(Wd.place(o));
         accessField.setGroup(index);
         accessField.setPkIs(pk);
         accessField.setAutoIncrementIs(isAutoIncrement);
@@ -400,8 +435,7 @@ public class AccessUtils implements Serializable {
             }
         } else if (operateType == OperateType.INSERT) {
             if (isAutoIncrement) {
-                Object columnValue = accessField.getColumnValue();
-                if (!ObjectUtil.isEmpty(columnValue)) {
+                if (!ObjectUtil.isEmpty(Wd.value(accessField.getColumnValue()))) {
                     insertList.add(accessField);
                 }
             } else {
@@ -489,10 +523,11 @@ public class AccessUtils implements Serializable {
 
     /**
      * 情况上下文中关于where 解析的值
+     *
      * @param context 上下文
-     * @param <T> 泛型
+     * @param <T>     泛型
      */
-    public <T> void clearWhere(RuntimeContext<T> context){
+    public <T> void clearWhere(RuntimeContext<T> context) {
         context.setWhereSql(null);
         context.setSelectFields(null);
         context.setEscapeSelectFields(null);

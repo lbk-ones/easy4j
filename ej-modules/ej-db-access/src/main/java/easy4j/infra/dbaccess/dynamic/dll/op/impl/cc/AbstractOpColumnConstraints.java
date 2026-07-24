@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  * @date 2025/8/23
- * @see easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.AbstractOpColumnConstraints#put(java.lang.String, java.lang.String) 如果模板参数不是默认的那些参数名称，那么就要调用这个方法给模板参数传值
+ * @see easy4j.infra.dbaccess.dynamic.dll.op.impl.cc.AbstractOpColumnConstraints#put(String, String) 如果模板参数不是默认的那些参数名称，那么就要调用这个方法给模板参数传值
  */
 @Getter
 public abstract class AbstractOpColumnConstraints implements OpColumnConstraints {

@@ -2,8 +2,12 @@ package easy4j.infra.dbaccess.orm.runner;
 
 import cn.hutool.core.collection.ArrayIter;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.db.meta.JdbcType;
 import cn.hutool.db.sql.SqlUtil;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
+import easy4j.infra.dbaccess.orm.handler.DefaultTypeHandler;
+import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -13,27 +17,40 @@ import java.util.Map;
 
 public class StatementUtils {
 
-    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext,PreparedStatement ps, Object... params) throws SQLException {
+    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext, PreparedStatement ps, Object... params) throws SQLException {
         if (ArrayUtil.isEmpty(params)) {
             return ps;
         }
-        return fillParams(runtimeContext,ps, new ArrayIter<>(params));
+        return fillParams(runtimeContext, ps, new ArrayIter<>(params));
     }
-    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext,PreparedStatement ps, Iterable<?> params) throws SQLException {
-        return fillParams(runtimeContext,ps, params, null);
+
+    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext, PreparedStatement ps, Iterable<?> params) throws SQLException {
+        return fillParams(runtimeContext, ps, params, null);
     }
-    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext,PreparedStatement ps, Iterable<?> params, Map<Integer, Integer> nullTypeCache) throws SQLException {
+
+    public static PreparedStatement fillParams(RuntimeContext<?> runtimeContext, PreparedStatement ps, Iterable<?> params, Map<Integer, Integer> nullTypeCache) throws SQLException {
         if (null == params) {
             return ps;// 无参数
         }
 
         int paramIndex = 1;//第一个参数从1计数
         for (Object param : params) {
-            setParam(ps, paramIndex++, param, nullTypeCache);
+            TypeHandler typeHandler = Wd.getTypeHandler(param);
+            JdbcType jdbcType = Wd.getJdbcType(param);
+            Object value = Wd.value(param);
+            if (typeHandler != null) {
+                if (value == null) {
+                    jdbcType = JdbcType.NULL;
+                }
+                typeHandler.setParameter(ps, paramIndex++, value, jdbcType);
+            } else {
+                setParam(ps, paramIndex++, value, nullTypeCache);
+            }
         }
         return ps;
     }
-    private static void setParam(PreparedStatement ps, int paramIndex, Object param, Map<Integer, Integer> nullTypeCache) throws SQLException {
+
+    public static void setParam(PreparedStatement ps, int paramIndex, Object param, Map<Integer, Integer> nullTypeCache) throws SQLException {
         if (null == param) {
             Integer type = (null == nullTypeCache) ? null : nullTypeCache.get(paramIndex);
             if (null == type) {
@@ -73,13 +90,13 @@ public class StatementUtils {
         }
 
         //InputStream，解决oracle情况下setObject(inputStream)报错问题，java.sql.SQLException: 无效的列类型
-        if(param instanceof InputStream){
+        if (param instanceof InputStream) {
             ps.setBinaryStream(paramIndex, (InputStream) param);
             return;
         }
 
         //java.sql.Blob
-        if(param instanceof Blob){
+        if (param instanceof Blob) {
             ps.setBlob(paramIndex, (Blob) param);
         }
 
