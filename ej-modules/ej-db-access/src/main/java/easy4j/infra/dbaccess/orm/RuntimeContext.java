@@ -100,6 +100,9 @@ public class RuntimeContext<T> {
     // 要写入的字段列表 以group字段来区分条数
     private List<AccessField> insertFields;
 
+    // 是否跳过sql解析
+    private boolean skipParseSql;
+
     // 自定义ps操作
     private Function<RuntimeContext<?>, PsRes> psOperateFunction;
 

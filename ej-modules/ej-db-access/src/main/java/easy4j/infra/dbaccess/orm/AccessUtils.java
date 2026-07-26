@@ -269,7 +269,7 @@ public class AccessUtils implements Serializable {
         if (!access.isReturnMap()) {
             assertNotNull(clazz, "clazz");
         }
-        ContextHolder.set(PluginSelector.getDataSource(access,this.getAccessConfig()));
+        ContextHolder.set(PluginSelector.getDataSource(access, this.getAccessConfig()));
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
         OperateType operateType = access.getOperateType();
@@ -608,19 +608,26 @@ public class AccessUtils implements Serializable {
      * @param skipParseSql 是否跳过解析sql,因为有些sql是从外部传进来的 有必要做这个判断
      * @param <T>          泛型
      */
-    public <T> void parseSql(RuntimeContext<T> context, boolean skipParseSql) {
+    public <T> void resolveContext(RuntimeContext<T> context, boolean skipParseSql) {
         LogSql.init(context);
-        if (!skipParseSql) {
-            SqlFactory.parse(context);
-        }
-        String sql = context.getSql();
-        if (StrUtil.isBlank(sql)) {
-            throw new AccessException("sql is not be empty!");
-        }
+        context.setSkipParseSql(skipParseSql);
         List<IPlugin> plugins = PluginSelector.get(context);
         for (IPlugin plugin : plugins) {
             plugin.contextPrepared(context);
         }
+        Access<T> access = context.getAccess();
+        if (access != null) {
+            WhereBuild where = access.getWhere();
+            if (where != null) this.parseWhere(where, context);
+            UpdateBuild update = access.getUpdate();
+            if (update != null) this.parseUpdate(update, context);
+        }
+        if (!skipParseSql) SqlFactory.parse(context);
+        String sql = context.getSql();
+        if (StrUtil.isBlank(sql)) {
+            throw new AccessException("sql is not be empty!");
+        }
+
         SqlRunner sqlRunner = new SqlRunner();
         sqlRunner.run(context);
         for (IPlugin plugin : plugins) {

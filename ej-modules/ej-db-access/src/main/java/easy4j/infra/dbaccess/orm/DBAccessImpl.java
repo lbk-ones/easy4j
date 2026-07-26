@@ -57,7 +57,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.INSERT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getParams(), 0);
         });
     }
@@ -81,7 +81,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.INSERT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getParams();
         });
 
@@ -96,7 +96,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
     }
@@ -111,8 +111,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
 
@@ -150,13 +150,11 @@ public class DBAccessImpl implements IDBAccess {
     private <T> Integer deleteByIdWith(RuntimeContext<T> context, WhereBuild whereBuild, boolean callback) {
         if (callback) {
             return exeCallback(context, e -> {
-                accessUtils.parseWhere(whereBuild, e);
-                accessUtils.parseSql(e, false);
+                accessUtils.resolveContext(e, false);
                 return e.getEffectRows();
             });
         } else {
-            accessUtils.parseWhere(whereBuild, context);
-            accessUtils.parseSql(context, false);
+            accessUtils.resolveContext(context, false);
             return context.getEffectRows();
         }
 
@@ -172,6 +170,7 @@ public class DBAccessImpl implements IDBAccess {
         if (conditions.isEmpty()) {
             return null;
         }
+        context.getAccess().setWhere(whereBuild);
         return whereBuild;
     }
 
@@ -213,7 +212,6 @@ public class DBAccessImpl implements IDBAccess {
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         WhereBuild whereBuild = idEq(context);
         if (whereBuild == null) return 0;
-        accessUtils.parseWhere(whereBuild, context);
         return updateByIdWith(context, true);
 
     }
@@ -222,11 +220,11 @@ public class DBAccessImpl implements IDBAccess {
 
         if (callback) {
             return exeCallback(context, e -> {
-                accessUtils.parseSql(e, false);
+                accessUtils.resolveContext(e, false);
                 return e.getEffectRows();
             });
         } else {
-            accessUtils.parseSql(context, false);
+            accessUtils.resolveContext(context, false);
             return context.getEffectRows();
         }
 
@@ -250,8 +248,6 @@ public class DBAccessImpl implements IDBAccess {
                 accessUtils.refreshContextByParam(context, param);
                 WhereBuild whereBuild = idEq(context);
                 if (whereBuild == null) return 0;
-                accessUtils.parseWhere(whereBuild, context);
-
                 i += updateByIdWith(context, false);
             }
             return i;
@@ -273,8 +269,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
 
@@ -291,7 +287,7 @@ public class DBAccessImpl implements IDBAccess {
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
             accessUtils.parseUpdate(updateBuild, e);
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
     }
@@ -307,7 +303,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_JOIN);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getResultList();
         });
     }
@@ -323,7 +319,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_JOIN);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getResultMapList();
         });
     }
@@ -340,7 +336,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, true);
+            accessUtils.resolveContext(e, true);
             return e.getResultList();
         });
 
@@ -359,7 +355,7 @@ public class DBAccessImpl implements IDBAccess {
 
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, true);
+            accessUtils.resolveContext(e, true);
             return ListTs.get(e.getResultList(), 0);
         });
     }
@@ -375,7 +371,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, true);
+            accessUtils.resolveContext(e, true);
             return ListTs.get(e.getResultMapList(), 0);
         });
 
@@ -396,8 +392,8 @@ public class DBAccessImpl implements IDBAccess {
         List<Condition> selectFields = whereBuild.getSelectFields();
         flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultMapList(), 0);
         });
 
@@ -419,8 +415,8 @@ public class DBAccessImpl implements IDBAccess {
         flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
 
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return e.getResultMapList();
         });
 
@@ -455,8 +451,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
 
             return e.getResultList();
         });
@@ -472,7 +468,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getResultList();
         });
     }
@@ -487,8 +483,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultList(), 0);
         });
 
@@ -504,8 +500,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_COUNT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return e.getCount();
         });
     }
@@ -520,8 +516,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_EXIST);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return e.isExists();
         });
     }
@@ -538,8 +534,8 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultMapList(), 0);
         });
 
@@ -558,8 +554,8 @@ public class DBAccessImpl implements IDBAccess {
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
             e.setSkipTail(true);
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             long count = e.getCount();
             PageRes pageRes = new PageRes();
             pageRes.setPageNo(page.getPageNo());
@@ -570,8 +566,8 @@ public class DBAccessImpl implements IDBAccess {
             pageRes.setTotal(count);
             e.setOperateType(OperateType.SELECT_PAGE);
             e.setSkipTail(false);
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            
+            accessUtils.resolveContext(e, false);
             List<T> resultList = e.getResultList();
             pageRes.setRecords(resultList);
             return pageRes;
@@ -591,8 +587,7 @@ public class DBAccessImpl implements IDBAccess {
         WhereBuild whereBuild = idEq(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultList(), 0);
         });
     }
@@ -609,8 +604,7 @@ public class DBAccessImpl implements IDBAccess {
         WhereBuild whereBuild = idEq(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
-            accessUtils.parseWhere(whereBuild, e);
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultList(), 0);
         });
     }
@@ -623,7 +617,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.TRUNCATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseSql(e, false);
+            accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
     }
