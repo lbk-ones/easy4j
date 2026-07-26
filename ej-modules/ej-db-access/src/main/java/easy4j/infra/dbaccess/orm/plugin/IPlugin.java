@@ -3,7 +3,7 @@ package easy4j.infra.dbaccess.orm.plugin;
 import easy4j.infra.dbaccess.orm.Access;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 /**
  * 插件
@@ -18,9 +18,9 @@ public interface IPlugin {
     String getName();
 
     /**
-     * 获取连接
+     * 获取新的数据源
      */
-    Connection getConnection(Access<?> access);
+    DataSource getDataSource(Access<?> access);
 
     /**
      * 上下文准备完成
@@ -32,5 +32,10 @@ public interface IPlugin {
      * 执行完单条sql之后
      */
     void beforeReturn(RuntimeContext<?> context);
+
+    /**
+     * 完成执行
+     */
+    void finish(RuntimeContext<?> context);
 
 }

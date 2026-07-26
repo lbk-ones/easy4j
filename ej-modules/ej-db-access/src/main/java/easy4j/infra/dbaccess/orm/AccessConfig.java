@@ -3,7 +3,6 @@ package easy4j.infra.dbaccess.orm;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import lombok.Data;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
@@ -54,14 +53,20 @@ public class AccessConfig {
     private int oracleWriteStrategy = 1;
 
 
-    private Map<String,PluginState> plugins = new ConcurrentHashMap<>();
+    private Map<String, PluginState> plugins = new ConcurrentHashMap<>();
 
     @Data
-    public static class PluginState{
+    public static class PluginState {
 
         private boolean enabled;
     }
 
+
+    public DataSource getDataSource() {
+        DataSource dataSource1 = ContextHolder.getDataSource();
+        if (dataSource1 != null) return dataSource1;
+        return dataSource;
+    }
 
     /**
      * 设置 JDBC 驱动从数据库服务端「单次批量拉取多少条结果集数据」，用来控制游标批量读取行数，优化大结果集内存占用与网络 IO。
@@ -79,7 +84,7 @@ public class AccessConfig {
     private Integer fetchSize;
 
     public String getDbType() {
-        DataSource dataSource1 = this.dataSource;
+        DataSource dataSource1 = getDataSource();
         if (dataSource1 != null) {
             String s = DB_MAP.get(dataSource1);
             if (s == null) {

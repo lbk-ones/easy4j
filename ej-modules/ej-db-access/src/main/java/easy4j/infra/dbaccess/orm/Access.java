@@ -7,11 +7,14 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
  * 这是传参层包装类
+ *
  * @param <T>
  */
 @Data
@@ -49,5 +52,15 @@ public class Access<T> {
     private boolean resultFieldToCame;
 
     private boolean returnMap = false;
+
+    private Map<String, Object> extParams = new HashMap<>();
+
+    public void putParam(String key, Object object) {
+        extParams.put(key, object);
+    }
+
+    public void getParam(String key) {
+        extParams.get(key);
+    }
 
 }

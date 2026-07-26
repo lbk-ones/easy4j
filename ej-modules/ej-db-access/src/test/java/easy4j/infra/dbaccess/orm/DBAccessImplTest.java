@@ -48,7 +48,7 @@ class DBAccessImplTest {
     synchronized void setUp() {
 
         accessConfig = new AccessConfig();
-        DataSource dataSource = getH2DataSource();
+        DataSource dataSource = getPg15DataSource();
         accessConfig.setDataSource(dataSource);
         accessConfig.setOnlyPrintSlowSql(false);
         idbAccess = new DBAccessImpl(accessConfig);

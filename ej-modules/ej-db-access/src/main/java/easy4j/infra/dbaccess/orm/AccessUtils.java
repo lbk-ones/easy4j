@@ -269,6 +269,7 @@ public class AccessUtils implements Serializable {
         if (!access.isReturnMap()) {
             assertNotNull(clazz, "clazz");
         }
+        ContextHolder.set(PluginSelector.getDataSource(access,this.getAccessConfig()));
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
         OperateType operateType = access.getOperateType();
@@ -279,12 +280,8 @@ public class AccessUtils implements Serializable {
         if (clazz != null) {
             fields = ReflectUtil.getFields(clazz);
         }
-        Connection connection = PluginSelector.getConnection(access,this.getAccessConfig());
-        if (connection == null) {
-            // obtain datasource connection
-            connection = getConnection();
-        }
-
+        // obtain datasource connection
+        Connection connection = getConnection();
         DialectV2 dialectV2 = DialectFactory.get(connection);
         String dbType = dialectV2.getDbType();
         List<AccessField> columnInfoList = new ArrayList<>();
@@ -653,10 +650,14 @@ public class AccessUtils implements Serializable {
      * @param <T>
      */
     public <T> void releaseConnection(RuntimeContext<T> context) {
+        ContextHolder.remove();
+        PluginSelector.finish(context);
         if (context != null) {
             Connection connection = context.getConnection();
             DataSourceUtils.releaseConnection(connection, context.getConfig().getDataSource());
         }
+
+
     }
 
     /**

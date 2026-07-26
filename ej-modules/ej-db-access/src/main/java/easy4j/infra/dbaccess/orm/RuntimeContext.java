@@ -11,6 +11,7 @@ import easy4j.infra.dbaccess.orm.runner.PsRes;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.*;
 import java.util.function.Function;
@@ -128,6 +129,9 @@ public class RuntimeContext<T> {
     // 执行结果
     private LogResult logResult;
 
+    // 额外参数
+    private Map<String, Object> extParams = new HashMap<>();
+
     private List<EasyMap<String, Object>> resultMapList;
     private List<T> resultList;
     private int effectRows;
@@ -221,6 +225,18 @@ public class RuntimeContext<T> {
             accessConfig = new AccessConfig();
         }
         return accessConfig;
+    }
+
+    public DataSource getDataSource(){
+        return getConfig().getDataSource();
+    }
+
+    public void putParam(String key, Object object) {
+        extParams.put(key, object);
+    }
+
+    public void getParam(String key) {
+        extParams.get(key);
     }
 
 
