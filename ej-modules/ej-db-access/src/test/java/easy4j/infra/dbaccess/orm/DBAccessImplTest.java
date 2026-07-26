@@ -327,6 +327,7 @@ class DBAccessImplTest {
         OperationLogs updateParam = new OperationLogs();
         updateParam.setId(saved.getId());
         updateParam.setOperatorName("updatedById");
+        updateParam.setOperatorId(600L);
         updateParam.setSuccess(0);
 
         int updated = idbAccess.updateById(updateParam, true, OperationLogs.class);

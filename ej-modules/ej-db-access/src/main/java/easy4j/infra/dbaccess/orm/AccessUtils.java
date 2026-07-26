@@ -611,7 +611,7 @@ public class AccessUtils implements Serializable {
     public <T> void resolveContext(RuntimeContext<T> context, boolean skipParseSql) {
         LogSql.init(context);
         context.setSkipParseSql(skipParseSql);
-        List<IPlugin> plugins = PluginSelector.get(context);
+        List<IPlugin> plugins = PluginSelector.list(context);
         for (IPlugin plugin : plugins) {
             plugin.contextPrepared(context);
         }

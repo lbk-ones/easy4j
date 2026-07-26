@@ -1,13 +1,17 @@
 package easy4j.infra.dbaccess.orm;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.orm.plugin.IPlugin;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,14 +56,22 @@ public class AccessConfig {
     // 2: insert into value () select x1,x2 from dual union all select x1,x2 from dual 这种写法不带回写
     private int oracleWriteStrategy = 1;
 
+    // 手动添加的plugin 这个不用启用 直接可用
+    private List<IPlugin> pluginList = new LinkedList<>();
 
-    private Map<String, PluginState> plugins = new ConcurrentHashMap<>();
 
-    @Data
-    public static class PluginState {
 
-        private boolean enabled;
+    public void addPlugin(IPlugin iPlugin) {
+        if (iPlugin != null) {
+            String name = iPlugin.getName();
+            if (StrUtil.isNotBlank(name)) {
+                if(!pluginList.contains(iPlugin)){
+                    pluginList.add(iPlugin);
+                }
+            }
+        }
     }
+
 
 
     public DataSource getDataSource() {
