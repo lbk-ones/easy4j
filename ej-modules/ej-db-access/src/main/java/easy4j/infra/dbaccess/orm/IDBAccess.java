@@ -25,6 +25,7 @@ import java.util.List;
  * 8、兼容mybatis注解，兼容java注解，兼容jpa等注解
  * 9、慢sql打印
  * 10、spring事务混入，或者跳出事务
+ * 11、支持插件开发，扩展，内置乐观锁等插件
  * </pre>
  *
  * @since 2.1.4

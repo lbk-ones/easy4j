@@ -39,10 +39,8 @@ public class VersionLockPlugin extends AbstractPlugin {
             return;
         }
         WhereBuild where = access.getWhere();
-        UpdateBuild update = access.getUpdate();
         // 目前只有单条更新 所以这一个列表一定是一条记录的
         List<AccessField> updateFields = context.getUpdateFields();
-        AccessUtils accessUtils = context.getAccessUtils();
         Set<String> columnName = new HashSet<>();
         for (AccessField accessField : columnInfoList) {
             Field field = accessField.getField();
