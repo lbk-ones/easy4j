@@ -5,14 +5,20 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.orm.AccessConfig;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.OracleBatchInsertSql;
+import easy4j.infra.dbaccess.orm.sql.dialect.OracleInsertSql;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InsertSql implements ISql {
+public class InsertSql extends AbsISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {

@@ -53,6 +53,7 @@ public class OpSelector {
         columnConstraintsList.add(new OracleOpColumnConstraints());
         columnConstraintsList.add(new PgOpColumnConstraints());
         columnConstraintsList.add(new SqlServerOpColumnConstraints());
+        columnConstraintsList.add(new DB2OpColumnConstraints());
         columnConstraintsList.sort(Comparator.comparingInt(IOpContext::getSort));
 
         // table constraints
@@ -61,6 +62,7 @@ public class OpSelector {
         tableConstraintsList.add(new OracleOpTableConstraints());
         tableConstraintsList.add(new PgOpTableConstraints());
         tableConstraintsList.add(new SqlServerOpTableConstraints());
+        tableConstraintsList.add(new Db2TableConstraints());
         tableConstraintsList.sort(Comparator.comparingInt(IOpContext::getSort));
 
         // create table
@@ -69,6 +71,7 @@ public class OpSelector {
         createTableList.add(new OracleOpDdlCreateTable());
         createTableList.add(new PgOpDdlCreateTable());
         createTableList.add(new SqlServerOpDdlCreateTable());
+        createTableList.add(new Db2OpDdlCreateTable());
         createTableList.sort(Comparator.comparingInt(IOpContext::getSort));
 
 
@@ -83,6 +86,7 @@ public class OpSelector {
         opDdlAlterList.add(new OracleOpDdlAlter());
         opDdlAlterList.add(new PgOpDdlAlter());
         opDdlAlterList.add(new H2OpDdlAlter());
+        opDdlAlterList.add(new Db2OpDdlAlter());
         opDdlAlterList.add(new SqlServerOpDdlAlter());
         opDdlAlterList.sort(Comparator.comparingInt(IOpContext::getSort));
     }

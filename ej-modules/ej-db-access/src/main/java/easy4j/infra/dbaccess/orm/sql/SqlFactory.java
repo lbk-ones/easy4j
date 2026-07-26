@@ -27,7 +27,7 @@ public class SqlFactory {
         boolean look = false;
         for (ISql iSql : sqlList) {
             if (iSql.match(runtimeContext)) {
-                String build = iSql.build(runtimeContext);
+                String build = iSql.exe(runtimeContext);
                 runtimeContext.setSql(build);
                 look = true;
                 break;

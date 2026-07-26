@@ -16,14 +16,19 @@ public class LogResult {
     private long costTime;
 
 
+    // sql解析前的时间
     private long beginTime;
 
 
+    // 真正执行的开始时间
     private Date exeBeginTime;
+
+
+    // sql真正执行的耗时
     private long exeTime;
 
     /**
-     * 受影响的条数
+     * 受影响的条数,或者说count的结果
      */
     private int effectRows;
 

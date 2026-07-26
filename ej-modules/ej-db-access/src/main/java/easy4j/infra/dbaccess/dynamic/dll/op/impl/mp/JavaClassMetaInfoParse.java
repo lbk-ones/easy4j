@@ -18,20 +18,19 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.sql.Wrapper;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
-import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
@@ -56,11 +55,11 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 import java.lang.reflect.Field;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * JavaClassMetaInfoParse
@@ -127,7 +126,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
             Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
             ddlTableInfo = BeanUtil.mapToBean(annotationAttributes, DDLTableInfo.class, true, CopyOptions.create().ignoreError());
         }
-        ddlTableInfo.setTableName(getTableName(aclass));
+        ddlTableInfo.setTableName(getTableName(aclass,this.opContext.getDialectV2()));
         DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumnsNoCache(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setDbColumns(columns);
@@ -168,50 +167,42 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
             }
         }
     }
-
-    private String getTableName(Class<?> aclass) {
-        CommonDBAccess commonDBAccess = this.opContext.getOpConfig().getCommonDBAccess();
-        Dialect dialect = this.opContext.getDialect();
-
-        return getDDLTableName(dialect, aclass, commonDBAccess.getTableName(aclass, dialect));
-    }
-
-    private String getDDLTableName(Dialect dialect, Class<?> aclass, String tableName) {
-        CommonDBAccess commonDBAccess = this.opContext.getOpConfig().getCommonDBAccess();
-        boolean annotationPresent = aclass.isAnnotationPresent(DDLTable.class);
-        if (annotationPresent) {
-            tableName = dialect.getWrapper().wrap(tableName);
-
-            DDLTable annotation = aclass.getAnnotation(DDLTable.class);
-            String s = annotation.tableName();
-            String fName;
-            if (StrUtil.isNotBlank(s)) {
-                fName = s;
-            } else {
-                fName = tableName;
-            }
-            if (this.opContext.getOpConfig().isToUnderLine()) {
-                fName = commonDBAccess.toUnderLine(fName);
-            }
-            return fName;
+    public String getTableName(Class<?> clazz, DialectV2 dialect) {
+        OpConfig opConfig = this.opContext.getOpConfig();
+        if (clazz == null) return null;
+        StringBuilder sb = new StringBuilder();
+        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
+        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
+            sb.append(annotation.name());
         } else {
-            if (aclass.isAnnotationPresent(JdbcTable.class)) {
-                JdbcTable annotation = aclass.getAnnotation(JdbcTable.class);
-                String name = annotation.name();
-                if (StrUtil.isNotBlank(name)) return name;
-            } else if (aclass.isAnnotationPresent(TableName.class)) {
-                TableName tableName1 = aclass.getAnnotation(TableName.class);
-                String name = tableName1.value();
-                if (StrUtil.isNotBlank(name)) return name;
-            } else if (aclass.isAnnotationPresent(Table.class)) {
-                Table table = aclass.getAnnotation(Table.class);
-                String name = table.name();
-                if (StrUtil.isNotBlank(name)) return name;
+            if (clazz.isAnnotationPresent(TableName.class)) {
+                TableName annotation1 = clazz.getAnnotation(TableName.class);
+                if (Objects.nonNull(annotation1)) {
+                    String value = annotation1.value();
+                    if (StrUtil.isNotBlank(value)) {
+                        return dialect.escape((value));
+                    }
+                }
+            } else if (clazz.isAnnotationPresent(Table.class)) {
+                Table table = clazz.getAnnotation(Table.class);
+                if (Objects.nonNull(table)) {
+                    String value = table.name();
+                    if (StrUtil.isNotBlank(value)) {
+                        return dialect.escape(opConfig.autoCase(value, false));
+                    }
+                }
+            } else if (clazz.isAnnotationPresent(DDLTable.class)) {
+                DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
+                String s = annotation2.tableName();
+                if (StrUtil.isNotBlank(s)) {
+                    return dialect.escape(opConfig.autoCase(s, false));
+                }
             }
-            String simpleName = aclass.getSimpleName();
-            return StrUtil.toUnderlineCase(simpleName);
+            String simpleName = clazz.getSimpleName();
+            String underlineCase = dialect.escape(opConfig.autoCase(simpleName, true));
+            sb.append(underlineCase);
         }
-//        return null;
+        return sb.toString();
     }
 
     private List<DDLFieldInfo> getDdlFieldInfoList(DDLTableInfo ddlTableInfo, Class<?> aclass, Map<String, DDLIndexInfo> columnVsIndexMap) {
@@ -245,7 +236,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
      * @author bokun.li
      * @date 2025/8/20
      */
-    public static void fieldMetaInfoExtraParse(DDLTableInfo ddlTableInfo, Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
+    public void fieldMetaInfoExtraParse(DDLTableInfo ddlTableInfo, Object newInstance, Field field, DDLFieldInfo ddlFieldInfo, Map<String, DDLIndexInfo> columnVsIndexMap) {
         Class<?> type = Wd.type(field.getType());
         ddlFieldInfo.setFieldClass(type);
         // comment
@@ -365,6 +356,20 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         }
         if (StrUtil.isBlank(ddlFieldInfo.getName())) {
             ddlFieldInfo.setName(field.getName());
+        }
+        // 强制转换大小写
+        OpConfig opConfig = this.opContext.getOpConfig();
+        if (opConfig.isPgAutoLowerCase() && Objects.equals(this.opContext.getDbType(), DbType.POSTGRE_SQL.getDb())) {
+            ddlFieldInfo.setName(ddlFieldInfo.getName().toLowerCase());
+        }
+        if (opConfig.isOracleAutoUpperCase() && Objects.equals(this.opContext.getDbType(), DbType.ORACLE.getDb())) {
+            ddlFieldInfo.setName(ddlFieldInfo.getName().toUpperCase());
+        }
+        if (opConfig.isH2AutoUpperCase() && Objects.equals(this.opContext.getDbType(), DbType.H2.getDb())) {
+            ddlFieldInfo.setName(ddlFieldInfo.getName().toUpperCase());
+        }
+        if (opConfig.isH2AutoUpperCase() && Objects.equals(this.opContext.getDbType(), DbType.DB2.getDb())) {
+            ddlFieldInfo.setName(ddlFieldInfo.getName().toUpperCase());
         }
         // patch index name
         String name = ddlFieldInfo.getName();

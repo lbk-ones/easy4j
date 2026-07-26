@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.JavaClassMetaInfoParse;
@@ -78,6 +79,8 @@ public class OpContext {
 
     // 解析出来的数据库方言
     private Dialect dialect;
+
+    private DialectV2 dialectV2;
 
     /**
      * 解析出来的表元数据

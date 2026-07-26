@@ -15,17 +15,26 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
+import java.util.function.Function;
 
 @Slf4j
 @Getter
 public class JdbcUtils {
 
-    public static final List<String> KEY_NAME = ListTs.asList("GENERATED_KEYS","GENERATED_KEY");
+    public static final List<String> KEY_NAME = ListTs.asList("GENERATED_KEYS", "GENERATED_KEY");
 
     private final Connection connection;
 
     public JdbcUtils(Connection connection) {
         this.connection = connection;
+    }
+
+    PsRes psOperateFunc(RuntimeContext<?> context) {
+        Function<RuntimeContext<?>, PsRes> psOperateFunction = context.getPsOperateFunction();
+        if (psOperateFunction != null) {
+            return psOperateFunction.apply(context);
+        }
+        return null;
     }
 
     /**
@@ -34,6 +43,8 @@ public class JdbcUtils {
      * @return 影响行数
      */
     public PsRes update(RuntimeContext<?> runtimeContext) {
+        PsRes psRes = psOperateFunc(runtimeContext);
+        if (psRes != null) return psRes;
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         Connection connection1 = getConnection();
@@ -48,11 +59,7 @@ public class JdbcUtils {
         {
             if (isInsert) {
                 try {
-                    List<AccessField> autoIncrementColumns = runtimeContext
-                            .getColumnInfoList()
-                            .stream()
-                            .filter(AccessField::isAutoIncrementIs)
-                            .toList();
+                    List<AccessField> autoIncrementColumns = runtimeContext.getAutoIncrementList();
                     ps = connection1.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                     StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
                     effectRows = ps.executeUpdate();
@@ -61,58 +68,9 @@ public class JdbcUtils {
                     if (generatedKeys == null) break k;
                     MapListHandler mapListHandler = new MapListHandler();
                     List<Map<String, Object>> handle = mapListHandler.handle(generatedKeys);
-                    for (int i1 = 0; i1 < params.size(); i1++) {
-                        Object param = params.get(i1);
-                        // 讲道理这里不会为null 但是严谨一点 还是判断一下
-                        if (param == null) continue;
-                        Class<?> aClass = param.getClass();
-                        Map<String, Object> stringObjectMap = ListTs.get(handle, i1);
-                        if (stringObjectMap == null) continue;
-                        int lastIndex = 0;
-                        for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
-                            String fieldName = stringObjectEntry.getKey();
-                            Object value = stringObjectEntry.getValue();
-                            // 标准名称
-                            if (KEY_NAME.stream().anyMatch(e->StrUtil.equals(fieldName,e))) {
-                                if (autoIncrementColumns.size() == 1) {
-                                    AccessField accessField = autoIncrementColumns.get(lastIndex);
-                                    Field field = accessField.getField();
-                                    Object convert = Convert.convert(field.getType(), value);
-                                    ReflectUtil.setFieldValue(param, field, convert);
-                                } else if (autoIncrementColumns.size() > 1) {
-                                    AccessField accessField = ListTs.get(autoIncrementColumns, lastIndex);
-                                    if (accessField != null) {
-                                        Field field = accessField.getField();
-                                        Object convert = Convert.convert(field.getType(), value);
-                                        ReflectUtil.setFieldValue(param, field, convert);
-                                    }
-                                    if (lastIndex == autoIncrementColumns.size() - 1) {
-                                        lastIndex = 0;
-                                    } else {
-                                        lastIndex++;
-                                    }
-                                }
-                                continue;
-                            }
-                            // 非标准名称处理
-                            String camelCase = StrUtil.toCamelCase(fieldName.toLowerCase());
-                            Field field = ReflectUtil.getField(aClass, camelCase);
-                            if (field != null) {
-                                Object convert = Convert.convert(field.getType(), value);
-                                ReflectUtil.setFieldValue(param, camelCase, convert);
-                            } else {
-                                field = ReflectUtil.getField(aClass, fieldName);
-                                if (field != null) {
-                                    Object convert = Convert.convert(field.getType(), value);
-                                    ReflectUtil.setFieldValue(param, fieldName, convert);
-                                } else {
-                                    log.info("not found auto increment keys {}", fieldName);
-                                }
-                            }
-                        }
-                    }
+                    writeBack(params, handle, autoIncrementColumns);
                 } catch (SQLException e) {
-                    throw AccessUtils.translate("update",sql,e,runtimeContext.getConfig().getDataSource());
+                    throw AccessUtils.translate("update", sql, e, runtimeContext.getConfig().getDataSource());
                 } finally {
                     accessUtils.close(generatedKeys);
                 }
@@ -123,7 +81,7 @@ public class JdbcUtils {
 
                     effectRows = ps.executeUpdate();
                 } catch (SQLException e) {
-                    throw AccessUtils.translate("update",sql,e,runtimeContext.getConfig().getDataSource());
+                    throw AccessUtils.translate("update", sql, e, runtimeContext.getConfig().getDataSource());
                 }
             }
         }
@@ -132,10 +90,83 @@ public class JdbcUtils {
 
     }
 
+    /**
+     * 将部分结果写回参数传参
+     *
+     * @param params               传进来的对象
+     * @param handle               回写的结果
+     * @param autoIncrementColumns 自增的字段
+     */
+    public static void writeBack(List<?> params, List<Map<String, Object>> handle, List<AccessField> autoIncrementColumns) {
+        for (int i1 = 0; i1 < params.size(); i1++) {
+            Object param = params.get(i1);
+            // 讲道理这里不会为null 但是严谨一点 还是判断一下
+            if (param == null) continue;
+            Class<?> aClass = param.getClass();
+            Map<String, Object> stringObjectMap = ListTs.get(handle, i1);
+            if (stringObjectMap == null) continue;
+            int lastIndex = 0;
+            for (Map.Entry<String, Object> stringObjectEntry : stringObjectMap.entrySet()) {
+                String fieldName = stringObjectEntry.getKey();
+                Object value = stringObjectEntry.getValue();
+                // 标准名称
+                if (KEY_NAME.stream().anyMatch(e -> StrUtil.equals(fieldName, e))) {
+                    if (autoIncrementColumns.size() == 1) {
+                        AccessField accessField = autoIncrementColumns.get(lastIndex);
+                        Field field = accessField.getField();
+                        Object fieldValue = ReflectUtil.getFieldValue(param, field);
+                        if (fieldValue == null) {
+                            Object convert = Convert.convert(field.getType(), value);
+                            ReflectUtil.setFieldValue(param, field, convert);
+                        }
+                    } else if (autoIncrementColumns.size() > 1) {
+                        AccessField accessField = ListTs.get(autoIncrementColumns, lastIndex);
+                        if (accessField != null) {
+                            Field field = accessField.getField();
+                            Object fieldValue = ReflectUtil.getFieldValue(param, field);
+                            if (fieldValue == null) {
+                                Object convert = Convert.convert(field.getType(), value);
+                                ReflectUtil.setFieldValue(param, field, convert);
+                            }
+
+                        }
+                        if (lastIndex == autoIncrementColumns.size() - 1) {
+                            lastIndex = 0;
+                        } else {
+                            lastIndex++;
+                        }
+                    }
+                    continue;
+                }
+                // 非标准名称处理
+                String camelCase = StrUtil.toCamelCase(fieldName.toLowerCase());
+                Field field = ReflectUtil.getField(aClass, camelCase);
+                Object fieldValue = ReflectUtil.getFieldValue(param, field);
+                if (fieldValue != null) {
+                    continue;
+                }
+                if (field != null) {
+                    Object convert = Convert.convert(field.getType(), value);
+                    ReflectUtil.setFieldValue(param, camelCase, convert);
+                } else {
+                    field = ReflectUtil.getField(aClass, fieldName);
+                    if (field != null) {
+                        Object convert = Convert.convert(field.getType(), value);
+                        ReflectUtil.setFieldValue(param, fieldName, convert);
+                    } else {
+                        log.info("not found auto increment keys {}", fieldName);
+                    }
+                }
+            }
+        }
+    }
+
 
     public PsRes query(
             RuntimeContext<?> runtimeContext
     ) {
+        PsRes psRes = psOperateFunc(runtimeContext);
+        if (psRes != null) return psRes;
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         Connection conn = getConnection();
@@ -150,7 +181,7 @@ public class JdbcUtils {
             StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
             resultSet = ps.executeQuery();
         } catch (SQLException e) {
-            throw AccessUtils.translate("query",sql,e,runtimeContext.getConfig().getDataSource());
+            throw AccessUtils.translate("query", sql, e, runtimeContext.getConfig().getDataSource());
 
         }
         return new PsRes(resultSet, ps);

@@ -15,6 +15,7 @@
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -37,6 +38,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * DynamicDDL
@@ -155,8 +157,8 @@ public class DynamicDDL extends AbstractCombinationOp {
         try {
             OpContext opContext = new OpContext();
             connection = DataSourceUtils.getConnection(this.getDataSource());
-            String catalog = connection.getCatalog();
-            String schema1 = connection.getSchema();
+            String catalog = StrUtil.trim(connection.getCatalog());
+            String schema1 = StrUtil.trim(connection.getSchema());
             opContext.setConnectionCatalog(catalog);
             opContext.setConnectionSchema(schema1);
             Dialect dialect = JdbcHelper.getDialect(connection);
@@ -167,19 +169,37 @@ public class DynamicDDL extends AbstractCombinationOp {
             // String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
             // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 、 postgresql 、 oracle 、sqlserver 的 其他的试过才知道，如果取错了 只能从外部传进来了
             if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
+            OpConfig opConfig1 = opConfig == null ? new OpConfig() : opConfig;
             //List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(catalog,schema,"");
             opContext.setDataSource(dataSource)
                     .setDdlTableInfo(this.ddlTableInfo)
                     .setConnection(connection)
                     .setSchema(schema)
-                    .setOpConfig(opConfig == null ? new OpConfig() : opConfig)
+                    .setOpConfig(opConfig1)
                     //.setTableName(ddlTableName) 表名放到后续去处理
                     .setDbType(dbType)
                     .setDbVersion(dbVersion)
                     //.setDbColumns(columns)  放到后面去处理
                     .setDialect(dialect)
+                    .setDialectV2(dialectV2)
                     .setDomainClass(this.domainClass);
-
+            if(this.domainClass!=null){
+                opConfig1.setPgAutoLowerCase(true);
+                opConfig1.setH2AutoUpperCase(true);
+                opConfig1.setOracleAutoUpperCase(true);
+                if(Objects.equals(dbType, DbType.POSTGRE_SQL.getDb())){
+                    opConfig1.setToLowCase(true);
+                }
+                if(Objects.equals(dbType, DbType.H2.getDb())){
+                    opConfig1.setToUpperCase(true);
+                }
+                if(Objects.equals(dbType, DbType.ORACLE.getDb())){
+                    opConfig1.setToUpperCase(true);
+                }
+                if(Objects.equals(dbType, DbType.DB2.getDb())){
+                    opConfig1.setToUpperCase(true);
+                }
+            }
             return opContext;
         } catch (SQLException sqlE) {
             hasException = true;

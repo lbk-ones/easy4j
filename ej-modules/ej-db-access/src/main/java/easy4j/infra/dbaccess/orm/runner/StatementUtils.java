@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.Map;
 
 public class StatementUtils {
@@ -118,6 +119,8 @@ public class StatementUtils {
         } catch (SQLException ignore) {
             // ignore
             // log.warn("Null param of index [{}] type get failed, by: {}", paramIndex, e.getMessage());
+        }catch (Exception ignored){
+
         }
 
         return sqlType;

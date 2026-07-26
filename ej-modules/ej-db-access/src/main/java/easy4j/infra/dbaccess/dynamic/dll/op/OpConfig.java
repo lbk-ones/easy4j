@@ -29,12 +29,10 @@ import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -62,13 +60,22 @@ public class OpConfig {
 
     private boolean toUnderLine = true;
 
-    private boolean toLowCase = true;
+    private boolean toLowCase;
 
     private boolean toUpperCase;
 
 
     // 是否自动执行ddl语句 默认不执行 只返回语句
     private boolean autoExeDDL;
+
+    // oracle的字段是否自动大写 默认自动大写
+    private boolean oracleAutoUpperCase = false;
+
+    // postgresql的字段是否自动小写 默认自动小写
+    private boolean pgAutoLowerCase = false;
+
+    // h2的字段是否自动大写 默认自动小写
+    private boolean h2AutoUpperCase = false;
 
 
     public static Map<String, Wrapper> dbVsWrapper = Maps.newHashMap();
@@ -105,6 +112,21 @@ public class OpConfig {
         }
 
         return escapeCn(columnName, connection, forceEscape);
+    }
+
+    public String autoCase(String name_, boolean isToUnderline){
+        if(StrUtil.isBlank(name_))return "";
+
+        String name = name_;
+        if(isToUnderline){
+            if (toUnderLine) {
+                name = StrUtil.toUnderlineCase(name);
+            }
+        }
+        if (toLowCase || toUpperCase) {
+            name = toLowCase ? name.toLowerCase() : name.toUpperCase();
+        }
+        return name;
     }
 
 //    /**
@@ -199,7 +221,7 @@ public class OpConfig {
         String s = RegexEscapeUtils.escapeRegex(comma);
         String[] split = str.split(s);
         List<String> list = ListTs.asList(split);
-        return list.stream().map(e -> escapeCn(e, connection, forceEscape)).collect(Collectors.joining(comma));
+        return list.stream().map(e -> escapeCn(autoCase(e, false), connection, forceEscape)).collect(Collectors.joining(comma));
     }
 
     public String getTxt(String txt) {

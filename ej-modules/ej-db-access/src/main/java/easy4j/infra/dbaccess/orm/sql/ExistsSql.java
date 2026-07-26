@@ -4,8 +4,12 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
-public class ExistsSql implements ISql {
+import java.util.Objects;
+
+public class ExistsSql extends AbsISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {

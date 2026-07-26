@@ -5,12 +5,14 @@ import lombok.experimental.Accessors;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 @Data
 @Accessors(chain = true)
 public class PsRes {
 
     ResultSet resultSet;
+    List<ResultSet> resultSets;
 
     Statement statement;
 

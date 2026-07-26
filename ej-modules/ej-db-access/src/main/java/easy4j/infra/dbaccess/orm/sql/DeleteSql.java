@@ -6,11 +6,17 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
+import org.apache.commons.math3.analysis.function.Abs;
 
 import java.util.List;
+import java.util.Objects;
 
 // delete table where id in (x1,x2,x3)
-public class DeleteSql implements ISql {
+public class DeleteSql extends AbsISql {
+
+
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
         return runtimeContext.getOperateType() == OperateType.DELETE;

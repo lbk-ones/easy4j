@@ -24,6 +24,9 @@ public class AccessField {
     // 是否递增
     private boolean autoIncrementIs;
 
+    // 是否跳过ps赋值
+    private boolean skipPsSet = false;
+
 
     public AccessField cloneNew() {
         AccessField accessField1 = new AccessField();

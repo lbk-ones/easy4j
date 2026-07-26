@@ -12,19 +12,18 @@ import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 处理复杂联表查询
  *
  * @author bokun.li
  */
-public class JoinSql implements ISql {
+public class JoinSql extends AbsISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {

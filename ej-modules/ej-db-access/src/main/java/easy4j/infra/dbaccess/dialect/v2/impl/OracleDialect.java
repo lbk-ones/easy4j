@@ -31,7 +31,8 @@ public class OracleDialect extends AbstractDialectV2 {
     @Override
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName) {
         typeName = ListTs.get(StrUtil.split(typeName, "#"), 0);
-        return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);}
+        return Optional.ofNullable(OracleFieldType.getFromDataType(typeName)).map(OracleFieldType::getJavaTypes).map(e -> e.length > 0 ? e[0] : null).orElse(null);
+    }
 
     @Override
     public boolean isJson(String typeName) {

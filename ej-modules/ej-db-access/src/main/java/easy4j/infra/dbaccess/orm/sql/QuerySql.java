@@ -7,11 +7,14 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 // select * from table where xxx
-public class QuerySql implements ISql {
+public class QuerySql extends AbsISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {

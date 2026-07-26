@@ -23,6 +23,8 @@ import java.util.List;
  * 6、可以使用Wd包装对象代替常用对象 {@link easy4j.infra.dbaccess.orm.conditions.wd.Wd}
  * 7、支持注解式参数自定义 {@link easy4j.infra.dbaccess.orm.conditions.wd.WdField}
  * 8、兼容mybatis注解，兼容java注解，兼容jpa等注解
+ * 9、慢sql打印
+ * 10、spring事务混入，或者跳出事务
  * </pre>
  *
  * @since 2.1.4

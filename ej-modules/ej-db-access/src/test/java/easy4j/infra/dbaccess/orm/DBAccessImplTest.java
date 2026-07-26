@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.orm;
 
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.dbaccess.TempDataSource;
@@ -24,33 +25,61 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
+/**
+ * 已完成六种数据库的测试 mysql,postgresql,oracle,sqlserver,db2,h2
+ */
 class DBAccessImplTest {
 
     IDBAccess idbAccess;
     DynamicDDL dynamicDDL = null;
 
     DialectV2 dialectV2;
+    String dbType;
+
+    AccessConfig accessConfig;
 
     @BeforeEach
     synchronized void setUp() {
 
-        AccessConfig accessConfig = new AccessConfig();
+        accessConfig = new AccessConfig();
         DataSource dataSource = getH2DataSource();
         accessConfig.setDataSource(dataSource);
+        accessConfig.setOnlyPrintSlowSql(false);
         idbAccess = new DBAccessImpl(accessConfig);
         dynamicDDL = new DynamicDDL(dataSource, null, OperationLogs.class);
         Connection connection = dynamicDDL.getOpContext().getConnection();
         String s = dynamicDDL.autoDDLByJavaClass(true);
+        if (s != null) {
+            System.out.println("create table ->" + s);
+        }
         dialectV2 = DialectFactory.get(connection);
-
+        dbType = dialectV2.getDbType();
+        int majorVersion = dialectV2.getMajorVersion();
+        int minorVersion = dialectV2.getMinorVersion();
+        String productVersion = dialectV2.getProductVersion();
+        System.out.println(majorVersion+","+minorVersion+","+productVersion);
     }
 
     public String fn(String name) {
+        String dbType = accessConfig.getDbType();
+        if (accessConfig.isPgAutoLowerCase() && Objects.equals(dbType, DbType.POSTGRE_SQL.getDb())) {
+            name = name.toLowerCase();
+        }
+        if (accessConfig.isOracleAutoUpperCase() && Objects.equals(dbType, DbType.ORACLE.getDb())) {
+            name = name.toUpperCase();
+        }
+        if (accessConfig.isH2AutoUpperCase() && Objects.equals(dbType, DbType.H2.getDb())) {
+            name = name.toUpperCase();
+        }
+        if (accessConfig.isDb2AutoUpperCase() && Objects.equals(dbType, DbType.DB2.getDb())) {
+            name = name.toUpperCase();
+        }
         return dialectV2.escape(name);
     }
 
@@ -63,6 +92,12 @@ class DBAccessImplTest {
         }
     }
 
+    public DataSource getDb2_v12_1_5DataSource() {
+        String jdbcUrl = "jdbc:db2://localhost:25000/SAMPLE";
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        return new TempDataSource(driverClassNameByUrl, jdbcUrl, "bokun", "986099");
+    }
+
     public DataSource getMysql8DataSource() {
         String mysqlDbUrl = System.getenv("MYSQL_DB_URL");
         String userName = System.getenv("MYSQL_DB_USERNAME");
@@ -70,6 +105,12 @@ class DBAccessImplTest {
         String jdbcUrl = "jdbc:mysql://" + mysqlDbUrl + "/ts_schema";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
+    }
+
+    public DataSource getOracle19cDataSource() {
+        String jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/orcl";
+        String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
+        return new TempDataSource(driverClassNameByUrl, jdbcUrl, "ts_schema", "ts_password");
     }
 
     public DataSource getPg15DataSource() {
@@ -107,7 +148,7 @@ class DBAccessImplTest {
             operationLogs.setOperatorId((long) i);
             operationLogs.setOperatorName("user" + i);
             operationLogs.setSuccess(1);
-            operationLogs.setDescription("这是测试0"+i);
+            operationLogs.setDescription("这是测试0" + i);
             operationLogs.setCreatedAt(new Date());
             objects.add(operationLogs);
         }
@@ -264,8 +305,8 @@ class DBAccessImplTest {
         OperationLogs query = idbAccess.queryOne(updateBuild, OperationLogs.class);
 
         assertNotNull(query);
-        assertEquals("updateBuildName",query.getOperatorName());
-        assertEquals(0,query.getSuccess());
+        assertEquals("updateBuildName", query.getOperatorName());
+        assertEquals(0, query.getSuccess());
         assertEquals(1, updated);
     }
 
@@ -632,9 +673,9 @@ class DBAccessImplTest {
         idbAccess.save(operationLogs, OperationLogs.class);
 
         FWhereBuild<OperationLogs> whereBuild = FWhereBuild.get(OperationLogs.class)
-                .orConsumer(e->{
-                    e.eq(OperationLogs::getCreatedAt,date);
-                    e.gte(OperationLogs::getCreatedAt,date);
+                .orConsumer(e -> {
+                    e.eq(OperationLogs::getCreatedAt, date);
+                    e.gte(OperationLogs::getCreatedAt, date);
                 });
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -979,8 +1020,8 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         UpdateBuild updateBuild = UpdateBuild.get()
-                .set(true, "success" , 0)
-                .eq("id",saved.getId());
+                .set(true, "success", 0)
+                .eq("id", saved.getId());
 
         int updated = idbAccess.update(updateBuild, OperationLogs.class);
         assertEquals(1, updated);
@@ -1123,7 +1164,7 @@ class DBAccessImplTest {
                 SqlItem.of(OperationLogs::getId, OperationLogs.class)
         ).where(
                 FWhereBuild.get(OperationLogs.class)
-                        .sql("a."+fn("module")+" = ?","multiOrder2")
+                        .sql("a." + fn("module") + " = ?", "multiOrder2")
         ), OperationLogs.class);
 
         assertNotNull(operationLogs);
@@ -1149,11 +1190,11 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        List<EasyMap<String,Object>> operationLogs = idbAccess.queryMapJoin(new SqlWrapper(
+        List<EasyMap<String, Object>> operationLogs = idbAccess.queryMapJoin(new SqlWrapper(
                 SqlItem.of(OperationLogs::getId, OperationLogs.class)
         ).where(
                 FWhereBuild.get(OperationLogs.class)
-                        .sql("a."+fn("module")+" = ?","multiOrder2")
+                        .sql("a." + fn("module") + " = ?", "multiOrder2")
         ), false);
 
         assertNotNull(operationLogs);

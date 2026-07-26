@@ -6,10 +6,13 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
+import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
 import java.util.List;
+import java.util.Objects;
 
-public class UpdateSql implements ISql {
+public class UpdateSql extends AbsISql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {

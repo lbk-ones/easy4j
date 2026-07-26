@@ -7,11 +7,13 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.orm.runner.LogResult;
+import easy4j.infra.dbaccess.orm.runner.PsRes;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.sql.Connection;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * 这是运行时包装类
@@ -80,12 +82,25 @@ public class RuntimeContext<T> {
     // 主键值
     private List<AccessField> idList;
 
+    // 递增列集合
+    private List<AccessField> autoIncrementList;
+
+    // 暂时跳过打印sql
+    private boolean tempSkipPrintSql;
+
+    // 打印sql的时候的临时传参，该参数优先于easy4j.infra.dbaccess.orm.RuntimeContext.getArgs
+    private List<Object> tempPrintSqlArgs;
+
+    private Integer tempEffectRows;
+
     // 要更新的字段 以group字段来区分条数
     private List<AccessField> updateFields;
 
     // 要写入的字段列表 以group字段来区分条数
     private List<AccessField> insertFields;
 
+    // 自定义ps操作
+    private Function<RuntimeContext<?>, PsRes> psOperateFunction;
 
     // 数据库类型
     private String dbType;
@@ -150,10 +165,14 @@ public class RuntimeContext<T> {
                         operateType == OperateType.SELECT_PAGE ||
                         operateType == OperateType.SELECT_JOIN
         ) {
-            if(CollUtil.isNotEmpty(whereArgs)){
+            if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
         } else if (operateType == OperateType.INSERT) {
+
+            if (insertFields != null) {
+                insertFields = insertFields.stream().filter(e -> !e.isSkipPsSet()).toList();
+            }
             Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields, e -> String.valueOf(e.getGroup()));
             TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
             Set<Map.Entry<String, List<AccessField>>> entries = treeMap.entrySet();
@@ -165,19 +184,19 @@ public class RuntimeContext<T> {
                 }
             }
         } else if (operateType == OperateType.UPDATE) {
-            if(CollUtil.isNotEmpty(updateArgs)){
+            if (CollUtil.isNotEmpty(updateArgs)) {
                 args.addAll(updateArgs);
             }
             // update暂且不弄批量更新 目前是循环更新 所以不用分组
             for (AccessField u : updateFields) {
                 args.add(u.getColumnValue());
             }
-            if(CollUtil.isNotEmpty(whereArgs)){
+            if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
 
         } else if (operateType == OperateType.DELETE) {
-            if(CollUtil.isNotEmpty(whereArgs)){
+            if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
         }
@@ -203,7 +222,6 @@ public class RuntimeContext<T> {
         }
         return accessConfig;
     }
-
 
 
 }

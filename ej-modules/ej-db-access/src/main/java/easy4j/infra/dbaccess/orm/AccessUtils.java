@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
@@ -27,6 +28,8 @@ import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdField;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
+import easy4j.infra.dbaccess.orm.plugin.IPlugin;
+import easy4j.infra.dbaccess.orm.plugin.PluginSelector;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
@@ -83,12 +86,28 @@ public class AccessUtils implements Serializable {
     /**
      * 根据配置，来决定是否要转下划线
      *
-     * @param name 字段/表 的名称
+     * @param name_ 字段/表 的名称
      * @return
      */
-    public String fn(String name) {
+    public String fn(String name_) {
+        if (StrUtil.isBlank(name_)) return name_;
+        String name = name_;
         if (accessConfig.isFieldNameToUnderline()) {
-            return StrUtil.toUnderlineCase(name);
+            name = StrUtil.toUnderlineCase(name);
+        }
+        // 这几种数据库会强制进行大小写转换 以此来优化使用体验
+        String dbType = accessConfig.getDbType();
+        if (accessConfig.isPgAutoLowerCase() && Objects.equals(dbType, DbType.POSTGRE_SQL.getDb())) {
+            name = name.toLowerCase();
+        }
+        if (accessConfig.isOracleAutoUpperCase() && Objects.equals(dbType, DbType.ORACLE.getDb())) {
+            name = name.toUpperCase();
+        }
+        if (accessConfig.isH2AutoUpperCase() && Objects.equals(dbType, DbType.H2.getDb())) {
+            name = name.toUpperCase();
+        }
+        if (accessConfig.isDb2AutoUpperCase() && Objects.equals(dbType, DbType.DB2.getDb())) {
+            name = name.toUpperCase();
         }
         return name;
     }
@@ -112,7 +131,7 @@ public class AccessUtils implements Serializable {
                 if (Objects.nonNull(annotation1)) {
                     String value = annotation1.value();
                     if (StrUtil.isNotBlank(value)) {
-                        return dialect.escape(value);
+                        return dialect.escape(fn(value));
                     }
                 }
             } else if (clazz.isAnnotationPresent(Table.class)) {
@@ -120,18 +139,18 @@ public class AccessUtils implements Serializable {
                 if (Objects.nonNull(table)) {
                     String value = table.name();
                     if (StrUtil.isNotBlank(value)) {
-                        return dialect.escape(value);
+                        return dialect.escape(fn(value));
                     }
                 }
             } else if (clazz.isAnnotationPresent(DDLTable.class)) {
                 DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
                 String s = annotation2.tableName();
                 if (StrUtil.isNotBlank(s)) {
-                    return dialect.escape(s);
+                    return dialect.escape(fn(s));
                 }
             }
             String simpleName = clazz.getSimpleName();
-            String underlineCase = dialect.escape(fn(simpleName)).toLowerCase();
+            String underlineCase = dialect.escape(fn(simpleName));
             sb.append(underlineCase);
         }
         return sb.toString();
@@ -217,7 +236,7 @@ public class AccessUtils implements Serializable {
         if (StrUtil.isBlank(rn)) {
             return fn(field.getName());
         } else {
-            return rn;
+            return fn(rn);
         }
     }
 
@@ -260,8 +279,12 @@ public class AccessUtils implements Serializable {
         if (clazz != null) {
             fields = ReflectUtil.getFields(clazz);
         }
-        // obtain datasource connection
-        Connection connection = getConnection();
+        Connection connection = PluginSelector.getConnection(access,this.getAccessConfig());
+        if (connection == null) {
+            // obtain datasource connection
+            connection = getConnection();
+        }
+
         DialectV2 dialectV2 = DialectFactory.get(connection);
         String dbType = dialectV2.getDbType();
         List<AccessField> columnInfoList = new ArrayList<>();
@@ -269,6 +292,7 @@ public class AccessUtils implements Serializable {
         // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
         List<AccessField> insertList = new LinkedList<>();
         List<AccessField> idlist = new LinkedList<>();
+        List<AccessField> autoIncrementsList = new LinkedList<>();
         int index = 0;
         // 如果没有参数则只记录字段信息 字段信息的值是null
         if (p.isEmpty()) {
@@ -277,8 +301,7 @@ public class AccessUtils implements Serializable {
                 boolean pk = isPk(field);
                 boolean isAutoIncrement = isAutoIncrement(field);
                 String columnField = getColumnNameFormField(field);
-                AccessField accessField = patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
-
+                AccessField accessField = patchItem(dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                 // feat: 新增按主键值查询的功能
                 Serializable primaryKey = access.getPrimaryKey();
                 if (pk && primaryKey != null && accessField != null) {
@@ -295,7 +318,7 @@ public class AccessUtils implements Serializable {
                     accessField1.setPlaceHolder(Wd.place(primaryKey));
                     WdFieldInfo wdFieldInfo = resolveWdField(field);
                     Object convert = Convert.convert(type, primaryKey);
-                    accessField1.setColumnValue(Wd.wrapIf(convert,wdFieldInfo));
+                    accessField1.setColumnValue(Wd.wrapIf(convert, wdFieldInfo));
                     idlist.add(accessField1);
                 }
             }
@@ -307,7 +330,7 @@ public class AccessUtils implements Serializable {
                     boolean isAutoIncrement = isAutoIncrement(field);
                     String columnField = getColumnNameFormField(field);
                     if (index == 0) {
-                        patchItem(dialectV2, columnInfoList, index, field, pk, isAutoIncrement, columnField);
+                        patchItem(dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
                             ReflectUtil.getFieldValue(t, field),
@@ -345,14 +368,15 @@ public class AccessUtils implements Serializable {
                 .setUpdateFields(updateList)
                 .setColumnInfoList(columnInfoList)
                 .setIdList(idlist)
+                .setAutoIncrementList(autoIncrementsList)
                 .setInsertFields(insertList)
                 .setDialectV2(dialectV2)
-                .setTableName(dialectV2.escape(StrUtil.blankToDefault(getTableName(clazz, dialectV2), access.getTableName())))
+                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), dialectV2.escape(fn(access.getTableName()))))
                 .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), schema)));
 
     }
 
-    private AccessField patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
+    private AccessField patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
         AccessField columnInfo = new AccessField();
         columnInfo.setColumnName(columnField);
         columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
@@ -362,18 +386,22 @@ public class AccessUtils implements Serializable {
         columnInfo.setPkIs(pk);
         columnInfo.setAutoIncrementIs(isAutoIncrement);
         columnInfoList.add(columnInfo);
+        if (isAutoIncrement) {
+            autoIncrementsList.add(columnInfo);
+        }
         return columnInfo;
     }
 
     /**
      * 从注解里面解析出来Wd包装类扩展信息
+     *
      * @param field
      * @return
      */
-    public static WdFieldInfo resolveWdField(Field field){
-        if(field==null) return null;
+    public static WdFieldInfo resolveWdField(Field field) {
+        if (field == null) return null;
         WdFieldInfo wdFieldInfo = new WdFieldInfo();
-        if(field.isAnnotationPresent(WdField.class)){
+        if (field.isAnnotationPresent(WdField.class)) {
             WdField annotation = field.getAnnotation(WdField.class);
             String s = annotation.placeHolder();
             Class<? extends TypeHandler<?>> aClass = annotation.typeHandler();
@@ -383,6 +411,7 @@ public class AccessUtils implements Serializable {
         }
         return wdFieldInfo;
     }
+
     /**
      * 刷新一个参数
      *
@@ -400,7 +429,7 @@ public class AccessUtils implements Serializable {
      * @param insertList      写入列表
      * @param <T>             泛型
      */
-    private static <T> void refreshParam(
+    private static <T> AccessField refreshParam(
             Object fieldValue,
             Field parentField,
             String columnField,
@@ -442,6 +471,7 @@ public class AccessUtils implements Serializable {
                 insertList.add(accessField);
             }
         }
+        return accessField;
 
     }
 
@@ -463,12 +493,13 @@ public class AccessUtils implements Serializable {
         List<AccessField> updateList = new LinkedList<>();
         // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
         List<AccessField> insertList = new LinkedList<>();
+        List<AccessField> autoIncrementsList = new LinkedList<>();
         for (Field field : fields) {
             if (skipColumn(field)) continue;
             boolean pk = isPk(field);
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
-            refreshParam(
+            AccessField accessField = refreshParam(
                     ReflectUtil.getFieldValue(param, field),
                     field,
                     columnField,
@@ -482,9 +513,13 @@ public class AccessUtils implements Serializable {
                     updateList,
                     insertList
             );
+            if (isAutoIncrement) {
+                autoIncrementsList.add(accessField);
+            }
         }
         context.setSql(null);
         context.setIdList(idlist);
+        context.setAutoIncrementList(autoIncrementsList);
         context.setUpdateFields(updateList);
         context.setInsertFields(insertList);
 
@@ -585,8 +620,15 @@ public class AccessUtils implements Serializable {
         if (StrUtil.isBlank(sql)) {
             throw new AccessException("sql is not be empty!");
         }
+        List<IPlugin> plugins = PluginSelector.get(context);
+        for (IPlugin plugin : plugins) {
+            plugin.contextPrepared(context);
+        }
         SqlRunner sqlRunner = new SqlRunner();
         sqlRunner.run(context);
+        for (IPlugin plugin : plugins) {
+            plugin.beforeReturn(context);
+        }
     }
 
 
@@ -659,6 +701,13 @@ public class AccessUtils implements Serializable {
         Statement statement = psRes.getStatement();
         ResultSet resultSet = psRes.getResultSet();
         close(resultSet);
+        List<ResultSet> resultSet2 = psRes.getResultSets();
+        if (CollUtil.isNotEmpty(resultSet2)) {
+            for (ResultSet set : resultSet2) {
+                close(set);
+            }
+        }
+
         close(statement);
 
     }

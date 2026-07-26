@@ -6,10 +6,12 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 
+import java.util.Objects;
+
 /**
  * 截断
  */
-public class TruncateSql implements  ISql{
+public class TruncateSql extends AbsISql{
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
@@ -22,6 +24,9 @@ public class TruncateSql implements  ISql{
         String dbType = runtimeContext.getDbType();
         if(StrUtil.equals(dbType, DbType.POSTGRE_SQL.getDb())){
             sql += SP.SPACE + "restart identity";
+        }
+        if(StrUtil.equals(dbType, DbType.DB2.getDb())){
+            sql += SP.SPACE + "immediate";
         }
         return sql;
     }

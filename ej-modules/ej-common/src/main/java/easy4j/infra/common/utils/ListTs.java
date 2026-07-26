@@ -259,6 +259,46 @@ public class ListTs {
     }
 
     /**
+     * 将集合均分成指定份数
+     *
+     * @param collection 要分割的集合
+     * @param parts      要均分的份数
+     * @param <T>        集合元素类型
+     * @return 集合套集合 List<List<T>>
+     */
+    public static <T> List<List<T>> splitCollection(Collection<T> collection, int parts) {
+        // 参数验证
+        if (collection == null || collection.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (parts <= 0) {
+            throw new IllegalArgumentException("parts must great than 0");
+        }
+
+        List<T> list = new ArrayList<>(collection);
+        int size = list.size();
+
+        // 如果份数大于集合大小，份数设为集合大小
+        if (parts > size) {
+            parts = size;
+        }
+
+        List<List<T>> result = new ArrayList<>();
+
+        // 计算每份的大小
+        int batchSize = (size + parts - 1) / parts;
+
+        // 分割集合
+        for (int i = 0; i < size; i += batchSize) {
+            int endIndex = Math.min(i + batchSize, size);
+            result.add(new ArrayList<>(list.subList(i, endIndex)));
+        }
+
+        return result;
+    }
+
+    /**
      * 简单过滤
      *
      * @author bokun.li
@@ -267,7 +307,7 @@ public class ListTs {
     public static <T> List<T> filter(List<T> list, Predicate<T> predicate) {
         List<T> result = newArrayList();
         if (isNotEmpty(list)) {
-            List<T> collect = asStream(list).filter(predicate).collect(Collectors.toList());
+            List<T> collect = asStream(list).filter(predicate).toList();
             if (isNotEmpty(collect)) {
                 result.addAll(collect);
             }
