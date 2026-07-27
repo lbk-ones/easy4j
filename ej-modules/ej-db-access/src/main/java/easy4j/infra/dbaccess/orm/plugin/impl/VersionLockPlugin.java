@@ -1,23 +1,21 @@
-package easy4j.infra.dbaccess.orm.plugin;
+package easy4j.infra.dbaccess.orm.plugin.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.orm.*;
-import easy4j.infra.dbaccess.orm.conditions.Condition;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
+import easy4j.infra.dbaccess.orm.plugin.AbstractPlugin;
+import easy4j.infra.dbaccess.orm.plugin.Version;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
- * 插件
+ * 乐观锁插件，只影响更新和删除
  *
  * @author bokun.li
  */
@@ -25,7 +23,7 @@ public class VersionLockPlugin extends AbstractPlugin {
 
     @Override
     public String getName() {
-        return "versionLock";
+        return "versionLockPlugin";
     }
 
     @Override
@@ -35,6 +33,7 @@ public class VersionLockPlugin extends AbstractPlugin {
         if (access == null) return;
         if (CollUtil.isEmpty(columnInfoList)) return;
         OperateType operateType = context.getOperateType();
+        // 更新和删除才操作
         if (!(operateType.isDelete() || operateType.isUpdate()) || operateType == OperateType.TRUNCATE) {
             return;
         }
@@ -56,15 +55,14 @@ public class VersionLockPlugin extends AbstractPlugin {
             for (AccessField updateField : updateFields) {
                 String columnName1 = updateField.getColumnName();
                 if (StrUtil.equals(s, columnName1)) {
-                    Field field = updateField.getField();
                     Object columnValue = updateField.getColumnValue();
                     if (columnValue == null) {
                         continue;
                     }
-                    Number convert = Convert.convert(Number.class, columnValue);
+                    Object value = Wd.value(columnValue);
+                    Number convert = Convert.convert(Number.class, value);
                     BigDecimal add = NumberUtil.add(convert, 1);
-                    Object convert1 = Convert.convert(field.getType(), add);
-                    updateField.setColumnValue(convert1);
+                    Wd.setNewValue(updateField, add);
                     if (where != null) {
                         where.eq(columnName1, columnValue);
                     }
@@ -72,7 +70,5 @@ public class VersionLockPlugin extends AbstractPlugin {
                 }
             }
         }
-
-
     }
 }

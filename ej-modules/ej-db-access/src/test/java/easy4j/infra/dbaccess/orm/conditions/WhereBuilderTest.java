@@ -52,7 +52,7 @@ public class WhereBuilderTest {
         DialectV2 dialectV2 = context.getDialectV2();
         String build = fSqlBuilder.eq(SysLogRecord::getParams, "test")
                 .build(objects,context,false);
-        assertEquals(dialectV2.escape("params")+" = ?",build);
+        assertEquals(dialectV2.escape("PARAMS")+" = ?",build);
 
 
         fSqlBuilder.clear();
@@ -64,6 +64,7 @@ public class WhereBuilderTest {
                 .and(e2 -> e2
                         .eq("gender", "F")
                         .or((e) -> e.eq("department", "IT")
+                                .eq("department","NT")
                                 .ne("salary", 5000)
                         )
                 ).or(

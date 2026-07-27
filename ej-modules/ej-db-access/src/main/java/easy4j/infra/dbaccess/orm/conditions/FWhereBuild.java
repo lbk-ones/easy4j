@@ -35,7 +35,8 @@ import java.util.function.Consumer;
 public class FWhereBuild<T> extends WhereBuild {
     @Setter
     private Class<T> aclass = null;
-    
+
+    @JsonIgnore
     public FWhereBuild<T> instance = this;
     
     private String getName(Func1<T, ?> func) {
@@ -299,9 +300,9 @@ public class FWhereBuild<T> extends WhereBuild {
     // 构建子条件
     public FWhereBuild<T> andConsumer(Consumer<FWhereBuild<T>> subBuilder) {
         FWhereBuild<T> whereBuild = get(aclass);
-        subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.AND);
         whereBuild.setSubSql(true);
+        subBuilder.accept(whereBuild);
         super.getSubBuilders().add(whereBuild);
         return this;
     }
@@ -320,10 +321,10 @@ public class FWhereBuild<T> extends WhereBuild {
 
     public FWhereBuild<T> orConsumer(Consumer<FWhereBuild<T>> sub) {
         FWhereBuild<T> whereBuild = get(aclass);
-        sub.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.OR);
-        super.getSubBuilders().add(whereBuild);
         whereBuild.setSubSql(true);
+        sub.accept(whereBuild);
+        super.getSubBuilders().add(whereBuild);
         return instance;
     }
 
@@ -335,9 +336,9 @@ public class FWhereBuild<T> extends WhereBuild {
 
     public FWhereBuild<T> notConsumer(Consumer<FWhereBuild<T>> subBuilder) {
         FWhereBuild<T> whereBuild = get(aclass);
-        subBuilder.accept(whereBuild);
         whereBuild.setSubSql(true);
         whereBuild.withLogicOperator(LogicOperator.NOT);
+        subBuilder.accept(whereBuild);
         super.getSubBuilders().add(whereBuild);
         return this;
     }

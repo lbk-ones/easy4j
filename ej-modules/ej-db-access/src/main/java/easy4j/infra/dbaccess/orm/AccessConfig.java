@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.orm;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.orm.plugin.IObtainTenantId;
 import easy4j.infra.dbaccess.orm.plugin.IPlugin;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -59,6 +60,17 @@ public class AccessConfig {
     // 手动添加的plugin 这个不用启用 直接可用
     private List<IPlugin> pluginList = new LinkedList<>();
 
+    // 租户ID获取方式
+    private IObtainTenantId iObtainTenantId;
+
+    // 忽略tenant的表名
+    private List<String> ignoreTenantIdTables;
+
+    // 忽略tenant的表前缀
+    private List<String> ignoreTenantIdTablePrefix;
+
+    // 全局tenant字段的名称
+    private String globalTenantIdName;
 
 
     public void addPlugin(IPlugin iPlugin) {

@@ -16,7 +16,7 @@ public class FUpdateBuild<T> extends UpdateBuild {
     private String getName(Func1<T, ?> func) {
         return LambdaUtil.getFieldName(func);
     }
-
+    @JsonIgnore
     public FUpdateBuild<T> updateBuild = this;
 
     public FUpdateBuild<T> set(boolean condition, Func1<T, ?> column, Object val) {

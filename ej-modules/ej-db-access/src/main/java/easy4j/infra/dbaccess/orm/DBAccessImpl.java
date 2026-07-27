@@ -93,6 +93,7 @@ public class DBAccessImpl implements IDBAccess {
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
                 .setClazz(clazz)
+                .setWhere(WhereBuild.get())
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
@@ -286,7 +287,6 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            accessUtils.parseUpdate(updateBuild, e);
             accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });

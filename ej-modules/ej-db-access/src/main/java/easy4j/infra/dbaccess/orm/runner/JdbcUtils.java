@@ -69,6 +69,10 @@ public class JdbcUtils {
                     MapListHandler mapListHandler = new MapListHandler();
                     List<Map<String, Object>> handle = mapListHandler.handle(generatedKeys);
                     writeBack(params, handle, autoIncrementColumns);
+                    // fix 有些数据库 比如 sqlserver 设置了 RETURN_GENERATED_KEYS  insert into values (),() 返回的行数为-1
+                    if (effectRows == -1) {
+                        effectRows = handle.size();
+                    }
                 } catch (SQLException e) {
                     throw AccessUtils.translate("update", sql, e, runtimeContext.getConfig().getDataSource());
                 } finally {

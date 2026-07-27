@@ -1,8 +1,11 @@
 package easy4j.infra.dbaccess.orm.conditions.wd;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.db.meta.JdbcType;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.orm.AccessField;
+import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.handler.DefaultTypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeReference;
@@ -11,6 +14,8 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Optional;
 
 /**
  * 这个类的目的是对条件构造器传进来的值的包装
@@ -148,6 +153,22 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         } else {
             return object;
         }
+    }
+
+    /**
+     * 给AccessField设置一个新的值
+     *
+     * @param value wd包装类实例
+     */
+    public static void setNewValue(AccessField value, Object newValue) {
+        if (value == null) return;
+        if (newValue == null) return;
+        Field field = value.getField();
+        if (field == null) return;
+        WdFieldInfo wdFieldInfo = AccessUtils.resolveWdField(field);
+        Object convert = Convert.convert(field.getType(), newValue);
+        Object o = wrapIf(convert, wdFieldInfo);
+        value.setColumnValue(o);
     }
 
     /**

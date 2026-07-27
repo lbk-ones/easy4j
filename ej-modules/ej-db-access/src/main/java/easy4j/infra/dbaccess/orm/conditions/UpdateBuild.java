@@ -18,41 +18,53 @@ import java.util.function.Consumer;
  * 这里的 字段名称 只进行了下划线转换，并没有进行转义处理
  */
 public class UpdateBuild extends WhereBuild {
-
+    @JsonIgnore
     public UpdateBuild updateBuild = this;
 
     public UpdateBuild set(boolean condition, String column, Object val) {
-
         return maybeDo(condition, () -> {
-            super.getUpdateConditions().add(new Condition(column,CompareOperator.EQUAL,val));
+            List<Condition> updateConditions = super.getUpdateConditions();
+            if (updateConditions.stream().noneMatch(e -> StrUtil.equals(e.getColumn(), column) && e.getOperator() == CompareOperator.EQUAL)) {
+                updateConditions.add(new Condition(column, CompareOperator.EQUAL, val));
+            }
         });
     }
 
     // col1 = ? + ? | arg1,arg2
     public UpdateBuild setSql(boolean condition, String setSql, Object... params) {
         return maybeDo(condition && StrUtil.isNotBlank(setSql), () -> {
-            super.getUpdateConditions().add(new Condition(setSql,CompareOperator.UNKNOW,params));
+            List<Condition> updateConditions = super.getUpdateConditions();
+            if (updateConditions.stream().noneMatch(e -> StrUtil.equals(e.getColumn(), setSql) && e.getOperator() == CompareOperator.UNKNOW)) {
+                updateConditions.add(new Condition(setSql, CompareOperator.UNKNOW, params));
+            }
         });
     }
 
-    
+
     public UpdateBuild setIncrBy(boolean condition, String column, Number val) {
         return maybeDo(condition, () -> {
-            String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString():String.valueOf(val);
-            super.getUpdateConditions().add(new Condition(column,CompareOperator.INCR_BY,s));
+            List<Condition> updateConditions = super.getUpdateConditions();
+            if (updateConditions.stream().noneMatch(e -> StrUtil.equals(e.getColumn(), column) && e.getOperator() == CompareOperator.INCR_BY)) {
+                String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString() : String.valueOf(val);
+                updateConditions.add(new Condition(column, CompareOperator.INCR_BY, s));
+            }
         });
     }
 
-    
+
     public UpdateBuild setDecrBy(boolean condition, String column, Number val) {
         return maybeDo(condition, () -> {
-            String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString():String.valueOf(val);
-            super.getUpdateConditions().add(new Condition(column,CompareOperator.DECR_BY,s));
+            List<Condition> updateConditions = super.getUpdateConditions();
+            if (updateConditions.stream().noneMatch(e -> StrUtil.equals(e.getColumn(), column) && e.getOperator() == CompareOperator.DECR_BY)) {
+                String s = val instanceof BigDecimal ? ((BigDecimal) val).toPlainString() : String.valueOf(val);
+                updateConditions.add(new Condition(column, CompareOperator.DECR_BY, s));
+            }
+
         });
     }
 
-    public UpdateBuild maybeDo(boolean condition, VoidFunc voidFunc0){
-        if(condition && voidFunc0!=null){
+    public UpdateBuild maybeDo(boolean condition, VoidFunc voidFunc0) {
+        if (condition && voidFunc0 != null) {
             voidFunc0.call();
         }
         return updateBuild;
@@ -61,156 +73,156 @@ public class UpdateBuild extends WhereBuild {
 
     // 基础比较条件方法
     public UpdateBuild eq(String column, Object value) {
-        super.eq(column,value);
+        super.eq(column, value);
         return this;
     }
 
     public UpdateBuild eq(boolean option, String column, Object value) {
-        super.eq(option,column,value);
+        super.eq(option, column, value);
         return this;
     }
 
     public UpdateBuild ne(String column, Object value) {
-        super.ne(column,value);
+        super.ne(column, value);
         return this;
     }
 
     public UpdateBuild ne(boolean option, String column, Object value) {
-        super.ne(option,column,value);
+        super.ne(option, column, value);
         return this;
     }
 
     public UpdateBuild gt(String column, Object value) {
-        super.gt(column,value);
+        super.gt(column, value);
         return this;
     }
 
     public UpdateBuild gt(boolean option, String column, Object value) {
-        super.gt(option,column,value);
+        super.gt(option, column, value);
 
         return this;
     }
 
     public UpdateBuild lt(String column, Object value) {
-        super.lt(column,value);
+        super.lt(column, value);
         return this;
     }
 
     public UpdateBuild lt(boolean option, String column, Object value) {
-        super.lt(option,column,value);
+        super.lt(option, column, value);
         return this;
     }
 
     public UpdateBuild gte(String column, Object value) {
-        super.gte(column,value);
+        super.gte(column, value);
         return this;
     }
 
     public UpdateBuild gte(boolean option, String column, Object value) {
-        super.gte(option,column,value);
+        super.gte(option, column, value);
         return this;
     }
 
     public UpdateBuild lte(String column, Object value) {
-        super.lte(column,value);
+        super.lte(column, value);
         return this;
     }
 
     public UpdateBuild lte(boolean option, String column, Object value) {
-        super.lte(option,column,value);
+        super.lte(option, column, value);
         return this;
     }
 
     // LIKE 条件
     public UpdateBuild like(String column, String value) {
-        super.like(column,value);
+        super.like(column, value);
         return this;
     }
 
     public UpdateBuild like(boolean option, String column, String value) {
-        super.like(option,column,value);
+        super.like(option, column, value);
         return this;
     }
 
     public UpdateBuild likeLeft(String column, String value) {
-        super.likeLeft(column,value);
+        super.likeLeft(column, value);
         return this;
     }
 
     public UpdateBuild likeLeft(boolean option, String column, String value) {
-        super.likeLeft(option,column,value);
+        super.likeLeft(option, column, value);
         return this;
     }
 
     public UpdateBuild likeRight(String column, String value) {
-        super.likeRight(column,value);
+        super.likeRight(column, value);
         return this;
     }
 
     public UpdateBuild likeRight(boolean option, String column, String value) {
-        if (option) super.likeRight(column,value);
+        if (option) super.likeRight(column, value);
         return this;
     }
 
     public UpdateBuild notLike(String column, String value) {
-        super.notLike(column,value);
+        super.notLike(column, value);
         return this;
     }
 
     public UpdateBuild notLike(boolean option, String column, String value) {
-        super.notLike(option,column,value);
+        super.notLike(option, column, value);
         return this;
     }
 
     // IN 条件
     public UpdateBuild in(String column, Collection<?> values) {
-        super.in(column,values);
+        super.in(column, values);
         return this;
     }
 
     public UpdateBuild in(boolean option, String column, Collection<?> values) {
-        super.in(option,column,values);
+        super.in(option, column, values);
         return this;
     }
 
     public UpdateBuild inArray(String column, Object... values) {
-        super.inArray(column,values);
+        super.inArray(column, values);
         return this;
     }
 
     public UpdateBuild inArray(boolean option, String column, Object... values) {
-        super.inArray(option,column,values);
+        super.inArray(option, column, values);
         return this;
     }
 
     public UpdateBuild notIn(String column, Collection<?> values) {
-        super.notIn(column,values);
+        super.notIn(column, values);
         return this;
     }
 
     public UpdateBuild notIn(boolean option, String column, Collection<?> values) {
-        super.notIn(option,column,values);
+        super.notIn(option, column, values);
         return this;
     }
 
     public UpdateBuild notIn(String column, Object... values) {
-        super.notIn(column,values);
+        super.notIn(column, values);
         return this;
     }
 
     public UpdateBuild notIn(boolean option, String column, Object... values) {
-        super.notIn(option,column,values);
+        super.notIn(option, column, values);
         return this;
     }
 
     // BETWEEN 条件
     public UpdateBuild between(String column, Object value1, Object value2) {
-        super.between(column,value1,value2);
+        super.between(column, value1, value2);
         return this;
     }
 
     public UpdateBuild between(boolean option, String column, Object value1, Object value2) {
-        super.between(option,column,value1,value2);
+        super.between(option, column, value1, value2);
         return this;
     }
 
@@ -223,7 +235,7 @@ public class UpdateBuild extends WhereBuild {
 
     @JsonIgnore
     public UpdateBuild isNull(boolean option, String column) {
-        super.isNull(option,column);
+        super.isNull(option, column);
         return this;
     }
 
@@ -236,19 +248,20 @@ public class UpdateBuild extends WhereBuild {
 
     @JsonIgnore
     public UpdateBuild isNotNull(boolean option, String column) {
-        super.isNotNull(option,column);
+        super.isNotNull(option, column);
 
         return this;
     }
 
 
-    public UpdateBuild sql(boolean option,String sql,Object ...args_){
-        super.sql(option,sql,args_);
+    public UpdateBuild sql(boolean option, String sql, Object... args_) {
+        super.sql(option, sql, args_);
 
         return this;
     }
-    public UpdateBuild sql(String sql,Object ...args_){
-        super.sql(sql,args_);
+
+    public UpdateBuild sql(String sql, Object... args_) {
+        super.sql(sql, args_);
         return this;
     }
 
@@ -260,9 +273,9 @@ public class UpdateBuild extends WhereBuild {
 
     public UpdateBuild andUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
         UpdateBuild whereBuild = get();
-        subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.AND);
         whereBuild.setSubSql(true);
+        subBuilder.accept(whereBuild);
         super.getSubBuilders().add(whereBuild);
         return this;
     }
@@ -280,10 +293,10 @@ public class UpdateBuild extends WhereBuild {
 
     public UpdateBuild orUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
         UpdateBuild whereBuild = get();
-        subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.OR);
-        super.getSubBuilders().add(whereBuild);
         whereBuild.setSubSql(true);
+        subBuilder.accept(whereBuild);
+        super.getSubBuilders().add(whereBuild);
         return this;
     }
 
@@ -294,22 +307,21 @@ public class UpdateBuild extends WhereBuild {
 
     public UpdateBuild notUpdateConsumer(Consumer<UpdateBuild> subBuilder) {
         UpdateBuild whereBuild = get();
-        subBuilder.accept(whereBuild);
         whereBuild.setSubSql(true);
         whereBuild.withLogicOperator(LogicOperator.NOT);
+        subBuilder.accept(whereBuild);
         super.getSubBuilders().add(whereBuild);
         return this;
     }
-    
-    
 
-    public static UpdateBuild get(){
+
+    public static UpdateBuild get() {
         return new UpdateBuild();
     }
 
-    public interface VoidFunc{
+    public interface VoidFunc {
         void call();
     }
-    
-    
+
+
 }

@@ -15,6 +15,8 @@ import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdLong;
+import easy4j.infra.dbaccess.orm.plugin.impl.LogicDeletePlugin;
+import easy4j.infra.dbaccess.orm.plugin.impl.VersionLockPlugin;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +50,9 @@ class DBAccessImplTest {
     synchronized void setUp() {
 
         accessConfig = new AccessConfig();
-        DataSource dataSource = getH2DataSource();
+        accessConfig.addPlugin(new VersionLockPlugin());
+        accessConfig.addPlugin(new LogicDeletePlugin());
+        DataSource dataSource = getMs2025DataSource();
         accessConfig.setDataSource(dataSource);
         accessConfig.setOnlyPrintSlowSql(false);
         idbAccess = new DBAccessImpl(accessConfig);
@@ -188,7 +192,7 @@ class DBAccessImplTest {
             operationLogs.setModule("deleteTest");
             operationLogs.setBusinessNo("del" + i);
             operationLogs.setOperatorId(100L + i);
-            operationLogs.setSuccess(1);
+            //operationLogs.setSuccess(1);
             operationLogs.setCreatedAt(new Date());
             objects.add(operationLogs);
         }
@@ -196,6 +200,9 @@ class DBAccessImplTest {
 
         // Delete by condition
         WhereBuild whereBuild = WhereBuild.get().eq("module", "deleteTest");
+        List<OperationLogs> query = idbAccess.query(whereBuild, OperationLogs.class);
+        assertEquals(5, query.size());
+
         int deleted = idbAccess.delete(whereBuild, OperationLogs.class);
 
         assertEquals(5, deleted);
