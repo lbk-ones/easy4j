@@ -31,11 +31,10 @@ import java.util.Optional;
  * @since 2.1.4
  */
 @EqualsAndHashCode(callSuper = true)
-@Data
 @Slf4j
 public abstract class Wd<T> extends TypeReference<T> implements Serializable {
 
-    private Wd<T> instance = this;
+    private final Wd<T> instance = this;
 
     public static final String DEFAULT_PLACE = SP.QUESTION_MARK;
 
@@ -57,9 +56,45 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         register();
     }
 
-    public void setValueObject(Object valueObj) {
-        this.value = (T) valueObj;
+    public String getPlaceHolder() {
+        return placeHolder;
+    }
 
+    public T getValue() {
+        return value;
+    }
+
+    public TypeHandler getTypeHandler() {
+        return typeHandler;
+    }
+
+    public JdbcType getJdbcType() {
+        return jdbcType;
+    }
+
+    public Wd<T> setPlaceHolder(String placeHolder) {
+        this.placeHolder = placeHolder;
+        return instance;
+    }
+
+    public Wd<T> setValue(T value) {
+        this.value = value;
+        return instance;
+    }
+
+    public Wd<T> setTypeHandler(TypeHandler typeHandler) {
+        this.typeHandler = typeHandler;
+        return instance;
+    }
+
+    public Wd<T> setJdbcType(JdbcType jdbcType) {
+        this.jdbcType = jdbcType;
+        return instance;
+    }
+
+    public Wd<T> setValueObject(Object valueObj) {
+        this.value = (T) valueObj;
+        return instance;
     }
 
     public Wd(String placeHolder, T value) {

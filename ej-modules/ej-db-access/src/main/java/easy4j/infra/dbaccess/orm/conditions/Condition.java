@@ -91,7 +91,7 @@ public class Condition {
             if (value instanceof Collection<?> list) {
                 String values = list.stream()
                         .map(v -> {
-                            argsList.add(Wd.value(v));
+                            argsList.add(v);
                             return Wd.place(v);
                         })
                         .collect(Collectors.joining(SP.COMMA+SP.SPACE));
@@ -99,7 +99,7 @@ public class Condition {
             } else {
                 if (value instanceof CharSequence) {
                     String values = ListTs.asList(value).stream().map(v -> {
-                                argsList.add(Wd.value(v));
+                                argsList.add(v);
                                 return Wd.place(v);
                             })
                             .collect(Collectors.joining(", "));
@@ -110,8 +110,8 @@ public class Condition {
             if (value instanceof Collection<?> list && list.size() == 2) {
                 Object v1 = ListTs.get(list, 0);
                 Object v2 = ListTs.get(list, 1);
-                argsList.add(Wd.value(v1));
-                argsList.add(Wd.value(v2));
+                argsList.add(v1);
+                argsList.add(v2);
                 return String.format("%s %s %s and %s", column, operator.getSymbol(), Wd.place(v1), Wd.place(v2));
             }
         } else if (operator == CompareOperator.LIKE_LEFT || operator == CompareOperator.LIKE_RIGHT) {
@@ -124,12 +124,12 @@ public class Condition {
             return this.column;
         }else if (operator == CompareOperator.DECR_BY) {
             // 没有参数
-            return String.format(operator.getSymbol(), column, column,Wd.value(value));
+            return String.format(operator.getSymbol(), column, column,value);
         }else if (operator == CompareOperator.INCR_BY) {
             // 没有参数
-            return String.format(operator.getSymbol(), column, column,Wd.value(value));
+            return String.format(operator.getSymbol(), column, column,value);
         }
-        argsList.add(Wd.value(value));
+        argsList.add(value);
         return String.format("%s %s %s", column, operator.getSymbol(), Wd.place(value));
     }
 }

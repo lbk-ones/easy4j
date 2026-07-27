@@ -52,7 +52,7 @@ class DBAccessImplTest {
         accessConfig = new AccessConfig();
         accessConfig.addPlugin(new VersionLockPlugin());
         accessConfig.addPlugin(new LogicDeletePlugin());
-        DataSource dataSource = getMs2025DataSource();
+        DataSource dataSource = getH2DataSource();
         accessConfig.setDataSource(dataSource);
         accessConfig.setOnlyPrintSlowSql(false);
         idbAccess = new DBAccessImpl(accessConfig);
