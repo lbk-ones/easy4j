@@ -195,8 +195,8 @@ public class Config {
                 List<AbstractMethod> methodList = super.getMethodList(mapperClass, tableInfo);
                 // 不要逻辑删除字段, 不要乐观锁字段, 不要填充策略是 UPDATE 的字段
                 methodList.add(new InsertBatchSomeColumn(t -> !t.isLogicDelete() && !t.isVersion() && t.getFieldFill() != FieldFill.UPDATE));
-                // 不要填充策略是 INSERT 的字段, 不要字段名是 column4 的字段
-                methodList.add(new AlwaysUpdateSomeColumnById(t -> t.getFieldFill() != FieldFill.INSERT && !t.getProperty().equals("column4")));
+                // 不要填充策略是 INSERT 的字段
+                methodList.add(new AlwaysUpdateSomeColumnById(t -> t.getFieldFill() != FieldFill.INSERT));
                 return methodList;
             }
         };

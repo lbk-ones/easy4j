@@ -464,6 +464,7 @@ public class DBAccessImpl implements IDBAccess {
         List<T> empty = new ArrayList<>();
         if (clazz == null) return empty;
         Access<T> tAccess = new Access<T>()
+                .setWhere(WhereBuild.get())
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
