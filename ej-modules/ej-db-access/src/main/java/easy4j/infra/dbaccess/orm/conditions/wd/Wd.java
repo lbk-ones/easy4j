@@ -1,22 +1,23 @@
 package easy4j.infra.dbaccess.orm.conditions.wd;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.map.reference.WeakKeyValueConcurrentMap;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.meta.JdbcType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.handler.DefaultTypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeReference;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * 这个类的目的是对条件构造器传进来的值的包装
@@ -34,11 +35,13 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 public abstract class Wd<T> extends TypeReference<T> implements Serializable {
-
+    @JsonIgnore
     private final Wd<T> instance = this;
 
     public static final String DEFAULT_PLACE = SP.QUESTION_MARK;
 
+    @JsonIgnore
+    public static Map<Class<?>,Class<?>> CLASS_CACHE = new WeakKeyValueConcurrentMap<>();
 
     // 整个替换
     private String placeHolder = DEFAULT_PLACE;
@@ -46,6 +49,7 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     // 值
     private T value;
 
+    @JsonIgnore
     // 类型转换器
     private TypeHandler typeHandler = DefaultTypeHandler.INSTANCE;
 
@@ -142,6 +146,28 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
 
 
     /**
+     * 向上一直找,找不到就返回WdObject为止
+     * @param aClass
+     * @return
+     */
+    private static Class<?> getWdClassBySuper(Class<?> aClass) {
+        if (aClass == null) return WdObject.class;
+        Class<?> aClass2 = CLASS_CACHE.get(aClass);
+        if(aClass2!=null) return aClass2;
+        Class<?> aClass1 = WdRegister.getByClass(aClass);
+        if (aClass1 != null) {
+            CLASS_CACHE.put(aClass,aClass1);
+            return aClass1;
+        } else {
+            Class<?> superclass = aClass.getSuperclass();
+            if (superclass != null) {
+                return getWdClassBySuper(superclass);
+            }
+        }
+        return null;
+    }
+
+    /**
      * 如果没有被Wd包装 则包装一遍 null不包装
      * 有注解则注解优先
      *
@@ -154,17 +180,17 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         } else {
             if (value != null) {
                 Class<?> aClass = value.getClass();
-                Class<?> aClass1 = WdRegister.getByClass(aClass);
-                if (aClass1 != null) {
-                    Object o = ReflectUtil.newInstance(aClass1);
+                Class<?> wdClassBySuper = getWdClassBySuper(aClass);
+                if (wdClassBySuper != null) {
+                    Object o = ReflectUtil.newInstance(wdClassBySuper, value);
                     if (o instanceof Wd<?> wd) {
-                        wd.setValueObject(value);
+                        //wd.setValueObject(value);
                         setFieldInfo(wdFieldInfo, wd);
                     }
                     return o;
                 } else {
-                    if (log.isErrorEnabled()) {
-                        log.error("not found the class {} WdType", aClass.getName());
+                    if (log.isWarnEnabled()) {
+                        log.warn("not found the class {} WdType", aClass.getName());
                     }
                 }
             }

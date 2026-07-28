@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
@@ -21,7 +22,7 @@ import java.util.List;
  * 4、能执行sql脚本
  * 5、支持TypeHandler自定义类型转换 {@link easy4j.infra.dbaccess.orm.handler.TypeHandler}
  * 6、可以使用Wd包装对象代替常用对象 {@link easy4j.infra.dbaccess.orm.conditions.wd.Wd}
- * 7、支持注解式参数自定义 {@link easy4j.infra.dbaccess.orm.conditions.wd.WdField}
+ * 7、支持注解式参数自定义 {@link JdbcColumn}
  * 8、兼容mybatis注解，兼容java注解，兼容jpa等注解
  * 9、慢sql打印
  * 10、spring事务混入，或者跳出事务

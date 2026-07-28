@@ -1,5 +1,7 @@
 package easy4j.infra.dbaccess.orm.conditions.wd;
 
+import cn.hutool.core.date.DateTime;
+
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,6 +46,7 @@ public class WdRegister {
         WdRegister.register(List.class, WdList.class);
         WdRegister.register(Collection.class, WdCollection.class);
         WdRegister.register(Map.class, WdMap.class);
+        WdRegister.register(DateTime.class, WdDateTime.class);
         WdRegister.register(Object.class, WdObject.class);
     }
 
