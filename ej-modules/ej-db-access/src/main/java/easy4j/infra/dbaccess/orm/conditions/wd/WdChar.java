@@ -50,4 +50,9 @@ public class WdChar extends Wd<Character> implements Serializable {
     public static WdChar v(String prefix, Character val){
         return new WdChar(prefix,val);
     }
+
+    @Override
+    public WdChar cloneNew() {
+        return new WdChar();
+    }
 }

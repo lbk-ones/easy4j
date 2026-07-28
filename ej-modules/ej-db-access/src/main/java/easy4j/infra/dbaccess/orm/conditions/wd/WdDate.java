@@ -50,4 +50,9 @@ public class WdDate extends Wd<Date> implements Serializable {
     public static WdDate v(String prefix, Date val){
         return new WdDate(prefix,val);
     }
+
+    @Override
+    public WdDate cloneNew() {
+        return new WdDate();
+    }
 }

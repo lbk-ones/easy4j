@@ -50,4 +50,9 @@ public class WdLong extends Wd<Long> implements Serializable {
     public static WdLong v(String prefix, Long val){
         return new WdLong(prefix,val);
     }
+
+    @Override
+    public WdLong cloneNew() {
+        return new WdLong();
+    }
 }

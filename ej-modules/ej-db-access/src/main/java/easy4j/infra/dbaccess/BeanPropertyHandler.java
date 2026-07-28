@@ -115,7 +115,7 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
                     WdFieldInfo wdFieldInfo = AccessUtils.resolveWdField(field);
                     // 拿取包装类真正的字段类型
                     if (Wd.class.isAssignableFrom(propertyType)) {
-                        o = (Wd) ReflectUtil.newInstance(propertyType);
+                        o = (Wd)WdRegister.instanceCache(propertyType);
                         Wd.setFieldInfo(wdFieldInfo, o);
                         propertyType = (Class<?>) o.getRawType();
                         TypeHandler<?> typeHandler = o.getTypeHandler();

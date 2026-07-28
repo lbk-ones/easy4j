@@ -50,4 +50,9 @@ public class WdBigDecimal extends Wd<BigDecimal> implements Serializable {
     public WdBigDecimal(BigDecimal value) {
         super(value);
     }
+
+    @Override
+    public WdBigDecimal cloneNew() {
+        return new WdBigDecimal();
+    }
 }

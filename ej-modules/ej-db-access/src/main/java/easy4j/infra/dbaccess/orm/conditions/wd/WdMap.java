@@ -51,4 +51,9 @@ public class WdMap extends Wd<Map<Object,Object>> implements Serializable {
     public static WdMap v(String prefix, Map<Object,Object> val){
         return new WdMap(prefix,val);
     }
+
+    @Override
+    public WdMap cloneNew() {
+        return new WdMap();
+    }
 }

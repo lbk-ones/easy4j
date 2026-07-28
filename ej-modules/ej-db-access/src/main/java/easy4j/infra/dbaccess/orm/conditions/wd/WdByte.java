@@ -49,4 +49,8 @@ public class WdByte extends Wd<Byte> implements Serializable {
     public static WdByte v(String prefix, Byte val){
         return new WdByte(prefix,val);
     }
+    @Override
+    public WdByte cloneNew() {
+        return new WdByte();
+    }
 }

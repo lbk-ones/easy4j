@@ -51,4 +51,9 @@ public class WdDateTime extends Wd<DateTime> implements Serializable {
     public static WdDateTime v(String prefix, DateTime val){
         return new WdDateTime(prefix,val);
     }
+
+    @Override
+    public WdDateTime cloneNew() {
+        return new WdDateTime();
+    }
 }

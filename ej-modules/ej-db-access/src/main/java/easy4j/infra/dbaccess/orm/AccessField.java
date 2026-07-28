@@ -53,6 +53,8 @@ public class AccessField {
         accessField1.setPlaceHolder(this.getPlaceHolder());
         accessField1.setPkIs(this.isPkIs());
         accessField1.setAutoIncrementIs(this.isAutoIncrementIs());
+        accessField1.setSkipPsSet(this.isSkipPsSet());
+        accessField1.setAlias(this.getAlias());
         return accessField1;
     }
 }

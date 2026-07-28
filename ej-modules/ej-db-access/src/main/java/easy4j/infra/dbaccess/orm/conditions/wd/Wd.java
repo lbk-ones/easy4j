@@ -6,6 +6,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.meta.JdbcType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import easy4j.infra.common.utils.ObjectHolder;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.AccessUtils;
@@ -89,6 +90,8 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         this.value = value;
         return instance;
     }
+
+    public abstract Wd<T> cloneNew();
 
     public String getAlias() {
         return alias;
@@ -182,9 +185,9 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
                 Class<?> aClass = value.getClass();
                 Class<?> wdClassBySuper = getWdClassBySuper(aClass);
                 if (wdClassBySuper != null) {
-                    Object o = ReflectUtil.newInstance(wdClassBySuper, value);
+                    Object o = WdRegister.instanceCache(wdClassBySuper);
                     if (o instanceof Wd<?> wd) {
-                        //wd.setValueObject(value);
+                        wd.setValueObject(value);
                         setFieldInfo(wdFieldInfo, wd);
                     }
                     return o;
@@ -207,8 +210,18 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         }
         Class<? extends TypeHandler<?>> typeHandler1 = wdFieldInfo.getTypeHandler();
         if (typeHandler1 != null) {
-            TypeHandler<?> typeHandler2 = ReflectUtil.newInstance(typeHandler1);
-            wd.setTypeHandler(typeHandler2);
+            String name = typeHandler1.getName();
+            TypeHandler<?> object = (TypeHandler<?>)ObjectHolder.INSTANCE.getObject(name);
+            if (object == null) {
+                synchronized (ObjectHolder.INSTANCE) {
+                    if (ObjectHolder.INSTANCE.getObject(name) == null) {
+                        TypeHandler<?> typeHandler2 = ReflectUtil.newInstance(typeHandler1);
+                        ObjectHolder.INSTANCE.setObject(name, typeHandler2);
+                        object = typeHandler2;
+                    }
+                }
+            }
+            wd.setTypeHandler(object);
         }
         JdbcType jdbcType1 = wdFieldInfo.getJdbcType();
         if (jdbcType1 != null) {
@@ -319,6 +332,4 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     public String toString() {
         return String.valueOf(value);
     }
-
-
 }

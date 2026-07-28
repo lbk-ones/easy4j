@@ -49,4 +49,9 @@ public class WdFloat extends Wd<Float> implements Serializable {
     public static WdFloat v(String prefix, Float val){
         return new WdFloat(prefix,val);
     }
+
+    @Override
+    public WdFloat cloneNew() {
+        return new WdFloat();
+    }
 }

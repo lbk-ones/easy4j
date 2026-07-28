@@ -49,4 +49,9 @@ public class WdInt extends Wd<Integer> implements Serializable {
     public static WdInt v(String prefix, Integer val){
         return new WdInt(prefix,val);
     }
+
+    @Override
+    public WdInt cloneNew() {
+        return new WdInt();
+    }
 }

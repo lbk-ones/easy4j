@@ -267,6 +267,7 @@ public class AccessUtils implements Serializable {
     }
 
     public <T> RuntimeContext<T> toContext(Access<T> access) {
+        long bt = System.currentTimeMillis();
         Class<T> clazz = access.getClazz();
         if (!access.isReturnMap()) {
             assertNotNull(clazz, "clazz");
@@ -300,7 +301,8 @@ public class AccessUtils implements Serializable {
                 boolean pk = isPk(field);
                 boolean isAutoIncrement = isAutoIncrement(field);
                 String columnField = getColumnNameFormField(field);
-                AccessField accessField = patchItem(dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                WdFieldInfo wdFieldInfo = resolveWdField(field);
+                AccessField accessField = patchItem(wdFieldInfo,dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                 // feat: 新增按主键值查询的功能
                 Serializable primaryKey = access.getPrimaryKey();
                 if (pk && primaryKey != null && accessField != null) {
@@ -324,12 +326,14 @@ public class AccessUtils implements Serializable {
                     boolean pk = isPk(field);
                     boolean isAutoIncrement = isAutoIncrement(field);
                     String columnField = getColumnNameFormField(field);
+                    WdFieldInfo wdFieldInfo = resolveWdField(field);
                     if (index == 0) {
-                        patchItem(dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                        patchItem(wdFieldInfo,dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
                             ReflectUtil.getFieldValue(t, field),
                             field,
+                            wdFieldInfo,
                             columnField,
                             dialectV2,
                             index,
@@ -347,7 +351,7 @@ public class AccessUtils implements Serializable {
         }
 
         String schema = access.getSchema();
-        return new RuntimeContext<T>()
+        RuntimeContext<T> tRuntimeContext = new RuntimeContext<T>()
                 .setSqlWrapper(access.getSqlWrapper())
                 .setSql(access.getSql())
                 .setPage(access.getPage())
@@ -368,11 +372,12 @@ public class AccessUtils implements Serializable {
                 .setDialectV2(dialectV2)
                 .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), dialectV2.escape(fn(access.getTableName()))))
                 .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), schema)));
+        LogSql.init(tRuntimeContext,bt);
+        return tRuntimeContext;
 
     }
 
-    private AccessField patchItem(DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
-        WdFieldInfo wdFieldInfo = resolveWdField(field);
+    private AccessField patchItem(WdFieldInfo wdFieldInfo,DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
 
         AccessField columnInfo = new AccessField();
         columnInfo.setColumnName(columnField);
@@ -432,6 +437,7 @@ public class AccessUtils implements Serializable {
     private static <T> AccessField refreshParam(
             Object fieldValue,
             Field parentField,
+            WdFieldInfo wdFieldInfo,
             String columnField,
             DialectV2 dialectV2,
             int index,
@@ -442,7 +448,6 @@ public class AccessUtils implements Serializable {
             boolean access,
             List<AccessField> updateList,
             List<AccessField> insertList) {
-        WdFieldInfo wdFieldInfo = resolveWdField(parentField);
         AccessField accessField = new AccessField();
         accessField.setField(parentField);
         accessField.setColumnName(columnField);
@@ -500,9 +505,11 @@ public class AccessUtils implements Serializable {
             boolean pk = isPk(field);
             boolean isAutoIncrement = isAutoIncrement(field);
             String columnField = getColumnNameFormField(field);
+            WdFieldInfo wdFieldInfo = resolveWdField(field);
             AccessField accessField = refreshParam(
                     ReflectUtil.getFieldValue(param, field),
                     field,
+                    wdFieldInfo,
                     columnField,
                     dialectV2,
                     0,
@@ -613,7 +620,6 @@ public class AccessUtils implements Serializable {
      * @param <T>          泛型
      */
     public <T> void resolveContext(RuntimeContext<T> context, boolean skipParseSql) {
-        LogSql.init(context);
         context.setSkipParseSql(skipParseSql);
         List<IPlugin> plugins = PluginSelector.list(context);
         for (IPlugin plugin : plugins) {

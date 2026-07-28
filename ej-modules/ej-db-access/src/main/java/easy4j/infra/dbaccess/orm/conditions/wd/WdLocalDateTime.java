@@ -50,4 +50,9 @@ public class WdLocalDateTime extends Wd<LocalDateTime> implements Serializable {
     public static WdLocalDateTime v(String prefix, LocalDateTime val){
         return new WdLocalDateTime(prefix,val);
     }
+
+    @Override
+    public WdLocalDateTime cloneNew() {
+        return new WdLocalDateTime();
+    }
 }

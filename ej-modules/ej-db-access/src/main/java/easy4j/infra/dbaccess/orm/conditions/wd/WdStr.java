@@ -49,4 +49,9 @@ public class WdStr extends Wd<String> implements Serializable {
     public WdStr(String value) {
         super(value);
     }
+
+    @Override
+    public WdStr cloneNew() {
+        return new WdStr();
+    }
 }

@@ -50,4 +50,9 @@ public class WdShort extends Wd<Short> implements Serializable {
     public static WdShort v(String prefix, Short val){
         return new WdShort(prefix,val);
     }
+
+    @Override
+    public WdShort cloneNew() {
+        return new WdShort();
+    }
 }

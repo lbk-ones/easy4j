@@ -49,4 +49,9 @@ public class WdBool extends Wd<Boolean> implements Serializable {
     public static WdBool v(String prefix, Boolean val){
         return new WdBool(prefix,val);
     }
+
+    @Override
+    public WdBool cloneNew() {
+        return new WdBool();
+    }
 }

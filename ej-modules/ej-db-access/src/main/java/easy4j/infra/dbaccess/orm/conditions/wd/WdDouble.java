@@ -49,4 +49,9 @@ public class WdDouble extends Wd<Double> implements Serializable {
     public static WdDouble v(String prefix, Double val){
         return new WdDouble(prefix,val);
     }
+
+    @Override
+    public WdDouble cloneNew() {
+        return new WdDouble();
+    }
 }

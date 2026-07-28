@@ -49,4 +49,9 @@ public class WdObject extends Wd<Object> implements Serializable {
     public static WdObject v(String prefix, Object val){
         return new WdObject(prefix,val);
     }
+
+    @Override
+    public WdObject cloneNew() {
+        return new WdObject();
+    }
 }

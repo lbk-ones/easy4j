@@ -14,7 +14,11 @@ import java.util.List;
 @Slf4j
 public class LogSql {
 
-
+    public static void init(RuntimeContext<?> runtimeContext,Long time) {
+        LogResult logResult = new LogResult();
+        logResult.setBeginTime(time);
+        runtimeContext.setLogResult(logResult);
+    }
     public static void init(RuntimeContext<?> runtimeContext) {
         LogResult logResult = new LogResult();
         logResult.setBeginTime(System.currentTimeMillis());

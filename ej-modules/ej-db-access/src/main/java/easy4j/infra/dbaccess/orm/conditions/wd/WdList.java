@@ -50,4 +50,9 @@ public class WdList extends Wd<List<?>> implements Serializable {
     public static WdList v(String prefix, List<?> val){
         return new WdList(prefix,val);
     }
+
+    @Override
+    public WdList cloneNew() {
+        return new WdList();
+    }
 }

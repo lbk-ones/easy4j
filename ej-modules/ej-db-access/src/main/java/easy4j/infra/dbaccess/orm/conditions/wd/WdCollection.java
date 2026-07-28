@@ -50,4 +50,9 @@ public class WdCollection extends Wd<Collection<?>> implements Serializable {
     public static WdCollection v(String prefix, Collection<?> val){
         return new WdCollection(prefix,val);
     }
+
+    @Override
+    public WdCollection cloneNew() {
+        return new WdCollection();
+    }
 }
