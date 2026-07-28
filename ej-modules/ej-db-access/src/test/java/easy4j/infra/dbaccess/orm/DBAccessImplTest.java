@@ -106,7 +106,7 @@ class DBAccessImplTest {
         String mysqlDbUrl = System.getenv("MYSQL_DB_URL");
         String userName = System.getenv("MYSQL_DB_USERNAME");
         String password = System.getenv("MYSQL_DB_PASSWORD");
-        String jdbcUrl = "jdbc:mysql://" + mysqlDbUrl + "/ts_schema";
+        String jdbcUrl = "jdbc:mysql://" + mysqlDbUrl + "/ts_schema?serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
@@ -688,6 +688,7 @@ class DBAccessImplTest {
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
 
+        // mysql 不能精确时间查询 应该是 字段类型为 datetime 没有毫秒 但是 传进去的有毫秒
         assertEquals(1, results.size());
     }
 

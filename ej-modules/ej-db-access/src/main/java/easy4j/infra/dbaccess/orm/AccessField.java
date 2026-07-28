@@ -32,6 +32,8 @@ public class AccessField {
     private int group;
     // 占位符
     private String placeHolder = "?";
+    // 别名
+    private String alias;
     // 是否主键
     private boolean pkIs;
     // 是否递增

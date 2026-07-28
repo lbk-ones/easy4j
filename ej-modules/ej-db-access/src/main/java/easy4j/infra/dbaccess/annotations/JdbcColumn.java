@@ -14,7 +14,11 @@
  */
 package easy4j.infra.dbaccess.annotations;
 
+import cn.hutool.db.meta.JdbcType;
 import easy4j.infra.common.annotations.Desc;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.orm.handler.DefaultTypeHandler;
+import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 
 import java.lang.annotation.*;
 
@@ -44,4 +48,18 @@ public @interface JdbcColumn {
     // postgresql 特殊类型映射 比如jsonb、json之类的
     @Desc("postgresql 特殊类型映射 比如jsonb、json之类的")
     String pgType() default "";
+
+    // 别称 可以写
+    // name as name2
+    // TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE
+    String alias() default "";
+
+    // 条件占位符
+    String placeHolder() default SP.QUESTION_MARK;
+
+    // jdbcType
+    JdbcType jdbcType() default JdbcType.NULL;
+
+    // 类型转换器
+    Class<? extends TypeHandler<?>> typeHandler() default DefaultTypeHandler.class;
 }

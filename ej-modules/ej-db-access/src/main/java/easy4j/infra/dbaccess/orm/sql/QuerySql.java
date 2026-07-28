@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
@@ -23,28 +24,42 @@ public class QuerySql extends AbsISql {
 
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
-        String TEMP = "select";
+        StringBuilder TEMP = new StringBuilder("select");
         List<String> selectFields = runtimeContext.getEscapeSelectFields();
         // 1
         if (CollUtil.isNotEmpty(selectFields)) {
-            TEMP = TEMP + SP.SPACE + ListTs.join(SP.DOT, selectFields);
+            TEMP.append(SP.SPACE).append(ListTs.join(SP.DOT, selectFields));
         } else {
-            TEMP = TEMP + SP.SPACE + "*";
+            List<AccessField> columnInfoList = runtimeContext.getColumnInfoList();
+            if (columnInfoList.stream().anyMatch(e-> StrUtil.isNotBlank(e.getAlias()))) {
+                int k = 0;
+                for (AccessField accessField : columnInfoList) {
+                    TEMP.append(SP.SPACE);
+                    if(k!=0){
+                        TEMP.append(SP.COMMA);
+                    }
+                    TEMP.append(StrUtil.blankToDefault(accessField.getAlias(), accessField.getEscapeColumnName()));
+                    k++;
+                }
+            }else{
+                TEMP.append(SP.SPACE).append("*");
+            }
+
         }
-        TEMP += " from ";
+        TEMP.append(" from ");
 
         // 2
-        TEMP += runtimeContext.getDotTableName();
+        TEMP.append(runtimeContext.getDotTableName());
 
         // 3
         String whereSql = runtimeContext.getWhereSql();
 
-        TEMP = runtimeContext.getAccessUtils().appendWhere(TEMP,whereSql);
+        TEMP = new StringBuilder(runtimeContext.getAccessUtils().appendWhere(TEMP.toString(), whereSql));
 
         String lastSql = runtimeContext.getLastSql();
         if (StrUtil.isNotBlank(lastSql)) {
-            TEMP += SP.SPACE + lastSql;
+            TEMP.append(SP.SPACE).append(lastSql);
         }
-        return TEMP.trim();
+        return TEMP.toString().trim();
     }
 }

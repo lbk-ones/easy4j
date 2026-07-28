@@ -9,6 +9,8 @@ public class WdFieldInfo {
 
     String placeHolder;
 
+    String alias;
+
     Class<? extends TypeHandler<?>> typeHandler;
 
     JdbcType jdbcType;

@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.orm.conditions.wd;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.meta.JdbcType;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
@@ -52,6 +53,9 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     // 类型转换器
     private JdbcType jdbcType;
 
+    // 类型转换器
+    private String alias;
+
     public Wd() {
         register();
     }
@@ -82,6 +86,15 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         return instance;
     }
 
+    public String getAlias() {
+        return alias;
+    }
+
+    public Wd<T> setAlias(String alias) {
+        this.alias = alias;
+        return instance;
+    }
+
     public Wd<T> setTypeHandler(TypeHandler typeHandler) {
         this.typeHandler = typeHandler;
         return instance;
@@ -109,6 +122,7 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
 
     public Wd(T value) {
         this.value = value;
+        register();
     }
 
     /**
@@ -174,6 +188,11 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         if (jdbcType1 != null) {
             wd.setJdbcType(jdbcType1);
         }
+
+        String alias = wdFieldInfo.getAlias();
+        if (StrUtil.isNotBlank(alias)) {
+            wd.setAlias(alias);
+        }
     }
 
     /**
@@ -217,6 +236,20 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
             return wd.getPlaceHolder();
         } else {
             return DEFAULT_PLACE;
+        }
+    }
+
+    /**
+     * 获取占位符
+     *
+     * @param object wd包装类实例
+     */
+    public static String alias(Object object) {
+        if (object == null) return "";
+        if (object instanceof Wd<?> wd) {
+            return wd.getAlias();
+        } else {
+            return "";
         }
     }
 

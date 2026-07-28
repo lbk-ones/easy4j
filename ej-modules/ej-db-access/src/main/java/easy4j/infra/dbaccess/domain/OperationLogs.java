@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.domain;
 
+import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;

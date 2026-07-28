@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 // select * from table where xxx
-public class QueryPageSql  extends AbsISql {
+public class QueryPageSql  extends QuerySql {
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
@@ -22,26 +22,7 @@ public class QueryPageSql  extends AbsISql {
 
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
-        String TEMP = "select";
-        List<String> selectFields = runtimeContext.getEscapeSelectFields();
-        // 1
-        if (CollUtil.isNotEmpty(selectFields)) {
-            TEMP = TEMP + SP.SPACE + ListTs.join(SP.DOT, selectFields);
-        } else {
-            TEMP = TEMP + SP.SPACE + "*";
-        }
-        TEMP += " from ";
-
-        // 2
-        TEMP += runtimeContext.getDotTableName();
-
-        // 3
-        String whereSql = runtimeContext.getWhereSql();
-        TEMP = runtimeContext.getAccessUtils().appendWhere(TEMP,whereSql);
-        String lastSql = runtimeContext.getLastSql();
-        if (StrUtil.isNotBlank(lastSql)) {
-            TEMP += SP.SPACE + lastSql;
-        }
-        return runtimeContext.getDialectV2().getPageSql(TEMP.trim(), runtimeContext.getPage());
+        String build = super.build(runtimeContext);
+        return runtimeContext.getDialectV2().getPageSql(build.trim(), runtimeContext.getPage());
     }
 }
