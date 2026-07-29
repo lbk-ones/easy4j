@@ -204,4 +204,7 @@ public class BusCode {
     @Desc("违反唯一性约束{0}")
     public static final String A00065 = "A00065";
 
+    @Desc("验证码不能为空")
+    public static final String A00066 = "A00066";
+
 }

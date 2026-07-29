@@ -16,8 +16,11 @@ package easy4j.module.sauth.core;
 
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.sauth.authentication.AuthenticationContext;
+import easy4j.module.sauth.authentication.AuthenticationType;
+import easy4j.module.sauth.authentication.LoadAuthentication;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
+import easy4j.module.sauth.domain.SecurityUser;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -59,9 +62,41 @@ public class Easy4jAuth {
                 .orElse(false);
     }
 
-    public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
+    public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser) {
+        return get()
+                .map(e -> e.authentication(securityUser, null))
+                .orElse(new OnlineUserInfo());
+    }
+
+    public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, LoadAuthentication loadAuthentication) {
+        if (loadAuthentication != null && securityUser != null) {
+            securityUser.setAuthenticationType(AuthenticationType.Other.name());
+            securityUser.setLoadAuthentication(loadAuthentication);
+        }
+        return get()
+                .map(e -> e.authentication(securityUser, null))
+                .orElse(new OnlineUserInfo());
+    }
+
+
+    public static OnlineUserInfo authentication(ISecurityEasy4jUser securityUser,String authenticationType, Consumer<AuthenticationContext> loginAware) {
+        if (securityUser != null) {
+            securityUser.setAuthenticationType(authenticationType);
+        }
         return get()
                 .map(e -> e.authentication(securityUser, loginAware))
+                .orElse(new OnlineUserInfo());
+    }
+
+    public static OnlineUserInfo authentication(Long userId, String username, String usernameCn) {
+        return get()
+                .map(e -> e.authentication(SecurityUser.of(userId, username, usernameCn), null))
+                .orElse(new OnlineUserInfo());
+    }
+
+    public static OnlineUserInfo authentication(Long userId, String username, String usernameCn, Consumer<AuthenticationContext> loginAware) {
+        return get()
+                .map(e -> e.authentication(SecurityUser.of(userId, username, usernameCn), loginAware))
                 .orElse(new OnlineUserInfo());
     }
 

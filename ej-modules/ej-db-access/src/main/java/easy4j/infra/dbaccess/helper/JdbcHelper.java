@@ -307,13 +307,12 @@ public abstract class JdbcHelper {
             obj = rs.getBytes(index);
         } else if (obj instanceof Clob) {
             obj = rs.getString(index);
-        } else if (className != null &&
-                ("oracle.sql.TIMESTAMP".equals(className) ||
-                        "oracle.sql.TIMESTAMPTZ".equals(className))) {
+        } else if (("oracle.sql.TIMESTAMP".equals(className) ||
+                "oracle.sql.TIMESTAMPTZ".equals(className))) {
             obj = rs.getTimestamp(index);
         } else if (className != null && className.startsWith("oracle.sql.DATE")) {
             obj = rs.getDate(index);
-        } else if (obj != null && obj instanceof Date) {
+        } else if (obj instanceof Date) {
             obj = rs.getTimestamp(index);
         }
         return obj;

@@ -2,6 +2,7 @@ package easy4j.module.sauth.domain;
 
 import easy4j.infra.common.annotations.Desc;
 import easy4j.module.sauth.authentication.AuthenticationScopeType;
+import easy4j.module.sauth.authentication.CaptchaVerify;
 import easy4j.module.sauth.authentication.IBearerAuthentication;
 import easy4j.module.sauth.authentication.LoadAuthentication;
 
@@ -130,6 +131,23 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     @Desc("密码（加密/不加密都可以具体取决加密逻辑）")
     String getPassword();
+
+
+    /**
+     * 设置验证码
+     *
+     * @return
+     */
+    @Desc("设置验证码")
+    void setCaptcha(String captcha);
+
+    /**
+     * 获取验证码
+     *
+     * @return
+     */
+    @Desc("获取验证码")
+    String getCaptcha();
 
     /**
      * 中文姓名
@@ -532,4 +550,7 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     Boolean getOpenApiAuthenticationIs();
 
+    void setCaptchaVerify(CaptchaVerify captchaVerify);
+
+    CaptchaVerify getCaptchaVerify();
 }

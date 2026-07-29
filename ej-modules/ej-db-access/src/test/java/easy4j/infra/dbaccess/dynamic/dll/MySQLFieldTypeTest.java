@@ -2,10 +2,7 @@ package easy4j.infra.dbaccess.dynamic.dll;
 
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.dbaccess.DBAccess;
-import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -21,8 +18,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class MySQLFieldTypeTest {
 

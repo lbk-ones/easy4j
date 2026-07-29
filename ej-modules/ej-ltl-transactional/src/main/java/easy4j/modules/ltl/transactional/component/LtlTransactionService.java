@@ -15,8 +15,6 @@
 package easy4j.modules.ltl.transactional.component;
 
 import cn.hutool.extra.spring.SpringUtil;
-import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;

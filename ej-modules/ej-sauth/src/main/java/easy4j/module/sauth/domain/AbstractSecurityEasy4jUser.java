@@ -3,10 +3,7 @@ package easy4j.module.sauth.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
-import easy4j.module.sauth.authentication.AuthenticationScopeType;
-import easy4j.module.sauth.authentication.AuthenticationType;
-import easy4j.module.sauth.authentication.IBearerAuthentication;
-import easy4j.module.sauth.authentication.LoadAuthentication;
+import easy4j.module.sauth.authentication.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -99,6 +96,18 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @Schema(description = "BearerToken鉴权方式")
     private IBearerAuthentication bearerAuthentication;
 
+
+    @Desc("自定义验证码验证器")
+    @JdbcIgnore
+    @Schema(description = "自定义验证码验证器")
+    private CaptchaVerify captchaVerify;
+
+    @Desc("传入的验证码")
+    @JdbcIgnore
+    @Schema(description = "传入的验证码")
+    private String captcha;
+
+
     @Desc("是否检查session默认为true 如果设置为false那么就共享session不会报错")
     @JdbcIgnore
     @Schema(description = "是否检查session默认为true 如果设置为false那么就共享session不会报错")
@@ -132,6 +141,5 @@ public abstract class AbstractSecurityEasy4jUser implements ISecurityEasy4jUser 
     @JdbcIgnore
     @Schema(description = "拥有角色代码列表")
     private List<String> roleCodeList;
-
 
 }

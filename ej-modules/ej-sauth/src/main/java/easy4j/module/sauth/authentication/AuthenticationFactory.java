@@ -28,6 +28,7 @@ public class AuthenticationFactory {
      */
     static {
         UserNamePasswordAuthentication userNamePasswordAuthentication = new UserNamePasswordAuthentication();
+        CaptchaAuthentication emailCodeAuthentication = new CaptchaAuthentication();
         ShaTokenAuthentication shaTokenAuthentication = new ShaTokenAuthentication();
         BasicAuthAuthentication basicAuthAuthentication = new BasicAuthAuthentication();
         SimpleUserAuthentication simpleUserAuthentication = new SimpleUserAuthentication();
@@ -45,6 +46,7 @@ public class AuthenticationFactory {
         authenticationMap.put(bearerTokenAuthentication.getName(), bearerTokenAuthentication);
         authenticationMap.put(bearerJwtTokenAuthAuthentication.getName(), bearerJwtTokenAuthAuthentication);
         authenticationMap.put(accessTokenAuthentication.getName(), accessTokenAuthentication);
+        authenticationMap.put(emailCodeAuthentication.getName(), emailCodeAuthentication);
         List<AuthenticationCore> load = ServiceLoaderUtils.load(AuthenticationCore.class);
         for (AuthenticationCore authenticationCore : load) {
             String name = authenticationCore.getName();

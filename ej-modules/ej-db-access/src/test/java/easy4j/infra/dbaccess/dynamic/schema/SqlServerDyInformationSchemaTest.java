@@ -13,8 +13,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @Easy4JStarter(
         serverName = "test-db-access",
         serverPort = 9090,

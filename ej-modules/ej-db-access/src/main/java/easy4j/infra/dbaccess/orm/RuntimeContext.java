@@ -180,23 +180,13 @@ public class RuntimeContext<T> {
             if (insertFields != null) {
                 insertFields = insertFields.stream().filter(e -> !e.isSkipPsSet()).toList();
             }
-            Map<String, List<AccessField>> integerListMap = ListTs.groupBy(insertFields, e -> String.valueOf(e.getGroup()));
-            TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
-            Set<Map.Entry<String, List<AccessField>>> entries = treeMap.entrySet();
-            for (Map.Entry<String, List<AccessField>> entry : entries) {
-                List<AccessField> value = entry.getValue();
-                value.sort(Comparator.comparing(AccessField::getColumnName));
-                for (AccessField insertField : value) {
-                    args.add(insertField.getColumnValue());
-                }
-            }
+            groupSortAddArgs(args,insertFields);
         } else if (operateType == OperateType.UPDATE) {
             if (CollUtil.isNotEmpty(updateArgs)) {
                 args.addAll(updateArgs);
             }
-            // update暂且不弄批量更新 目前是循环更新 所以不用分组
-            for (AccessField u : updateFields) {
-                args.add(u.getColumnValue());
+            if(CollUtil.isNotEmpty(updateFields)){
+                groupSortAddArgs(args,updateFields);
             }
             if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
@@ -215,6 +205,20 @@ public class RuntimeContext<T> {
             }
         }
         return args;
+    }
+
+    private void groupSortAddArgs(List<Object> args,List<AccessField> accessFields) {
+        if(CollUtil.isEmpty(accessFields)) return;
+        Map<String, List<AccessField>> integerListMap = ListTs.groupBy(accessFields, e -> String.valueOf(e.getGroup()));
+        TreeMap<String, List<AccessField>> treeMap = new TreeMap<>(integerListMap);
+        Set<Map.Entry<String, List<AccessField>>> entries = treeMap.entrySet();
+        for (Map.Entry<String, List<AccessField>> entry : entries) {
+            List<AccessField> value = entry.getValue();
+            value.sort(Comparator.comparing(AccessField::getColumnName));
+            for (AccessField insertField : value) {
+                args.add(insertField.getColumnValue());
+            }
+        }
     }
 
 

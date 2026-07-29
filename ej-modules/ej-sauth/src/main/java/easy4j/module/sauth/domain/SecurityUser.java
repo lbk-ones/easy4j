@@ -249,5 +249,29 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
 
 
 
+    public static SecurityUser of(){
+
+        return new SecurityUser();
+    }
+
+    public static SecurityUser ofEnabled(){
+        SecurityUser securityUser = of();
+        securityUser.setAccountNonExpired(true);
+        securityUser.setAccountNonLocked(true);
+        securityUser.setCredentialsNonExpired(true);
+        securityUser.setEnabled(true);
+        securityUser.setIsDeleted(0);
+        return securityUser;
+    }
+
+
+    public static SecurityUser of(Long id,String username,String nameCn){
+        SecurityUser securityUser = ofEnabled();
+        securityUser.setUserId(id);
+        securityUser.setUsernameCn(nameCn);
+        securityUser.setUsername(username);
+        return securityUser;
+    }
+
 
 }

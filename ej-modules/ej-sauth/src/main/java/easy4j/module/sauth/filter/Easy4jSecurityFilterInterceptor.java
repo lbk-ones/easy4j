@@ -110,7 +110,7 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
                 } else if (StrUtil.equals(header, AuthenticationType.Jwt.name())) {
                     securityUser.setAuthenticationType(AuthenticationType.Jwt.name());
                 }
-                onlineUserInfo = Easy4jAuth.authentication(securityUser, null);
+                onlineUserInfo = Easy4jAuth.authentication(securityUser);
 
                 ISecurityEasy4jUser user = onlineUserInfo.getUser();
                 authorizationStrategy1.checkByUserInfo(user);

@@ -3,6 +3,9 @@ package easy4j.module.sauth.authentication;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 /**
  * 其他鉴权方式
+ * 自定义鉴权
+ * 主要负责查询用户信息，验证是否通过
+ *
  * @author bokun.li
  * @date 2025/11/13
  */

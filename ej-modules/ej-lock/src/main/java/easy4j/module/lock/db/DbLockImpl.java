@@ -8,7 +8,6 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
-import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.DBAccessFactory;
 import easy4j.infra.dbaccess.domain.SysLock;
 import easy4j.infra.dbaccess.helper.JdbcHelper;

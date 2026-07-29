@@ -17,7 +17,6 @@ package easy4j.module.sauth.controller;
 import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
-import easy4j.infra.dbaccess.DBAccess;
 import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
@@ -43,9 +42,6 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("sauth")
 public class SAuthController {
-
-    @Autowired
-    DBAccess dbAccess;
 
     @Autowired
     SessionStrategy sessionStrategy;

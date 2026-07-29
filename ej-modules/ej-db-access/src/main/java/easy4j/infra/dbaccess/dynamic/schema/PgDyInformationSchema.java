@@ -18,8 +18,6 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.DBAccess;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * PgDyInformationSchema

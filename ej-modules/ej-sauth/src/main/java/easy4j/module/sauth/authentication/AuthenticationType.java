@@ -21,6 +21,12 @@ public enum AuthenticationType {
     UserNamePassword,
 
     /**
+     * 基于邮箱验证码
+     * @see CaptchaAuthentication
+     */
+    Captcha,
+
+    /**
      * 其他方式认证
      * @see OtherAuthentication
      */

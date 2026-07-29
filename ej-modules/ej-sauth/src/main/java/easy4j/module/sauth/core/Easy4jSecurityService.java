@@ -15,6 +15,7 @@
 package easy4j.module.sauth.core;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.authentication.AuthenticationCore;
@@ -74,7 +75,7 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
     @Override
     public OnlineUserInfo authentication(ISecurityEasy4jUser securityUser, Consumer<AuthenticationContext> loginAware) {
-
+        if (securityUser == null) throw new EasyException("Please provide the user information");
         AuthenticationCore authenticationCore = AuthenticationFactory.get(securityUser.getAuthenticationType());
         AuthenticationContext ctx = AuthenticationFactory.ctx(securityUser);
         ctx.setCheckSession(securityUser.getCheckSession() == null || securityUser.getCheckSession());
@@ -128,13 +129,13 @@ public class Easy4jSecurityService extends AbstractSecurityService {
 
     private static void initTenantId(ISecurityEasy4jUser securityUser, AuthenticationContext ctx) {
         ISecurityEasy4jUser dbUser = ctx.getDbUser();
-        if (dbUser != null && securityUser!=null) {
+        if (dbUser != null && securityUser != null) {
             ISecurityEasy4jSession dbSession = ctx.getDbSession();
             // 优先级 reqTenantId > sessionTenantId > dbTenantId
             Long reqTenantId = securityUser.getTenantId();
             Long dbTenantId = dbUser.getTenantId();
-            Long sessionTenantId = dbSession==null?null:dbSession.getTenantId();
-            Long finalTenantId = reqTenantId!=null? reqTenantId: sessionTenantId!=null?sessionTenantId: dbTenantId;
+            Long sessionTenantId = dbSession == null ? null : dbSession.getTenantId();
+            Long finalTenantId = reqTenantId != null ? reqTenantId : sessionTenantId != null ? sessionTenantId : dbTenantId;
             if (securityUser.getTenantId() == null) {
                 securityUser.setTenantId(finalTenantId);
             }
