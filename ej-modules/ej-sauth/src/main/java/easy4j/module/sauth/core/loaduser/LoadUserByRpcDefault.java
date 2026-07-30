@@ -53,25 +53,21 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
 
 
     @Override
-    public ISecurityEasy4jUser loadUserByUserName(String username) {
-        ISecurityEasy4jUser user = securityContext.getUser(username);
+    public ISecurityEasy4jUser loadUserByUserName(ISecurityEasy4jUser username) {
+        ISecurityEasy4jUser user = securityContext.getUser(username.getUsername());
         if (user == null) {
             NacosInvokeDto build = NacosInvokeDto.builder()
                     .group(SysConstant.NACOS_AUTH_GROUP)
                     .serverName(serverName)
-                    .path(LOAD_USER_BY_USER_NAME + SP.SLASH + username)
+                    .path(LOAD_USER_BY_USER_NAME)
+                    .body(username)
+                    .isJson(true)
                     .build();
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
+            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
             CheckUtils.checkRpcRes(securitySessionEasyResult);
             user = CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUser.class);
-            securityContext.setUser(username, user);
+            securityContext.setUser(username.getUsername(), user);
         }
-
         return user;
-    }
-
-    @Override
-    public ISecurityEasy4jUser loadUserByUserId(long userId) {
-        return null;
     }
 }

@@ -62,9 +62,8 @@ public final class LoadUserApi {
         return loadUserByRpc1;
     }
 
-    public static ISecurityEasy4jUser getByUserName(String userName) {
+    public static ISecurityEasy4jUser getByUserName(ISecurityEasy4jUser userName) {
         LoadUserBy loadUserBy = loadUserBy();
-
         return loadUserBy.loadUserByUserName(userName);
     }
 

@@ -19,6 +19,7 @@ import easy4j.module.sauth.core.loaduser.LoadUserApi;
 import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
+import easy4j.module.sauth.domain.SecurityUser;
 
 /**
  * StandardResolve
@@ -32,7 +33,9 @@ public abstract class StandardResolve {
 
     public OnlineUserInfo sessionToSecurityUserInfo(ISecurityEasy4jSession session) {
         String userName = session.getUsername();
-        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(userName);
+        SecurityUser securityUser = new SecurityUser();
+        securityUser.setUsername(userName);
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(securityUser);
         byUserName.setShaToken(session.getShaToken());
         OnlineUserInfo onlineUserInfo = new OnlineUserInfo(session, byUserName);
         onlineUserInfo.handlerAuthorityList(userName);

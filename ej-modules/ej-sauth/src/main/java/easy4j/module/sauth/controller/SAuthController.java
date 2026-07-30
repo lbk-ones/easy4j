@@ -20,10 +20,7 @@ import easy4j.infra.common.header.EasyResult;
 import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.core.loadauthority.LoadAuthorityApi;
 import easy4j.module.sauth.core.loaduser.LoadUserApi;
-import easy4j.module.sauth.domain.ISecurityEasy4jUser;
-import easy4j.module.sauth.domain.OnlineUserInfo;
-import easy4j.module.sauth.domain.SecurityAuthority;
-import easy4j.module.sauth.domain.SecuritySession;
+import easy4j.module.sauth.domain.*;
 import easy4j.module.sauth.session.SessionStrategy;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,8 +104,8 @@ public class SAuthController {
         return EasyResult.ok(sessionByUserName);
     }
 
-    @GetMapping("loadUserByUserName/{username}")
-    public EasyResult<Object> loadUserByUserName(@PathVariable(name = "username") String username) {
+    @PostMapping("loadUserByUserName")
+    public EasyResult<Object> loadUserByUserName(@RequestBody SecurityUser username) {
         ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
         return EasyResult.ok(byUserName);
     }

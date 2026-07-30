@@ -58,7 +58,7 @@ public class BasicAuthAuthentication extends AbstractAuthenticationCore {
         reqUser.setUsername(username);
         String password = values[1];
         reqUser.setPassword(password);
-        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(reqUser);
         syncReqUser(context, byUserName);
         context.setDbUser(byUserName);
 

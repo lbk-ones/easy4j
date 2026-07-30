@@ -18,6 +18,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import easy4j.module.sauth.authentication.AuthenticationContext;
 import easy4j.module.sauth.authentication.AuthenticationType;
 import easy4j.module.sauth.authentication.LoadAuthentication;
+import easy4j.module.sauth.domain.ISecurityEasy4jSession;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.OnlineUserInfo;
 import easy4j.module.sauth.domain.SecurityUser;
@@ -48,6 +49,24 @@ public class Easy4jAuth {
         return get()
                 .map(SecurityService::getOnlineUser)
                 .orElse(new OnlineUserInfo());
+    }
+
+    /**
+     * 获取用户信息
+     */
+    public static Optional<ISecurityEasy4jUser> getUser() {
+        return get()
+                .map(SecurityService::getOnlineUser)
+                .map(OnlineUserInfo::getUser);
+    }
+
+    /**
+     * 获取会话信息
+     */
+    public static Optional<ISecurityEasy4jSession> getSession() {
+        return get()
+                .map(SecurityService::getOnlineUser)
+                .map(OnlineUserInfo::getSession);
     }
 
     public static OnlineUserInfo getOnlineUser(String token) {

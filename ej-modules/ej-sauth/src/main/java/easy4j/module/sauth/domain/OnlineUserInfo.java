@@ -189,10 +189,9 @@ public class OnlineUserInfo {
         }
     }
 
-    public void handlerUserInfo(String username) {
+    public void handlerUserInfo(ISecurityEasy4jUser reqUser) {
         if (user == null) {
-            username = getUsername(username);
-            this.user = handler.getOnlineUserInfoByUserName(username);
+            this.user = handler.getOnlineUserInfoByUserName(reqUser);
         }
     }
 
@@ -258,9 +257,9 @@ public class OnlineUserInfo {
          * @author bokun.li
          * @date 2025-07-26
          */
-        public ISecurityEasy4jUser getOnlineUserInfoByUserName(String username) {
+        public ISecurityEasy4jUser getOnlineUserInfoByUserName(ISecurityEasy4jUser reqUser) {
 
-            return LoadUserApi.getByUserName(username);
+            return LoadUserApi.getByUserName(reqUser);
         }
 
 

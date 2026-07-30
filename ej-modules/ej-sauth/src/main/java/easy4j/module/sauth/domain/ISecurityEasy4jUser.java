@@ -161,7 +161,7 @@ public interface ISecurityEasy4jUser extends Serializable {
     /**
      * 设置用户名
      *
-     * @param username
+     * @param usernameCn
      */
     @Desc("设置用户名")
     void setUsernameCn(String usernameCn);
@@ -550,7 +550,17 @@ public interface ISecurityEasy4jUser extends Serializable {
      */
     Boolean getOpenApiAuthenticationIs();
 
+    /**
+     * 设置自定义验证码验证器
+     */
     void setCaptchaVerify(CaptchaVerify captchaVerify);
 
+    /**
+     * 获取自定义验证码验证器
+     */
     CaptchaVerify getCaptchaVerify();
+
+    String getEmail();
+
+    void setEmail(String email);
 }

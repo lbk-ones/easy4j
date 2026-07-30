@@ -86,9 +86,9 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
                         Integer expireTime = Easy4j.getProperty(SysConstant.EASY4J_AUTH_SESSION_EXPIRE_TIME, int.class);
                         ISecurityEasy4jSession dbSession = context.getDbSession();
                         String token = StrUtil.blankToDefault(dbSession.getShaToken(), dbUser.getShaToken());
-                        if(StrUtil.isNotBlank(token)){
+                        if (StrUtil.isNotBlank(token)) {
                             CookieUtil.setCookie(WebContextUtil.getResponse(), SysConstant.X_ACCESS_TOKEN, token, expireTime, path, domain, httpOnly, secure, sameSite);
-                        }else{
+                        } else {
                             logger.error("No token generation detected, skipping cookie writing");
                         }
                         // TODO refreshToken write
@@ -113,7 +113,15 @@ public abstract class AbstractAuthenticationCore implements AuthenticationCore {
         OnlineUserInfo onlineUserInfo = new OnlineUserInfo(dbSession, dbUser);
         onlineUserInfo.handlerAuthorityList(dbUser.getUsername());
         onlineUserInfo.handlerSession(dbUser.getUsername());
-        onlineUserInfo.handlerUserInfo(dbUser.getUsername());
+        ISecurityEasy4jUser reqUser = context.getReqUser();
+        if (reqUser.getUsername() == null) {
+            if (dbUser.getUsername() != null) {
+                reqUser.setUsername(dbUser.getUsername());
+            } else {
+                reqUser.setUsername(dbSession.getUsername());
+            }
+        }
+        onlineUserInfo.handlerUserInfo(reqUser);
         Set<SecurityAuthority> authorityList = onlineUserInfo.getAuthorityList();
         // user == dbUser
         ISecurityEasy4jUser user = onlineUserInfo.getUser();

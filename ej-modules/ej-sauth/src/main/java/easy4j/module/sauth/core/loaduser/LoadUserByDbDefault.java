@@ -60,10 +60,10 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
     }
 
     @Override
-    public ISecurityEasy4jUser loadUserByUserName(String username) {
+    public ISecurityEasy4jUser loadUserByUserName(ISecurityEasy4jUser username) {
 
         if (null != simpleUser) {
-            if (StrUtil.equals(simpleUser.getUsername(), username)) {
+            if (StrUtil.equals(simpleUser.getUsername(), username.getUsername())) {
                 return simpleUser;
             }
         }
@@ -72,16 +72,6 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
         List<SecurityUser> securityUsers = idbAccess.query(equal, SecurityUser.class);
         if (CollUtil.isNotEmpty(securityUsers)) {
             return securityUsers.get(0);
-        }
-        return null;
-    }
-
-    @Override
-    public ISecurityEasy4jUser loadUserByUserId(long userId) {
-        if (null != simpleUser) {
-            if (StrUtil.equals(simpleUser.getUsername(), String.valueOf(userId))) {
-                return simpleUser;
-            }
         }
         return null;
     }

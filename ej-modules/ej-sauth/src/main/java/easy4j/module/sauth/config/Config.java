@@ -194,6 +194,7 @@ public class Config extends StandAbstractEasy4jResolve implements CommandLineRun
     }
 
 
+    // 如果用户自定义了LoadUserByDb接口的这个不生效
     @Bean
     @ConditionalOnMissingBean(LoadUserByDb.class)
     @ModuleBoolean(SysConstant.EASY4J_SAUTH_ENABLE)

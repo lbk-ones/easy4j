@@ -15,6 +15,7 @@ easy4j.simple-auth-register-to-nacos=false
 ```properties
 easy4j.simple-auth-enable=true
 easy4j.simple-auth-is-server=true
+# extra 代表不启用默认用户表，用户信息由外部提供
 easy4j.simple-auth-user-impl-type=extra
 # 单体式服务不需要注册到nacos因为服务端会默认注册到nacos所以这里要改成false
 easy4j.simple-auth-register-to-nacos=false
@@ -66,9 +67,9 @@ public class AuthQueryDbUser implements LoadUserByDb {
 
     // 将查出来的外部用户信息SysUser 转为SecurityUser、SecurityUser类实现了ISecurityEasy4jUser接口
     @Override
-    public ISecurityEasy4jUser loadUserByUserName(String username) {
+    public ISecurityEasy4jUser loadUserByUserName(ISecurityEasy4jUser username) {
         LambdaQueryWrapper<SysUser> sysUserLambdaQueryWrapper = new LambdaQueryWrapper<>(SysUser.class);
-        sysUserLambdaQueryWrapper.eq(SysUser::getUserCode,username);
+        sysUserLambdaQueryWrapper.eq(SysUser::getUserCode,username.getUsername());
 //        sysUserLambdaQueryWrapper.eq(SysUser::getIsEnabled,"1");
         SysUser sysUser = sysUserMapper.selectOne(sysUserLambdaQueryWrapper);
         if(null!=sysUser){

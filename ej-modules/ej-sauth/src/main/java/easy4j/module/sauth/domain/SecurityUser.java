@@ -254,6 +254,10 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
         return new SecurityUser();
     }
 
+    /**
+     * 生成一个可用的用户信息
+     * @return 用户信息
+     */
     public static SecurityUser ofEnabled(){
         SecurityUser securityUser = of();
         securityUser.setAccountNonExpired(true);
@@ -265,6 +269,13 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
     }
 
 
+    /**
+     * id 可以不传
+     * @param id 用户ID
+     * @param username 用户账号
+     * @param nameCn 用户中文
+     * @return 用户信息
+     */
     public static SecurityUser of(Long id,String username,String nameCn){
         SecurityUser securityUser = ofEnabled();
         securityUser.setUserId(id);
@@ -272,6 +283,4 @@ public class SecurityUser extends AbstractSecurityEasy4jUser {
         securityUser.setUsername(username);
         return securityUser;
     }
-
-
 }

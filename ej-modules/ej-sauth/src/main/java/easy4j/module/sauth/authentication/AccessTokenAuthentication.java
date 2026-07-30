@@ -103,7 +103,7 @@ public class AccessTokenAuthentication extends UserNamePasswordAuthentication {
         reqUser.setUsername(username);
         reqUser.setPassword(accessToken);
         // 从数据库去捞一下 万一捞到了呢
-        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(reqUser);
         if (byUserName != null) {
             // 这里需要强行跳过密码认证 这样可以强行跳过的呢
             byUserName.setPassword(iSecurityEasy4jUser.getPassword());

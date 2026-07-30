@@ -69,8 +69,8 @@ public class JwtAuthAuthentication extends UserNamePasswordAuthentication {
         if (scope == AuthenticationScopeType.Authentication) {
             return super.queryUser(context);
         } else {
-            String username = reqUser.getUsername();
-            ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+            //String username = reqUser.getUsername();
+            ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(reqUser);
             if (checkUserIsNotEnable(byUserName,context)) {
                return null;
             }

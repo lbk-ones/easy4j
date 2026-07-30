@@ -33,7 +33,7 @@ public class UserNamePasswordAuthentication extends AbstractAuthenticationCore {
             context.setErrorCode(wrapException(BusCode.A00004, "username"));
             return null;
         }
-        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
+        ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(reqUser);
         context.setDbUser(byUserName);
         if (null == byUserName) {
             context.setErrorCode(BusCode.A00037);
