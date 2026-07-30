@@ -14,15 +14,12 @@
  */
 package easy4j.modules.ltl.transactional.component;
 
-import cn.hutool.extra.spring.SpringUtil;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.modules.ltl.transactional.LocalMessage;
 import org.springframework.beans.factory.InitializingBean;
-
-import javax.sql.DataSource;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -39,8 +36,8 @@ public class LtlTransactionService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
+        dbAccess = OrmInternal.getNoTransactionOrm();
     }
 
     public void insertLocalMessage(LocalMessage localMessage) throws SQLException {

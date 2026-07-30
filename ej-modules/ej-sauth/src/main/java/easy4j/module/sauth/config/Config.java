@@ -15,16 +15,13 @@
 package easy4j.module.sauth.config;
 
 
-import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.module.ModuleBoolean;
-import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.EventPublisher;
-import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.context.event.NacosServicesRegisterEvent;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.module.sauth.authorization.DefaultAuthorizationStrategy;
 import easy4j.module.sauth.authorization.SecurityAuthorization;
@@ -40,7 +37,6 @@ import easy4j.module.sauth.core.loaduser.LoadUserByDb;
 import easy4j.module.sauth.core.loaduser.LoadUserByDbDefault;
 import easy4j.module.sauth.core.loaduser.LoadUserByRpc;
 import easy4j.module.sauth.core.loaduser.LoadUserByRpcDefault;
-import easy4j.module.sauth.domain.SecuritySession;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
 import easy4j.module.sauth.encryption.PwdEncryptionService;
 import easy4j.module.sauth.enums.SecuritySessionType;
@@ -78,10 +74,10 @@ public class Config extends StandAbstractEasy4jResolve implements CommandLineRun
     public void run(String... args) throws Exception {
         List<SqlFileEnums> sqlFileEnums = SqlFileSpiCollect.checkSf();
         if (sqlFileEnums.contains(SqlFileEnums.DB_AUTH_USER)) {
-            DBAccessFactory.initDb(SqlFileEnums.DB_AUTH_USER);
+            OrmInternal.initDb(SqlFileEnums.DB_AUTH_USER);
         }
         if (sqlFileEnums.contains(SqlFileEnums.DB_AUTH_USER_SESSION)) {
-            DBAccessFactory.initDb(SqlFileEnums.DB_AUTH_USER_SESSION);
+            OrmInternal.initDb(SqlFileEnums.DB_AUTH_USER_SESSION);
         }
         boolean property = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         boolean isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
@@ -90,7 +86,7 @@ public class Config extends StandAbstractEasy4jResolve implements CommandLineRun
             String type = Easy4j.getRequiredProperty(SysConstant.EASY4J_SIMPLE_AUTH_USER_IMPL_TYPE);
             boolean isRegister = Easy4j.getRequiredProperty(SysConstant.EASY4J_SIMPLE_AUTH_REGIST_TO_NACOS, boolean.class);
             if (isRegister) {
-                eventPublisher.publishEvent(new NacosSauthServerRegisterEvent(this, AUTH_SERVER_NAME));
+                eventPublisher.publishEvent(new NacosServicesRegisterEvent(this, AUTH_SERVER_NAME,SysConstant.NACOS_AUTH_GROUP,Easy4j.getProperty(SysConstant.EASY4J_SERVER_PORT, int.class)));
             }
         }
     }

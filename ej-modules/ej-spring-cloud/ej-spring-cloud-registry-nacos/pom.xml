@@ -39,5 +39,9 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.lbk-ones</groupId>
+            <artifactId>ej-spring-cloud-openfeign</artifactId>
+        </dependency>
     </dependencies>
 </project>

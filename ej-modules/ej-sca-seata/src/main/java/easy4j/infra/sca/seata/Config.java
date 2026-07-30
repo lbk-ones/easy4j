@@ -17,7 +17,7 @@ package easy4j.infra.sca.seata;
 import easy4j.infra.common.module.ModuleBoolean;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import org.apache.seata.spring.boot.autoconfigure.SeataCoreAutoConfiguration;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public class Config {
                 // 设置并启动
                 actionStarting = true;
                 log.info(SysLog.compact("seata module fence begin init..."));
-                DBAccessFactory.initDb(SqlFileEnums.DB_FENCE);
+                OrmInternal.initDb(SqlFileEnums.DB_FENCE);
             }
             return bean;
         }

@@ -16,15 +16,12 @@ package easy4j.module.seed.leaf;
 
 
 import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.sql.DataSource;
 
 import java.util.Date;
 import java.util.List;
@@ -40,14 +37,11 @@ public class LeafAllocDaoImpl implements LeafAllocDao, InitializingBean {
 
     private IDBAccess dbaccess;
 
-    @Autowired
-    DataSource dataSource;
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LEAF);
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_SNOW_IP);
-        dbaccess = DBAccessFactory.getDBAccess(dataSource, true, false);
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LEAF);
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_SNOW_IP);
+        dbaccess = OrmInternal.getNoTransactionOrm();
     }
 
     private LeafAllocDomain getByBizTag(String bizTag) {

@@ -6,15 +6,25 @@ import easy4j.infra.common.utils.ServiceLoaderUtils;
 import easy4j.infra.dbaccess.orm.Access;
 import easy4j.infra.dbaccess.orm.AccessConfig;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.plugin.impl.LogicDeletePlugin;
+import easy4j.infra.dbaccess.orm.plugin.impl.TenantIdPlugin;
+import easy4j.infra.dbaccess.orm.plugin.impl.VersionLockPlugin;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.util.*;
 
 @Slf4j
-public class PluginSelector {
+public class Plugins {
 
     private final static List<IPlugin> iSqlDialectList = ServiceLoaderUtils.load(IPlugin.class);
+    public final static List<IPlugin> staticAll = ServiceLoaderUtils.load(IPlugin.class);
+
+    static {
+        staticAll.add(new LogicDeletePlugin());
+        staticAll.add(new TenantIdPlugin());
+        staticAll.add(new VersionLockPlugin());
+    }
 
     public static DataSource getDataSource(Access<?> access, AccessConfig accessConfig) {
         ArrayList<IPlugin> objects = new ArrayList<>();
@@ -30,6 +40,21 @@ public class PluginSelector {
             if (dataSource != null) return dataSource;
         }
         return null;
+    }
+
+    // 插件初始化 这个时候只有 access 可以往 access 里面放参数
+    public static void init(Access<?> access, AccessConfig accessConfig){
+        ArrayList<IPlugin> objects = new ArrayList<>();
+        ListTs.addAll(objects,iSqlDialectList);
+        List<IPlugin> pluginList = accessConfig.getPluginList();
+        ListTs.addAll(objects,pluginList);
+        for (IPlugin iPlugin : objects) {
+            String name = iPlugin.getName();
+            if (StrUtil.isBlank(name)) {
+                continue;
+            }
+            iPlugin.init(access);
+        }
     }
 
     public static List<IPlugin> list(RuntimeContext<?> context) {

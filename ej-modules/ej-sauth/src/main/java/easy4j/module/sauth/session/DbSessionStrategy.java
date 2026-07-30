@@ -16,7 +16,6 @@ package easy4j.module.sauth.session;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
@@ -26,7 +25,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.module.sauth.config.Config;
@@ -73,7 +72,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class), true, true);
+        dbAccess = OrmInternal.getNoTransactionOrm();
         sAuthEnable = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         isServer = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_SERVER, boolean.class);
         if (!isServer && sAuthEnable) {

@@ -30,9 +30,8 @@ import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import easy4j.infra.context.api.lock.DbLock;
 import easy4j.infra.context.api.seed.DefaultEasy4jSeed;
 import easy4j.infra.context.api.seed.Easy4jSeed;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
@@ -63,7 +62,7 @@ public class DbLog implements Easy4jDbLog {
 
     public static final String DB_LOCK_ID = "delete-sys-log-record-lock";
     public static final String DB_LOCK_ID_INIT = "delete-sys-log-record-lock-init";
-    private static final IDBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
+    private static final IDBAccess dbAccess = OrmInternal.getNoTransactionOrm();
 
     private static final ThreadLocal<Deque<SysLogRecord>> threadLocalMap = new TransmittableThreadLocal<>();
 

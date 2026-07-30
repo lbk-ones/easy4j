@@ -33,8 +33,8 @@ public @interface WebIdempotent {
     @Desc("唯一key的获取方式 默认是获取X-Access-Token来校验的")
     String keyGeneratorType() default "token";
 
-    @Desc("存储方式 默认db 代表把唯一key存储到数据库中去")
-    StorageTypeEnum storageType() default StorageTypeEnum.DB;
+    @Desc("存储方式 默认none，none会自动抉择是将唯一key写入redis还是写入DB")
+    StorageTypeEnum storageType() default StorageTypeEnum.NONE;
 
     @Desc("key的过期时间")
     int expireSeconds() default 60 * 5;

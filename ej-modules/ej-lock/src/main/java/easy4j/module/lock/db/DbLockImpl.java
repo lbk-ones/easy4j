@@ -8,9 +8,8 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
 import easy4j.infra.context.api.lock.DbLock;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.domain.SysLock;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -20,7 +19,7 @@ import java.util.Date;
 @Slf4j
 public class DbLockImpl implements DbLock, AutoRegisterContext {
 
-    private final static IDBAccess dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, false);
+    private final static IDBAccess dbAccess = OrmInternal.getNoTransactionOrm();
 
     @Override
     public void lock(String key, Integer expire) {

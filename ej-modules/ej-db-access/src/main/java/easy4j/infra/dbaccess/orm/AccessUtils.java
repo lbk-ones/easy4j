@@ -1,7 +1,6 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -10,9 +9,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
@@ -28,7 +29,7 @@ import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.plugin.IPlugin;
-import easy4j.infra.dbaccess.orm.plugin.PluginSelector;
+import easy4j.infra.dbaccess.orm.plugin.Plugins;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
@@ -38,6 +39,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -272,7 +275,8 @@ public class AccessUtils implements Serializable {
         if (!access.isReturnMap()) {
             assertNotNull(clazz, "clazz");
         }
-        ContextHolder.set(PluginSelector.getDataSource(access, this.getAccessConfig()));
+        Plugins.init(access,this.getAccessConfig());
+        ContextHolder.set(Plugins.getDataSource(access, this.getAccessConfig()));
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
         OperateType operateType = access.getOperateType();
@@ -621,7 +625,7 @@ public class AccessUtils implements Serializable {
      */
     public <T> void resolveContext(RuntimeContext<T> context, boolean skipParseSql) {
         context.setSkipParseSql(skipParseSql);
-        List<IPlugin> plugins = PluginSelector.list(context);
+        List<IPlugin> plugins = Plugins.list(context);
         for (IPlugin plugin : plugins) {
             plugin.contextPrepared(context);
         }
@@ -668,7 +672,7 @@ public class AccessUtils implements Serializable {
      */
     public <T> void releaseConnection(RuntimeContext<T> context) {
         ContextHolder.remove();
-        PluginSelector.finish(context);
+        Plugins.finish(context);
         if (context != null) {
             Connection connection = context.getConnection();
             DataSourceUtils.releaseConnection(connection, context.getConfig().getDataSource());
@@ -767,5 +771,16 @@ public class AccessUtils implements Serializable {
             }
         }
         return TEMP;
+    }
+
+    public SpringOrmProperties getSpringOrmProperties(){
+        try {
+            Binder binder = Binder.get(Easy4j.environment);
+            BindResult<SpringOrmProperties> easy4j = binder.bind(SpringOrmProperties.ORM_PREFIX, SpringOrmProperties.class);
+            return easy4j.get();
+        } catch (Exception ignored) {
+
+        }
+        return null;
     }
 }

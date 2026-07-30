@@ -25,7 +25,7 @@ import com.google.common.collect.Maps;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.module.seed.CommonKey;
@@ -43,8 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import javax.sql.DataSource;
 
 import java.lang.reflect.Method;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -70,8 +68,8 @@ public class LtTransactionalAspect implements InitializingBean, CommandLineRunne
     @Override
     public void run(String... args) throws Exception {
 
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LT);
+        dbAccess = OrmInternal.getNoTransactionOrm();
 
         try {
             processFailedDatas();

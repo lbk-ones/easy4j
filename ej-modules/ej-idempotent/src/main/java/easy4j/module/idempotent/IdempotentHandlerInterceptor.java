@@ -64,19 +64,41 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         return idempotentToolFactory;
     }
 
+    /**
+     * 自动选择将唯一key写入到哪里去
+     *
+     * @param annotation 注解信息
+     * @return 返回类型
+     */
+    public StorageTypeEnum autoSelect(WebIdempotent annotation) {
+        StorageTypeEnum storageType = annotation.storageType();
+        // 如果是默认值 并且使用了redis 则自动降级为redis
+        if (storageType == StorageTypeEnum.NONE) {
+            Boolean property = Easy4j.getProperty(SysConstant.EASY4J_REDIS_ENABLE, Boolean.class, false);
+            if (property == true) {
+                return StorageTypeEnum.REDIS;
+            }
+            return StorageTypeEnum.DB;
+        }
+        return storageType;
+    }
+
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
         Method method = handler.getMethod();
         if (method.isAnnotationPresent(WebIdempotent.class)) {
             WebIdempotent annotation = method.getAnnotation(WebIdempotent.class);
             String keyType = annotation.keyGeneratorType();
-            StorageTypeEnum storageType = annotation.storageType();
+            StorageTypeEnum storageType = autoSelect(annotation);
             IdempotentToolFactory idempotentedToolFactory = idempotentToolFactory();
             Easy4jIdempotentKeyGenerator keyGenerator = idempotentedToolFactory.getKeyGenerator(keyType);
             Easy4jIdempotentStorage storage = idempotentedToolFactory.getStorage(storageType);
             boolean globalIdempotent = annotation.globalIdempotent();
             boolean degradeGlobalIdempotent = annotation.degradeGlobalIdempotent();
+            // return null 代表不需要幂等
             String generateKey = unionKey(globalIdempotent, degradeGlobalIdempotent, request, keyGenerator.generate(request));
+            if (generateKey == null) return true;
             request.setAttribute(WEB_ANNOTATION_KEY, annotation);
             request.setAttribute(IDENTIFY_KEY, generateKey);
             if (!storage.acquireLock(generateKey, annotation.expireSeconds(), request)) {
@@ -86,6 +108,10 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         return true;
     }
 
+    public String md5(String v) {
+        if (StrUtil.isBlank(v)) return v;
+        return MD5.create().digestHex(v);
+    }
 
     /**
      * 获取默认值
@@ -98,31 +124,38 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
         String requestURI = request.getRequestURI();
         String method2 = request.getMethod();
         String generateKey2 = method2 + "--" + requestURI;
-        generateKey2 = MD5.create().digestHex(generateKey2);
+        generateKey2 = md5(generateKey2);
         if (globalIdempotent) {
             return generateKey2;
         }
-        if (StrUtil.isBlank(generateKey)) {
-            Easy4jContext context = Easy4j.getContext();
-            boolean isNoLogin = false;
-            Optional<Object> threadHashValue = context.getThreadHashValue(THConstant.EASY4J_IS_NO_LOGIN, THConstant.EASY4J_IS_NO_LOGIN);
-            if (threadHashValue.isPresent()) {
-                // nologin will be ignore
-                if ((boolean) threadHashValue.get()) {
-                    isNoLogin = true;
-                }
+        Easy4jContext context = Easy4j.getContext();
+        boolean isNoLogin = false;
+        Optional<Object> threadHashValue = context.getThreadHashValue(THConstant.EASY4J_IS_NO_LOGIN, THConstant.EASY4J_IS_NO_LOGIN);
+        if (threadHashValue.isPresent()) {
+            // nologin will be ignore
+            if ((boolean) threadHashValue.get()) {
+                isNoLogin = true;
             }
+        }
+        // 如果不需要登录则不幂等
+        if (isNoLogin) {
+            if (log.isDebugEnabled()) {
+                log.debug("not need login so skip web idempotent {}", request.getRequestURI());
+            }
+            return null;
+        }
+        if (StrUtil.isBlank(generateKey)) {
             // global idempotent
-            if (degradeGlobalIdempotent || isNoLogin) {
+            if (degradeGlobalIdempotent) {
                 return generateKey2;
             }
             String accessToken = request.getHeader(SysConstant.X_ACCESS_TOKEN);
             if (StrUtil.isBlank(accessToken)) {
-                return generateKey;
+                return md5(generateKey);
             }
-            return accessToken + "--" + generateKey2;
+            return md5(accessToken + "--" + generateKey2);
         }
-        return generateKey;
+        return md5(generateKey);
     }
 
 
@@ -142,7 +175,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
             }
             Easy4jIdempotentStorage storage;
             try {
-                storage = idempotentToolFactory().getStorage(annotation.storageType());
+                storage = idempotentToolFactory().getStorage(autoSelect(annotation));
             } catch (Exception e) {
                 log.error(SysLog.compact(e.getMessage()));
                 return;

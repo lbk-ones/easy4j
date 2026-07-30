@@ -28,6 +28,7 @@ public class THConstant {
 
 
     public static final String EASY4J_RPC_NO_LOGIN = "X-Rpc-No-Login";
+    // 是否为免登录 加了 NoLogin注解或者是rpc调用
     public static final String EASY4J_IS_NO_LOGIN = "X-Rpc-Is-No-Login";
 
     public static final String EASY4J_RPC_TRACE = PARAM_PREFIX + StringPool.DOT + "rpc-trace-id";

@@ -12,29 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package easy4j.module.idempotent;
+package io.github.lbkones.cloud.openfeign;
 
-import lombok.Getter;
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * StorageTypeEnum
+ * Easy4jRequestInterceptor
+ * 请求拦截器
+ * 将链路id传递给服务端
+ * 将链路id传递给服务端
  *
  * @author bokun.li
- * @date 2025-05
+ * @since 2.1.4
  */
-@Getter
-public enum StorageTypeEnum {
+@Slf4j
+public class OpenFeignRequestInterceptor implements RequestInterceptor {
 
-    NONE("none"),
+    @Override
+    public void apply(RequestTemplate template) {
+        if (log.isDebugEnabled()) {
+            log.debug("open feign -> client request url {}", template.url());
+        }
+        PublicHeaders.initHeader(template);
 
-    DB("db"),
-
-    REDIS("redis");
-
-    private final String type;
-
-    StorageTypeEnum(String type) {
-        this.type = type;
     }
-
 }

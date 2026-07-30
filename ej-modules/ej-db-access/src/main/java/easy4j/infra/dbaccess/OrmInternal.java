@@ -17,18 +17,17 @@ package easy4j.infra.dbaccess;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.common.utils.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import easy4j.infra.dbaccess.orm.AccessConfig;
-import easy4j.infra.dbaccess.orm.DBAccessImpl;
+import easy4j.infra.dbaccess.orm.OrmFactory;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 import javax.sql.DataSource;
 
@@ -38,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * DBAccessFactory
+ * 模块内部使用的orm工具类，内部使用orm默认都为主数据源
  *
  * @author bokun.li
  * @date 2025-05
@@ -46,69 +45,69 @@ import java.util.Set;
 @Setter
 @Getter
 @Slf4j
-public class DBAccessFactory extends StandAbstractEasy4jResolve {
+public class OrmInternal extends StandAbstractEasy4jResolve {
+    public static final String CACHE_KEY = "easy4j-no-transaction-master-orm";
     public static final Set<SqlFileEnums> INITED_FILE_PATH = new HashSet<>();
     public static final Set<SqlFileEnums> INIT_DB_FILE_PATH = new HashSet<>();
 
+    // 初始化的两个表，这两个表会默认创建
     static {
         INIT_DB_FILE_PATH.add(SqlFileEnums.DB_LOG);
         INIT_DB_FILE_PATH.add(SqlFileEnums.DB_SIMPLE_LOCK);
     }
 
     /**
-     * get的时候顺带初始化
      *
-     * @param dataSource
-     * @param mixTransaction
-     * @return
+     * 获取不带事务,且不被全局属性影响的orm实例(只受spring中的printSqlIs属性的实时值影响)
+     * datasource为获取当前Spring中的主数据源
+     * 内部使用orm默认都为主数据源 所以直接缓存
      */
-    public static IDBAccess getDBAccess(DataSource dataSource, boolean mixTransaction, boolean isPrintLog) {
-
-        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource).setInTransaction(mixTransaction).setPrintSqlIs(isPrintLog);
-        IDBAccess jdbcDbAccess = new DBAccessImpl(accessConfig);
-        init(jdbcDbAccess);
-        return jdbcDbAccess;
+    public static IDBAccess getNoTransactionOrm() {
+        if (ObjectHolder.INSTANCE.getObject(CACHE_KEY) == null) {
+            IDBAccess idbAccess = getIdbAccess(null);
+            ObjectHolder.INSTANCE.setObject(CACHE_KEY, idbAccess);
+        }
+        return (IDBAccess) ObjectHolder.INSTANCE.getObject(CACHE_KEY);
     }
 
-    /**
-     * 这个也是一样顺带初始化
-     *
-     * @param dataSource
-     * @return
-     */
-    public static IDBAccess getDBAccess(DataSource dataSource) {
-        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource);
-        IDBAccess jdbcDbAccess = new DBAccessImpl(accessConfig);
-        init(jdbcDbAccess);
-        return jdbcDbAccess;
+    private static @NonNull IDBAccess getIdbAccess(DataSource dataSource) {
+        IDBAccess idbAccess = OrmFactory.getInternal(dataSource, e -> {
+            e.setInTransaction(false);
+            e.setPrintSqlIs(true);
+            // 全部sql都打印
+            e.setOnlyPrintSlowSql(false);
+        });
+        init(idbAccess);
+        return idbAccess;
     }
 
     public static void initDb(SqlFileEnums path) {
         INIT_DB_FILE_PATH.add(path);
-        DataSource dataSource = SpringUtil.getBean(DataSource.class);
-        getDBAccess(dataSource);
+        getNoTransactionOrm();
     }
 
     /**
-     * 迁移前最后一次执行
+     * flyway迁移前最后一次执行
+     *
      * @param dataSource 传入数据源
      */
-    public static void exeAll(DataSource dataSource){
+    public static void exeAll(DataSource dataSource) {
         List<SqlFileSpi> load = ServiceLoaderUtils.load(SqlFileSpi.class);
         for (SqlFileSpi sqlFileSpi : load) {
             List<SqlFileEnums> collect = sqlFileSpi.collect();
-            if(CollUtil.isNotEmpty(collect)){
+            if (CollUtil.isNotEmpty(collect)) {
                 INIT_DB_FILE_PATH.addAll(collect);
             }
         }
-        IDBAccess dbAccess = getDBAccess(dataSource);
+        // 这里比较特殊，不使用缓存的 orm实例
+        IDBAccess dbAccess = getIdbAccess(dataSource);
         init(dbAccess);
     }
 
     /**
      * 全局sql文件初始化的地方，已执行的sql不会再次执行
      *
-     * @param jdbcDbAccess
+     * @param jdbcDbAccess orm实例
      */
     public static void init(IDBAccess jdbcDbAccess) {
         synchronized (INIT_DB_FILE_PATH) {
@@ -119,7 +118,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                 }
                 String s1 = s.getPath();
                 Class<?> autoDDLClass = s.getAutoDDLClass();
-                if(StrUtil.isBlank(s1) && autoDDLClass!=null){
+                if (StrUtil.isBlank(s1) && autoDDLClass != null) {
                     autoDDL(autoDDLClass);
                     continue;
                 }
@@ -127,7 +126,7 @@ public class DBAccessFactory extends StandAbstractEasy4jResolve {
                 try {
                     connection = jdbcDbAccess.getConnection();
                     String databaseType = JdbcHelper.getDatabaseType(connection);
-                    s1 = s1+ "/" + databaseType + SP.DOT + "sql";
+                    s1 = s1 + "/" + databaseType + SP.DOT + "sql";
                     DDlHelper.execDDL(connection, null, ListTs.asList(s1), true);
 //                    ClassPathResource classPathResource = new ClassPathResource(s1 + ".sql");
 //                    jdbcDbAccess.runScript(classPathResource);

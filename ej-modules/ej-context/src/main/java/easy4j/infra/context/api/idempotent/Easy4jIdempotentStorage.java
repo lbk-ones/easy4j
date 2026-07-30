@@ -23,6 +23,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * @date 2025-05
  */
 public interface Easy4jIdempotentStorage {
+
+    // 是否上锁成功 成功为1
     String IS_LOCK = "IDEMPOTENT_IS_LOCK";
 
     boolean acquireLock(String key, int expireSeconds, HttpServletRequest request);

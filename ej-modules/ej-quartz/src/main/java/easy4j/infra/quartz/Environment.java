@@ -7,12 +7,10 @@ import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.springframework.boot.SpringApplication;
@@ -51,7 +49,7 @@ public class Environment extends AbstractEasy4jEnvironment {
         // 默认已经有了
         boolean hasTables = true;
         if (QzConstant.JDBC.equalsIgnoreCase(jobStoreType) || jobStoreType == null) {
-            TempDataSource tempDataSource = DBAccessFactory.getTempDataSource();
+            TempDataSource tempDataSource = OrmInternal.getTempDataSource();
             Connection quietConnection = tempDataSource.getQuietConnection();
             try {
                 DialectV2 select = DialectFactory.get(quietConnection);

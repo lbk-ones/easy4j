@@ -250,15 +250,18 @@ public abstract class AbstractAuthorizationStrategy implements SecurityAuthoriza
         if (ListTs.asList(packageNme.split(SP.COMMA)).stream().noneMatch(name::startsWith) && !StrUtil.startWith(name, SysConstant.PACKAGE_PREFIX + SP.DOT))
             return false;
 
-        boolean classNoLogin = beanType.isAnnotationPresent(NoLogin.class) && beanType.getAnnotation(NoLogin.class).rpcNoLogin();
-        boolean methodNoLogin = method.isAnnotationPresent(NoLogin.class) && method.getAnnotation(NoLogin.class).rpcNoLogin();
+        boolean classRpcNoLogin = beanType.isAnnotationPresent(NoLogin.class) && beanType.getAnnotation(NoLogin.class).rpcNoLogin();
+        boolean methodRpcNoLogin = method.isAnnotationPresent(NoLogin.class) && method.getAnnotation(NoLogin.class).rpcNoLogin();
         // rpc 传递
         boolean noLoginRpc = StrUtil.equals(httpServerRequest.getHeader(THConstant.EASY4J_RPC_NO_LOGIN), "1");
 
         // 是否是免登录的 供后续模块使用
         boolean isNoLogin = beanType.isAnnotationPresent(NoLogin.class) || method.isAnnotationPresent(NoLogin.class) || noLoginRpc;
         getContext().registerThreadHash(THConstant.EASY4J_IS_NO_LOGIN, THConstant.EASY4J_IS_NO_LOGIN, isNoLogin);
-        if (classNoLogin || methodNoLogin || noLoginRpc) {
+        // 是否明确指定rpc调用是否跳过登录
+        // 1、明确指定 NoLogin 注解里面的rpcNoLogin属性 这个默认是true
+        // 2、已经被rpc调用了 noLoginRpc==true 代表已经是了的
+        if (classRpcNoLogin || methodRpcNoLogin || noLoginRpc) {
             getContext().registerThreadHash(THConstant.EASY4J_RPC_NO_LOGIN, THConstant.EASY4J_RPC_NO_LOGIN, "1");
             return false;
         }

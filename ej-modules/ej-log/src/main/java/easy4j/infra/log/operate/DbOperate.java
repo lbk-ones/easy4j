@@ -1,10 +1,9 @@
 package easy4j.infra.log.operate;
 
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.domain.PageRes;
-import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
@@ -21,8 +20,8 @@ public class DbOperate implements OperateLogRepository {
 
     @Override
     public void init() {
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_OPERATE_LOG);
-        dbAccess = DBAccessFactory.getDBAccess(JdbcHelper.getDataSource(), false, true);
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_OPERATE_LOG);
+        dbAccess = OrmInternal.getNoTransactionOrm();
     }
 
     @Override

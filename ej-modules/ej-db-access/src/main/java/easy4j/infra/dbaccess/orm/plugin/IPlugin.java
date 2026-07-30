@@ -18,6 +18,11 @@ public interface IPlugin {
     String getName();
 
     /**
+     * 插件初始化
+     */
+    void init(Access<?> access);
+
+    /**
      * 获取新的数据源
      */
     DataSource getDataSource(Access<?> access);

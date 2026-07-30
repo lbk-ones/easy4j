@@ -1,11 +1,12 @@
 package easy4j.infra.dbaccess.orm.runner;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.orm.AccessConfig;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
+import easy4j.infra.dbaccess.orm.SpringOrmProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
@@ -14,11 +15,12 @@ import java.util.List;
 @Slf4j
 public class LogSql {
 
-    public static void init(RuntimeContext<?> runtimeContext,Long time) {
+    public static void init(RuntimeContext<?> runtimeContext, Long time) {
         LogResult logResult = new LogResult();
         logResult.setBeginTime(time);
         runtimeContext.setLogResult(logResult);
     }
+
     public static void init(RuntimeContext<?> runtimeContext) {
         LogResult logResult = new LogResult();
         logResult.setBeginTime(System.currentTimeMillis());
@@ -50,9 +52,12 @@ public class LogSql {
         boolean onlyPrintSlowSql = config.isOnlyPrintSlowSql();
         long slowSqlTime = config.getSlowSqlTime();
         boolean printSqlIs = config.isPrintSqlIs();
+        // 实时判断到底该不该打印sql
         try {
-            Boolean property = SpringUtil.getProperty("easy4j.db.access.sql.print", boolean.class, true);
-            if (property == false) return;
+            Boolean property = SpringUtil.getProperty(SpringOrmProperties.ORM_PREFIX + SP.DOT + "print-sql-is", Boolean.class, true);
+            if(property!= null && !property){
+                return;
+            }
         } catch (Exception ignored) {
 
         }
@@ -61,7 +66,7 @@ public class LogSql {
                 LogResult logResult = runtimeContext.getLogResult();
                 if (logResult == null) return;
                 long exeTime = logResult.getExeTime();
-                if(onlyPrintSlowSql && exeTime < slowSqlTime){
+                if (onlyPrintSlowSql && exeTime < slowSqlTime) {
                     return;
                 }
                 String sql = runtimeContext.getSql();

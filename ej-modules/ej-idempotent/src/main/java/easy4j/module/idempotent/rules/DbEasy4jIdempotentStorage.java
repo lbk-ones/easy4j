@@ -15,13 +15,12 @@
 package easy4j.module.idempotent.rules;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.context.api.idempotent.Easy4jIdempotentStorage;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.Easy4jContextFactory;
 import easy4j.infra.context.api.lock.DbLock;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.module.idempotent.rules.datajdbc.Easy4jKeyIdempotent;
@@ -32,8 +31,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import javax.sql.DataSource;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -59,8 +56,8 @@ public class DbEasy4jIdempotentStorage implements Easy4jIdempotentStorage, Initi
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DBAccessFactory.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_IDEMPOTENT);
-        dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        OrmInternal.INIT_DB_FILE_PATH.add(SqlFileEnums.DB_IDEMPOTENT);
+        dbAccess = OrmInternal.getNoTransactionOrm();
 //        schedule();
     }
 

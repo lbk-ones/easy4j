@@ -26,7 +26,7 @@ import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.TempDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -55,7 +55,7 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
             String password = Easy4j.getProperty(FlywayConstant.FLYWAY_PASSWORD);
             TempDataSource tempDataSource = new TempDataSource(driverClassName, flywayUrl, user, password);
             log.info(SysLog.compact("The last execution of all dynamic SQL scripts"));
-            DBAccessFactory.exeAll(tempDataSource);
+            OrmInternal.exeAll(tempDataSource);
             log.info(SysLog.compact("Start Flyway migration!"));
             flyway.repair();
             flyway.migrate();

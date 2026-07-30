@@ -21,6 +21,11 @@ public abstract class AbstractPlugin implements IPlugin {
     }
 
     @Override
+    public void init(Access<?> access) {
+
+    }
+
+    @Override
     public void beforeReturn(RuntimeContext<?> context) {
 
     }

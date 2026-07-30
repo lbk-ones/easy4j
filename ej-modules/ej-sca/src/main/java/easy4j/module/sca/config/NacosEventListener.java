@@ -20,7 +20,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
-import easy4j.infra.context.event.NacosSauthServerRegisterEvent;
+import easy4j.infra.context.event.NacosServicesRegisterEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.event.EventListener;
@@ -39,7 +39,7 @@ public class NacosEventListener implements DisposableBean {
 
     // 同步注册
     @EventListener
-    public void listen1(NacosSauthServerRegisterEvent nacosSauthServerRegisterEvent) {
+    public void listen1(NacosServicesRegisterEvent nacosSauthServerRegisterEvent) {
         try {
             long beginTime = System.currentTimeMillis();
             serverName = nacosSauthServerRegisterEvent.getServerName();

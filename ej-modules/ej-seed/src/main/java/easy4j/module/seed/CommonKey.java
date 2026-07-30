@@ -18,13 +18,12 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.net.NetUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.seed.SnowSeed;
-import easy4j.infra.dbaccess.DBAccessFactory;
+import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.orm.IDBAccess;
@@ -32,8 +31,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -80,7 +77,7 @@ public class CommonKey implements SnowSeed {
         String ipSegment = Easy4j.getEjSysProperties().getSeedIpSegment();
         log.info(SysLog.compact("分布式雪花主键策略IP前缀为：" + ipSegment));
 
-        IDBAccess dbAccess = DBAccessFactory.getDBAccess(SpringUtil.getBean(DataSource.class));
+        IDBAccess dbAccess = OrmInternal.getNoTransactionOrm();
 
         boolean enabled = false;
         // 所有节点的 ip num 不能一样

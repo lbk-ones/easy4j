@@ -13,6 +13,7 @@ import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
+import lombok.Getter;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.function.Function;
 
 public class DBAccessImpl implements IDBAccess {
 
+    @Getter
     private final AccessUtils accessUtils;
 
     public DBAccessImpl(AccessConfig accessConfig) {
