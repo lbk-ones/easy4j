@@ -55,6 +55,10 @@ public class ScaNacosRegistryEnvironment extends AbstractEasy4jEnvironment {
     @Override
     public Properties getProperties() {
         if (!isSca()) return null;
+        if (getEnvProperty("spring.cloud.nacos.discovery.enabled", Boolean.class,true) == false) {
+            System.out.println(SysLog.compact("skip load nacos discovery first step"));
+            return null;
+        }
         Properties properties = new Properties();
         EjSysProperties ejSys = Easy4j.getEjSysProperties();
 

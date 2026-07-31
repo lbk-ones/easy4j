@@ -69,10 +69,15 @@ public class ScaNacosEnvironmentFirst extends AbstractEasy4jEnvironment {
     @Override
     public Properties getProperties() {
         if (!isSca()) return null;
-        try{
+        // 为了让使用了 nacos 配置中心的项目 可以脱离nacos运行 加了这个逻辑
+        if (getEnvProperty("spring.cloud.nacos.config.enabled", Boolean.class,true) == false) {
+            System.out.println(SysLog.compact("skip load nacos config first step"));
+            return null;
+        }
+        try {
             ClassPathResource resource = new ClassPathResource("nacos-version.txt");
             try (InputStream is = resource.getInputStream()) {
-                System.out.println(SysLog.compact("current nacos client "+new String(is.readAllBytes(), StandardCharsets.UTF_8)));
+                System.out.println(SysLog.compact("current nacos client " + new String(is.readAllBytes(), StandardCharsets.UTF_8)));
             }
         } catch (Exception ignored) {
         }
@@ -96,10 +101,10 @@ public class ScaNacosEnvironmentFirst extends AbstractEasy4jEnvironment {
         for (NacosPropetiesParse.NacosDataId dataId : dataIds) {
             String dataId_ = dataId.getDataId();
             String group = dataId.getGroup();
-            if(StrUtil.isNotBlank(group)){
-                dataId_ = dataId_+"?group="+group;
+            if (StrUtil.isNotBlank(group)) {
+                dataId_ = dataId_ + "?group=" + group;
             }
-            properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT + "[" + i + "]", "optional:nacos:"+dataId_);
+            properties.setProperty(SysConstant.SPRING_CONFIG_IMPORT + "[" + i + "]", "optional:nacos:" + dataId_);
             i++;
         }
         setProperties(properties, SysConstant.EASY4J_NACOS_GROUP, build.getNacosGroup());

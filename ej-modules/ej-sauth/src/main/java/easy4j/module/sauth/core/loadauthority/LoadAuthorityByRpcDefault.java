@@ -1,20 +1,18 @@
 package easy4j.module.sauth.core.loadauthority;
 
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.collection.CollUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.context.Easy4jContext;
-import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.NacosInvokerApi;
 import easy4j.module.sauth.domain.SecurityAuthority;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.InitializingBean;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,17 +35,19 @@ public class LoadAuthorityByRpcDefault implements LoadAuthorityByRpc {
                     .serverName(Config.AUTH_SERVER_NAME)
                     .path(LOAD_URL + SP.SLASH + userName)
                     .build();
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            Object data = securitySessionEasyResult.getData();
-            if (ObjectUtil.isNotEmpty(data)) {
-                List<SecurityAuthority> list = JacksonUtil.toList(JacksonUtil.toJson(data), SecurityAuthority.class);
-                HashSet<SecurityAuthority> securityAuthorities = new HashSet<>(list);
+            String res = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
+            EasyResult<List<SecurityAuthority>> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<List<SecurityAuthority>>>() {
+            });
+            CheckUtils.checkRpcRes(object);
+            List<SecurityAuthority> data = object.getData();
+            if(CollUtil.isNotEmpty(data)){
+                HashSet<SecurityAuthority> securityAuthorities = new HashSet<>(data);
                 securityContext.setAuthority(userName, securityAuthorities);
                 return securityAuthorities;
             }
         }
         return new HashSet<>();
     }
+
 
 }

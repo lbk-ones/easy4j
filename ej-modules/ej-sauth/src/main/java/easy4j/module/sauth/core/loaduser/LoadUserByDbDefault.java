@@ -68,7 +68,7 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
             }
         }
 
-        FWhereBuild<SecurityUser> equal = FWhereBuild.get(SecurityUser.class).eq(SecurityUser::getUsername, username);
+        FWhereBuild<SecurityUser> equal = FWhereBuild.get(SecurityUser.class).eq(SecurityUser::getUsername, username.getUsername());
         List<SecurityUser> securityUsers = idbAccess.query(equal, SecurityUser.class);
         if (CollUtil.isNotEmpty(securityUsers)) {
             return securityUsers.get(0);

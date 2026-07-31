@@ -134,6 +134,27 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
     }
 
     /**
+     * 组合PropertySource
+     *
+     * @param load 加载结果
+     * @param name 组合PropertySource的名称
+     * @return PropertySource<?>
+     */
+    public static PropertySource<?> compositeSources(List<PropertySource<?>> load, String name) {
+        PropertySource<?> propertySource = null;
+        if (load.size() == 1) {
+            propertySource = load.get(0);
+        } else if (load.size() > 1) {
+            CompositePropertySource compositePropertySource = new CompositePropertySource(name);
+            for (PropertySource<?> source : load) {
+                compositePropertySource.addPropertySource(source);
+            }
+            propertySource = compositePropertySource;
+        }
+        return propertySource;
+    }
+
+    /**
      * custom properties and file together load
      *
      * @author bokun.li
@@ -165,16 +186,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                 if (null != resource && resource.exists() && null != loader) {
                     try {
                         List<PropertySource<?>> load = loader.load(name, resource);
-                        PropertySource<?> propertySource = null;
-                        if (load.size() == 1) {
-                            propertySource = load.get(0);
-                        } else if (load.size() > 1) {
-                            CompositePropertySource compositePropertySource = new CompositePropertySource(name);
-                            for (PropertySource<?> source : load) {
-                                compositePropertySource.addPropertySource(source);
-                            }
-                            propertySource = compositePropertySource;
-                        }
+                        PropertySource<?> propertySource = compositeSources(load, name);
                         if (propertySource != null) {
                             environment.getPropertySources().addLast(propertySource);
                             getLogger().info(SysLog.compact("the " + name.toLowerCase() + " parameter is SuccessFull replaced。"));
@@ -385,6 +397,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
         try {
             String jarDir = JarPathUtil.getJarDirectory();
             if (StrUtil.isNotBlank(jarDir)) {
+                assert jarDir != null;
                 // 先检查当前目录 在检查 config目录
                 for (String path_ : ListTs.asList("", "config")) {
                     // 检查 properties yml yaml 文件
@@ -406,10 +419,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                                 loadPropertySource = new PropertiesPropertySource(filePath, properties);
                             } else if (SP.YML_SUFFIX.equals(suffix)) {
                                 YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-                                loadPropertySource = loader.load(filePath, fResource).get(0);
+                                loadPropertySource = compositeSources(loader.load(filePath, fResource), filePath);
                             } else if (SP.YAML_SUFFIX.equals(suffix)) {
                                 YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-                                loadPropertySource = loader.load(filePath, fResource).get(0);
+                                loadPropertySource = compositeSources(loader.load(filePath, fResource), filePath);
                             }
                             if (loadPropertySource != null) {
                                 return loadPropertySource;
@@ -426,12 +439,12 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                 loadPropertySource = new PropertiesPropertySource("classpath:" + defaultFileNameWIthSuffix, properties);
                 // propertySources.addLast(new PropertiesPropertySource("sca-early-config", properties));
             } else {
-                String name = fileNameInit + ".yml";
+                String name = fileNameInit + SP.YML_SUFFIX;
                 Resource resource1 = new ClassPathResource(name);
                 if (!resource1.exists()) {
                     resource1 = new ClassPathResource(name);
                     if (!resource1.exists()) {
-                        name = fileNameInit + ".yaml";
+                        name = fileNameInit + SP.YAML_SUFFIX;
                         Resource resource3 = new ClassPathResource(name);
                         if (!resource3.exists()) {
                             return null;
@@ -439,7 +452,8 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
                     }
                 }
                 YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-                loadPropertySource = loader.load("classpath:" + name, resource1).get(0);
+                String s = "classpath:" + name;
+                loadPropertySource = compositeSources(loader.load(s, resource1), s);
             }
         } catch (IOException e) {
             throw new RuntimeException("加载 配置文件 失败", e);
@@ -491,6 +505,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      */
     public <T> T getEnvProperty(String name, Class<T> tClass) {
         return Easy4j.getEnvProperty(name, tClass, this.configEnvironment);
+    }
+
+    public <T> T getEnvProperty(String name, Class<T> tClass, T defaultValue) {
+        return Easy4j.getEnvProperty(name, tClass, defaultValue, this.configEnvironment);
     }
 
     public EjSysProperties getEnvEjSysProperties() {

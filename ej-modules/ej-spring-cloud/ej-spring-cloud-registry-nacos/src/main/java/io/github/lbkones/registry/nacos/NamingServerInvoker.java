@@ -21,12 +21,9 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.fasterxml.jackson.core.type.TypeReference;
-import easy4j.infra.base.properties.EjSysProperties;
 import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
@@ -150,13 +147,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             HttpHeaders httpHeaders = new HttpHeaders();
             initHeader(httpHeaders, accesstoken);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(httpHeaders);
-            ResponseEntity<Object> exchange = restTemplate.exchange(
+            ResponseEntity<String> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     objectHttpEntity,
-                    Object.class
+                    String.class
             );
-            return JacksonUtil.toJson(exchange.getBody());
+            return exchange.getBody();
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -210,19 +207,16 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         try {
             Instance instance = selectInstance(serviceName, group);
             String url = buildUrl(instance, path, null);
-            //Map<String, Object> objectObjectHashMap = Maps.newHashMap();
-            //objectObjectHashMap.put(SysConstant.X_ACCESS_TOKEN, getToken(null));
-            //MultiValueMap<String, String> multiValueMap = toMultiValueMap(objectObjectHashMap);
             HttpHeaders httpHeaders = new HttpHeaders();
             initHeader(httpHeaders, null);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(body, httpHeaders);
-            ResponseEntity<Object> exchange = restTemplate.exchange(
+            ResponseEntity<String> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.PUT,
                     objectHttpEntity,
-                    Object.class
+                    String.class
             );
-            return JacksonUtil.toJson(exchange.getBody());
+            return exchange.getBody();
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -259,13 +253,13 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             HttpHeaders httpHeaders = new HttpHeaders();
             initHeader(httpHeaders, accessToken);
             HttpEntity<Object> objectHttpEntity = new HttpEntity<>(httpHeaders);
-            ResponseEntity<Object> exchange = restTemplate.exchange(
+            ResponseEntity<String> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.DELETE,
                     objectHttpEntity,
-                    Object.class
+                    String.class
             );
-            return JacksonUtil.toJson(exchange.getBody());
+            return exchange.getBody();
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -296,7 +290,6 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             HttpHeaders headers = new HttpHeaders();
             initHeader(headers, accessToken);
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            //headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
 
             // 转换参数
             MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
@@ -305,9 +298,9 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             }
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formParams, headers);
-            ResponseEntity<Object> response = restTemplate.postForEntity(url, request, Object.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
-            return JacksonUtil.toJson(response.getBody());
+            return response.getBody();
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -341,9 +334,9 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
             headers.set(SysConstant.X_ACCESS_TOKEN, getToken(accessToken));
 
             HttpEntity<Object> request = new HttpEntity<>(body, headers);
-            ResponseEntity<Object> response = restTemplate.postForEntity(url, request, Object.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
-            return JacksonUtil.toJson(response.getBody());
+            return response.getBody();
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -445,27 +438,22 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
     }
 
     @Override
-    public EasyResult<Object> get(NacosInvokeDto nacosInvokeDto) {
+    public String get(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
-        Object body = nacosInvokeDto.getBody();
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
 
         if (StrUtil.isNotBlank(accessToken)) {
-            String s = get(serverName, group1, path, paramMap, accessToken);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
-            });
+            return get(serverName, group1, path, paramMap, accessToken);
         } else {
-            String s = get(serverName, group1, path);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
-            });
+            return get(serverName, group1, path);
         }
     }
 
     @Override
-    public EasyResult<Object> post(NacosInvokeDto nacosInvokeDto) {
+    public String post(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
         String accessToken = nacosInvokeDto.getAccessToken();
@@ -473,47 +461,36 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
         if (nacosInvokeDto.isJson()) {
-            String s = postJson(serverName, group1, path, body, accessToken);
-
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
-            });
+            return postJson(serverName, group1, path, body, accessToken);
         } else {
-            String s = postForm(serverName, group1, path, paramMap, accessToken);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
-            });
+            return postForm(serverName, group1, path, paramMap, accessToken);
         }
     }
 
     @Override
-    public EasyResult<Object> put(NacosInvokeDto nacosInvokeDto) {
+    public String put(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
-        Map<String, Object> paramMap = nacosInvokeDto.getParamMap();
-        String accessToken = nacosInvokeDto.getAccessToken();
         Object body = nacosInvokeDto.getBody();
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
         if (nacosInvokeDto.isJson()) {
-            String s = putJson(body, serverName, group1, path);
-            return JacksonUtil.toObject(s, new TypeReference<EasyResult<Object>>() {
-            });
+            return putJson(body, serverName, group1, path);
         }
         return null;
     }
 
     @Override
-    public EasyResult<Object> delete(NacosInvokeDto nacosInvokeDto) {
+    public String delete(NacosInvokeDto nacosInvokeDto) {
         String group1 = nacosInvokeDto.getGroup();
         String accessToken = nacosInvokeDto.getAccessToken();
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
-        String delete = delete(serverName, group1, path, accessToken);
-        return JacksonUtil.toObject(delete, new TypeReference<EasyResult<Object>>() {
-        });
+        return delete(serverName, group1, path, accessToken);
     }
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {
         // 不用代理 直接这样就行
-        easy4jContext.register(createByEnv(this.restTemplate));
+        easy4jContext.register(createByEnv(SpringUtil.getBean(RestTemplate.class)));
     }
 }

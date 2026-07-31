@@ -52,7 +52,7 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class ScaRunner extends StandAbstractEasy4jResolve implements InitializingBean, CommandLineRunner, DisposableBean {
 
-    @Autowired
+    @Autowired(required = false)
     NacosConfigManager nacosConfigManager;
 
     @Override
@@ -67,10 +67,11 @@ public class ScaRunner extends StandAbstractEasy4jResolve implements Initializin
 
     @Override
     public void run(String... args) throws Exception {
+        if (nacosConfigManager == null) return;
         NacosPropetiesParse build = NacosPropetiesParse.build(null, true);
         List<NacosPropetiesParse.NacosDataId> dataIds = build.getDataIds();
         ConfigService configService = nacosConfigManager.getConfigService();
-        for (NacosPropetiesParse.NacosDataId dataId_ : dataIds){
+        for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
             String group = dataId_.getGroup();
             String dataId = dataId_.getDataId();
             String s = group + "@" + dataId;

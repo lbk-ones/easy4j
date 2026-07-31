@@ -208,4 +208,8 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 # **2.1.4** - 2026-07-21
 - 完善接口日志写入逻辑，优化全局异常处理
 - 重构ej-db-access模块的orm实现逻辑，弃用原先的DBAccess
-- 其他优化若干
+- 权限系统优化+新增验证码认证方式
+- 幂等优化，使用了redis之后自动选择redis
+- spring-cloud模块下config-nacos和registry-nacos优化，在使用了nacos当做配置中心之后，可以脱离nacos配置中心部署
+- NamingServerInvoker从sca模块迁移到registry-nacos模块下去并优化部分逻辑
+- NacosEventListener从sca模块迁移到registry-nacos模块

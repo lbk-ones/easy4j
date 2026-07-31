@@ -181,6 +181,12 @@ public class Easy4j implements ApplicationContextAware {
         return getPropertyWith(name, aclass, false, environment);
     }
 
+    public static <T> T getEnvProperty(String name, Class<T> aclass, T defaultValue, Environment environment) {
+        T propertyWith = getPropertyWith(name, aclass, false, environment);
+        propertyWith = ObjectUtil.isEmpty(propertyWith) ? defaultValue : propertyWith;
+        return propertyWith;
+    }
+
     public static <T> T getRequiredEnvProperty(String name, Class<T> aclass, Environment environment) {
         return getPropertyWith(name, aclass, true, environment);
     }
@@ -403,7 +409,7 @@ public class Easy4j implements ApplicationContextAware {
     }
 
     public static EjSysProperties getEjSysPropertiesFromEnv(Environment env) {
-        if(env == null) env = environment;
+        if (env == null) env = environment;
         Binder binder = Binder.get(env);
         BindResult<EjSysProperties> easy4j = binder.bind(SysConstant.PARAM_PREFIX, EjSysProperties.class);
         try {
@@ -508,7 +514,7 @@ public class Easy4j implements ApplicationContextAware {
                 String[] split1 = ListTs.split(s, ":");
                 String[] split2 = ListTs.split(ListTs.get(split1, 0), "-");
                 String name = ListTs.get(split2, 0);
-                if(StrUtil.isBlank(name)) continue;
+                if (StrUtil.isBlank(name)) continue;
                 String nameDesc = ListTs.get(split2, 1);
                 String[] valueArray = ListTs.split(ListTs.get(split1, 1), ",");
                 Object fieldValue = ReflectUtil.getFieldValue(obj, name);

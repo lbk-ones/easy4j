@@ -3,12 +3,14 @@ package io.github.lbkones.registry.nacos;
 import io.github.lbkones.cloud.openfeign.ScaOpenFeignAutoConfiguration;
 import jakarta.annotation.Resource;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @AutoConfigureAfter(value = ScaOpenFeignAutoConfiguration.class)
+@ConditionalOnProperty(value = "spring.cloud.nacos.discovery.enabled", havingValue = "true", matchIfMissing = true)
 public class ScaRegistryNacosAutoConfiguration {
 
     @Resource

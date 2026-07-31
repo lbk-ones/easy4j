@@ -23,9 +23,8 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.context.event.NacosServicesRegisterEvent;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
 import java.util.ArrayList;
@@ -33,6 +32,7 @@ import java.util.List;
 
 /**
  * 监听nacos注册事件，然后往nacos中注册服务
+ *
  * @since 2.1.4
  */
 @Slf4j
@@ -42,12 +42,13 @@ public class NacosEventListener {
     private final static List<NacosServicesRegisterEvent> serviceList = new ArrayList<>();
 
 
-    @Resource
+    @Autowired(required = false)
     NacosServiceManager nacosServiceManager;
 
     // 同步注册
     @EventListener
     public void listen1(NacosServicesRegisterEvent nacosServicesRegisterEvent) {
+        if (nacosServiceManager == null) return;
         try {
             long beginTime = System.currentTimeMillis();
             String serverName = nacosServicesRegisterEvent.getServerName();

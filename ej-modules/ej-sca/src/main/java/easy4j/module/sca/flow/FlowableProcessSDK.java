@@ -2,12 +2,12 @@ package easy4j.module.sca.flow;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
@@ -92,9 +92,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + START_PROCESS)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        return Convert.toStr(objectEasyResult.getData());
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<String> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<String>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return Convert.toStr(object.getData());
     }
 
     @Override
@@ -106,10 +108,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + START_PROCESS_AND_EXE_FIRST_TASK)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        Object data = objectEasyResult.getData();
-        return JacksonUtil.toObject(JacksonUtil.toJson(data), TaskRes.class);
+        String res =  easy4jNacosInvokerApi.post(build);
+        EasyResult<TaskRes> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<TaskRes>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -124,8 +127,10 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + END_PROCESS)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<Object> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<Object>>() {
+        });
+        CheckUtils.checkRpcRes(object);
     }
 
     @Override
@@ -141,9 +146,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + COMPLETE_TASK)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        return Convert.toStr(objectEasyResult.getData());
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<String> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<String>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -162,9 +169,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + COMPLETE_TASK)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        return Convert.toStr(objectEasyResult.getData());
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<String> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<String>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -179,10 +188,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + QUERY_PENDING_TASKS)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        Object data = objectEasyResult.getData();
-        return JacksonUtil.toList(JacksonUtil.toJson(data), TaskRes.class);
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<List<TaskRes>> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<List<TaskRes>>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -196,10 +206,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + QUERY_TASK_HISTORY)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        Object data = objectEasyResult.getData();
-        return JacksonUtil.toList(JacksonUtil.toJson(data), TaskRes.class);
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<List<TaskRes>> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<List<TaskRes>>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -213,10 +224,11 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + QUERY_PROCESS_INSTANCE)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        Object data = objectEasyResult.getData();
-        return JacksonUtil.toObject(JacksonUtil.toJson(data), ProcessInstanceRes.class);
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<ProcessInstanceRes> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<ProcessInstanceRes>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 
     @Override
@@ -228,9 +240,10 @@ public class FlowableProcessSDK implements ProcessSDK {
                 .isJson(true)
                 .path(getPath() + BATCH_QUERY_PROCESS_INSTANCE)
                 .build();
-        EasyResult<Object> objectEasyResult = easy4jNacosInvokerApi.post(build);
-        CheckUtils.checkRpcRes(objectEasyResult);
-        Object data = objectEasyResult.getData();
-        return JacksonUtil.toList(JacksonUtil.toJson(data), ProcessInstanceRes.class);
+        String res = easy4jNacosInvokerApi.post(build);
+        EasyResult<List<ProcessInstanceRes>> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<List<ProcessInstanceRes>>>() {
+        });
+        CheckUtils.checkRpcRes(object);
+        return object.getData();
     }
 }

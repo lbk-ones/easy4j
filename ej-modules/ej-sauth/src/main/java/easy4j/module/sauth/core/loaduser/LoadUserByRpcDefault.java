@@ -1,12 +1,11 @@
 package easy4j.module.sauth.core.loaduser;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.header.EasyResult;
-import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.context.Easy4jContext;
-import easy4j.infra.context.api.sca.Easy4jNacosInvokerApi;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
@@ -63,10 +62,11 @@ public class LoadUserByRpcDefault implements LoadUserByRpc, InitializingBean {
                     .body(username)
                     .isJson(true)
                     .build();
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            user = CheckUtils.convertRpcRes(securitySessionEasyResult, SecurityUser.class);
-            securityContext.setUser(username.getUsername(), user);
+            String res = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
+            EasyResult<SecurityUser> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<SecurityUser>>() {
+            });
+            CheckUtils.checkRpcRes(object);
+            securityContext.setUser(username.getUsername(), object.getData());
         }
         return user;
     }

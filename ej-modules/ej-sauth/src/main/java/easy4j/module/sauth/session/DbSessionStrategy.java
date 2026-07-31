@@ -16,6 +16,7 @@ package easy4j.module.sauth.session;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
@@ -24,6 +25,7 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.orm.IDBAccess;
@@ -123,10 +125,12 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                         .path(GET_SESSION + SP.SLASH + token)
                         .build();
 
-                EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
-                CheckUtils.checkRpcRes(securitySessionEasyResult);
-                session = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
-                securityContext.setSessionByToken(token, session);
+                String res = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
+
+                EasyResult<SecuritySession> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<SecuritySession>>() {
+                });
+                CheckUtils.checkRpcRes(object);
+                securityContext.setSessionByToken(token, object.getData());
             }
             return session == null ? null : Convert.convert(SecuritySession.class, session);
         } else {
@@ -158,14 +162,16 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            SecuritySession securitySession1 = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
-            securityContext.setSession(securitySession1);
-            if (null != securitySession1) {
-                securityContext.setSessionByToken(securitySession1.getShaToken(), securitySession1);
+            String res = NacosInvokerApi.getEasy4jNacosInvokerApi().post(build);
+            EasyResult<SecuritySession> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<SecuritySession>>() {
+            });
+            CheckUtils.checkRpcRes(object);
+            SecuritySession data = object.getData();
+            securityContext.setSession(data);
+            if (null != data) {
+                securityContext.setSessionByToken(data.getShaToken(), data);
             }
-            return securitySession1;
+            return data;
         } else {
             super.saveSession(securitySession);
             SecuritySession save = dbAccess.save(securitySession, SecuritySession.class);
@@ -192,8 +198,10 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .isJson(true)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().delete(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
+            String res = NacosInvokerApi.getEasy4jNacosInvokerApi().delete(build);
+            EasyResult<Object> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<Object>>() {
+            });
+            CheckUtils.checkRpcRes(object);
             securityContext.removeSessionByToken(token);
             ISecurityEasy4jSession session = securityContext.getSession();
             if (session != null && StrUtil.equals(session.getShaToken(), token)) {
@@ -223,11 +231,13 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                         .path(GET_SESSION_BY_USER_NAME + SP.SLASH + userName)
                         .build();
 
-                EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
-                CheckUtils.checkRpcRes(securitySessionEasyResult);
-                o = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
-                if (o != null) {
-                    securityContext.setSessionByToken(o.getShaToken(), o);
+                String res = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
+                EasyResult<SecuritySession> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<SecuritySession>>() {
+                });
+                CheckUtils.checkRpcRes(object);
+                SecuritySession data = object.getData();
+                if (data != null) {
+                    securityContext.setSessionByToken(data.getShaToken(), data);
                 }
             }
             return Convert.convert(SecuritySession.class, o);
@@ -263,13 +273,15 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                     .path(REFRESH_SESSION + SP.SLASH + token)
                     .build();
 
-            EasyResult<Object> securitySessionEasyResult = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
-            CheckUtils.checkRpcRes(securitySessionEasyResult);
-            SecuritySession securitySession = CheckUtils.convertRpcRes(securitySessionEasyResult, SecuritySession.class);
-            if (null != securitySession) {
-                securityContext.setSessionByToken(securitySession.getShaToken(), securitySession);
+            String res = NacosInvokerApi.getEasy4jNacosInvokerApi().get(build);
+            EasyResult<SecuritySession> object = JacksonUtil.toObject(res, new TypeReference<EasyResult<SecuritySession>>() {
+            });
+            CheckUtils.checkRpcRes(object);
+            SecuritySession data = object.getData();
+            if (null != data) {
+                securityContext.setSessionByToken(data.getShaToken(), data);
             }
-            return securitySession;
+            return data;
         } else {
             return super.refreshSession(token, expireTime, timeUnit);
         }

@@ -44,74 +44,74 @@ public class SAuthController {
     SessionStrategy sessionStrategy;
 
     @GetMapping("getOnlineUserByToken/{token}")
-    public EasyResult<Object> getOnlineUserByToken(@PathVariable(name = "token") String token) {
+    public EasyResult<OnlineUserInfo> getOnlineUserByToken(@PathVariable String token) {
         OnlineUserInfo onlineUser = Easy4jAuth.getOnlineUser(token);
         return EasyResult.ok(onlineUser);
     }
 
     @GetMapping("isOnline")
-    public EasyResult<Object> isOnline() {
+    public EasyResult<Boolean> isOnline() {
         String token1 = Easy4jAuth.getToken();
         boolean isOnline = Easy4jAuth.isOnline(token1);
         return EasyResult.ok(isOnline);
     }
 
     @GetMapping("getToken")
-    public EasyResult<Object> getToken() {
+    public EasyResult<String> getToken() {
         String token = Easy4jAuth.getToken();
         return EasyResult.ok(token);
     }
 
     @GetMapping("refreshToken")
-    public EasyResult<Object> refreshToken() {
+    public EasyResult<String> refreshToken() {
         String token = Easy4jAuth.refreshToken(30, TimeUnit.MINUTES);
         return EasyResult.ok(token);
     }
 
     @GetMapping("getOnlineUserInfo")
-    public EasyResult<Object> getOnlineUserInfo() {
+    public EasyResult<OnlineUserInfo> getOnlineUserInfo() {
         OnlineUserInfo onlineUser = Easy4jAuth.getOnlineUser();
         return EasyResult.ok(onlineUser);
     }
 
     @GetMapping("logOut")
-    public EasyResult<Object> logOut() {
+    public EasyResult<OnlineUserInfo> logOut() {
         OnlineUserInfo onlineUser = Easy4jAuth.logout();
         return EasyResult.ok(onlineUser);
     }
 
     @GetMapping("getSession/{token}")
-    public EasyResult<SecuritySession> getSession(@PathVariable(name = "token") String token) {
+    public EasyResult<SecuritySession> getSession(@PathVariable String token) {
         SecuritySession session = sessionStrategy.getSession(token);
         return EasyResult.ok(session);
     }
 
     @PostMapping("saveSession")
-    public EasyResult<Object> saveSession(@RequestBody SecuritySession securitySession) {
+    public EasyResult<SecuritySession> saveSession(@RequestBody SecuritySession securitySession) {
         SecuritySession securitySession1 = sessionStrategy.saveSession(securitySession);
         return EasyResult.ok(securitySession1);
     }
 
     @DeleteMapping("deleteSession/{token}")
-    public EasyResult<Object> deleteSession(@PathVariable(name = "token") String token) {
+    public EasyResult<Object> deleteSession(@PathVariable String token) {
         sessionStrategy.deleteSession(token);
         return EasyResult.ok(null);
     }
 
     @GetMapping("getSessionByUserName/{username}")
-    public EasyResult<SecuritySession> getSessionByUserName(@PathVariable(name = "username") String username) {
+    public EasyResult<SecuritySession> getSessionByUserName(@PathVariable String username) {
         SecuritySession sessionByUserName = sessionStrategy.getSessionByUserName(username);
         return EasyResult.ok(sessionByUserName);
     }
 
     @PostMapping("loadUserByUserName")
-    public EasyResult<Object> loadUserByUserName(@RequestBody SecurityUser username) {
+    public EasyResult<ISecurityEasy4jUser> loadUserByUserName(@RequestBody SecurityUser username) {
         ISecurityEasy4jUser byUserName = LoadUserApi.getByUserName(username);
         return EasyResult.ok(byUserName);
     }
 
     @GetMapping("refreshSession/{token}")
-    public EasyResult<Object> refreshSession(@PathVariable(name = "token") String token) {
+    public EasyResult<SecuritySession> refreshSession(@PathVariable String token) {
         EjSysProperties ejSysProperties2 = Easy4j.getEjSysProperties();
         int sessionExpireTimeSeconds1 = ejSysProperties2.getSessionExpireTimeSeconds();
         SecuritySession securitySession1 = sessionStrategy.refreshSession(token, sessionExpireTimeSeconds1, TimeUnit.SECONDS);
@@ -119,7 +119,7 @@ public class SAuthController {
     }
 
     @GetMapping("loadSecurityAuthoritiesByUsername/{username}")
-    public EasyResult<Object> loadSecurityAuthoritiesByUsername(@PathVariable(name = "username") String username) {
+    public EasyResult<Set<SecurityAuthority>> loadSecurityAuthoritiesByUsername(@PathVariable String username) {
         Set<SecurityAuthority> authorityList = LoadAuthorityApi.getAuthorityListByDb(username);
         return EasyResult.ok(authorityList);
     }

@@ -72,6 +72,10 @@ public class ScaNacosEnvironmentTwo extends AbstractEasy4jEnvironment {
      */
     @Override
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
+        if (getEnvProperty("spring.cloud.nacos.config.enabled", Boolean.class,true) == false) {
+            System.out.println(SysLog.compact("skip load nacos config two step"));
+            return;
+        }
         List<EjSysFieldInfo> allEjSysFieldInfoList = EjSysFieldInfo.getAllEjSysInfoList();
         NacosPropetiesParse build = NacosPropetiesParse.build(this.getConfigEnvironment(), true);
         List<NacosPropetiesParse.NacosDataId> dataIds = build.getDataIds();

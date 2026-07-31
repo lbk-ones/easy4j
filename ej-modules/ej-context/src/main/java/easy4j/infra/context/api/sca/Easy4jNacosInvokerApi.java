@@ -14,8 +14,6 @@
  */
 package easy4j.infra.context.api.sca;
 
-import easy4j.infra.common.header.EasyResult;
-
 /**
  * 为了避免泛型擦除 全部使用 Object
  *
@@ -25,15 +23,15 @@ import easy4j.infra.common.header.EasyResult;
 public interface Easy4jNacosInvokerApi {
 
 
-    EasyResult<Object> get(NacosInvokeDto nacosInvokeDto);
+    String get(NacosInvokeDto nacosInvokeDto);
 
 
-    EasyResult<Object> post(NacosInvokeDto nacosInvokeDto);
+    String post(NacosInvokeDto nacosInvokeDto);
 
 
-    EasyResult<Object> put(NacosInvokeDto nacosInvokeDto);
+    String put(NacosInvokeDto nacosInvokeDto);
 
 
-    EasyResult<Object> delete(NacosInvokeDto nacosInvokeDto);
+    String delete(NacosInvokeDto nacosInvokeDto);
 
 }
