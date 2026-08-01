@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.dbaccess.Page;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import lombok.Data;
@@ -39,11 +40,11 @@ public class Access<T> {
 
     private String sql;
 
-    private WhereBuild where;
+    private IWhere where;
 
     private SqlWrapper sqlWrapper;
 
-    private UpdateBuild update;
+    private IWhere update;
 
     private boolean skipNullIs;
 

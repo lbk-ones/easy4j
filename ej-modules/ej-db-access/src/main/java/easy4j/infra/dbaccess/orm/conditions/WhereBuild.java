@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
  *
  * @author bokun.li
  */
-public class WhereBuild implements Serializable {
+public class WhereBuild implements Serializable,IWhereBuild {
 
     @Getter
     private List<Condition> conditions = new ArrayList<>();
@@ -93,8 +93,10 @@ public class WhereBuild implements Serializable {
     private final List<Condition> selectFields = new ArrayList<>();
 
     @Getter
-    private final List<WhereBuild> subBuilders = new ArrayList<>();
+    private final List<IWhere> subBuilders = new ArrayList<>();
 
+    @Setter
+    @Getter
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LogicOperator logicOperator = LogicOperator.AND; // 默认使用 AND 连接条件
 
@@ -125,17 +127,27 @@ public class WhereBuild implements Serializable {
     }
 
 
-    // 设置逻辑运算符
-    public WhereBuild withLogicOperator(LogicOperator operator) {
-        this.logicOperator = operator;
-        return this;
-    }
-
     public boolean notExistsColumn(String column,CompareOperator compareOperator){
         if (logicOperator == LogicOperator.OR) {
             return true;
         }
         return conditions.stream().noneMatch(e->StrUtil.equals(e.getColumn(),column) && e.getOperator() == compareOperator);
+    }
+
+    @Override
+    public Optional<IWhereBuild> getWhere() {
+        return Optional.of(this);
+    }
+
+    @Override
+    public Optional<IUpdateBuild> getUpdate() {
+        return Optional.empty();
+    }
+
+    // 设置逻辑运算符
+    public WhereBuild withLogicOperator(LogicOperator operator) {
+        this.logicOperator = operator;
+        return this;
     }
 
     // 基础比较条件方法
@@ -307,25 +319,25 @@ public class WhereBuild implements Serializable {
     // NULL 条件
     @JsonIgnore
     public WhereBuild isNull(String column) {
-        if(notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
+        if(notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
     public WhereBuild isNull(boolean option, String column) {
-        if (option && notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, null));
+        if (option && notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
     public WhereBuild isNotNull(String column) {
-        if(notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
+        if(notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
     public WhereBuild isNotNull(boolean option, String column) {
-        if (option && notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, null));
+        if (option && notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, (Object) null));
         return this;
     }
 
@@ -346,16 +358,12 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
-    public WhereBuild distinct() {
-        this.isDistinct = true;
-        return this;
-    }
 
     public WhereBuild select(String... columns) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(columns, Condition.class, e -> {
                 String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, null);
+                return new Condition(string, CompareOperator.EMPTY, (Object) null);
             });
             if (CollUtil.isNotEmpty(map)) {
                 selectFields.addAll(map);
@@ -370,7 +378,7 @@ public class WhereBuild implements Serializable {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(column, Condition.class, e -> {
                 String string = e.toString();
-                return new Condition(string, CompareOperator.EMPTY, null);
+                return new Condition(string, CompareOperator.EMPTY, (Object) null);
             });
             if (CollUtil.isNotEmpty(map)) {
                 groupBy.addAll(map);
@@ -420,12 +428,21 @@ public class WhereBuild implements Serializable {
         return this;
     }
 
+    public WhereBuild and(boolean option,WhereBuild subBuilder) {
+        if(option) return this.and(subBuilder);
+        return this;
+    }
+
     public WhereBuild and(Consumer<WhereBuild> subBuilder) {
         WhereBuild whereBuild = get();
         whereBuild.isSubSql = true;
-        subBuilder.accept(whereBuild);
         whereBuild.withLogicOperator(LogicOperator.AND);
+        subBuilder.accept(whereBuild);
         subBuilders.add(whereBuild);
+        return this;
+    }
+    public WhereBuild and(boolean option,Consumer<WhereBuild> subBuilder) {
+        if(option) return this.and(subBuilder);
         return this;
     }
 
@@ -433,6 +450,10 @@ public class WhereBuild implements Serializable {
         subBuilder.withLogicOperator(LogicOperator.OR);
         subBuilders.add(subBuilder);
         subBuilder.isSubSql = true;
+        return this;
+    }
+    public WhereBuild or(boolean option,WhereBuild subBuilder) {
+        if(option) return this.or(subBuilder);
         return this;
     }
 
@@ -444,14 +465,20 @@ public class WhereBuild implements Serializable {
         subBuilders.add(whereBuild);
         return this;
     }
-
+    public WhereBuild or(boolean option,Consumer<WhereBuild> subBuilder) {
+        if(option) return this.or(subBuilder);
+        return this;
+    }
     public WhereBuild not(WhereBuild subBuilder) {
         subBuilder.isSubSql = true;
         subBuilder.withLogicOperator(LogicOperator.NOT);
         subBuilders.add(subBuilder);
         return this;
     }
-
+    public WhereBuild not(boolean option,WhereBuild subBuilder) {
+        if(option) return this.not(subBuilder);
+        return this;
+    }
     public WhereBuild not(Consumer<WhereBuild> subBuilder) {
         WhereBuild whereBuild = get();
         whereBuild.isSubSql = true;
@@ -460,7 +487,10 @@ public class WhereBuild implements Serializable {
         subBuilders.add(whereBuild);
         return this;
     }
-
+    public WhereBuild not(boolean option,Consumer<WhereBuild> subBuilder) {
+        if(option) return this.not(subBuilder);
+        return this;
+    }
 
     // 清除条件
     public void clear() {
@@ -474,7 +504,7 @@ public class WhereBuild implements Serializable {
     }
 
     // 构建最终 SQL 条件
-    public String build(List<Object> whereArgs, RuntimeContext<?> runtimeContext, boolean skipTail) {
+    public String buildQuery(List<Object> whereArgs, RuntimeContext<?> runtimeContext, boolean skipTail) {
 
         List<String> parts = new ArrayList<>();
         // 添加基本条件
@@ -482,10 +512,10 @@ public class WhereBuild implements Serializable {
             parts.add(condition.getSqlSegment(whereArgs, runtimeContext));
         }
         // 添加子条件
-        for (WhereBuild subBuilder : subBuilders) {
-            String subCondition = subBuilder.build(whereArgs, runtimeContext, skipTail);
+        for (IWhere subBuilder : subBuilders) {
+            String subCondition = subBuilder.buildQuery(whereArgs, runtimeContext, skipTail);
             if (!subCondition.isEmpty()) {
-                if (subBuilder.logicOperator == LogicOperator.NOT) {
+                if (subBuilder.getLogicOperator() == LogicOperator.NOT) {
                     parts.add("not (" + subCondition + ")");
                 } else {
                     parts.add("(" + subCondition + ")");
@@ -533,7 +563,7 @@ public class WhereBuild implements Serializable {
         return join;
     }
 
-    public <T> List<String> parseUpdateConditions(List<Object> argList,RuntimeContext<T> context){
+    public List<String> buildUpdate(List<Object> argList, RuntimeContext<?> context){
         List<String> updateSet = new ArrayList<>();
         for (Condition updateCondition : updateConditions) {
             String sqlSegment = updateCondition.getSqlSegment(argList, context);

@@ -9,6 +9,7 @@ import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.orm.conditions.Condition;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.domain.PageRes;
@@ -105,7 +106,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> int delete(WhereBuild whereBuild, Class<T> clazz) {
+    public <T> int delete(IWhere whereBuild, Class<T> clazz) {
         if (whereBuild == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
@@ -130,9 +131,9 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        WhereBuild whereBuild = idEq(context);
+        IWhere whereBuild = idEq(context);
         if (whereBuild == null) return 0;
-        return deleteByIdWith(context, whereBuild, true);
+        return deleteByIdWith(context, true);
 
     }
 
@@ -145,12 +146,12 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        WhereBuild whereBuild = idEq(context);
+        IWhere whereBuild = idEq(context);
         if (whereBuild == null) return 0;
-        return deleteByIdWith(context, whereBuild, true);
+        return deleteByIdWith(context, true);
     }
 
-    private <T> Integer deleteByIdWith(RuntimeContext<T> context, WhereBuild whereBuild, boolean callback) {
+    private <T> Integer deleteByIdWith(RuntimeContext<T> context, boolean callback) {
         if (callback) {
             return exeCallback(context, e -> {
                 accessUtils.resolveContext(e, false);
@@ -163,13 +164,13 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
-    public <T> WhereBuild idEq(RuntimeContext<T> context) {
+    public <T> IWhere idEq(RuntimeContext<T> context) {
         List<AccessField> columnInfoList = context.getIdList();
-        WhereBuild whereBuild = WhereBuild.get();
+        IWhere whereBuild = WhereBuild.get();
         columnInfoList.forEach(e -> {
-            whereBuild.eq(e.getColumnName(), Wd.value(e.getColumnValue()));
+            whereBuild.getWhere().ifPresent(e2->e2.eq(e.getColumnName(), Wd.value(e.getColumnValue())));
         });
-        List<Condition> conditions = whereBuild.getConditions();
+        List<Condition> conditions = whereBuild.getWhere().orElseThrow().getConditions();
         if (conditions.isEmpty()) {
             return null;
         }
@@ -192,9 +193,9 @@ public class DBAccessImpl implements IDBAccess {
                 T next = iterator.next();
                 context.setParams(ListTs.asList(next));
                 accessUtils.refreshContextByParam(context, next);
-                WhereBuild whereBuild = idEq(context);
+                IWhere whereBuild = idEq(context);
                 if (whereBuild == null) continue;
-                i += deleteByIdWith(context, whereBuild, false);
+                i += deleteByIdWith(context, false);
             }
             return i;
         }finally {
@@ -213,7 +214,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.UPDATE);
 
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        WhereBuild whereBuild = idEq(context);
+        IWhere whereBuild = idEq(context);
         if (whereBuild == null) return 0;
         return updateByIdWith(context, true);
 
@@ -249,7 +250,7 @@ public class DBAccessImpl implements IDBAccess {
             for (T param : params) {
                 context.setParams(ListTs.asList(param));
                 accessUtils.refreshContextByParam(context, param);
-                WhereBuild whereBuild = idEq(context);
+                IWhere whereBuild = idEq(context);
                 if (whereBuild == null) return 0;
                 i += updateByIdWith(context, false);
             }
@@ -260,7 +261,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> int update(T params, boolean isSkipNull, WhereBuild whereBuild, Class<T> clazz) {
+    public <T> int update(T params, boolean isSkipNull, IWhere whereBuild, Class<T> clazz) {
         if (params == null) return 0;
         if (clazz == null) return 0;
         if (whereBuild == null) return 0;
@@ -280,7 +281,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> int update(UpdateBuild updateBuild, Class<T> clazz) {
+    public <T> int update(IWhere updateBuild, Class<T> clazz) {
         if (updateBuild == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
@@ -380,7 +381,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields) {
+    public EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields) {
         if (StrUtil.isBlank(tableName)) return EasyMap.get();
         if (whereBuild == null) return EasyMap.get();
         Access<Object> tAccess = new Access<>()
@@ -402,7 +403,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields) {
+    public List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields) {
         List<EasyMap<String, Object>> empty = new ArrayList<>();
         if (whereBuild == null) return empty;
         Access<Object> tAccess = new Access<>()
@@ -424,7 +425,7 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
-    private static void flushRealFields(String schema, String tableName, WhereBuild whereBuild, boolean queryRealFields, List<Condition> selectFields, RuntimeContext<Object> context) {
+    private static void flushRealFields(String schema, String tableName, IWhere whereBuild, boolean queryRealFields, List<Condition> selectFields, RuntimeContext<Object> context) {
         // 如果没字段则把字段查出来
         if (selectFields.isEmpty() && queryRealFields) {
             DialectV2 dialectV2 = context.getDialectV2();
@@ -437,13 +438,13 @@ public class DBAccessImpl implements IDBAccess {
             // 不带缓存
             List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(catalog, schema, tableName);
             for (DatabaseColumnMetadata databaseColumnMetadata : columnsNoCacheQuiet) {
-                whereBuild.select(databaseColumnMetadata.getColumnName());
+                whereBuild.getWhere().orElseThrow().select(databaseColumnMetadata.getColumnName());
             }
         }
     }
 
     @Override
-    public <T> List<T> query(WhereBuild whereBuild, Class<T> clazz) {
+    public <T> List<T> query(IWhere whereBuild, Class<T> clazz) {
         List<T> empty = new ArrayList<>();
         if (clazz == null) return empty;
         if (whereBuild == null) return empty;
@@ -477,7 +478,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> T queryOne(WhereBuild whereBuild, Class<T> clazz) {
+    public <T> T queryOne(IWhere whereBuild, Class<T> clazz) {
         if (whereBuild == null) return null;
         if (clazz == null) return null;
         Access<T> tAccess = new Access<T>()
@@ -494,7 +495,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> long count(WhereBuild whereBuild, Class<T> clazz) {
+    public <T> long count(IWhere whereBuild, Class<T> clazz) {
         if (whereBuild == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
@@ -510,7 +511,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> boolean exists(WhereBuild whereBuild, Class<T> clazz) {
+    public <T> boolean exists(IWhere whereBuild, Class<T> clazz) {
         if (whereBuild == null) return false;
         if (clazz == null) return false;
         Access<T> tAccess = new Access<T>()
@@ -526,7 +527,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> EasyMap<String, Object> queryOneMap(WhereBuild whereBuild, Class<T> clazz, boolean resultFieldToCame) {
+    public <T> EasyMap<String, Object> queryOneMap(IWhere whereBuild, Class<T> clazz, boolean resultFieldToCame) {
         if (whereBuild == null) return EasyMap.get();
         if (clazz == null) return EasyMap.get();
         Access<T> tAccess = new Access<T>()
@@ -545,7 +546,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> PageRes queryPage(WhereBuild whereBuild, Page<T> page, Class<T> clazz) {
+    public <T> PageRes queryPage(IWhere whereBuild, Page<T> page, Class<T> clazz) {
         if (whereBuild == null) return new PageRes();
         if (clazz == null) return new PageRes();
         if (page == null) return new PageRes();
@@ -587,7 +588,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        WhereBuild whereBuild = idEq(context);
+        IWhere whereBuild = idEq(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, false);
@@ -604,7 +605,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        WhereBuild whereBuild = idEq(context);
+        IWhere whereBuild = idEq(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, false);

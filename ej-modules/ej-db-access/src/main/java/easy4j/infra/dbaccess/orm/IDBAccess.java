@@ -3,8 +3,7 @@ package easy4j.infra.dbaccess.orm;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.domain.PageRes;
 
 import java.io.IOException;
@@ -30,6 +29,7 @@ import java.util.List;
  * </pre>
  *
  * @since 2.1.4
+ * @version 2.1.5
  * @author bokun.li
  */
 public interface IDBAccess {
@@ -82,7 +82,7 @@ public interface IDBAccess {
      * @param <T>        泛型
      * @return 删除的条数
      */
-    <T> int delete(WhereBuild whereBuild, Class<T> clazz);
+    <T> int delete(IWhere whereBuild, Class<T> clazz);
 
     /**
      * 删除所有
@@ -134,17 +134,17 @@ public interface IDBAccess {
      * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int update(T params, boolean isSkipNull, WhereBuild whereBuild, Class<T> clazz);
+    <T> int update(T params, boolean isSkipNull, IWhere whereBuild, Class<T> clazz);
 
     /**
-     * 使用UpdateBuild进行更新
+     * 使用IWhere进行更新
      *
      * @param updateBuild 更新构造器
      * @param clazz       类
      * @param <T>         泛型
      * @return 受影响条数
      */
-    <T> int update(UpdateBuild updateBuild, Class<T> clazz);
+    <T> int update(IWhere updateBuild, Class<T> clazz);
 
     /**
      * 根据主键更新
@@ -233,7 +233,7 @@ public interface IDBAccess {
      * @param queryRealFields   是否从数据库查询真实字段信息
      * @return 返回结果
      */
-    EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields);
+    EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields);
 
     /**
      * 根据条件构造器来查询结果集合，集合元素以Map形式返回
@@ -242,7 +242,7 @@ public interface IDBAccess {
      * @param resultFieldToCame 是否转为驼峰
      * @return List<EasyMap<String,Object>>
      */
-    List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, WhereBuild whereBuild, boolean queryRealFields);
+    List<EasyMap<String, Object>> queryMapListByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields);
 
     /**
      * 根据条件构造器来查询结果集合
@@ -252,7 +252,7 @@ public interface IDBAccess {
      * @param <T>        泛型
      * @return 对象集合
      */
-    <T> List<T> query(WhereBuild whereBuild, Class<T> clazz);
+    <T> List<T> query(IWhere whereBuild, Class<T> clazz);
 
     /**
      * 查询所有
@@ -270,7 +270,7 @@ public interface IDBAccess {
      * @param whereBuild 条件构造器
      * @return T
      */
-    <T> T queryOne(WhereBuild whereBuild, Class<T> clazz);
+    <T> T queryOne(IWhere whereBuild, Class<T> clazz);
 
     /**
      * 查询数量
@@ -280,7 +280,7 @@ public interface IDBAccess {
      * @param <T>        泛型
      * @return 总数
      */
-    <T> long count(WhereBuild whereBuild, Class<T> clazz);
+    <T> long count(IWhere whereBuild, Class<T> clazz);
 
     /**
      * 是否存在
@@ -290,7 +290,7 @@ public interface IDBAccess {
      * @param <T>        泛型
      * @return boolean
      */
-    <T> boolean exists(WhereBuild whereBuild, Class<T> clazz);
+    <T> boolean exists(IWhere whereBuild, Class<T> clazz);
 
     /**
      * 根据条件构造器来查询单个结果,以map形式返回
@@ -299,7 +299,7 @@ public interface IDBAccess {
      * @param toCamel    是否转为驼峰
      * @return T
      */
-    <T> EasyMap<String, Object> queryOneMap(WhereBuild whereBuild, Class<T> clazz, boolean toCamel);
+    <T> EasyMap<String, Object> queryOneMap(IWhere whereBuild, Class<T> clazz, boolean toCamel);
 
     /**
      * 根据条件构造器来分页查询结果集合
@@ -309,7 +309,7 @@ public interface IDBAccess {
      * @param clazz      对象类型
      * @return T
      */
-    <T> PageRes queryPage(WhereBuild whereBuild, Page<T> page, Class<T> clazz);
+    <T> PageRes queryPage(IWhere whereBuild, Page<T> page, Class<T> clazz);
 
     /**
      * 根据ID查询

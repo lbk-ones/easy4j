@@ -34,7 +34,7 @@ import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IFWhereBuild;
 import jodd.exception.ExceptionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -414,7 +414,7 @@ public class DbLog implements Easy4jDbLog {
             logRecord.setCreateDate(new Date());
             logRecord.setTag("日志定时清除");
 
-            WhereBuild lte1 = FWhereBuild.get(SysLogRecord.class)
+            IFWhereBuild lte1 = FWhereBuild.get(SysLogRecord.class)
                     .lte(SysLogRecord::getCreateDate, startTime);
 
             long i = dbAccess.count(lte1, SysLogRecord.class);

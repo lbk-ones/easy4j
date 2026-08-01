@@ -5,6 +5,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.orm.*;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import easy4j.infra.dbaccess.orm.plugin.AbstractPlugin;
@@ -37,7 +38,7 @@ public class VersionLockPlugin extends AbstractPlugin {
         if (!(operateType.isDelete() || operateType.isUpdate()) || operateType == OperateType.TRUNCATE) {
             return;
         }
-        WhereBuild where = access.getWhere();
+        IWhere where = access.getWhere();
         // 目前只有单条更新 所以这一个列表一定是一条记录的
         List<AccessField> updateFields = context.getUpdateFields();
         Set<String> columnName = new HashSet<>();
@@ -64,7 +65,7 @@ public class VersionLockPlugin extends AbstractPlugin {
                     BigDecimal add = NumberUtil.add(convert, 1);
                     Wd.setNewValue(updateField, add);
                     if (where != null) {
-                        where.eq(columnName1, columnValue);
+                        where.getWhere().orElseThrow().eq(columnName1, columnValue);
                     }
                     break;
                 }

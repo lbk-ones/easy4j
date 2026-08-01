@@ -2,6 +2,7 @@ package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import lombok.Data;
 import org.bouncycastle.util.Arrays;
@@ -23,7 +24,7 @@ public class SqlItem {
     // left join , join
     private String join;
 
-    private WhereBuild whereBuild;
+    private IWhere whereBuild;
 
     private boolean joinSymbol;
 
@@ -127,7 +128,7 @@ public class SqlItem {
      * @param pickArgs   查询的参数可以加name比如 a.xxx、b.xx 也可以不加，同样也支持别名 name1 as name、name2 na
      * @return TableItem
      */
-    public static SqlItem of(String on, Class<?> clazz, WhereBuild whereBuild, String... pickArgs) {
+    public static SqlItem of(String on, Class<?> clazz, IWhere whereBuild, String... pickArgs) {
         SqlItem sqlItem = of(on, clazz, pickArgs);
         sqlItem.setWhereBuild(whereBuild);
         return sqlItem;
@@ -158,7 +159,7 @@ public class SqlItem {
      * @param pickArgs   查询的参数可以加name比如 a.xxx、b.xx 也可以不加，同样也支持别名 name1 as name、name2 na
      * @return TableItem
      */
-    public static SqlItem of(String on, String name, Class<?> clazz, WhereBuild whereBuild, String... pickArgs) {
+    public static SqlItem of(String on, String name, Class<?> clazz, IWhere whereBuild, String... pickArgs) {
         SqlItem sqlItem = of(on, name, clazz, pickArgs);
         sqlItem.setWhereBuild(whereBuild);
         return sqlItem;
@@ -203,7 +204,7 @@ public class SqlItem {
      * @return TableItem
      */
     @SafeVarargs
-    public static <T> SqlItem of(Func1<T, ?> on, Class<?> clazz, WhereBuild whereBuild, Func1<T, ?>... pickArgs) {
+    public static <T> SqlItem of(Func1<T, ?> on, Class<?> clazz, IWhere whereBuild, Func1<T, ?>... pickArgs) {
         SqlItem sqlItem = of(on, clazz, pickArgs);
         sqlItem.setWhereBuild(whereBuild);
         return sqlItem;
@@ -220,7 +221,7 @@ public class SqlItem {
      * @return TableItem
      */
     @SafeVarargs
-    public static <T> SqlItem of(Func1<T, ?> on, String name, Class<?> clazz, WhereBuild whereBuild, Func1<T, ?>... pickArgs) {
+    public static <T> SqlItem of(Func1<T, ?> on, String name, Class<?> clazz, IWhere whereBuild, Func1<T, ?>... pickArgs) {
         SqlItem sqlItem = of(on, name, clazz, pickArgs);
         sqlItem.setWhereBuild(whereBuild);
         return sqlItem;
@@ -250,7 +251,7 @@ public class SqlItem {
      * @param pickArgs   查询的参数可以加name比如 a.xxx、b.xx 也可以不加，同样也支持别名 name1 as name、name2 na
      * @return TableItem
      */
-    public static SqlItem ofTable(String on, String tableName, WhereBuild whereBuild, String... pickArgs) {
+    public static SqlItem ofTable(String on, String tableName, IWhere whereBuild, String... pickArgs) {
         SqlItem sqlItem = ofTable(on, tableName, pickArgs);
         sqlItem.setWhereBuild(whereBuild);
         return sqlItem;
@@ -266,7 +267,7 @@ public class SqlItem {
      * @param pickArgs   查询的参数可以加name比如 a.xxx、b.xx 也可以不加，同样也支持别名 name1 as name、name2 na
      * @return TableItem
      */
-    public static SqlItem ofTable(String on, String tableName, String name, WhereBuild whereBuild, String... pickArgs) {
+    public static SqlItem ofTable(String on, String tableName, String name, IWhere whereBuild, String... pickArgs) {
         SqlItem sqlItem = ofTable(on, tableName, whereBuild, pickArgs);
         sqlItem.setName(name);
         return sqlItem;

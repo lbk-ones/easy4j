@@ -6,19 +6,12 @@ import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
 
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dialect.H2Dialect;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,8 +32,8 @@ public class WhereBuilderTest {
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, "sa", "");
     }
     @Test
-    void build() {
-        FWhereBuild<SysLogRecord> fSqlBuilder = FWhereBuild.get(SysLogRecord.class);
+    void buildQuery() {
+        IFWhereBuild<SysLogRecord> fSqlBuilder = FWhereBuild.get(SysLogRecord.class);
         ArrayList<Object> objects = new ArrayList<>();
         Access<SysLogRecord> tAccess = new Access<SysLogRecord>()
                 .setClazz(SysLogRecord.class)
@@ -51,14 +44,14 @@ public class WhereBuilderTest {
         RuntimeContext<SysLogRecord> context = accessUtils.toContext(tAccess);
         DialectV2 dialectV2 = context.getDialectV2();
         String build = fSqlBuilder.eq(SysLogRecord::getParams, "test")
-                .build(objects,context,false);
+                .buildQuery(objects,context,false);
         assertEquals(dialectV2.escape("PARAMS")+" = ?",build);
 
 
         fSqlBuilder.clear();
         List<Object> argList = ListTs.newArrayList();
         // 示例 1：简单条件
-        WhereBuild whereBuild = fSqlBuilder
+        IWhereBuild whereBuild = WhereBuild.get()
                 .select("groupArg1", "groupArg2")
                 .eq("age", 30)
                 .and(e2 -> e2
@@ -74,7 +67,7 @@ public class WhereBuilderTest {
                 .asc("ageMax", "xx")
                 .desc("xxx")
                 .groupBy("groupArg1", "groupArg2");
-        String build1 = whereBuild.build(argList, context, false);
+        String build1 = whereBuild.buildQuery(argList, context, false);
         System.out.println("build1-->"+build1);
         String json = JacksonUtil.toJson(whereBuild);
         System.out.println("JSON-->"+ json);
@@ -83,7 +76,7 @@ public class WhereBuilderTest {
         });
 
 
-        String condition1 = object.build(argList,context,false);
+        String condition1 = object.buildQuery(argList,context,false);
 
         System.out.println("条件 1: " + condition1);
         System.out.println("值 1: " + JacksonUtil.toJson(argList));
@@ -93,7 +86,7 @@ public class WhereBuilderTest {
 
         fSqlBuilder.clear();
         // 示例 2：复杂条件
-        String condition2 = fSqlBuilder
+        String condition2 = WhereBuild.get()
                 .withLogicOperator(LogicOperator.OR)
                 .like("name", "A%")
                 .inArray("department", "IT", "HR")
@@ -103,7 +96,7 @@ public class WhereBuilderTest {
                         .or(e2 -> e2
                                 .eq("status", "INACTIVE")
                         )
-                ).build(argList,context,false);
+                ).buildQuery(argList,context,false);
         //assertEquals("name LIKE ? OR department IN (?, ?) OR salary BETWEEN ? AND ? OR NOT (email IS NULL OR (status = ?))", condition2);
         System.out.println("条件 2: " + condition2);
         System.out.println("值 2: " + JacksonUtil.toJson(argList));

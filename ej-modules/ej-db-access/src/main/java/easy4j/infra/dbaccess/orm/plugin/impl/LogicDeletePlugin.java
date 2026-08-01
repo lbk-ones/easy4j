@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.orm.*;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import easy4j.infra.dbaccess.orm.plugin.AbstractPlugin;
@@ -39,7 +40,7 @@ public class LogicDeletePlugin extends AbstractPlugin {
             return;
         }
         // save delete query
-        WhereBuild where = access.getWhere();
+        IWhere where = access.getWhere();
         List<AccessField> insertFields = context.getInsertFields();
         AccessUtils accessUtils = context.getAccessUtils();
 
@@ -103,7 +104,7 @@ public class LogicDeletePlugin extends AbstractPlugin {
             }
             // 查询
             if (where != null && !isDelete) {
-                where.eq(s.name(), val);
+                where.getWhere().orElseThrow().eq(s.name(), val);
             }
         }
     }

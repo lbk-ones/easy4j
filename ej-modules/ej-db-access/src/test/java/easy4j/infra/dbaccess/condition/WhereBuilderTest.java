@@ -49,7 +49,7 @@ public class WhereBuilderTest {
     }
 
     @Test
-    void build() {
+    void buildQuery() {
         ArrayList<Object> objects = new ArrayList<>();
         String build = fSqlBuilder.equal(SysLogRecord::getParams, "test")
                 .build(objects);

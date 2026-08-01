@@ -11,6 +11,7 @@ import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
 import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
@@ -179,8 +180,8 @@ public class JoinSql extends AbsISql {
                     sqlBuild.append(SP.SPACE);
                     sqlBuild.append(currentName).append(SP.DOT).append(sqlItem.getOn());
                     // 解析两个条件构造器
-                    WhereBuild lastWhere = one.getWhereBuild();
-                    WhereBuild current = sqlItem.getWhereBuild();
+                    IWhere lastWhere = one.getWhereBuild();
+                    IWhere current = sqlItem.getWhereBuild();
                     this.parseOnWhere(runtimeContext, sqlAllArgs, accessUtils, sqlBuild, lastName, lastWhere);
                     this.parseOnWhere(runtimeContext, sqlAllArgs, accessUtils, sqlBuild, currentName, current);
                     sqlBuild.append(SP.SPACE);
@@ -195,7 +196,7 @@ public class JoinSql extends AbsISql {
         }
         // 4、开始拼接where语句
         String string = sqlBuild.toString();
-        WhereBuild whereBuild = sqlWrapper.getWhereBuild();
+        IWhere whereBuild = sqlWrapper.getWhereBuild();
         if (whereBuild != null) {
             accessUtils.parseWhere(whereBuild, runtimeContext);
             List<Object> whereArgs = runtimeContext.getWhereArgs();
@@ -222,7 +223,7 @@ public class JoinSql extends AbsISql {
      * @param where          要解析的条件构造器
      * @param <T>            泛型约束
      */
-    private <T> void parseOnWhere(RuntimeContext<T> runtimeContext, List<Object> sqlAllArgs, AccessUtils accessUtils, StringBuilder sqlBuild, String namePrefix, WhereBuild where) {
+    private <T> void parseOnWhere(RuntimeContext<T> runtimeContext, List<Object> sqlAllArgs, AccessUtils accessUtils, StringBuilder sqlBuild, String namePrefix, IWhere where) {
         if (where != null) {
             accessUtils.clearWhere(runtimeContext);
             runtimeContext.setArgNamePrefix(namePrefix);

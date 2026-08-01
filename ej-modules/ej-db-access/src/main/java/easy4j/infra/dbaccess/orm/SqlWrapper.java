@@ -1,6 +1,7 @@
 package easy4j.infra.dbaccess.orm;
 
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import lombok.Getter;
 
@@ -38,13 +39,13 @@ public class SqlWrapper {
     private final List<SqlItem> sqlItemList = ListTs.newLinkedList();
 
     @Getter
-    private WhereBuild whereBuild;
+    private IWhere whereBuild;
 
     public SqlWrapper(SqlItem... sqlItem) {
         sqlItemList.addAll(Arrays.asList(sqlItem));
     }
 
-    public SqlWrapper where(WhereBuild whereBuild){
+    public SqlWrapper where(IWhere whereBuild){
         this.whereBuild = whereBuild;
         return this;
     }

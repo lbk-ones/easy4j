@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.orm.plugin.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.orm.*;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
@@ -46,8 +47,8 @@ public class TenantIdPlugin extends AbstractPlugin {
         // 值的获取逻辑 一般tenantId在 请求头获取
         Object tenantId = iObtainTenantId.getTenantId(context);
         if (tenantId == null) return;
-        WhereBuild where = access.getWhere();
-        UpdateBuild update = access.getUpdate();
+        IWhere where = access.getWhere();
+        IWhere update = access.getUpdate();
         List<AccessField> insertFields = context.getInsertFields();
         List<AccessField> updateFields = context.getUpdateFields();
         List<String> ignoreTenantIdTables = accessConfig.getIgnoreTenantIdTables();
@@ -115,15 +116,15 @@ public class TenantIdPlugin extends AbstractPlugin {
 
             // 查询/删除 的条件
             if (where != null) {
-                where.eq(s.name(), tenantId);
+                where.getWhere().orElseThrow().eq(s.name(), tenantId);
             }
 
             // 更新的条件 update不为空 说明 updateFields是空的
             if (update != null) {
                 if (updateFields.isEmpty()) {
-                    update.set(true, s.name(), tenantId);
+                    update.getUpdate().orElseThrow().set(true, s.name(), tenantId);
                 }
-                update.eq(s.name(), tenantId);
+                update.getWhere().orElseThrow().eq(s.name(), tenantId);
             }
         }
     }

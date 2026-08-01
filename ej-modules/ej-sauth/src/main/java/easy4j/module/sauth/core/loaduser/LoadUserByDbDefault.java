@@ -7,6 +7,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IFWhereBuild;
 import easy4j.module.sauth.domain.ISecurityEasy4jUser;
 import easy4j.module.sauth.domain.SecurityUser;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
@@ -68,7 +69,7 @@ public class LoadUserByDbDefault implements LoadUserByDb, InitializingBean {
             }
         }
 
-        FWhereBuild<SecurityUser> equal = FWhereBuild.get(SecurityUser.class).eq(SecurityUser::getUsername, username.getUsername());
+        IFWhereBuild<SecurityUser> equal = FWhereBuild.get(SecurityUser.class).eq(SecurityUser::getUsername, username.getUsername());
         List<SecurityUser> securityUsers = idbAccess.query(equal, SecurityUser.class);
         if (CollUtil.isNotEmpty(securityUsers)) {
             return securityUsers.get(0);

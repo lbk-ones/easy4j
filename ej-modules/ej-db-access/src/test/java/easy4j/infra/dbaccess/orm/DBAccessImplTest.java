@@ -10,9 +10,7 @@ import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
-import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdLong;
 import easy4j.infra.dbaccess.orm.plugin.impl.LogicDeletePlugin;
@@ -302,7 +300,7 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         // Update using UpdateBuild
-        UpdateBuild updateBuild = UpdateBuild.get()
+        IUpdateBuild updateBuild = UpdateBuild.get()
                 .setSql(true, fn("operator_name") + " = ?", "updateBuildName")
                 .setSql(true, fn("success") + " = ?", 0)
                 .eq("id", saved.getId());
@@ -680,8 +678,8 @@ class DBAccessImplTest {
 
         idbAccess.save(operationLogs, OperationLogs.class);
 
-        FWhereBuild<OperationLogs> whereBuild = FWhereBuild.get(OperationLogs.class)
-                .orConsumer(e -> {
+        IFWhereBuild<OperationLogs> whereBuild = FWhereBuild.get(OperationLogs.class)
+                .or(e -> {
                     e.eq(OperationLogs::getCreatedAt, date);
                     e.gte(OperationLogs::getCreatedAt, date);
                 });
@@ -1028,7 +1026,7 @@ class DBAccessImplTest {
 
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
-        UpdateBuild updateBuild = UpdateBuild.get()
+        IUpdateBuild updateBuild = UpdateBuild.get()
                 .set(true, "success", 0)
                 .eq("id", saved.getId());
 

@@ -13,7 +13,6 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcIgnore;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
@@ -22,10 +21,8 @@ import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
-import easy4j.infra.dbaccess.orm.conditions.Condition;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
+import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.plugin.IPlugin;
@@ -544,12 +541,12 @@ public class AccessUtils implements Serializable {
      * @param context 上下文
      * @param <T>     泛型
      */
-    public <T> void parseWhere(WhereBuild where, RuntimeContext<T> context) {
+    public <T> void parseWhere(IWhere where, RuntimeContext<T> context) {
         List<Object> whereArgs = new ArrayList<>();
         String whereSql = null;
         List<String> selectFieldName = new ArrayList<>();
         if (where != null) {
-            whereSql = where.build(whereArgs, context, context.isSkipTail());
+            whereSql = where.buildQuery(whereArgs, context, context.isSkipTail());
             List<Condition> selectFields = where.getSelectFields();
             if (CollUtil.isNotEmpty(selectFields)) {
                 selectFieldName = selectFields.stream()
@@ -589,14 +586,14 @@ public class AccessUtils implements Serializable {
      * @param context 上下文
      * @param <T>     泛型
      */
-    public <T> void parseUpdate(UpdateBuild update, RuntimeContext<T> context) {
+    public <T> void parseUpdate(IWhere update, RuntimeContext<T> context) {
         List<Object> whereArgs = new ArrayList<>();
         List<Object> updateArgs = new ArrayList<>();
         List<String> selectFieldName = new ArrayList<>();
         // 解析更新条件
-        List<String> sqlSet = update.parseUpdateConditions(updateArgs, context);
+        List<String> sqlSet = update.buildUpdate(updateArgs, context);
         // 解析where条件
-        String whereSql = update.build(whereArgs, context, context.isSkipTail());
+        String whereSql = update.buildQuery(whereArgs, context, context.isSkipTail());
         List<Condition> selectFields = update.getSelectFields();
         if (CollUtil.isNotEmpty(selectFields)) {
             selectFieldName = selectFields.stream()
@@ -631,9 +628,9 @@ public class AccessUtils implements Serializable {
         }
         Access<T> access = context.getAccess();
         if (access != null) {
-            WhereBuild where = access.getWhere();
+            IWhere where = access.getWhere();
             if (where != null) this.parseWhere(where, context);
-            UpdateBuild update = access.getUpdate();
+            IWhere update = access.getUpdate();
             if (update != null) this.parseUpdate(update, context);
         }
         if (!skipParseSql) SqlFactory.parse(context);

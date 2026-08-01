@@ -16,13 +16,14 @@ package easy4j.infra.dbaccess.orm.conditions;
 
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ArrayUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.dbaccess.orm.RuntimeContext;
 import lombok.Setter;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -32,319 +33,437 @@ import java.util.function.Consumer;
  * @author bokun.li
  * @date 2025-05-31 17:41:28
  */
-public class FWhereBuild<T> extends WhereBuild {
+public class FWhereBuild<T> implements IFWhereBuild<T> {
     @Setter
+    @JsonIgnore
     private Class<T> aclass = null;
 
     @JsonIgnore
     public FWhereBuild<T> instance = this;
-    
+
     private String getName(Func1<T, ?> func) {
         return LambdaUtil.getFieldName(func);
     }
 
-    public FWhereBuild<T> eq(Func1<T, ?> column, Object value) {
-        super.eq(getName(column), value);
-        return instance;
+    IWhereBuild where;
+
+    public FWhereBuild() {
+        where = WhereBuild.get();
     }
 
-    public FWhereBuild<T> ne(Func1<T, ?> column, Object value) {
-        super.ne(getName(column), value);
-        return instance;
+    @Override
+    public Optional<IWhereBuild> getWhere() {
+        return Optional.of(where);
     }
 
-    public FWhereBuild<T> gt(Func1<T, ?> column, Object value) {
-        super.gt(getName(column), value);
-        return instance;
+    @Override
+    public Optional<IUpdateBuild> getUpdate() {
+        return Optional.empty();
     }
 
-    public FWhereBuild<T> lt(Func1<T, ?> column, Object value) {
-        super.lt(getName(column), value);
-        return instance;
+    @Override
+    public String getLast() {
+        return where.getLast();
     }
 
-
-    public FWhereBuild<T> gte(Func1<T, ?> column, Object value) {
-        super.gte(getName(column), value);
-        return instance;
+    @Override
+    public List<Condition> getSelectFields() {
+        return where.getSelectFields();
     }
 
-
-    public FWhereBuild<T> lte(Func1<T, ?> column, Object value) {
-        super.lte(getName(column), value);
-        return instance;
+    @Override
+    public void setSubSql(boolean flag) {
+        where.setSubSql(flag);
     }
 
-
-    public FWhereBuild<T> like(Func1<T, ?> column, String value) {
-        super.like(getName(column), value);
-        return instance;
-    }
-
-    public FWhereBuild<T> likeLeft(Func1<T, ?> column, String value) {
-        super.likeLeft(getName(column),value);
-        return instance;
-    }
-    public FWhereBuild<T> likeRight(Func1<T, ?> column, String value) {
-        super.likeRight(getName(column),value);
-        return instance;
-    }
-    public FWhereBuild<T> notLike(Func1<T, ?> column, String value) {
-        super.notLike(getName(column), value);
-        return instance;
-    }
-
-
-    public <R> FWhereBuild<T> in(Func1<T, R> column, Collection<R> values) {
-        super.in(getName(column), values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> sql(boolean option,String sql,Object ...args){
-        if(option) super.sql(option,sql,args);
-        return instance;
-    }
-
-    public FWhereBuild<T> sql(String sql,Object ...args){
-        super.sql(sql,args);
-        return instance;
-    }
-
-
-    @SafeVarargs
-    public final <R> FWhereBuild<T> inArray(Func1<T, R> column, R... values) {
-        super.inArray(getName(column), (Object[]) values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> notIn(Func1<T, ?> column, Collection<T> values) {
-        super.notIn(getName(column), values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> notIn(Func1<T, ?> column, Object... values) {
-        super.notIn(getName(column), values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> between(Func1<T, ?> column, Object value1, Object value2) {
-        super.between(getName(column), value1, value2);
-        return instance;
-    }
-
-
-    @JsonIgnore
-    public FWhereBuild<T> isNull(Func1<T, ?> column) {
-        super.isNull(getName(column));
-        return instance;
-    }
-
-    @JsonIgnore
-    public FWhereBuild<T> isNotNull(Func1<T, ?> column) {
-        super.isNotNull(getName(column));
-        return instance;
-    }
-
-
-    public FWhereBuild<T> eq(boolean option,Func1<T, ?> column, Object value) {
-        super.eq(option,getName(column), value);
-        return instance;
-    }
-
-    public FWhereBuild<T> ne(boolean option,Func1<T, ?> column, Object value) {
-        super.ne(option,getName(column), value);
-        return instance;
-    }
-
-    public FWhereBuild<T> gt(boolean option,Func1<T, ?> column, Object value) {
-        super.gt(option,getName(column), value);
-        return instance;
-    }
-
-    public FWhereBuild<T> lt(boolean option,Func1<T, ?> column, Object value) {
-        super.lt(option,getName(column), value);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> gte(boolean option,Func1<T, ?> column, Object value) {
-        super.gte(option,getName(column), value);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> lte(boolean option,Func1<T, ?> column, Object value) {
-        super.lte(option,getName(column), value);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> like(boolean option,Func1<T, ?> column, String value) {
-        super.like(option,getName(column), value);
-        return instance;
-    }
-
-    public FWhereBuild<T> likeLeft(boolean option,Func1<T, ?> column, String value) {
-        super.likeLeft(option,getName(column),value);
-        return instance;
-    }
-    public FWhereBuild<T> likeRight(boolean option,Func1<T, ?> column, String value) {
-        super.likeRight(option,getName(column),value);
-        return instance;
-    }
-    public FWhereBuild<T> notLike(boolean option,Func1<T, ?> column, String value) {
-        super.notLike(option,getName(column), value);
-        return instance;
-    }
-
-
-    public <R> FWhereBuild<T> in(boolean option,Func1<T, R> column, Collection<R> values) {
-        super.in(option,getName(column), values);
-        return instance;
-    }
-
-
-    @SafeVarargs
-    public final <R> FWhereBuild<T> inArray(boolean option,Func1<T, R> column, R... values) {
-        super.inArray(option,getName(column), (Object[]) values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> notIn(boolean option,Func1<T, ?> column, Collection<T> values) {
-        super.notIn(option,getName(column), values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> notIn(boolean option,Func1<T, ?> column, Object... values) {
-        super.notIn(option,getName(column), values);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> between(boolean option,Func1<T, ?> column, Object value1, Object value2) {
-        super.between(option,getName(column), value1, value2);
-        return instance;
-    }
-
-
-    @JsonIgnore
-    public FWhereBuild<T> isNull(boolean option,Func1<T, ?> column) {
-        super.isNull(option,getName(column));
-        return instance;
-    }
-
-    @JsonIgnore
-    public FWhereBuild<T> isNotNull(boolean option,Func1<T, ?> column) {
-        super.isNotNull(option,getName(column));
-        return instance;
-    }
-
-
-    public FWhereBuild<T> last(String last) {
-        super.last(last);
-        return instance;
-    }
-
-
-    @SafeVarargs
-    public final FWhereBuild<T> select(Func1<T, ?>... columns) {
-        List<String> objects = ListTs.newArrayList();
-        for (Func1<T, ?> column : columns) {
-            String name = this.getName(column);
-            objects.add(name);
-        }
-        super.select(objects.toArray(new String[]{}));
-        return instance;
-    }
-
-
-    @SafeVarargs
-    public final FWhereBuild<T> groupBy(Func1<T, ?>... column) {
-        String[] array = (String[]) Arrays.stream(column).map(this::getName).toArray();
-        super.groupBy(array);
-        return instance;
-    }
-
-    @SafeVarargs
-    public final FWhereBuild<T> asc(Func1<T, ?>... column) {
-        String[] array = (String[]) Arrays.stream(column).map(this::getName).toArray();
-        super.asc(array);
-        return instance;
-    }
-
-    @SafeVarargs
-    public final FWhereBuild<T> desc(Func1<T, ?>... column) {
-        String[] array = (String[]) Arrays.stream(column).map(this::getName).toArray();
-        super.desc(array);
-        return instance;
-    }
-
-
-    public FWhereBuild<T> having(String name, String value) {
-        super.having(name,value);
-        return instance;
-    }
-
-    // 构建子条件
-    public FWhereBuild<T> and(FWhereBuild<T> subBuilder) {
-        super.and(subBuilder);
-        return instance;
-    }
-
-    // 构建子条件
-    public FWhereBuild<T> andConsumer(Consumer<FWhereBuild<T>> subBuilder) {
-        FWhereBuild<T> whereBuild = get(aclass);
-        whereBuild.withLogicOperator(LogicOperator.AND);
-        whereBuild.setSubSql(true);
-        subBuilder.accept(whereBuild);
-        super.getSubBuilders().add(whereBuild);
-        return this;
-    }
-
-
-    public FWhereBuild<T> or(FWhereBuild<T> subBuilder) {
-        super.or(subBuilder);
+    @Override
+    public IFWhereBuild<T> withLogicOperator(LogicOperator operator) {
+        where.withLogicOperator(operator);
         return instance;
     }
 
     @Override
-    public FWhereBuild<T> withLogicOperator(LogicOperator operator) {
-         super.withLogicOperator(operator);
-         return instance;
+    public LogicOperator getLogicOperator() {
+        return where.getLogicOperator();
     }
 
-    public FWhereBuild<T> orConsumer(Consumer<FWhereBuild<T>> sub) {
-        FWhereBuild<T> whereBuild = get(aclass);
-        whereBuild.withLogicOperator(LogicOperator.OR);
-        whereBuild.setSubSql(true);
-        sub.accept(whereBuild);
-        super.getSubBuilders().add(whereBuild);
+    @Override
+    public IFWhereBuild<T> eq(Func1<T, ?> column, Object value) {
+        where.eq(getName(column), value);
         return instance;
     }
 
-
-    public FWhereBuild<T> not(FWhereBuild<T> subBuilder) {
-        super.not(subBuilder);
+    @Override
+    public IFWhereBuild<T> eq(boolean option, Func1<T, ?> column, Object value) {
+        where.eq(option, getName(column), value);
         return instance;
     }
 
-    public FWhereBuild<T> notConsumer(Consumer<FWhereBuild<T>> subBuilder) {
-        FWhereBuild<T> whereBuild = get(aclass);
-        whereBuild.setSubSql(true);
-        whereBuild.withLogicOperator(LogicOperator.NOT);
-        subBuilder.accept(whereBuild);
-        super.getSubBuilders().add(whereBuild);
-        return this;
+    @Override
+    public IFWhereBuild<T> ne(Func1<T, ?> column, Object value) {
+        where.ne(getName(column), value);
+        return instance;
     }
 
+    @Override
+    public IFWhereBuild<T> ne(boolean option, Func1<T, ?> column, Object value) {
+        where.ne(option, getName(column), value);
+        return instance;
+    }
 
-    public static <T> FWhereBuild<T> get(Class<T> aclass) {
+    @Override
+    public IFWhereBuild<T> gt(Func1<T, ?> column, Object value) {
+        where.gt(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> gt(boolean option, Func1<T, ?> column, Object value) {
+        where.gt(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> lt(Func1<T, ?> column, Object value) {
+        where.lt(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> lt(boolean option, Func1<T, ?> column, Object value) {
+        where.lt(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> gte(Func1<T, ?> column, Object value) {
+        where.gte(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> gte(boolean option, Func1<T, ?> column, Object value) {
+        where.gte(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> lte(Func1<T, ?> column, Object value) {
+        where.lte(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> lte(boolean option, Func1<T, ?> column, Object value) {
+        where.lte(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> like(Func1<T, ?> column, String value) {
+        where.like(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> like(boolean option, Func1<T, ?> column, String value) {
+        where.like(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> likeLeft(Func1<T, ?> column, String value) {
+        where.likeLeft(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> likeLeft(boolean option, Func1<T, ?> column, String value) {
+        where.likeLeft(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> likeRight(Func1<T, ?> column, String value) {
+        where.likeRight(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> likeRight(boolean option, Func1<T, ?> column, String value) {
+        where.likeRight(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notLike(Func1<T, ?> column, String value) {
+        where.notLike(getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notLike(boolean option, Func1<T, ?> column, String value) {
+        where.notLike(option, getName(column), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> in(Func1<T, ?> column, Collection<?> values) {
+        where.in(getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> in(boolean option, Func1<T, ?> column, Collection<?> values) {
+        where.in(option, getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> inArray(Func1<T, ?> column, Object... values) {
+        where.inArray(getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> inArray(boolean option, Func1<T, ?> column, Object... values) {
+        where.inArray(option, getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notIn(Func1<T, ?> column, Collection<?> values) {
+        where.notIn(getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notIn(boolean option, Func1<T, ?> column, Collection<?> values) {
+        where.notIn(option, getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notIn(Func1<T, ?> column, Object... values) {
+        where.notIn(getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> notIn(boolean option, Func1<T, ?> column, Object... values) {
+        where.notIn(option, getName(column), values);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> between(Func1<T, ?> column, Object value1, Object value2) {
+        where.between(getName(column), value1, value2);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> between(boolean option, Func1<T, ?> column, Object value1, Object value2) {
+        where.between(getName(column), value1, value2);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> isNull(Func1<T, ?> column) {
+        where.isNull(getName(column));
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> isNull(boolean option, Func1<T, ?> column) {
+        where.isNull(getName(column));
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> isNotNull(Func1<T, ?> column) {
+        where.isNull(getName(column));
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> isNotNull(boolean option, Func1<T, ?> column) {
+        where.isNull(option, getName(column));
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> sql(boolean option, String sql, Object... args_) {
+        where.sql(option, sql, args_);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> sql(String sql, Object... args_) {
+        where.sql(sql, args_);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> last(String last) {
+        where.last(last);
+        return instance;
+    }
+
+    @SafeVarargs
+    public final String[] names(Func1<T, ?>... columns) {
+        String[] names = new String[]{};
+        for (Func1<T, ?> column : columns) {
+            String name = getName(column);
+            ArrayUtil.append(names, name);
+        }
+        return names;
+    }
+
+    @SafeVarargs
+    @Override
+    public final IFWhereBuild<T> select(Func1<T, ?>... columns) {
+        where.select(names(columns));
+        return instance;
+    }
+
+    @SafeVarargs
+    @Override
+    public final IFWhereBuild<T> groupBy(Func1<T, ?>... column) {
+        where.groupBy(names(column));
+        return instance;
+    }
+
+    @SafeVarargs
+    @Override
+    public final IFWhereBuild<T> asc(Func1<T, ?>... column) {
+        where.asc(names(column));
+        return instance;
+    }
+
+    @SafeVarargs
+    @Override
+    public final IFWhereBuild<T> desc(Func1<T, ?>... column) {
+        where.desc(names(column));
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> having(Func1<T, ?> name, String value) {
+        where.having(getName(name), value);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> and(IFWhereBuild<T> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        subBuilder.withLogicOperator(LogicOperator.AND);
+        subBuilder.setSubSql(true);
+        subBuilders.add(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> and(Consumer<IFWhereBuild<T>> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        IFWhereBuild<T> tifWhereBuild = get(aclass);
+        tifWhereBuild.withLogicOperator(LogicOperator.AND);
+        tifWhereBuild.setSubSql(true);
+        subBuilder.accept(tifWhereBuild);
+        subBuilders.add(tifWhereBuild);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> and(boolean option, IFWhereBuild<T> subBuilder) {
+        if (option) return this.and(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> and(boolean option, Consumer<IFWhereBuild<T>> subBuilder) {
+        if (option) return this.and(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> or(IFWhereBuild<T> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        subBuilder.withLogicOperator(LogicOperator.OR);
+        subBuilder.setSubSql(true);
+        subBuilders.add(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> or(boolean option, IFWhereBuild<T> subBuilder) {
+        if (option) return this.or(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> or(Consumer<IFWhereBuild<T>> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        IFWhereBuild<T> tifWhereBuild = get(aclass);
+        tifWhereBuild.withLogicOperator(LogicOperator.OR);
+        tifWhereBuild.setSubSql(true);
+        subBuilders.add(tifWhereBuild);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> or(boolean option, Consumer<IFWhereBuild<T>> subBuilder) {
+        if (option) return this.or(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> not(IFWhereBuild<T> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        subBuilder.withLogicOperator(LogicOperator.NOT);
+        subBuilder.setSubSql(true);
+        subBuilders.add(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> not(boolean option, IFWhereBuild<T> subBuilder) {
+        if (option) return this.not(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> not(Consumer<IFWhereBuild<T>> subBuilder) {
+        List<IWhere> subBuilders = where.getSubBuilders();
+        IFWhereBuild<T> tifWhereBuild = get(aclass);
+        tifWhereBuild.withLogicOperator(LogicOperator.NOT);
+        tifWhereBuild.setSubSql(true);
+        subBuilder.accept(tifWhereBuild);
+        subBuilders.add(tifWhereBuild);
+        return instance;
+    }
+
+    @Override
+    public IFWhereBuild<T> not(boolean option, Consumer<IFWhereBuild<T>> subBuilder) {
+        if (option) return this.not(subBuilder);
+        return instance;
+    }
+
+    @Override
+    public void clear() {
+        where.clear();
+    }
+
+    @Override
+    public String buildQuery(List<Object> whereArgs, RuntimeContext<?> runtimeContext, boolean skipTail) {
+        return where.buildQuery(whereArgs, runtimeContext, skipTail);
+    }
+
+    @Override
+    public List<String> buildUpdate(List<Object> argList, RuntimeContext<?> context) {
+        return where.buildUpdate(argList, context);
+    }
+
+    public static <T> IFWhereBuild<T> get(Class<T> aclass) {
         FWhereBuild<T> fWhereBuild = new FWhereBuild<>();
         fWhereBuild.setAclass(aclass);
         return fWhereBuild;

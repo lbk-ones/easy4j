@@ -30,6 +30,7 @@ import easy4j.infra.context.api.sca.NacosInvokeDto;
 import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IFWhereBuild;
 import easy4j.module.sauth.config.Config;
 import easy4j.module.sauth.context.SecurityContext;
 import easy4j.module.sauth.core.NacosInvokerApi;
@@ -136,7 +137,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         } else {
             ISecurityEasy4jSession session = securityContext.getSessionByToken(token);
             if(session == null){
-                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
+                IFWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
                 SecuritySession securitySession = dbAccess.queryOne(eq, SecuritySession.class);
                 securityContext.setSessionByToken(token,securitySession);
                 return securitySession;
@@ -208,7 +209,7 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
                 securityContext.removeSession();
             }
         } else {
-            FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
+            IFWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getShaToken, token);
             dbAccess.delete(eq, SecuritySession.class);
         }
 
@@ -245,14 +246,14 @@ public class DbSessionStrategy extends AbstractSessionStrategy implements Initia
         } else {
             ISecurityEasy4jSession o = securityContext.getSession();
             if (o == null) {
-                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
+                IFWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
                 SecuritySession securitySession = dbAccess.queryOne(eq, SecuritySession.class);
                 securityContext.setSession(securitySession);
                 return securitySession;
             }else if(StrUtil.equals(o.getUsername(),userName)){
                 return Convert.convert(SecuritySession.class, o);
             }else{
-                FWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
+                IFWhereBuild<SecuritySession> eq = FWhereBuild.get(SecuritySession.class).eq(SecuritySession::getUsername, userName);
                 return dbAccess.queryOne(eq, SecuritySession.class);
             }
 
