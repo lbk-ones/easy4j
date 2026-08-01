@@ -45,6 +45,8 @@ public class FWhereBuild<T> implements IFWhereBuild<T> {
         return LambdaUtil.getFieldName(func);
     }
 
+
+
     IWhereBuild where;
 
     public FWhereBuild() {

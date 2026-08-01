@@ -197,7 +197,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         // Delete by condition
-        WhereBuild whereBuild = WhereBuild.get().eq("module", "deleteTest");
+        IWhereBuild whereBuild = WhereBuild.get().eq("module", "deleteTest");
         List<OperationLogs> query = idbAccess.query(whereBuild, OperationLogs.class);
         assertEquals(5, query.size());
 
@@ -226,7 +226,7 @@ class DBAccessImplTest {
         assertEquals(1, deleted);
 
         // Verify deletion
-        WhereBuild whereBuild = WhereBuild.get().eq("id", id);
+        IWhereBuild whereBuild = WhereBuild.get().eq("id", id);
         long count = idbAccess.count(whereBuild, OperationLogs.class);
 
         assertEquals(0, count);
@@ -276,7 +276,7 @@ class DBAccessImplTest {
         updateParam.setOperatorName("updatedName");
         updateParam.setSuccess(0);
 
-        WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
+        IWhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
         int updated = idbAccess.update(updateParam, true, whereBuild, OperationLogs.class);
         assertEquals(1, updated);
 
@@ -339,7 +339,7 @@ class DBAccessImplTest {
         assertEquals(1, updated);
 
         // Verify update
-        WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
+        IWhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
 
         assertEquals("updatedById", result.getOperatorName());
@@ -458,7 +458,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         // Query by WhereBuild
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "whereQueryTest")
                 .gte("operatorId", 1100L);
 
@@ -481,7 +481,7 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         // Query one by WhereBuild
-        WhereBuild whereBuild = WhereBuild.get().eq("business_no", "whereOne001");
+        IWhereBuild whereBuild = WhereBuild.get().eq("business_no", "whereOne001");
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);
 
 
@@ -505,7 +505,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         // Count
-        WhereBuild whereBuild = WhereBuild.get().eq("module", "countTest");
+        IWhereBuild whereBuild = WhereBuild.get().eq("module", "countTest");
         long count = idbAccess.count(whereBuild, OperationLogs.class);
 
 
@@ -525,12 +525,12 @@ class DBAccessImplTest {
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
 
         // Check exists
-        WhereBuild whereBuild = WhereBuild.get().eq("business_no", "exists001");
+        IWhereBuild whereBuild = WhereBuild.get().eq("business_no", "exists001");
         boolean exists = idbAccess.exists(whereBuild, OperationLogs.class);
         assertTrue(exists);
 
         // Check non-exists
-        WhereBuild whereNotExists = WhereBuild.get().eq("business_no", "notExist");
+        IWhereBuild whereNotExists = WhereBuild.get().eq("business_no", "notExist");
         boolean notExists = idbAccess.exists(whereNotExists, OperationLogs.class);
 
         assertFalse(notExists);
@@ -550,7 +550,7 @@ class DBAccessImplTest {
         idbAccess.save(operationLogs, OperationLogs.class);
 
         // Query one as map
-        WhereBuild whereBuild = WhereBuild.get().eq("business_no", "mapOne001");
+        IWhereBuild whereBuild = WhereBuild.get().eq("business_no", "mapOne001");
         EasyMap<String, Object> result = idbAccess.queryOneMap(whereBuild, OperationLogs.class, true);
 
 
@@ -574,7 +574,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         // Query page
-        WhereBuild whereBuild = WhereBuild.get().eq("module", "pageQueryTest").asc("operatorId");
+        IWhereBuild whereBuild = WhereBuild.get().eq("module", "pageQueryTest").asc("operatorId");
         Page<OperationLogs> page = new Page<>(5);
         page.setPageNo(1);
 
@@ -604,7 +604,7 @@ class DBAccessImplTest {
         updateParam.setOperatorName("newName");
         // operatorIp is null, should be skipped
 
-        WhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
+        IWhereBuild whereBuild = WhereBuild.get().eq("id", saved.getId());
         int updated = idbAccess.update(updateParam, true, whereBuild, OperationLogs.class);
         assertEquals(1, updated);
 
@@ -632,7 +632,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         // Complex condition: (operatorId >= 2 AND success = 1) OR module = 'other'
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .and(wb -> wb.eq("module", "complexTest").gte("operatorId", 2L).eq("success", 1));
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -655,7 +655,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "neTest")
                 .ne("success", 0);
 
@@ -703,7 +703,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "gtTest")
                 .gt("operatorId", 2L);
 
@@ -725,7 +725,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "ltTest")
                 .lt("operatorId", 3L);
 
@@ -747,7 +747,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "betweenTest")
                 .between("operatorId", 3L, 7L);
 
@@ -769,7 +769,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .like("module", "ModuleTest");
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -790,7 +790,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .likeLeft("module", "testLikeLeft");
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -811,7 +811,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .likeRight("module", "Test");
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -832,7 +832,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "inTest")
                 .inArray("operatorId", 1L, 2L, 3L);
 
@@ -854,11 +854,11 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild iIWhereBuild = WhereBuild.get()
                 .eq("module", "notInTest")
                 .notIn("operatorId", 1L, 2L);
 
-        List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
+        List<OperationLogs> results = idbAccess.query(iIWhereBuild, OperationLogs.class);
 
         assertEquals(3, results.size());
     }
@@ -884,7 +884,7 @@ class DBAccessImplTest {
 
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "nullTest")
                 .isNull("operatorName");
 
@@ -914,7 +914,7 @@ class DBAccessImplTest {
 
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "notNullTest")
                 .isNotNull("operatorName");
 
@@ -936,7 +936,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "orderTest")
                 .asc("operatorId");
 
@@ -960,7 +960,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "orderDescTest")
                 .desc("operatorId");
 
@@ -984,7 +984,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .or(wb -> wb.eq("module", "module1").or(wb2 -> wb2.eq("module", "module2")));
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -1006,7 +1006,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "notTest")
                 .not(wb -> wb.eq("success", 1));
 
@@ -1054,7 +1054,7 @@ class DBAccessImplTest {
         idbAccess.save(objects, OperationLogs.class);
 
         boolean addCondition = true;
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .eq("module", "condEqTest")
                 .eq(addCondition, "success", 1);
 
@@ -1062,7 +1062,7 @@ class DBAccessImplTest {
         assertEquals(1, results.size());
 
         boolean skipCondition = false;
-        WhereBuild whereBuild2 = WhereBuild.get()
+        IWhereBuild whereBuild2 = WhereBuild.get()
                 .eq("module", "condEqTest")
                 .eq(skipCondition, "success", 1);
 
@@ -1084,7 +1084,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .notLike("module", "Match");
 
         List<OperationLogs> results = idbAccess.query(whereBuild, OperationLogs.class);
@@ -1106,7 +1106,7 @@ class DBAccessImplTest {
         }
         idbAccess.save(objects, OperationLogs.class);
 
-        WhereBuild whereBuild = WhereBuild.get()
+        IWhereBuild whereBuild = WhereBuild.get()
                 .desc("module")
                 .asc("operatorId");
 

@@ -14,9 +14,5 @@
  */
 package easy4j.infra.dbaccess.orm.conditions;
 
-import cn.hutool.core.lang.func.Func1;
-
-public interface IFWhereBuild<T> extends IWhere, StCondition<IFWhereBuild<T>, Func1<T, ?>> {
-
-
+public interface St {
 }

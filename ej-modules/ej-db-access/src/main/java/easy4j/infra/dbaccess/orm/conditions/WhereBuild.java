@@ -32,47 +32,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-/**
- * SQL 字符串条件构建器，支持 AND、OR、NOT 等逻辑组合，以及各种比较条件。
- * 生成预编译的sql含占位符
- * 字段名称会自动转下化线
- * <pre>
- * // 示例 1：简单条件
- * String condition1 = SqlBuilder.get()
- * .equal("age", 30)
- * .and(SqlBuilder.get()
- * .equal("gender", "F")
- * .or(SqlBuilder.get()
- * .equal("department", "IT")
- * .ne("salary", 5000)
- * )).build(argList);
- * System.out.println("条件 1: " + condition1);
- * System.out.println("值 1: " + JacksonUtil.toJson(argList));
- * argList.clear();
- * // 输出: age = 30 AND (gender = 'F' OR (department = 'IT' AND salary != 5000))
- * <p>
- * // 示例 2：复杂条件
- * String condition2 = SqlBuilder.get()
- * .withLogicOperator(LogicOperator.OR)
- * .like("name", "A%")
- * .in("department", ListTs.asList("IT", "HR"))
- * .between("salary", 3000, 5000)
- * .not(SqlBuilder.get()
- * .isNull("email")
- * .or(SqlBuilder.get()
- * .equal("status", "INACTIVE")
- * )).build(argList);
- * System.out.println("条件 2: " + condition2);
- * System.out.println("值 2: " + JacksonUtil.toJson(argList));
- * // 输出: name LIKE 'A%' OR department IN ('IT', 'HR') OR salary BETWEEN 3000 AND 5000 OR NOT (email IS NULL OR status = 'INACTIVE')
- * <p>
- * // 示例 3：用于 SQL 查询
- * String sql = "SELECT * FROM employees WHERE " + condition1;
- * System.out.println("完整 SQL: " + sql);
- * </pre>
- *
- * @author bokun.li
- */
+
 public class WhereBuild implements Serializable,IWhereBuild {
 
     @Getter
@@ -145,78 +105,78 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
     // 设置逻辑运算符
-    public WhereBuild withLogicOperator(LogicOperator operator) {
+    public IWhereBuild withLogicOperator(LogicOperator operator) {
         this.logicOperator = operator;
         return this;
     }
 
     // 基础比较条件方法
-    public WhereBuild eq(String column, Object value) {
+    public IWhereBuild eq(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.EQUAL)) conditions.add(new Condition(column, CompareOperator.EQUAL, value));
         return this;
     }
 
-    public WhereBuild eq(boolean option, String column, Object value) {
+    public IWhereBuild eq(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.EQUAL)) conditions.add(new Condition(column, CompareOperator.EQUAL, value));
         }
         return this;
     }
 
-    public WhereBuild ne(String column, Object value) {
+    public IWhereBuild ne(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.NOT_EQUAL)) conditions.add(new Condition(column, CompareOperator.NOT_EQUAL, value));
         return this;
     }
 
-    public WhereBuild ne(boolean option, String column, Object value) {
+    public IWhereBuild ne(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.NOT_EQUAL)) conditions.add(new Condition(column, CompareOperator.NOT_EQUAL, value));
         }
         return this;
     }
 
-    public WhereBuild gt(String column, Object value) {
+    public IWhereBuild gt(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.GREATER_THAN)) conditions.add(new Condition(column, CompareOperator.GREATER_THAN, value));
         return this;
     }
 
-    public WhereBuild gt(boolean option, String column, Object value) {
+    public IWhereBuild gt(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.GREATER_THAN)) conditions.add(new Condition(column, CompareOperator.GREATER_THAN, value));
         }
         return this;
     }
 
-    public WhereBuild lt(String column, Object value) {
+    public IWhereBuild lt(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.LESS_THAN)) conditions.add(new Condition(column, CompareOperator.LESS_THAN, value));
         return this;
     }
 
-    public WhereBuild lt(boolean option, String column, Object value) {
+    public IWhereBuild lt(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.LESS_THAN)) conditions.add(new Condition(column, CompareOperator.LESS_THAN, value));
         }
         return this;
     }
 
-    public WhereBuild gte(String column, Object value) {
+    public IWhereBuild gte(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.GREATER_OR_EQUAL)) conditions.add(new Condition(column, CompareOperator.GREATER_OR_EQUAL, value));
         return this;
     }
 
-    public WhereBuild gte(boolean option, String column, Object value) {
+    public IWhereBuild gte(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.GREATER_OR_EQUAL)) conditions.add(new Condition(column, CompareOperator.GREATER_OR_EQUAL, value));
         }
         return this;
     }
 
-    public WhereBuild lte(String column, Object value) {
+    public IWhereBuild lte(String column, Object value) {
         if(notExistsColumn(column,CompareOperator.LESS_OR_EQUAL)) conditions.add(new Condition(column, CompareOperator.LESS_OR_EQUAL, value));
         return this;
     }
 
-    public WhereBuild lte(boolean option, String column, Object value) {
+    public IWhereBuild lte(boolean option, String column, Object value) {
         if (option) {
             if(notExistsColumn(column,CompareOperator.LESS_OR_EQUAL)) conditions.add(new Condition(column, CompareOperator.LESS_OR_EQUAL, value));
         }
@@ -224,142 +184,142 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
     // LIKE 条件
-    public WhereBuild like(String column, String value) {
+    public IWhereBuild like(String column, String value) {
         if(notExistsColumn(column,CompareOperator.LIKE)) conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value + "%"));
         return this;
     }
 
-    public WhereBuild like(boolean option, String column, String value) {
+    public IWhereBuild like(boolean option, String column, String value) {
         if (option && notExistsColumn(column,CompareOperator.LIKE) ) conditions.add(new Condition(column, CompareOperator.LIKE, "%" + value + "%"));
         return this;
     }
 
-    public WhereBuild likeLeft(String column, String value) {
+    public IWhereBuild likeLeft(String column, String value) {
         if(notExistsColumn(column,CompareOperator.LIKE_LEFT)) conditions.add(new Condition(column, CompareOperator.LIKE_LEFT, value + "%"));
         return this;
     }
 
-    public WhereBuild likeLeft(boolean option, String column, String value) {
+    public IWhereBuild likeLeft(boolean option, String column, String value) {
         if (option && notExistsColumn(column,CompareOperator.LIKE_LEFT)) conditions.add(new Condition(column, CompareOperator.LIKE_LEFT, value + "%"));
         return this;
     }
 
-    public WhereBuild likeRight(String column, String value) {
+    public IWhereBuild likeRight(String column, String value) {
         if(notExistsColumn(column,CompareOperator.LIKE_RIGHT)) conditions.add(new Condition(column, CompareOperator.LIKE_RIGHT, "%" + value));
         return this;
     }
 
-    public WhereBuild likeRight(boolean option, String column, String value) {
+    public IWhereBuild likeRight(boolean option, String column, String value) {
         if (option && notExistsColumn(column,CompareOperator.LIKE_RIGHT)) conditions.add(new Condition(column, CompareOperator.LIKE_RIGHT, "%" + value));
         return this;
     }
 
-    public WhereBuild notLike(String column, String value) {
+    public IWhereBuild notLike(String column, String value) {
         if(notExistsColumn(column,CompareOperator.NOT_LIKE)) conditions.add(new Condition(column, CompareOperator.NOT_LIKE, "%" + value + "%"));
         return this;
     }
 
-    public WhereBuild notLike(boolean option, String column, String value) {
+    public IWhereBuild notLike(boolean option, String column, String value) {
         if (option && notExistsColumn(column,CompareOperator.NOT_LIKE)) conditions.add(new Condition(column, CompareOperator.NOT_LIKE, "%" + value + "%"));
         return this;
     }
 
     // IN 条件
-    public WhereBuild in(String column, Collection<?> values) {
+    public IWhereBuild in(String column, Collection<?> values) {
         if(notExistsColumn(column,CompareOperator.IN)) conditions.add(new Condition(column, CompareOperator.IN, values));
         return this;
     }
 
-    public WhereBuild in(boolean option, String column, Collection<?> values) {
+    public IWhereBuild in(boolean option, String column, Collection<?> values) {
         if (option && notExistsColumn(column,CompareOperator.IN)) conditions.add(new Condition(column, CompareOperator.IN, values));
         return this;
     }
 
-    public WhereBuild inArray(String column, Object... values) {
+    public IWhereBuild inArray(String column, Object... values) {
         if(notExistsColumn(column,CompareOperator.IN)) conditions.add(new Condition(column, CompareOperator.IN, Arrays.asList(values)));
         return this;
     }
 
-    public WhereBuild inArray(boolean option, String column, Object... values) {
+    public IWhereBuild inArray(boolean option, String column, Object... values) {
         if (option && notExistsColumn(column,CompareOperator.IN)) conditions.add(new Condition(column, CompareOperator.IN, Arrays.asList(values)));
         return this;
     }
 
-    public WhereBuild notIn(String column, Collection<?> values) {
+    public IWhereBuild notIn(String column, Collection<?> values) {
         if(notExistsColumn(column,CompareOperator.NOT_IN)) conditions.add(new Condition(column, CompareOperator.NOT_IN, values));
         return this;
     }
 
-    public WhereBuild notIn(boolean option, String column, Collection<?> values) {
+    public IWhereBuild notIn(boolean option, String column, Collection<?> values) {
         if (option && notExistsColumn(column,CompareOperator.NOT_IN)) conditions.add(new Condition(column, CompareOperator.NOT_IN, values));
         return this;
     }
 
-    public WhereBuild notIn(String column, Object... values) {
+    public IWhereBuild notIn(String column, Object... values) {
         if(notExistsColumn(column,CompareOperator.NOT_IN)) conditions.add(new Condition(column, CompareOperator.NOT_IN, Arrays.asList(values)));
         return this;
     }
 
-    public WhereBuild notIn(boolean option, String column, Object... values) {
+    public IWhereBuild notIn(boolean option, String column, Object... values) {
         if (option && notExistsColumn(column,CompareOperator.NOT_IN)) conditions.add(new Condition(column, CompareOperator.NOT_IN, Arrays.asList(values)));
         return this;
     }
 
     // BETWEEN 条件
-    public WhereBuild between(String column, Object value1, Object value2) {
+    public IWhereBuild between(String column, Object value1, Object value2) {
         if(notExistsColumn(column,CompareOperator.BETWEEN)) conditions.add(new Condition(column, CompareOperator.BETWEEN, Arrays.asList(value1, value2)));
         return this;
     }
 
-    public WhereBuild between(boolean option, String column, Object value1, Object value2) {
+    public IWhereBuild between(boolean option, String column, Object value1, Object value2) {
         if (option && notExistsColumn(column,CompareOperator.BETWEEN)) conditions.add(new Condition(column, CompareOperator.BETWEEN, Arrays.asList(value1, value2)));
         return this;
     }
 
     // NULL 条件
     @JsonIgnore
-    public WhereBuild isNull(String column) {
+    public IWhereBuild isNull(String column) {
         if(notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
-    public WhereBuild isNull(boolean option, String column) {
+    public IWhereBuild isNull(boolean option, String column) {
         if (option && notExistsColumn(column,CompareOperator.IS_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
-    public WhereBuild isNotNull(String column) {
+    public IWhereBuild isNotNull(String column) {
         if(notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, (Object) null));
         return this;
     }
 
     @JsonIgnore
-    public WhereBuild isNotNull(boolean option, String column) {
+    public IWhereBuild isNotNull(boolean option, String column) {
         if (option && notExistsColumn(column,CompareOperator.IS_NOT_NULL)) conditions.add(new Condition(column, CompareOperator.IS_NOT_NULL, (Object) null));
         return this;
     }
 
 
-    public WhereBuild sql(boolean option,String sql,Object ...args_){
+    public IWhereBuild sql(boolean option,String sql,Object ...args_){
         if(option) {
             if(notExistsColumn(sql,CompareOperator.UNKNOW)) conditions.add(new Condition(sql, CompareOperator.UNKNOW, args_));
         }
         return this;
     }
-    public WhereBuild sql(String sql,Object ...args_){
+    public IWhereBuild sql(String sql,Object ...args_){
         if(notExistsColumn(sql,CompareOperator.UNKNOW)) conditions.add(new Condition(sql, CompareOperator.UNKNOW, args_));
         return this;
     }
 
-    public WhereBuild last(String last) {
+    public IWhereBuild last(String last) {
         this.last = last;
         return this;
     }
 
 
-    public WhereBuild select(String... columns) {
+    public IWhereBuild select(String... columns) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(columns, Condition.class, e -> {
                 String string = e.toString();
@@ -374,7 +334,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
 
 
 
-    public WhereBuild groupBy(String... column) {
+    public IWhereBuild groupBy(String... column) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(column, Condition.class, e -> {
                 String string = e.toString();
@@ -387,7 +347,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
         return this;
     }
 
-    public WhereBuild asc(String... column) {
+    public IWhereBuild asc(String... column) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(column, Condition.class, e -> {
                 String string = e.toString();
@@ -400,7 +360,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
         return this;
     }
 
-    public WhereBuild desc(String... column) {
+    public IWhereBuild desc(String... column) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(column, Condition.class, e -> {
                 String string = e.toString();
@@ -413,7 +373,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
         return this;
     }
 
-    public WhereBuild having(String name, String value) {
+    public IWhereBuild having(String name, String value) {
         if (!this.isSubSql && StrUtil.isNotBlank(name) && StrUtil.isNotBlank(value)) {
             havingList.add(new Condition(name, CompareOperator.EMPTY, value));
         }
@@ -421,73 +381,73 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
     // 构建子条件
-    public WhereBuild and(WhereBuild subBuilder) {
+    public IWhereBuild and(IWhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.AND);
-        subBuilder.isSubSql = true;
+        subBuilder.setSubSql(true);
         subBuilders.add(subBuilder);
         return this;
     }
 
-    public WhereBuild and(boolean option,WhereBuild subBuilder) {
+    public IWhereBuild and(boolean option,IWhereBuild subBuilder) {
         if(option) return this.and(subBuilder);
         return this;
     }
 
-    public WhereBuild and(Consumer<WhereBuild> subBuilder) {
-        WhereBuild whereBuild = get();
-        whereBuild.isSubSql = true;
+    public IWhereBuild and(Consumer<IWhereBuild> subBuilder) {
+        IWhereBuild whereBuild = get();
+        whereBuild.setSubSql(true);
         whereBuild.withLogicOperator(LogicOperator.AND);
         subBuilder.accept(whereBuild);
         subBuilders.add(whereBuild);
         return this;
     }
-    public WhereBuild and(boolean option,Consumer<WhereBuild> subBuilder) {
+    public IWhereBuild and(boolean option,Consumer<IWhereBuild> subBuilder) {
         if(option) return this.and(subBuilder);
         return this;
     }
 
-    public WhereBuild or(WhereBuild subBuilder) {
+    public IWhereBuild or(IWhereBuild subBuilder) {
         subBuilder.withLogicOperator(LogicOperator.OR);
         subBuilders.add(subBuilder);
-        subBuilder.isSubSql = true;
+        subBuilder.setSubSql(true);
         return this;
     }
-    public WhereBuild or(boolean option,WhereBuild subBuilder) {
+    public IWhereBuild or(boolean option,IWhereBuild subBuilder) {
         if(option) return this.or(subBuilder);
         return this;
     }
 
-    public WhereBuild or(Consumer<WhereBuild> subBuilder) {
-        WhereBuild whereBuild = get();
+    public IWhereBuild or(Consumer<IWhereBuild> subBuilder) {
+        IWhereBuild whereBuild = get();
         whereBuild.withLogicOperator(LogicOperator.OR);
-        whereBuild.isSubSql = true;
+        whereBuild.setSubSql(true);
         subBuilder.accept(whereBuild);
         subBuilders.add(whereBuild);
         return this;
     }
-    public WhereBuild or(boolean option,Consumer<WhereBuild> subBuilder) {
+    public IWhereBuild or(boolean option,Consumer<IWhereBuild> subBuilder) {
         if(option) return this.or(subBuilder);
         return this;
     }
-    public WhereBuild not(WhereBuild subBuilder) {
-        subBuilder.isSubSql = true;
+    public IWhereBuild not(IWhereBuild subBuilder) {
+        subBuilder.setSubSql(true);
         subBuilder.withLogicOperator(LogicOperator.NOT);
         subBuilders.add(subBuilder);
         return this;
     }
-    public WhereBuild not(boolean option,WhereBuild subBuilder) {
+    public IWhereBuild not(boolean option,IWhereBuild subBuilder) {
         if(option) return this.not(subBuilder);
         return this;
     }
-    public WhereBuild not(Consumer<WhereBuild> subBuilder) {
-        WhereBuild whereBuild = get();
-        whereBuild.isSubSql = true;
+    public IWhereBuild not(Consumer<IWhereBuild> subBuilder) {
+        IWhereBuild whereBuild = get();
+        whereBuild.setSubSql(true);
         whereBuild.withLogicOperator(LogicOperator.NOT);
         subBuilder.accept(whereBuild);
         subBuilders.add(whereBuild);
         return this;
     }
-    public WhereBuild not(boolean option,Consumer<WhereBuild> subBuilder) {
+    public IWhereBuild not(boolean option,Consumer<IWhereBuild> subBuilder) {
         if(option) return this.not(subBuilder);
         return this;
     }
@@ -575,7 +535,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
     // 静态工厂方法
-    public static WhereBuild get() {
+    public static IWhereBuild get() {
         return new WhereBuild();
     }
 }

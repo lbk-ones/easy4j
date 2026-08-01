@@ -14,9 +14,23 @@
  */
 package easy4j.infra.dbaccess.orm.conditions;
 
-import cn.hutool.core.lang.func.Func1;
+/**
+ * 标准更新条件抽象
+ *
+ * @param <T>
+ * @param <S>
+ * @author bokun.li
+ * @since 2.1.5
+ */
+public interface StUpdateCondition<T, S> extends St{
 
-public interface IFWhereBuild<T> extends IWhere, StCondition<IFWhereBuild<T>, Func1<T, ?>> {
+    T set(boolean condition, S column, Object val);
 
+    // col1 = ? + ? | arg1,arg2
+    T setSql(boolean condition, String setSql, Object... params);
 
+    T setIncrBy(boolean condition, S column, Number val);
+
+    T setDecrBy(boolean condition, S column, Number val);
+    
 }
