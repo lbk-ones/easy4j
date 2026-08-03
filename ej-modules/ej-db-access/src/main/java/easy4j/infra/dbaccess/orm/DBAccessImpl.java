@@ -240,7 +240,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setTableName(tableName)
                 .setSchema(schema)
                 .setSkipNullIs(isSkipNull)
-                .setOperateType(OperateType.INSERT);
+                .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         try {
             int i = 0;
