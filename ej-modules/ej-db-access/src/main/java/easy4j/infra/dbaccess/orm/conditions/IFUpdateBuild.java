@@ -18,5 +18,6 @@ import cn.hutool.core.lang.func.Func1;
 
 public interface IFUpdateBuild<T> extends IWhere, StUpdateCondition<IFUpdateBuild<T>, Func1<T, ?>>, StCondition<IFUpdateBuild<T>, Func1<T, ?>> {
 
+    IFUpdateBuild<T> withLogicOperator(LogicOperator operator);
 
 }

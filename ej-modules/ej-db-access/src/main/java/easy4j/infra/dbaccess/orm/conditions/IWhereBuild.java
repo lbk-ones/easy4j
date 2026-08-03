@@ -18,6 +18,8 @@ import java.util.List;
 
 public interface IWhereBuild extends IWhere, StCondition<IWhereBuild,String> {
 
+    IWhereBuild withLogicOperator(LogicOperator operator);
+
     List<IWhere> getSubBuilders();
 
     List<Condition> getConditions();

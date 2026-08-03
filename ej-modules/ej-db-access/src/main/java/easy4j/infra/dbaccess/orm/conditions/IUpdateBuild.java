@@ -16,5 +16,5 @@ package easy4j.infra.dbaccess.orm.conditions;
 
 
 public interface IUpdateBuild extends IWhere, StUpdateCondition<IUpdateBuild, String>, StCondition<IUpdateBuild, String> {
-
+    IUpdateBuild withLogicOperator(LogicOperator operator);
 }

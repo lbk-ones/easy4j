@@ -18,5 +18,5 @@ import cn.hutool.core.lang.func.Func1;
 
 public interface IFWhereBuild<T> extends IWhere, StCondition<IFWhereBuild<T>, Func1<T, ?>> {
 
-
+    IFWhereBuild<T> withLogicOperator(LogicOperator operator);
 }
