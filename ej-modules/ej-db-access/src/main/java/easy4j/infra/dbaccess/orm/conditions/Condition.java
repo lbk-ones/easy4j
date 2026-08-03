@@ -88,7 +88,7 @@ public class Condition {
         }
         String column = column_;
         if (!ListTs.asList(CompareOperator.UNKNOW,CompareOperator.DECR_BY,CompareOperator.INCR_BY).contains(operator)) {
-            column = accessUtils.escapeCn(accessUtils.fn(column), runtimeContext.getDialectV2(), false);
+            column = accessUtils.sqlNameEscape(accessUtils.fn(column), runtimeContext.getDialectV2(), false);
         }
         // 给参数加前缀
         String argNamePrefix = runtimeContext.getArgNamePrefix();

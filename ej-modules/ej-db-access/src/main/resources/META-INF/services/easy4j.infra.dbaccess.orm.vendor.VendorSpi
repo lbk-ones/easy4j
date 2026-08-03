@@ -1,0 +1,2 @@
+easy4j.infra.dbaccess.orm.vendor.DefaultVendorSpi
+easy4j.infra.dbaccess.orm.vendor.MybatisPlusVendorSpi

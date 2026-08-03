@@ -72,6 +72,9 @@ public class AccessConfig {
     // 全局tenant字段的名称
     private String globalTenantIdName;
 
+    // 是否开启忽略字段转义，默认不开启
+    private boolean ignoreEscape = false;
+
 
     public void addPlugin(IPlugin iPlugin) {
         if (iPlugin != null) {

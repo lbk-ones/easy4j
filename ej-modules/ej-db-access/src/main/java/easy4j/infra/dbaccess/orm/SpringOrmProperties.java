@@ -88,4 +88,9 @@ public class SpringOrmProperties {
      */
     private String globalTenantIdName;
 
+    /**
+     * 是否开启忽略字段转义，默认不开启
+     */
+    private Boolean ignoreEscape;
+
 }

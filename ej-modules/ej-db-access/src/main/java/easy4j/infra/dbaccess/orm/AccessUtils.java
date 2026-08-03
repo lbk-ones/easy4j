@@ -5,21 +5,13 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.annotations.JdbcIgnore;
-import easy4j.infra.dbaccess.annotations.JdbcTable;
 import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
 import easy4j.infra.dbaccess.dialect.v2.DialectV2;
-import easy4j.infra.dbaccess.dynamic.dll.DDLField;
-import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
@@ -31,10 +23,7 @@ import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.SqlRunner;
 import easy4j.infra.dbaccess.orm.sql.SqlFactory;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import easy4j.infra.dbaccess.orm.vendor.Vendor;
 import lombok.Data;
 import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -45,7 +34,6 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import javax.sql.DataSource;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -119,57 +107,16 @@ public class AccessUtils implements Serializable {
      */
     public String getTableName(Class<?> clazz, DialectV2 dialect) {
         if (clazz == null) return null;
-        StringBuilder sb = new StringBuilder();
-        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
-        String tableName = null;
-        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
-            tableName = dialect.escape(fn(annotation.name()));
-        }
-        if (StrUtil.isBlank(tableName) && clazz.isAnnotationPresent(TableName.class)) {
-            TableName annotation1 = clazz.getAnnotation(TableName.class);
-            if (Objects.nonNull(annotation1)) {
-                String value = annotation1.value();
-                if (StrUtil.isNotBlank(value)) {
-                    tableName = dialect.escape(fn(value));
-                }
-            }
-        }
-        if (StrUtil.isBlank(tableName) && clazz.isAnnotationPresent(Table.class)) {
-            Table table = clazz.getAnnotation(Table.class);
-            if (Objects.nonNull(table)) {
-                String value = table.name();
-                if (StrUtil.isNotBlank(value)) {
-                    tableName = dialect.escape(fn(value));
-                }
-            }
-        }
-        if (StrUtil.isBlank(tableName) && clazz.isAnnotationPresent(DDLTable.class)) {
-            DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
-            String s = annotation2.tableName();
-            if (StrUtil.isNotBlank(s)) {
-                tableName = dialect.escape(fn(s));
-            }
-        }
+        String tableName = Vendor.getTableName(clazz);
         if (StrUtil.isBlank(tableName)) {
             String simpleName = clazz.getSimpleName();
-            tableName = dialect.escape(fn(simpleName));
+            tableName = sqlNameEscape(fn(simpleName), dialect, false);
         }
         return tableName;
     }
 
     public boolean isPk(Field field) {
-        boolean isPk = false;
-        if (field.isAnnotationPresent(JdbcColumn.class)) {
-            JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
-            isPk = annotation.isPrimaryKey();
-        }
-        if (!isPk && field.isAnnotationPresent(TableId.class) || field.isAnnotationPresent(Id.class)) {
-            isPk = true;
-        }
-        if (!isPk && field.isAnnotationPresent(DDLField.class)) {
-            isPk = field.getAnnotation(DDLField.class).isPrimary();
-        }
-        return isPk;
+        return Vendor.isPk(field);
     }
 
     // 获取一个
@@ -189,77 +136,25 @@ public class AccessUtils implements Serializable {
     }
 
     public boolean isAutoIncrement(Field field) {
-        boolean isAuto = false;
-        if (field.isAnnotationPresent(JdbcColumn.class)) {
-            JdbcColumn annotation = field.getAnnotation(JdbcColumn.class);
-            isAuto = annotation.isPrimaryKey() && annotation.autoIncrement();
-        }
-        if (!isAuto && field.isAnnotationPresent(TableId.class) && field.getAnnotation(TableId.class).type() == IdType.AUTO) {
-            isAuto = true;
-        }
-        if (!isAuto && field.isAnnotationPresent(DDLField.class)) {
-            DDLField annotation = field.getAnnotation(DDLField.class);
-            isAuto = annotation.isPrimary() && annotation.isAutoIncrement();
-        }
-        return isAuto;
+        return Vendor.isAutoIncrement(field);
     }
 
 
     public String getSchema(Class<?> clazz) {
         if (clazz == null) return "";
-        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
-        String schema = null;
-        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
-            schema = annotation.schema();
-        }
-        if (StrUtil.isBlank(schema) && clazz.isAnnotationPresent(TableName.class)) {
-            TableName annotation1 = clazz.getAnnotation(TableName.class);
-            if (Objects.nonNull(annotation1)) {
-                schema = annotation1.schema();
-            }
-        }
-        return schema;
+        return Vendor.getSchema(clazz);
     }
 
     public String getColumnNameFormField(Field field) {
-        String rn = null;
-        if (field.isAnnotationPresent(TableField.class)) {
-            rn = field.getAnnotation(TableField.class).value();
-        }
-        if (StrUtil.isBlank(rn) && field.isAnnotationPresent(DDLField.class)) {
-            rn = field.getAnnotation(DDLField.class).name();
-        }
-        if (StrUtil.isBlank(rn) && field.isAnnotationPresent(JdbcColumn.class)) {
-            rn = field.getAnnotation(JdbcColumn.class).name();
-        }
-        if (StrUtil.isBlank(rn) && field.isAnnotationPresent(Column.class)) {
-            rn = field.getAnnotation(Column.class).name();
-        }
-        if (StrUtil.isBlank(rn)) {
-            return fn(field.getName());
-        } else {
+        String rn = Vendor.getColumnName(field);
+        if (StrUtil.isNotBlank(rn)) {
             return fn(rn);
         }
+        return null;
     }
 
     public boolean skipColumn(Field field) {
-        int modifiers = field.getModifiers();
-
-        if (
-                Modifier.isStatic(modifiers) ||
-                        Modifier.isFinal(modifiers) ||
-                        Modifier.isTransient(modifiers)
-        ) {
-            return true;
-        }
-        boolean skip = false;
-        if (field.isAnnotationPresent(TableField.class)) {
-            TableField annotation = field.getAnnotation(TableField.class);
-            if (!annotation.exist()) {
-                skip = true;
-            }
-        }
-        return field.isAnnotationPresent(JdbcIgnore.class) || field.isAnnotationPresent(Transient.class) || skip;
+        return Vendor.skipColumn(field);
     }
 
     public void assertNotNull(Object object, String name) {
@@ -272,7 +167,7 @@ public class AccessUtils implements Serializable {
         if (!access.isReturnMap()) {
             assertNotNull(clazz, "clazz");
         }
-        Plugins.init(access,this.getAccessConfig());
+        Plugins.init(access, this.getAccessConfig());
         ContextHolder.set(Plugins.getDataSource(access, this.getAccessConfig()));
         T params = access.getParam();
         Iterable<T> params2 = access.getParams();
@@ -303,7 +198,7 @@ public class AccessUtils implements Serializable {
                 boolean isAutoIncrement = isAutoIncrement(field);
                 String columnField = getColumnNameFormField(field);
                 WdFieldInfo wdFieldInfo = resolveWdField(field);
-                AccessField accessField = patchItem(wdFieldInfo,dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                AccessField accessField = patchItem(wdFieldInfo, dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                 // feat: 新增按主键值查询的功能
                 Serializable primaryKey = access.getPrimaryKey();
                 if (pk && primaryKey != null && accessField != null) {
@@ -329,7 +224,7 @@ public class AccessUtils implements Serializable {
                     String columnField = getColumnNameFormField(field);
                     WdFieldInfo wdFieldInfo = resolveWdField(field);
                     if (index == 0) {
-                        patchItem(wdFieldInfo,dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                        patchItem(wdFieldInfo, dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
                             ReflectUtil.getFieldValue(t, field),
@@ -371,18 +266,18 @@ public class AccessUtils implements Serializable {
                 .setAutoIncrementList(autoIncrementsList)
                 .setInsertFields(insertList)
                 .setDialectV2(dialectV2)
-                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), dialectV2.escape(fn(access.getTableName()))))
-                .setSchema(dialectV2.escape(StrUtil.blankToDefault(getSchema(clazz), schema)));
-        LogSql.init(tRuntimeContext,bt);
+                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), sqlNameEscape(fn(access.getTableName()), dialectV2, false)))
+                .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialectV2, false));
+        LogSql.init(tRuntimeContext, bt);
         return tRuntimeContext;
 
     }
 
-    private AccessField patchItem(WdFieldInfo wdFieldInfo,DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
+    private AccessField patchItem(WdFieldInfo wdFieldInfo, DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
 
         AccessField columnInfo = new AccessField();
         columnInfo.setColumnName(columnField);
-        columnInfo.setEscapeColumnName(dialectV2.escape(columnField));
+        columnInfo.setEscapeColumnName(sqlNameEscape(columnField, dialectV2, false));
         columnInfo.setColumnValue(null);
         columnInfo.setField(field);
         columnInfo.setGroup(index);
@@ -435,7 +330,7 @@ public class AccessUtils implements Serializable {
      * @param insertList      写入列表
      * @param <T>             泛型
      */
-    private static <T> AccessField refreshParam(
+    private <T> AccessField refreshParam(
             Object fieldValue,
             Field parentField,
             WdFieldInfo wdFieldInfo,
@@ -452,7 +347,7 @@ public class AccessUtils implements Serializable {
         AccessField accessField = new AccessField();
         accessField.setField(parentField);
         accessField.setColumnName(columnField);
-        accessField.setEscapeColumnName(dialectV2.escape(columnField));
+        accessField.setEscapeColumnName(sqlNameEscape(columnField, dialectV2, false));
         Object o = Wd.wrapIf(fieldValue, wdFieldInfo);
         accessField.setColumnValue(o);
         accessField.setPlaceHolder(Wd.place(o));
@@ -653,7 +548,10 @@ public class AccessUtils implements Serializable {
      * @author bokun.li
      * @date 2025/9/4
      */
-    public String escapeCn(String name, DialectV2 dialectV2, boolean forceEscape) {
+    public String sqlNameEscape(String name, DialectV2 dialectV2, boolean forceEscape) {
+        if (this.accessConfig.isIgnoreEscape()) {
+            return name;
+        }
         if (forceEscape) {
             return dialectV2.forceEscape(name);
         } else {
@@ -770,7 +668,7 @@ public class AccessUtils implements Serializable {
         return TEMP;
     }
 
-    public SpringOrmProperties getSpringOrmProperties(){
+    public SpringOrmProperties getSpringOrmProperties() {
         try {
             Binder binder = Binder.get(Easy4j.environment);
             BindResult<SpringOrmProperties> easy4j = binder.bind(SpringOrmProperties.ORM_PREFIX, SpringOrmProperties.class);

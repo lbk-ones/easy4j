@@ -12,9 +12,6 @@ import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
-import easy4j.infra.dbaccess.orm.sql.dialect.ISqlDialect;
-import easy4j.infra.dbaccess.orm.sql.dialect.SqlDialectFactory;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -150,7 +147,7 @@ public class JoinSql extends AbsISql {
                         if (i > 0) {
                             pickArg_ = StrUtil.sub(pickArg_, i + 1, pickArg_.length());
                         }
-                        pickArg_ = name + SP.DOT + accessUtils.escapeCn(pickArg_, dialectV2, false);
+                        pickArg_ = name + SP.DOT + accessUtils.sqlNameEscape(pickArg_, dialectV2, false);
                     } else {
                         int i = pickArg_.indexOf(SP.DOT);
                         // 拿到表别称
@@ -158,7 +155,7 @@ public class JoinSql extends AbsISql {
                         // 拿到字段名称
                         String fieldName = StrUtil.sub(pickArg_, i + 1, pickArg_.length());
                         // 重新拼接
-                        pickArg_ = name_ + SP.DOT + accessUtils.escapeCn(fieldName, dialectV2, false);
+                        pickArg_ = name_ + SP.DOT + accessUtils.sqlNameEscape(fieldName, dialectV2, false);
                     }
                     pickArg_ = pickArg_ + suffix;
                     allArgs = ArrayUtil.append(allArgs, pickArg_);
@@ -174,7 +171,7 @@ public class JoinSql extends AbsISql {
             sqlItem.setTableName(tableName1);
             String on = sqlItem.getOn();
             if (StrUtil.isNotBlank(on)) {
-                on = accessUtils.escapeCn(accessUtils.fn(on), dialectV2, false);
+                on = accessUtils.sqlNameEscape(accessUtils.fn(on), dialectV2, false);
             }
             sqlItem.setOn(on);
         }

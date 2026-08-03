@@ -5,7 +5,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.dbaccess.orm.*;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import easy4j.infra.dbaccess.orm.plugin.AbstractPlugin;
 import easy4j.infra.dbaccess.orm.plugin.LogicDelete;
@@ -66,7 +65,7 @@ public class LogicDeletePlugin extends AbstractPlugin {
                 AccessField accessField = new AccessField();
                 accessField.setField(stringLogicDeletePair.field());
                 accessField.setColumnName(stringLogicDeletePair.name());
-                String s = accessUtils.escapeCn(stringLogicDeletePair.name(), context.getDialectV2(), false);
+                String s = accessUtils.sqlNameEscape(stringLogicDeletePair.name(), context.getDialectV2(), false);
                 accessField.setEscapeColumnName(s);
                 LogicDelete value = stringLogicDeletePair.logicDelete();
                 Object val;
