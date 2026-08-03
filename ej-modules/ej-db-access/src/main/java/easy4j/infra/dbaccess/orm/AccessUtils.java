@@ -313,35 +313,35 @@ public class AccessUtils implements Serializable {
                 List<DatabaseColumnMetadata> columns = dialect.getColumns(catalog, schema, tableName);
                 List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(catalog, schema, tableName);
                 Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
-                for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
-                    String columnName = databaseColumnMetadata.getColumnName();
-                    PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
-                    boolean isPk = primaryKeyMetadata == null;
-                    boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
-                    WdFieldInfo wdFieldInfo = new WdFieldInfo();
-                    if (index == 0) {
-                        patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, null, isPk, isAutoincrement, columnName);
-                    }
                     for (EasyMap<String, Object> mapParam : mapParams) {
-                        Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
-                        refreshParam(
-                                ignoreCame,
-                                null,
-                                wdFieldInfo,
-                                columnName,
-                                dialect,
-                                index,
-                                isPk,
-                                isAutoincrement,
-                                idlist,
-                                operateType,
-                                access.isSkipNullIs(),
-                                updateList,
-                                insertList
-                        );
+                        for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
+                            String columnName = databaseColumnMetadata.getColumnName();
+                            PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
+                            boolean isPk = primaryKeyMetadata == null;
+                            boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
+                            WdFieldInfo wdFieldInfo = new WdFieldInfo();
+                            if (index == 0) {
+                                patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, null, isPk, isAutoincrement, columnName);
+                            }
+                            Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
+                            refreshParam(
+                                    ignoreCame,
+                                    null,
+                                    wdFieldInfo,
+                                    columnName,
+                                    dialect,
+                                    index,
+                                    isPk,
+                                    isAutoincrement,
+                                    idlist,
+                                    operateType,
+                                    access.isSkipNullIs(),
+                                    updateList,
+                                    insertList
+                            );
+                        }
+                        index++;
                     }
-                    index++;
-                }
             } catch (SQLException e) {
                 throw AccessUtils.translate("dynamic parse error", "", e, accessConfig.getDataSource());
             }
