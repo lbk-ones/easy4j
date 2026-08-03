@@ -3,7 +3,7 @@ package easy4j.infra.dbaccess.orm.runner;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.orm.AccessConfig;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
 import easy4j.infra.dbaccess.orm.SpringOrmProperties;
@@ -74,8 +74,8 @@ public class LogSql {
                 if (CollUtil.isEmpty(tempPrintSqlArgs)) {
                     tempPrintSqlArgs = runtimeContext.getArgs();
                 }
-                DialectV2 dialectV2 = runtimeContext.getDialectV2();
-                String s = SqlReplacer.replacePlaceholders(sql, tempPrintSqlArgs, dialectV2);
+                Dialect dialect = runtimeContext.getDialect();
+                String s = SqlReplacer.replacePlaceholders(sql, tempPrintSqlArgs, dialect);
 
                 int effectRows = runtimeContext.getEffectRows();
                 if (runtimeContext.getTempEffectRows() != null) {

@@ -1,153 +1,96 @@
-/**
- * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package easy4j.infra.dbaccess.dialect;
 
-
-import cn.hutool.core.lang.Pair;
-import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.condition.WhereBuild;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-/**
- * 数据库差异的方言接口
- */
-@Deprecated
-public interface Dialect {
+public interface Dialect extends SchemaMetaDialect {
+    /**
+     * 转义
+     * @param name
+     */
+    String escape(String name);
 
     /**
-     * 根据分页对象获取分页sql语句
-     *
-     * @param sql  未分页sql语句
-     * @param page 分页对象
+     * 拆分转义
+     * @param name
+     * @param comma
      * @return
      */
-    String getPageSql(String sql, Page<?> page);
+    String splitEscape(String name,String comma);
 
     /**
-     * 转义字符
-     *
+     * 强制转义
+     * @param name
      * @return
      */
-    Wrapper getWrapper();
+    String forceEscape(String name);
 
     /**
-     * 批量写入
-     *
-     * @param tableName
-     * @param columns
-     * @param recordList
-     * @param connection
-     * @return
-     * @throws SQLException
+     * 解转义
+     * @param name
      */
-    Pair<PreparedStatement, Pair<String, Date>> psForBatchInsert(String tableName, String[] columns, List<Map<String, Object>> recordList, Connection connection);
+    String unescape(String name);
 
     /**
-     * 单个写入
-     *
-     * @param tableName
-     * @param columns
-     * @param record
-     * @param connection
-     * @return
-     * @throws SQLException
+     * 拆分解转义
+     * @param name
      */
-    Pair<PreparedStatement, Pair<String, Date>> psForInsert(String tableName, String[] columns, Map<String, Object> record, Connection connection);
+    String splitUnescape(String name,String comma);
+
+
 
     /**
-     * 根据主键更新
-     *
-     * @param tableName
-     * @param recordList
-     * @param aClass
-     * @param ignoreNull
-     * @param connection
-     * @return
-     * @throws SQLException
-     */
-    PreparedStatement psForUpdateById(String tableName, Object recordList, Class<?> aClass, boolean ignoreNull, Connection connection);
-
-    /**
-     * 根据条件单个更新
-     *
-     * @param tableName
-     * @param record          要更新的bean(必须要是Map<String,Object>)
-     * @param aClass          实体class
-     * @param updateCondition 更新条件
-     * @param ignoreNull      是否忽略空值
-     * @param connection
-     * @return
-     * @throws SQLException
-     */
-    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBy(String tableName, Map<String, Object> record, Class<?> aClass, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
-
-    /**
-     * 根据SqlBuild条件类更新
-     *
-     * @param tableName
-     * @param record
-     * @param whereBuilder
-     * @param ignoreNull
-     * @param connection
+     * 获取当前传入连接的数据库名称
      * @return
      */
-    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuild(String tableName, Map<String, Object> record, WhereBuild whereBuilder, boolean ignoreNull, Connection connection);
+    String getConnectionCatalog();
 
     /**
-     * 根据字符串条件来更新
-     *
-     * @param tableName
-     * @param record
-     * @param sqlBuilder
-     * @param args
-     * @param ignoreNull
-     * @param connection
+     * 获取当前传入连接的schema名称
      * @return
      */
-    Pair<PreparedStatement, Pair<String, Date>> psForUpdateBySqlBuildStr(String tableName, Map<String, Object> record, String sqlBuilder, List<Object> args, boolean ignoreNull, Connection connection);
+    String getConnectionSchema();
+
 
     /**
-     * 多个批量更新
+     * 通过不同数据库来判断当前字段类型是否是 lob(大文本)类型
      *
-     * @param tableName
-     * @param columns
-     * @param recordList
-     * @param updateCondition
-     * @param ignoreNull
-     * @param connection
+     * @param typeName
      * @return
-     * @throws SQLException
      */
-    Pair<PreparedStatement, Pair<String, Date>> psForBatchUpdate(String tableName, String[] columns, List<Map<String, Object>> recordList, Map<String, Object> updateCondition, boolean ignoreNull, Connection connection);
+    boolean isLob(String typeName);
 
 
     /**
-     * 字符串转数据库时间类型
-     * 输出函数与字符串组合
+     * 根据typeName确定javaclass的类型
      *
+     * @param typeName 类型#字段长度
+     * @return
+     */
+    Class<?> getJavaClassByTypeNameAndDbType(String typeName);
+
+
+    /**
+     * 通过不同数据库来判断当前字段类型是否是 json类型
+     *
+     * @param typeName
+     * @return
+     */
+    boolean isJson(String typeName);
+
+
+    /**
+     * 字符串时间转为带函数的字符串
      * @param str
      * @return
      */
-    String strDateToFunc(String str);
+    String strConvertToDate(String str);
 
-    void printPrintLog(boolean isPrintLog);
+    /**
+     * 获取默认时间 yyyy-MM-dd Hh24:mi:ss这种
+     * @return
+     */
+    String getDefaultDateTime();
+
+    String getPageSql(String sql, Page<?> page);
+
 }

@@ -112,9 +112,6 @@ public class DDLFieldInfo {
     @Desc("内部使用字段 临时字符串，使用之后销毁")
     private String temp;
 
-    @Desc("内部使用字段 配置上下文信息")
-    private DDLConfig dllConfig;
-
     @Desc("索引所在位置")
     private short indexSort;
 

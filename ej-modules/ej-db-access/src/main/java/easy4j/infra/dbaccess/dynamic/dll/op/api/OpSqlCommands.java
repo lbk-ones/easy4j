@@ -14,10 +14,10 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op.api;
 
-import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
 
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import jakarta.annotation.Nullable;
 
 import java.sql.Connection;
@@ -57,21 +57,6 @@ public interface OpSqlCommands extends IOpContext, IOpMatch {
      * @param isCloseConnection 是否关闭连接
      */
     void exeDDLStr(Connection connection, String segment, boolean isCloseConnection);
-
-    /**
-     * 指定表名称，然后将传入得dict中得键值对组装好，写入表并返回自增字段
-     *
-     * @param dict
-     */
-    Map<String, Object> dynamicSave(Map<String, Object> dict);
-
-    /**
-     * 动态字段更新
-     * 指定表名称，然后将传入得dict中得键值对组装好，根据传入的条件更新表
-     *
-     * @param dict
-     */
-    int dynamicUpdate(Map<String, Object> dict, boolean updateNull, WhereBuild whereBuild);
 
 
     /**

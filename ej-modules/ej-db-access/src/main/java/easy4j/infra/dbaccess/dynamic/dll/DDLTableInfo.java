@@ -66,10 +66,6 @@ public class DDLTableInfo {
     @Desc("索引信息")
     private List<DDLIndexInfo> ddlIndexInfoList;
 
-    @Desc("配置上下文信息")
-    @Deprecated
-    private DDLConfig dllConfig;
-
     @Desc("配置")
     private OpConfig opConfig;
 

@@ -14,10 +14,10 @@
  */
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
-import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.CopyDbConfig;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 
 import java.sql.Connection;
 import java.util.List;
@@ -119,15 +119,6 @@ public abstract class AbstractCombinationOp implements CombinationOp {
         getOpSqlCommands().exeDDLStr(connection, segment, isCloseConnection);
     }
 
-    @Override
-    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
-        return getOpSqlCommands().dynamicSave(dict);
-    }
-
-    @Override
-    public int dynamicUpdate(Map<String, Object> dict, boolean updateNull, WhereBuild whereBuild) {
-        return getOpSqlCommands().dynamicUpdate(dict,updateNull,whereBuild);
-    }
 
     @Override
     public List<String> getIndexList() {

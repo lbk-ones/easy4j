@@ -7,11 +7,14 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
@@ -35,10 +38,7 @@ import javax.sql.DataSource;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 工具类不存放任何属性 只存放 AccessConfig
@@ -105,7 +105,7 @@ public class AccessUtils implements Serializable {
      * @param clazz 对象类型
      * @return 表名
      */
-    public String getTableName(Class<?> clazz, DialectV2 dialect) {
+    public String getTableName(Class<?> clazz, Dialect dialect) {
         if (clazz == null) return null;
         String tableName = Vendor.getTableName(clazz);
         if (StrUtil.isBlank(tableName)) {
@@ -181,8 +181,8 @@ public class AccessUtils implements Serializable {
         }
         // obtain datasource connection
         Connection connection = getConnection();
-        DialectV2 dialectV2 = DialectFactory.get(connection);
-        String dbType = dialectV2.getDbType();
+        Dialect dialect = DialectFactory.get(connection);
+        String dbType = dialect.getDbType();
         List<AccessField> columnInfoList = new ArrayList<>();
         List<AccessField> updateList = new LinkedList<>();
         // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
@@ -198,7 +198,7 @@ public class AccessUtils implements Serializable {
                 boolean isAutoIncrement = isAutoIncrement(field);
                 String columnField = getColumnNameFormField(field);
                 WdFieldInfo wdFieldInfo = resolveWdField(field);
-                AccessField accessField = patchItem(wdFieldInfo, dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                AccessField accessField = patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                 // feat: 新增按主键值查询的功能
                 Serializable primaryKey = access.getPrimaryKey();
                 if (pk && primaryKey != null && accessField != null) {
@@ -215,6 +215,8 @@ public class AccessUtils implements Serializable {
                     idlist.add(accessField1);
                 }
             }
+            // 动态解析
+            this.dynamicParse(access, fields, connection, dialect, index, columnInfoList, autoIncrementsList, idlist, operateType, updateList, insertList);
         } else {
             for (T t : p) {
                 for (Field field : fields) {
@@ -224,14 +226,14 @@ public class AccessUtils implements Serializable {
                     String columnField = getColumnNameFormField(field);
                     WdFieldInfo wdFieldInfo = resolveWdField(field);
                     if (index == 0) {
-                        patchItem(wdFieldInfo, dialectV2, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                        patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
                             ReflectUtil.getFieldValue(t, field),
                             field,
                             wdFieldInfo,
                             columnField,
-                            dialectV2,
+                            dialect,
                             index,
                             pk,
                             isAutoIncrement,
@@ -265,19 +267,148 @@ public class AccessUtils implements Serializable {
                 .setIdList(idlist)
                 .setAutoIncrementList(autoIncrementsList)
                 .setInsertFields(insertList)
-                .setDialectV2(dialectV2)
-                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialectV2), sqlNameEscape(fn(access.getTableName()), dialectV2, false)))
-                .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialectV2, false));
+                .setDialect(dialect)
+                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialect), sqlNameEscape(fn(access.getTableName()), dialect, false)))
+                .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialect, false));
         LogSql.init(tRuntimeContext, bt);
         return tRuntimeContext;
 
     }
 
-    private AccessField patchItem(WdFieldInfo wdFieldInfo, DialectV2 dialectV2, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
+    /**
+     * 从数据库中解析字段信息
+     * @param access 传参
+     * @param fields 字段列表（这里会为空）
+     * @param connection 连接信息
+     * @param dialect 方言
+     * @param index 序号
+     * @param columnInfoList 字段信息集合
+     * @param autoIncrementsList 递增集合
+     * @param idlist 主键集合
+     * @param operateType 操作类型
+     * @param updateList 更新集合
+     * @param insertList 写入集合
+     * @param <T> 反向约束
+     */
+    private <T> void dynamicParse(
+            Access<T> access,
+            Field[] fields,
+            Connection connection,
+            Dialect dialect,
+            int index,
+            List<AccessField> columnInfoList,
+            List<AccessField> autoIncrementsList,
+            List<AccessField> idlist,
+            OperateType operateType,
+            List<AccessField> updateList,
+            List<AccessField> insertList
+    ) {
+        String tableName = access.getTableName();
+        String schema1 = access.getSchema();
+        List<EasyMap<String, Object>> mapParams = access.getMapParams();
+        if (fields.length == 0 && StrUtil.isNotBlank(tableName) && CollUtil.isNotEmpty(mapParams)) {
+            try {
+                String catalog = connection.getCatalog();
+                String schema = StrUtil.blankToDefault(schema1,connection.getSchema());
+                List<DatabaseColumnMetadata> columns = dialect.getColumns(catalog, schema, tableName);
+                List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(catalog, schema, tableName);
+                Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
+                for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
+                    String columnName = databaseColumnMetadata.getColumnName();
+                    PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
+                    boolean isPk = primaryKeyMetadata == null;
+                    boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
+                    WdFieldInfo wdFieldInfo = new WdFieldInfo();
+                    if (index == 0) {
+                        patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, null, isPk, isAutoincrement, columnName);
+                    }
+                    for (EasyMap<String, Object> mapParam : mapParams) {
+                        Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
+                        refreshParam(
+                                ignoreCame,
+                                null,
+                                wdFieldInfo,
+                                columnName,
+                                dialect,
+                                index,
+                                isPk,
+                                isAutoincrement,
+                                idlist,
+                                operateType,
+                                access.isSkipNullIs(),
+                                updateList,
+                                insertList
+                        );
+                    }
+                    index++;
+                }
+            } catch (SQLException e) {
+                throw AccessUtils.translate("dynamic parse error", "", e, accessConfig.getDataSource());
+            }
+        }
+    }
+
+    public <T> void refreshContextByMap(RuntimeContext<T> context, EasyMap<String,Object> param) {
+        Dialect dialect = context.getDialect();
+        if (param == null) return;
+        OperateType operateType = context.getOperateType();
+        Access<T> access = context.getAccess();
+        Connection connection = context.getConnection();
+        List<AccessField> idlist = new LinkedList<>();
+        List<AccessField> updateList = new LinkedList<>();
+        // 写入的字段，如果主键没有指定值，则不应该纳入写入字段里面
+        List<AccessField> insertList = new LinkedList<>();
+        List<AccessField> autoIncrementsList = new LinkedList<>();
+        String schema1 = access.getSchema();
+        String tableName = access.getTableName();
+        try {
+            String catalog = connection.getCatalog();
+            String schema = StrUtil.blankToDefault(schema1,connection.getSchema());
+            List<DatabaseColumnMetadata> columns = dialect.getColumns(catalog, schema, tableName);
+            List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(catalog, schema, tableName);
+            Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
+            for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
+                String columnName = databaseColumnMetadata.getColumnName();
+                PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
+                boolean isPk = primaryKeyMetadata == null;
+                boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
+                WdFieldInfo wdFieldInfo = new WdFieldInfo();
+                Object ignoreCame = param.getIgnoreCame(columnName, true);
+                refreshParam(
+                        ignoreCame,
+                        null,
+                        wdFieldInfo,
+                        columnName,
+                        dialect,
+                        0,
+                        isPk,
+                        isAutoincrement,
+                        idlist,
+                        operateType,
+                        access.isSkipNullIs(),
+                        updateList,
+                        insertList
+                );
+            }
+        } catch (SQLException e) {
+            throw AccessUtils.translate("dynamic parse error", "", e, accessConfig.getDataSource());
+        }
+
+
+        context.setSql(null);
+        context.setIdList(idlist);
+        context.setAutoIncrementList(autoIncrementsList);
+        context.setUpdateFields(updateList);
+        context.setInsertFields(insertList);
+
+    }
+
+
+    private AccessField patchItem(WdFieldInfo wdFieldInfo, Dialect dialect, List<AccessField> columnInfoList, List<AccessField> autoIncrementsList, int index, Field field, boolean pk, boolean isAutoIncrement, String columnField) {
 
         AccessField columnInfo = new AccessField();
         columnInfo.setColumnName(columnField);
-        columnInfo.setEscapeColumnName(sqlNameEscape(columnField, dialectV2, false));
+        columnInfo.setEscapeColumnName(sqlNameEscape(columnField, dialect, false));
         columnInfo.setColumnValue(null);
         columnInfo.setField(field);
         columnInfo.setGroup(index);
@@ -319,7 +450,7 @@ public class AccessUtils implements Serializable {
      * @param fieldValue      参数的值
      * @param parentField     参数的field对象
      * @param columnField     参数的名称
-     * @param dialectV2       方言
+     * @param dialect       方言
      * @param index           第几个参数
      * @param pk              是否主键
      * @param isAutoIncrement 是否自动递增
@@ -335,7 +466,7 @@ public class AccessUtils implements Serializable {
             Field parentField,
             WdFieldInfo wdFieldInfo,
             String columnField,
-            DialectV2 dialectV2,
+            Dialect dialect,
             int index,
             boolean pk,
             boolean isAutoIncrement,
@@ -347,7 +478,7 @@ public class AccessUtils implements Serializable {
         AccessField accessField = new AccessField();
         accessField.setField(parentField);
         accessField.setColumnName(columnField);
-        accessField.setEscapeColumnName(sqlNameEscape(columnField, dialectV2, false));
+        accessField.setEscapeColumnName(sqlNameEscape(columnField, dialect, false));
         Object o = Wd.wrapIf(fieldValue, wdFieldInfo);
         accessField.setColumnValue(o);
         accessField.setPlaceHolder(Wd.place(o));
@@ -385,7 +516,7 @@ public class AccessUtils implements Serializable {
      * @param <T>     泛型
      */
     public <T> void refreshContextByParam(RuntimeContext<T> context, T param) {
-        DialectV2 dialectV2 = context.getDialectV2();
+        Dialect dialect = context.getDialect();
         Class<T> clazz = context.getClazz();
         if (clazz == null || param == null) return;
         Field[] fields = ReflectUtil.getFields(clazz);
@@ -407,7 +538,7 @@ public class AccessUtils implements Serializable {
                     field,
                     wdFieldInfo,
                     columnField,
-                    dialectV2,
+                    dialect,
                     0,
                     pk,
                     isAutoIncrement,
@@ -428,6 +559,7 @@ public class AccessUtils implements Serializable {
         context.setInsertFields(insertList);
 
     }
+
 
     /**
      * 解析WhereBuild
@@ -455,8 +587,8 @@ public class AccessUtils implements Serializable {
         }
         context.setWhereSql(whereSql);
         context.setSelectFields(selectFieldName);
-        DialectV2 dialectV2 = context.getDialectV2();
-        context.setEscapeSelectFields(selectFieldName.stream().map(dialectV2::escape).toList());
+        Dialect dialect = context.getDialect();
+        context.setEscapeSelectFields(selectFieldName.stream().map(dialect::escape).toList());
         context.setWhereArgs(whereArgs);
     }
 
@@ -503,8 +635,8 @@ public class AccessUtils implements Serializable {
         context.setUpdateArgs(updateArgs);
         context.setWhereSql(whereSql);
         context.setSelectFields(selectFieldName);
-        DialectV2 dialectV2 = context.getDialectV2();
-        context.setEscapeSelectFields(selectFieldName.stream().map(dialectV2::escape).toList());
+        Dialect dialect = context.getDialect();
+        context.setEscapeSelectFields(selectFieldName.stream().map(dialect::escape).toList());
         context.setWhereArgs(whereArgs);
     }
 
@@ -548,14 +680,14 @@ public class AccessUtils implements Serializable {
      * @author bokun.li
      * @date 2025/9/4
      */
-    public String sqlNameEscape(String name, DialectV2 dialectV2, boolean forceEscape) {
+    public String sqlNameEscape(String name, Dialect dialect, boolean forceEscape) {
         if (this.accessConfig.isIgnoreEscape()) {
             return name;
         }
         if (forceEscape) {
-            return dialectV2.forceEscape(name);
+            return dialect.forceEscape(name);
         } else {
-            return dialectV2.escape(name);
+            return dialect.escape(name);
         }
     }
 

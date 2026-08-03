@@ -15,7 +15,6 @@
 package easy4j.infra.dbaccess.dynamic.dll.op;
 
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.JavaClassMetaInfoParse;
@@ -23,6 +22,8 @@ import easy4j.infra.dbaccess.dynamic.dll.op.impl.sc.AbstractOpSqlCommands;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
+import easy4j.infra.dbaccess.orm.AccessUtils;
+import easy4j.infra.dbaccess.orm.RuntimeContext;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -41,7 +42,7 @@ import java.util.Map;
  */
 @Data
 @Accessors(chain = true)
-public class OpContext {
+public class OpContext  extends RuntimeContext<Object> {
 
     // 数据库类型
     private String dbType;
@@ -77,10 +78,9 @@ public class OpContext {
     // 获取的全局连接
     private Connection connection;
 
-    // 解析出来的数据库方言
     private Dialect dialect;
 
-    private DialectV2 dialectV2;
+    private AccessUtils accessUtils;
 
     /**
      * 解析出来的表元数据

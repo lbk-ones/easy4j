@@ -1,10 +1,8 @@
 package easy4j.infra.dbaccess.dynamic.dll.op.impl.sc;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Pair;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.StatementUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.exception.EasyException;
@@ -12,11 +10,8 @@ import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.CommonDBAccess;
-import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
@@ -39,10 +34,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 import java.util.stream.Collectors;
-
-import static easy4j.infra.dbaccess.CommonDBAccess.UPDATE;
 
 @Getter
 public abstract class AbstractOpSqlCommands implements OpSqlCommands {
@@ -87,10 +79,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         if (!StrUtil.equalsIgnoreCase(tableType, "TABLE")) {
             throw EasyException.wrap(BusCode.A00047, tableType);
         }
-        OpConfig opConfig = opContext1.getOpConfig();
-        CommonDBAccess commonDBAccess = opConfig.getCommonDBAccess();
-        commonDBAccess.setPrintLog(true);
-        commonDBAccess.setToUnderline(opConfig.isToUnderLine());
         List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
         CheckUtils.notNull(dbColumns, "dbColumns");
 
@@ -98,129 +86,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         CheckUtils.notNull(tableName, "tableName");
 
         return dbColumns;
-    }
-
-    @Override
-    public Map<String, Object> dynamicSave(Map<String, Object> dict) {
-        if (CollUtil.isEmpty(dict)) return dict;
-        List<DatabaseColumnMetadata> dbColumns = checkDynamic(dict);
-        OpContext opContext1 = this.getOpContext();
-        OpConfig opConfig = opContext1.getOpConfig();
-        CommonDBAccess commonDBAccess = opConfig.getCommonDBAccess();
-        List<DatabaseColumnMetadata> noAuto = dbColumns.stream().filter(e -> !"YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
-        List<DatabaseColumnMetadata> AutoKey = dbColumns.stream().filter(e -> "YES".equals(e.getIsAutoincrement())).collect(Collectors.toList());
-        List<String> dbColumnNmes = ListTs.map(noAuto, DatabaseColumnMetadata::getColumnName);
-        if (CollUtil.isEmpty(dbColumnNmes)) {
-            throw new EasyException(BusCode.A00059);
-        }
-        // ignore case
-        List<Object> objects = ListTs.newList();
-        List<String> zwf = ListTs.newList();
-        List<String> fieldNames = ListTs.newLinkedList();
-
-        prepare(dict, dbColumnNmes, objects, fieldNames, zwf);
-
-        String tableName = opContext1.getTableName();
-        String schema = opContext1.getSchema();
-        String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining("."));
-        String finalSql = commonDBAccess.DDlLine(
-                CommonDBAccess.INSERT,
-                tableName2,
-                "values " + SP.LEFT_BRACKET + String.join(SP.COMMA, zwf) + SP.RIGHT_BRACKET,
-                fieldNames.toArray(new String[]{}));
-        Pair<String, Date> stringDatePair = null;
-        int effectRows = 0;
-        PreparedStatement preparedStatement = null;
-        ResultSet generatedKeys = null;
-        try {
-            Connection connection = opContext1.getConnection();
-            stringDatePair = commonDBAccess.recordSql(finalSql, connection, objects);
-            preparedStatement = connection.prepareStatement(finalSql, Statement.RETURN_GENERATED_KEYS);
-            StatementUtil.fillParams(preparedStatement, objects);
-            effectRows = preparedStatement.executeUpdate();
-
-            generatedKeys = preparedStatement.getGeneratedKeys();
-            Map<String, Object> map = Maps.newHashMap();
-            map.putAll(dict);
-            while (generatedKeys.next()) {
-                for (DatabaseColumnMetadata primaryKe : AutoKey) {
-                    String columnName = primaryKe.getColumnName();
-                    Long id = generatedKeys.getLong(columnName);
-                    map.put(columnName, id);
-                }
-            }
-            return map;
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("dynamicSave", finalSql, e);
-        } finally {
-            commonDBAccess.printSql(stringDatePair, effectRows);
-            JdbcHelper.close(preparedStatement);
-            JdbcHelper.close(generatedKeys);
-        }
-    }
-
-    @Override
-    public int dynamicUpdate(Map<String, Object> dict, boolean updateNull, WhereBuild whereBuild) {
-        if (CollUtil.isEmpty(dict)) return 0;
-
-        // check
-        checkDynamic(dict);
-
-        List<Object> args = ListTs.newList();
-        OpContext opContext1 = this.getOpContext();
-        OpConfig opConfig = opContext1.getOpConfig();
-        Connection connection = opContext1.getConnection();
-        CommonDBAccess commonDBAccess = opConfig.getCommonDBAccess();
-        String tableName = opContext1.getTableName();
-        String schema = opContext1.getSchema();
-        String tableName2 = ListTs.asList(schema, tableName).stream().filter(Objects::nonNull).collect(Collectors.joining(SP.DOT));
-        List<String> nameList = ListTs.newList();
-        List<DatabaseColumnMetadata> dbColumns = opContext1.getDbColumns();
-        Map<String, DatabaseColumnMetadata> map = ListTs.toMap(dbColumns, DatabaseColumnMetadata::getColumnName);
-        for (String s : dict.keySet()) {
-            Object o = dict.get(s);
-            if (!updateNull && null == o) {
-                continue;
-            }
-            s = StrUtil.toUnderlineCase(s);
-            DatabaseColumnMetadata databaseColumnMetadata = map.get(s);
-            s = opConfig.escapeCn(s, connection, false);
-            if (databaseColumnMetadata == null) databaseColumnMetadata = map.get(s);
-            String columnName = opConfig.getColumnName(s);
-            if (databaseColumnMetadata == null) databaseColumnMetadata = map.get(columnName);
-            if (databaseColumnMetadata == null) continue;
-            nameList.add(columnName + " = ? ");
-            args.add(o);
-        }
-        if (ListTs.isEmpty(nameList)) {
-            log.info("The field to be updated is empty ！！！！");
-            return 0;
-        }
-        whereBuild.bind(connection);
-        // build where
-        String whereBuildStr = commonDBAccess.where(whereBuild.build(args));
-
-        String escapeTableName = opConfig.splitStrAndEscape(tableName2, SP.DOT, connection, false);
-
-        // get final sql
-        String finalSql = commonDBAccess.DDlLine(UPDATE, escapeTableName, whereBuildStr, nameList.toArray(new String[]{}));
-        Pair<String, Date> stringDatePair = null;
-        int effectRows = 0;
-        PreparedStatement preparedStatement = null;
-        ResultSet generatedKeys = null;
-        try {
-            stringDatePair = commonDBAccess.recordSql(finalSql, connection, args);
-            preparedStatement = connection.prepareStatement(finalSql);
-            StatementUtil.fillParams(preparedStatement, args);
-            effectRows = preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw JdbcHelper.translateSqlException("dynamicSave", finalSql, e);
-        } finally {
-            commonDBAccess.printSql(stringDatePair, effectRows);
-            JdbcHelper.close(preparedStatement);
-            JdbcHelper.close(generatedKeys);
-        }
-        return effectRows;
     }
 
     @Override
@@ -327,11 +192,10 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
     public boolean changeContext(CopyDbConfig copyDbConfig) {
         String ToDbType;
         Connection toConnection = null;
-        DialectV2 opDbMeta = null;
+        Dialect opDbMeta = null;
         DataSource toDataSource = null;
         String catalog = null;
         String schema1 = null;
-        Dialect toDialect = null;
         if (copyDbConfig != null) {
             CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
             toDataSource = copyDbConfig.getDataSource();
@@ -347,7 +211,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 opDbMeta = DialectFactory.get(toConnection);
                 catalog = toConnection.getCatalog();
                 schema1 = toConnection.getSchema();
-                toDialect = JdbcHelper.getDialect(toConnection);
+
             } catch (SQLException e) {
                 throw JdbcHelper.translateSqlException("copyDataSourceDDL get source connection", null, e);
             }
@@ -360,7 +224,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         this.opContext.setSchema(StrUtil.blankToDefault(schema1, catalog));
         this.opContext.setConnectionCatalog(catalog);
         this.opContext.setConnectionSchema(schema1);
-        this.opContext.setDialect(toDialect);
+        this.opContext.setDialect(opDbMeta);
         this.opContext.setDataSource(toDataSource);
         // 反写回去
         copyDbConfig.setConnection(toConnection);
@@ -403,7 +267,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         CheckUtils.checkByLambda(this.opContext, OpContext::getDataSource, OpContext::getConnection);
         if (ListTs.isEmpty(tableType)) tableType = new String[]{"TABLE"};
         Connection oldConnection = this.opContext.getConnection();
-        DialectV2 select = DialectFactory.get(oldConnection);
+        Dialect select = DialectFactory.get(oldConnection);
         List<TableMetadata> allTableList = ListTs.newList();
         // get all or custom tableInfo
         if (ListTs.isEmpty(tablePrefix)) {
@@ -421,7 +285,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         String oldSchema = this.opContext.getSchema();
         String oldConnectionCatalog = this.opContext.getConnectionCatalog();
         String oldConnectionSchema = this.opContext.getConnectionSchema();
-        Dialect oldDialect = this.opContext.getDialect();
         DDLTableInfo oldDdlTableInfo = this.opContext.getDdlTableInfo();
         String oldTableName = this.opContext.getTableName();
         TableMetadata oldTableMetadata = this.opContext.getTableMetadata();
@@ -436,7 +299,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 CheckUtils.checkByLambda(copyDbConfig, CopyDbConfig::getDataSource);
                 DataSource dataSource = copyDbConfig.getDataSource();
                 try (Connection connection = dataSource.getConnection()) {
-                    DialectV2 select1 = DialectFactory.get(connection);
+                    Dialect select1 = DialectFactory.get(connection);
                     copyTargetDbType = select.getDbType();
                     List<TableMetadata> allTableInfoByTableType = select1.getAllTableInfoByTableType(null, new String[]{"TABLE"});
                     map = ListTs.toMap(allTableInfoByTableType, TableMetadata::getTableName);
@@ -558,7 +421,6 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
                 this.opContext.setSchema(oldSchema);
                 this.opContext.setConnectionCatalog(oldConnectionCatalog);
                 this.opContext.setConnectionSchema(oldConnectionSchema);
-                this.opContext.setDialect(oldDialect);
                 this.opContext.setDataSource(oldDataSource);
                 this.opContext.setConnection(oldConnection);
                 this.opContext.setDdlTableInfo(oldDdlTableInfo);
@@ -575,7 +437,7 @@ public abstract class AbstractOpSqlCommands implements OpSqlCommands {
         OpContext opContext1 = this.getOpContext();
         CheckUtils.checkByLambda(opContext1, OpContext::getConnectionCatalog, OpContext::getConnectionSchema, OpContext::getTableName);
         Connection connection = opContext1.getConnection();
-        DialectV2 select = DialectFactory.get(connection);
+        Dialect select = DialectFactory.get(connection);
         List<DatabaseColumnMetadata> dbColumns;
         try {
             dbColumns = select.getColumnsNoCache(opContext1.getConnectionCatalog(), opContext1.getConnectionSchema(), opContext1.getTableName());

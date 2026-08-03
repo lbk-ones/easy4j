@@ -23,6 +23,6 @@ public class QueryPageSql  extends QuerySql {
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
         String build = super.build(runtimeContext);
-        return runtimeContext.getDialectV2().getPageSql(build.trim(), runtimeContext.getPage());
+        return runtimeContext.getDialect().getPageSql(build.trim(), runtimeContext.getPage());
     }
 }

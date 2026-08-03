@@ -11,8 +11,8 @@ import com.google.common.collect.Sets;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
@@ -31,7 +31,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static easy4j.module.mybatisplus.codegen.db.FieldNameValidator.validateAndCorrect;
 
@@ -79,11 +78,11 @@ public class DbGen extends AbstractGen {
         List<String> finalList = ListTs.newList();
         try {
             System.out.println("successful estable complete connection");
-            DialectV2 dialectV2 = DialectFactory.get(quietConnection);
-            String dbType = dialectV2.getDbType();
-            String connectionCatalog = dialectV2.getConnectionCatalog();
-            String connectionSchema = dialectV2.getConnectionSchema();
-            List<TableMetadata> allTableInfo = dialectV2.getAllTableInfo(
+            Dialect dialect = DialectFactory.get(quietConnection);
+            String dbType = dialect.getDbType();
+            String connectionCatalog = dialect.getConnectionCatalog();
+            String connectionSchema = dialect.getConnectionSchema();
+            List<TableMetadata> allTableInfo = dialect.getAllTableInfo(
                     connectionCatalog,
                     connectionSchema,
                     tablePrefix,
@@ -113,8 +112,8 @@ public class DbGen extends AbstractGen {
                         continue;
                     }
                 }
-                List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(connectionCatalog, connectionSchema, tableName);
-                List<PrimaryKeyMetadata> primaryKes = dialectV2.getPrimaryKes(connectionCatalog, connectionSchema, tableName);
+                List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialect.getColumnsNoCacheQuiet(connectionCatalog, connectionSchema, tableName);
+                List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(connectionCatalog, connectionSchema, tableName);
                 Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, e -> e.getTableName() + e.getColumnName());
                 columnsNoCacheQuiet.sort((o1, o2) -> {
                     Integer i1 = "YES".equals(o1.getIsAutoincrement()) ? 0 : map.get(o1.getTableName() + o1.getColumnName()) != null ? 1 : 2;
@@ -133,7 +132,7 @@ public class DbGen extends AbstractGen {
                     if (!StrUtil.equals(tableName1, tableName)) {
                         continue;
                     }
-                    Class<?> javaClassByTypeNameAndDbType = dialectV2.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize());
+                    Class<?> javaClassByTypeNameAndDbType = dialect.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize());
                     if (javaClassByTypeNameAndDbType == null) {
                         System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() +"【"+databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize()+"】"+ " vs java class is null！");
                         continue;

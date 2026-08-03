@@ -6,7 +6,7 @@ import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.json.JacksonUtil;
 
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
 import org.junit.jupiter.api.Test;
@@ -42,10 +42,10 @@ public class WhereBuilderTest {
         accessConfig.setDataSource(getH2DataSource());
         AccessUtils accessUtils = new AccessUtils(accessConfig);
         RuntimeContext<SysLogRecord> context = accessUtils.toContext(tAccess);
-        DialectV2 dialectV2 = context.getDialectV2();
+        Dialect dialect = context.getDialect();
         String build = fSqlBuilder.eq(SysLogRecord::getParams, "test")
                 .buildQuery(objects,context,false);
-        assertEquals(dialectV2.escape("PARAMS")+" = ?",build);
+        assertEquals(dialect.escape("PARAMS")+" = ?",build);
 
 
         fSqlBuilder.clear();

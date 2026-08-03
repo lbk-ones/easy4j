@@ -241,8 +241,7 @@ public class EasyMap<K, V> extends HashMap<K, V> implements Map<K, V> {
      * @return
      */
     public V getIgnoreCame(K k, boolean ignoreCase) {
-        if (k instanceof CharSequence) {
-            CharSequence k1 = (CharSequence) k;
+        if (k instanceof CharSequence k1) {
             V v = get(k1);
             String underlineCase = StrUtil.toUnderlineCase(k1);
             String camelCase = StrUtil.toCamelCase(k1);

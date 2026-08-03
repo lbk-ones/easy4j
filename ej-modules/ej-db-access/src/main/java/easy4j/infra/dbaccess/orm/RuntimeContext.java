@@ -5,7 +5,7 @@ import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.orm.runner.LogResult;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import lombok.Data;
@@ -32,7 +32,7 @@ public class RuntimeContext<T> {
     private Connection connection;
 
     // 数据库方言
-    private DialectV2 dialectV2;
+    private Dialect dialect;
 
     // 操作类型
     private OperateType operateType;
@@ -244,6 +244,21 @@ public class RuntimeContext<T> {
 
     public void getParam(String key) {
         extParams.get(key);
+    }
+
+    /**
+     * 跟据数据源 生成上下文
+     * @param dataSource
+     * @return
+     */
+    public RuntimeContext<?> of(DataSource dataSource){
+
+        AccessConfig accessConfig = new AccessConfig();
+        accessConfig.setDataSource(dataSource);
+        AccessUtils accessUtils1 = new AccessUtils(accessConfig);
+        RuntimeContext<?> res = new RuntimeContext<>();
+        res.setAccessUtils(accessUtils1);
+        return res;
     }
 
 

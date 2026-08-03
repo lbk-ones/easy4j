@@ -65,7 +65,7 @@ public class LogicDeletePlugin extends AbstractPlugin {
                 AccessField accessField = new AccessField();
                 accessField.setField(stringLogicDeletePair.field());
                 accessField.setColumnName(stringLogicDeletePair.name());
-                String s = accessUtils.sqlNameEscape(stringLogicDeletePair.name(), context.getDialectV2(), false);
+                String s = accessUtils.sqlNameEscape(stringLogicDeletePair.name(), context.getDialect(), false);
                 accessField.setEscapeColumnName(s);
                 LogicDelete value = stringLogicDeletePair.logicDelete();
                 Object val;

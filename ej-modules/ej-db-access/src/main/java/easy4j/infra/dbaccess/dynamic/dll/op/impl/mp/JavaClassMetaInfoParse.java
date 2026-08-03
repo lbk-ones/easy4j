@@ -21,18 +21,15 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.annotations.Desc;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.CommonDBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.annotations.JdbcTable;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
@@ -45,6 +42,7 @@ import easy4j.infra.dbaccess.dynamic.dll.op.api.MetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
+import easy4j.infra.dbaccess.orm.vendor.Vendor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -52,7 +50,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -126,8 +123,8 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
             Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
             ddlTableInfo = BeanUtil.mapToBean(annotationAttributes, DDLTableInfo.class, true, CopyOptions.create().ignoreError());
         }
-        ddlTableInfo.setTableName(getTableName(aclass,this.opContext.getDialectV2()));
-        DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
+        ddlTableInfo.setTableName(getTableName(aclass,this.opContext.getDialect()));
+        Dialect opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumnsNoCache(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
         this.opContext.setDbColumns(columns);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), ddlTableInfo.getTableName());
@@ -167,41 +164,13 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
             }
         }
     }
-    public String getTableName(Class<?> clazz, DialectV2 dialect) {
+    public String getTableName(Class<?> clazz, Dialect dialect) {
         OpConfig opConfig = this.opContext.getOpConfig();
         if (clazz == null) return null;
         StringBuilder sb = new StringBuilder();
-        JdbcTable annotation = clazz.getAnnotation(JdbcTable.class);
-        if (null != annotation && StrUtil.isNotBlank(annotation.name())) {
-            sb.append(annotation.name());
-        } else {
-            if (clazz.isAnnotationPresent(TableName.class)) {
-                TableName annotation1 = clazz.getAnnotation(TableName.class);
-                if (Objects.nonNull(annotation1)) {
-                    String value = annotation1.value();
-                    if (StrUtil.isNotBlank(value)) {
-                        return dialect.escape((value));
-                    }
-                }
-            } else if (clazz.isAnnotationPresent(Table.class)) {
-                Table table = clazz.getAnnotation(Table.class);
-                if (Objects.nonNull(table)) {
-                    String value = table.name();
-                    if (StrUtil.isNotBlank(value)) {
-                        return dialect.escape(opConfig.autoCase(value, false));
-                    }
-                }
-            } else if (clazz.isAnnotationPresent(DDLTable.class)) {
-                DDLTable annotation2 = clazz.getAnnotation(DDLTable.class);
-                String s = annotation2.tableName();
-                if (StrUtil.isNotBlank(s)) {
-                    return dialect.escape(opConfig.autoCase(s, false));
-                }
-            }
-            String simpleName = clazz.getSimpleName();
-            String underlineCase = dialect.escape(opConfig.autoCase(simpleName, true));
-            sb.append(underlineCase);
-        }
+        String tableName = Vendor.getTableName(clazz);
+        String underlineCase = dialect.escape(opConfig.autoCase(tableName, true));
+        sb.append(underlineCase);
         return sb.toString();
     }
 
@@ -209,9 +178,8 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         Object newInstance = ReflectUtil.newInstance(aclass);
         List<DDLFieldInfo> objects = ListTs.newLinkedList();
         Field[] fields = ReflectUtil.getFields(aclass);
-        CommonDBAccess commonDBAccess = this.opContext.getOpConfig().getCommonDBAccess();
         for (Field field : fields) {
-            if (!commonDBAccess.skipColumn(field)) {
+            if (! Vendor.skipColumn(field)) {
                 DDLField annotation = field.getAnnotation(DDLField.class);
                 if (null != annotation) {
                     Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);

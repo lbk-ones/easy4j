@@ -524,7 +524,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
         String groupBySegment = groupBy.stream().map(e -> {
             String column = accessUtils.fn(e.getColumn());
-            return accessUtils.sqlNameEscape(column, runtimeContext.getDialectV2(), false);
+            return accessUtils.sqlNameEscape(column, runtimeContext.getDialect(), false);
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(groupBySegment)) {
@@ -544,7 +544,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
         String orderBySegment = orderBy.stream().map(e -> {
             String column = accessUtils.fn(e.getColumn());
             String value = Convert.toStr(e.getValue());
-            return accessUtils.sqlNameEscape(column, runtimeContext.getDialectV2(), false) + StringPool.SPACE + value;
+            return accessUtils.sqlNameEscape(column, runtimeContext.getDialect(), false) + StringPool.SPACE + value;
         }).filter(StrUtil::isNotBlank).collect(Collectors.joining(StringPool.COMMA + StringPool.SPACE));
 
         if (StrUtil.isNotBlank(orderBySegment)) {

@@ -1,5 +1,6 @@
 package easy4j.infra.dbaccess.orm;
 
+import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
@@ -35,6 +36,8 @@ public class Access<T> {
     private OperateType operateType;
 
     private String tableName;
+
+    private List<EasyMap<String,Object>> mapParams;
 
     private String schema;
 

@@ -18,8 +18,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.common.enums.DbType;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.IndexType;
 
@@ -147,7 +147,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
     private DDLTableInfo getDdlTableInfo() throws SQLException {
         CheckUtils.notNull(this.tableName);
         //CheckUtils.checkByLambda(this.opContext, OpContext::getDdlTableInfo);
-        DialectV2 opDbMeta = DialectFactory.get(this.opContext.getConnection());
+        Dialect opDbMeta = DialectFactory.get(this.opContext.getConnection());
         List<DatabaseColumnMetadata> columns = opDbMeta.getColumnsNoCache(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
         List<PrimaryKeyMetadata> primaryKes = opDbMeta.getPrimaryKes(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);// 转换索引列信息
         List<IndexInfoMetaInfo> indexInfoMetaInfos = opDbMeta.getIndexInfos(this.opContext.getConnectionCatalog(), this.opContext.getConnectionSchema(), this.tableName);
@@ -282,8 +282,8 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         DDLFieldInfo ddlFieldInfo = new DDLFieldInfo();
         ddlFieldInfo.setDbType(dbType);
         ddlFieldInfo.setDbVersion(dbVersion);
-        DialectV2 dialectV2 = DialectFactory.get(this.opContext.getConnection());
-        ddlFieldInfo.setFieldClass(dialectV2.getJavaClassByTypeNameAndDbType(typeName+"#"+columnSize));
+        Dialect dialect = DialectFactory.get(this.opContext.getConnection());
+        ddlFieldInfo.setFieldClass(dialect.getJavaClassByTypeNameAndDbType(typeName+"#"+columnSize));
         ddlFieldInfo.setName(columnName);
         ddlFieldInfo.setPrimary(opConfig.isMatchMapIgnoreCase(primaryKeyMetadataMap, columnName));
         ddlFieldInfo.setAutoIncrement("YES".equals(e.getIsAutoincrement()));
@@ -311,7 +311,7 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         ddlFieldInfo.setIndex(matchMapIgnoreCase != null);
         ddlFieldInfo.setConstraint(new String[0]);
         ddlFieldInfo.setComment(e.getRemarks());
-        boolean lob = dialectV2.isLob(typeName);
+        boolean lob = dialect.isLob(typeName);
         // 如果copy的目标库是oracle 那么主键是不能是clob大字段类型
         if (lob && DbType.ORACLE.getDb().equals(this.copyTargetDbType) && ddlFieldInfo.isPrimary()) {
             ddlFieldInfo.setLob(false);
@@ -331,9 +331,8 @@ public class DataSourceMetaInfoParse implements MetaInfoParse {
         } else {
             ddlFieldInfo.setLob(lob);
         }
-        ddlFieldInfo.setJson(dialectV2.isJson(typeName));
+        ddlFieldInfo.setJson(dialect.isJson(typeName));
         ddlFieldInfo.setGenConstraint(false);
-        ddlFieldInfo.setDllConfig(new DDLConfig());
         IndexInfoMetaInfo indexInfoMetaInfo = new IndexInfoMetaInfo();
         indexInfoMetaInfo.setIndexName("none");
         indexInfoMetaInfo.setOrdinalPosition((short) 0);

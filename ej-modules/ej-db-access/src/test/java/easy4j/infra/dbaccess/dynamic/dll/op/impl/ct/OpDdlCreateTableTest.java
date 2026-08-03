@@ -2,14 +2,13 @@ package easy4j.infra.dbaccess.dynamic.dll.op.impl.ct;
 
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
-import easy4j.infra.dbaccess.condition.Where;
-import easy4j.infra.dbaccess.condition.WhereBuild;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpContext;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlCreateTable;
+import easy4j.infra.dbaccess.orm.conditions.Where;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -258,7 +257,6 @@ class OpDdlCreateTableTest {
 
     @Test
     void test222(){
-        String build = new WhereBuild().inArray("backField10","'0'","'1'").build(ListTs.newList());
-        System.out.println(build);
+
     }
 }

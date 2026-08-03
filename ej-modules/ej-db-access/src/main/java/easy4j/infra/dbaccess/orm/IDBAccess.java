@@ -3,6 +3,7 @@ package easy4j.infra.dbaccess.orm;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.orm.conditions.IUpdateBuild;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.domain.PageRes;
 
@@ -144,7 +145,7 @@ public interface IDBAccess {
      * @param <T>         泛型
      * @return 受影响条数
      */
-    <T> int update(IWhere updateBuild, Class<T> clazz);
+    <T> int update(IUpdateBuild updateBuild, Class<T> clazz);
 
     /**
      * 根据主键更新
@@ -168,6 +169,29 @@ public interface IDBAccess {
      * @return 更新影响条数
      */
     <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
+
+
+    /**
+     * 批量动态更新（循环更新），会跟据主键去更新
+     * @param value map集合
+     * @param tableName tableName
+     * @param schema schema
+     * @param isSkipNull 是否更新null值
+     * @return int
+     * @param <T> 泛型
+     */
+    <T> int dynamicUpdate(List<EasyMap<String,Object>> value,String tableName,String schema,boolean isSkipNull);
+
+
+    /**
+     * 批量动态写入
+     * @param value
+     * @param tableName
+     * @param schema
+     * @return
+     * @param <T>
+     */
+    <T> int dynamicSave(List<EasyMap<String,Object>> value,String tableName,String schema);
 
     /**
      * 可以连表的复杂查询
@@ -221,7 +245,7 @@ public interface IDBAccess {
      * @param args              可变参数列表
      * @return 对象集合
      */
-    <T> EasyMap<String, Object> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args);
+    <T> List<EasyMap<String, Object>> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args);
 
     /**
      * 传入表名和查询条件将查询结果以Map的结果返回（根据传入的表名自动查询这个表的字段集合）whereBuild=null则是全查询
@@ -234,6 +258,18 @@ public interface IDBAccess {
      * @return 返回结果
      */
     EasyMap<String, Object> queryMapByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields);
+
+    /**
+     * 传入表名和查询条件将查询结果以分页的形式返回（根据传入的表名自动查询这个表的字段集合）whereBuild=null则是全查询
+     *
+     * @param schema            数据库schema
+     * @param tableName         表名
+     * @param resultFieldToCame 是否将结果字段转为驼峰
+     * @param whereBuild        条件构造器
+     * @param queryRealFields   是否从数据库查询真实字段信息
+     * @return 返回结果
+     */
+    PageRes queryPageByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields, Page<Object> page);
 
     /**
      * 根据条件构造器来查询结果集合，集合元素以Map形式返回

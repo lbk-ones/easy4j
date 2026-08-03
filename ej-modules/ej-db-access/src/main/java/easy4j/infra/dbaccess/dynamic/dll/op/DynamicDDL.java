@@ -18,15 +18,16 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.dbaccess.TempDataSource;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.*;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.DataSourceMetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.JavaClassMetaInfoParse;
 import easy4j.infra.dbaccess.dynamic.dll.op.impl.mp.ModelMetaInfoParse;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.AccessConfig;
+import easy4j.infra.dbaccess.orm.AccessUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -161,16 +162,19 @@ public class DynamicDDL extends AbstractCombinationOp {
             String schema1 = StrUtil.trim(connection.getSchema());
             opContext.setConnectionCatalog(catalog);
             opContext.setConnectionSchema(schema1);
-            Dialect dialect = JdbcHelper.getDialect(connection);
-            DialectV2 dialectV2 = DialectFactory.get(connection);
+            Dialect dialect = DialectFactory.get(connection);
             // String dbType = InformationSchema.getDbType(dataSource, connection);
-            String dbVersion = dialectV2.getProductVersion();
-            String dbType = dialectV2.getDbType();
+            String dbVersion = dialect.getProductVersion();
+            String dbType = dialect.getDbType();
             // String ddlTableName = getDDLTableName(dialect, aClass, getTableName(aClass, dialect));
             // 先取connection中的 schema 再取 catalog 这样可以兼容 mysql 、 postgresql 、 oracle 、sqlserver 的 其他的试过才知道，如果取错了 只能从外部传进来了
             if (StrUtil.isBlank(schema)) schema = StrUtil.blankToDefault(schema1, catalog);
             OpConfig opConfig1 = opConfig == null ? new OpConfig() : opConfig;
             //List<DatabaseColumnMetadata> columns = opDbMeta.getColumns(catalog,schema,"");
+
+            AccessConfig accessConfig = new AccessConfig();
+            accessConfig.setDataSource(dataSource);
+            AccessUtils accessUtils = new AccessUtils(accessConfig);
             opContext.setDataSource(dataSource)
                     .setDdlTableInfo(this.ddlTableInfo)
                     .setConnection(connection)
@@ -181,7 +185,7 @@ public class DynamicDDL extends AbstractCombinationOp {
                     .setDbVersion(dbVersion)
                     //.setDbColumns(columns)  放到后面去处理
                     .setDialect(dialect)
-                    .setDialectV2(dialectV2)
+                    .setAccessUtils(accessUtils)
                     .setDomainClass(this.domainClass);
             if(this.domainClass!=null){
                 opConfig1.setPgAutoLowerCase(true);

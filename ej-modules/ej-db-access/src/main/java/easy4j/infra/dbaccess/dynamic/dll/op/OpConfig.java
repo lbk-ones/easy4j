@@ -24,9 +24,8 @@ import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.RegexEscapeUtils;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.CommonDBAccess;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.*;
 import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndexInfo;
 import lombok.Data;
@@ -89,8 +88,6 @@ public class OpConfig {
         dbVsWrapper.put(DbType.DB2.getDb(), new Wrapper('"', '"'));
         dbVsWrapper = Collections.unmodifiableMap(dbVsWrapper);
     }
-
-    private CommonDBAccess commonDBAccess = new CommonDBAccess();
 
     public String getColumnName(String columnName) {
         if (toUnderLine) {
@@ -165,11 +162,11 @@ public class OpConfig {
      * @date 2025/9/4
      */
     public String escapeCn(String name, Connection connection, boolean forceEscape) {
-        DialectV2 dialectV2 = DialectFactory.get(connection);
+        Dialect dialect = DialectFactory.get(connection);
         if (forceEscape) {
-            return dialectV2.forceEscape(name);
+            return dialect.forceEscape(name);
         } else {
-            return dialectV2.escape(name);
+            return dialect.escape(name);
         }
 //        String databaseType = null;
 //        lbk:
@@ -247,7 +244,7 @@ public class OpConfig {
      * @param typeName
      * @param dbType
      * @return
-     * @see easy4j.infra.dbaccess.dialect.v2.DialectV2
+     * @see Dialect
      */
     @Deprecated
     public Class<?> getJavaClassByTypeNameAndDbType(String typeName, String dbType) {
@@ -299,7 +296,7 @@ public class OpConfig {
      * @param typeName
      * @param dbType
      * @return
-     * @see easy4j.infra.dbaccess.dialect.v2.DialectV2#isJson
+     * @see Dialect#isJson
      */
     @Deprecated
     public boolean isJson(String typeName, String dbType) {
@@ -324,7 +321,7 @@ public class OpConfig {
      * @param typeName
      * @param dbType
      * @return
-     * @see easy4j.infra.dbaccess.dialect.v2.DialectV2#isLob
+     * @see Dialect#isLob
      */
     @Deprecated
     public boolean isLob(String typeName, String dbType) {

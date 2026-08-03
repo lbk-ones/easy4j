@@ -14,7 +14,7 @@
  */
 package easy4j.infra.dbaccess.orm.runner;
 
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import org.postgresql.util.PGobject;
 
@@ -41,7 +41,7 @@ public class SqlReplacer {
      * @param params 参数列表（支持 String、Integer、Long、Date、Timestamp 等类型）
      * @return 替换后的 SQL 语句
      */
-    public static String replacePlaceholders(String sql, List<Object> params, DialectV2 dialectV2) {
+    public static String replacePlaceholders(String sql, List<Object> params, Dialect dialect) {
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(sql);
 
         // 检查参数数量是否匹配
@@ -60,7 +60,7 @@ public class SqlReplacer {
         while (matcher.find()) {
             Object param2 = params.get(index++);
             Object value = Wd.value(param2);
-            String paramStr = convertParamToString(value, dialectV2);
+            String paramStr = convertParamToString(value, dialect);
             matcher.appendReplacement(result, Matcher.quoteReplacement(paramStr));
         }
         matcher.appendTail(result);
@@ -71,7 +71,7 @@ public class SqlReplacer {
     /**
      * 将参数转换为 SQL 字符串形式
      */
-    private static String convertParamToString(Object param, DialectV2 dialectFromUrl) {
+    private static String convertParamToString(Object param, Dialect dialectFromUrl) {
 
         if (param == null) {
             return "NULL";

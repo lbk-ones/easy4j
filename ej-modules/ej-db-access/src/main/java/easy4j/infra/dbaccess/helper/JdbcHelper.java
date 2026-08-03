@@ -19,7 +19,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.json.JacksonUtil;
-import easy4j.infra.dbaccess.dialect.*;
 import easy4j.infra.dbaccess.exception.DbAccessException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -42,8 +41,6 @@ public abstract class JdbcHelper {
 
 
     private static final Properties databaseTypeMappings = getDefaultDatabaseTypeMappings();
-
-    public static volatile Dialect dialect;
 
     private static Properties getDefaultDatabaseTypeMappings() {
         Properties databaseTypeMappings = new Properties();
@@ -105,10 +102,6 @@ public abstract class JdbcHelper {
      * @throws SQLException
      */
     public static Connection getConnection() {
-        //通过ThreadLocale中获取Connection，如果为空，则通过dataSource返回新的连接对象
-//    	Connection conn = (Connection)TransactionObjectHolder.get();
-//    	if(conn != null) return conn;
-//		if(ds != null) return ds.getConnection();
         try {
             return getDataSource().getConnection();
         } catch (SQLException e) {
@@ -442,54 +435,6 @@ public abstract class JdbcHelper {
             throw new DbAccessException(sqlException.getMessage(), sqlException.getSQLState(), sqlException.getCause());
         }
         return translate;
-    }
-
-    /**
-     * 根据连接对象获取数据库方言
-     *
-     * @param conn 数据库连接
-     * @return Dialect 方言
-     * @throws Exception
-     */
-    public static Dialect getDialect(Connection conn) {
-        Dialect resDialect;
-        try {
-            DatabaseMetaData databaseMetaData = conn.getMetaData();
-            String databaseProductName = databaseMetaData.getDatabaseProductName();
-            String dbType = databaseTypeMappings.getProperty(databaseProductName);
-            if (StrUtil.isEmpty(dbType)) return new AbstractDialect();
-            if (dbType.equalsIgnoreCase(DbType.MYSQL.getDb())) resDialect = new MySqlDialect();
-            else if (dbType.equalsIgnoreCase(DbType.ORACLE.getDb())) resDialect = new OracleDialect();
-            else if (dbType.equalsIgnoreCase(DbType.POSTGRE_SQL.getDb())) resDialect = new PostgresqlDialect();
-            else if (dbType.equalsIgnoreCase(DbType.SQL_SERVER.getDb())) resDialect = new SQLServerDialect();
-            else if (dbType.equalsIgnoreCase(DbType.DB2.getDb())) resDialect = new Db2Dialect();
-            else if (dbType.equalsIgnoreCase(DbType.H2.getDb())) resDialect = new H2Dialect();
-            else resDialect = new AbstractDialect();
-        } catch (SQLException e) {
-            throw translateSqlException("getDialect", null, e);
-        }
-        return resDialect;
-    }
-
-    // 这个方法最好不用 数据库方言最好从connection中拿取 不然可能会乱套
-    @Deprecated
-    public static Dialect getDialectFromUrl() {
-//        if (dialect == null) {
-//            synchronized (JdbcHelper.class) {
-//                if (dialect == null) {
-//                    String dbType = Easy4j.getDbType();
-//                    if (StrUtil.isEmpty(dbType)) return new AbstractDialect();
-//                    if (StrUtil.startWithAnyIgnoreCase(dbType, "mysql")) return new MySqlDialect();
-//                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "oracle")) return new OracleDialect();
-//                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "postgresql")) return new PostgresqlDialect();
-//                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "sqlserver")) return new SQLServerDialect();
-//                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "db2")) return new Db2Dialect();
-//                    else if (StrUtil.startWithAnyIgnoreCase(dbType, "h2")) return new H2Dialect();
-//                    else return new AbstractDialect();
-//                }
-//            }
-//        }
-        return null;
     }
 
     /**

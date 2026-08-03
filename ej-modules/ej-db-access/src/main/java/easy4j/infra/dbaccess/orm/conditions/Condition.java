@@ -71,6 +71,12 @@ public class Condition {
     }
 
 
+    /**
+     * runtimeContext accessUtils 不能为空
+     * @param argsList
+     * @param runtimeContext
+     * @return
+     */
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
         // fix: 如果传进来的 列名包含别名 比如 a.xxx = '33' 这种，把别名单独拆出来
@@ -88,7 +94,7 @@ public class Condition {
         }
         String column = column_;
         if (!ListTs.asList(CompareOperator.UNKNOW,CompareOperator.DECR_BY,CompareOperator.INCR_BY).contains(operator)) {
-            column = accessUtils.sqlNameEscape(accessUtils.fn(column), runtimeContext.getDialectV2(), false);
+            column = accessUtils.sqlNameEscape(accessUtils.fn(column), runtimeContext.getDialect(), false);
         }
         // 给参数加前缀
         String argNamePrefix = runtimeContext.getArgNamePrefix();

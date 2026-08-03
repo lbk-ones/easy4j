@@ -5,9 +5,9 @@ import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.header.EasyResult;
-import easy4j.infra.dbaccess.DBAccess;
-import easy4j.infra.dbaccess.condition.FWhereBuild;
-import easy4j.infra.dbaccess.condition.WhereBuild;
+import easy4j.infra.dbaccess.orm.IDBAccess;
+import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.IFWhereBuild;
 import easy4j.module.sauth.annotations.NoLogin;
 import easy4j.module.sauth.core.Easy4jAuth;
 import easy4j.module.sauth.encryption.IPwdEncryptionService;
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class AuthController {
 
     @Autowired
-    DBAccess dbAccess;
+    IDBAccess idbAccess;
 
     @Autowired
     IPwdEncryptionService encryptionService;
@@ -55,16 +55,16 @@ public class AuthController {
         securityUser.setAccountNonExpired(true);
         securityUser.setAccountNonLocked(true);
         securityUser.setEnabled(true);
-        WhereBuild equal = FWhereBuild.get(SecurityUser.class).equal(SecurityUser::getUsername, username);
-        List<SecurityUser> securityUsers = dbAccess.selectByCondition(equal, SecurityUser.class);
+        IFWhereBuild<SecurityUser> equal = FWhereBuild.get(SecurityUser.class).eq(SecurityUser::getUsername, username);
+        List<SecurityUser> securityUsers = idbAccess.query(equal, SecurityUser.class);
         if (CollUtil.isEmpty(securityUsers)) {
             securityUser.setUserId(CommonKey.gennerLong());
             String s = RandomUtil.randomString(4);
             securityUser.setPwdSalt(s);
             String encrypt = encryptionService.encrypt(password, securityUser);
             securityUser.setPassword(encrypt);
-            int i = dbAccess.saveOne(securityUser, SecurityUser.class);
-            Easy4j.info("用户写入" + i);
+            SecurityUser save = idbAccess.save(securityUser, SecurityUser.class);
+            Easy4j.info("用户写入" + save);
         }
         // 不能使用加密之后的参数传进去
         securityUser.setPassword(password);

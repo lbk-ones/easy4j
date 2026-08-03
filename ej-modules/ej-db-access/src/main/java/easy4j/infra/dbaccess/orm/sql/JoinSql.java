@@ -6,7 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
@@ -89,7 +89,7 @@ public class JoinSql extends AbsISql {
     public <T> String build(RuntimeContext<T> runtimeContext) {
         List<Object> sqlAllArgs = new ArrayList<>();
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
-        DialectV2 dialectV2 = runtimeContext.getDialectV2();
+        Dialect dialect = runtimeContext.getDialect();
         SqlWrapper sqlWrapper = runtimeContext.getSqlWrapper();
         List<SqlItem> sqlItemList = sqlWrapper.getSqlItemList();
         // 1、检查，并收集排除的name
@@ -147,7 +147,7 @@ public class JoinSql extends AbsISql {
                         if (i > 0) {
                             pickArg_ = StrUtil.sub(pickArg_, i + 1, pickArg_.length());
                         }
-                        pickArg_ = name + SP.DOT + accessUtils.sqlNameEscape(pickArg_, dialectV2, false);
+                        pickArg_ = name + SP.DOT + accessUtils.sqlNameEscape(pickArg_, dialect, false);
                     } else {
                         int i = pickArg_.indexOf(SP.DOT);
                         // 拿到表别称
@@ -155,7 +155,7 @@ public class JoinSql extends AbsISql {
                         // 拿到字段名称
                         String fieldName = StrUtil.sub(pickArg_, i + 1, pickArg_.length());
                         // 重新拼接
-                        pickArg_ = name_ + SP.DOT + accessUtils.sqlNameEscape(fieldName, dialectV2, false);
+                        pickArg_ = name_ + SP.DOT + accessUtils.sqlNameEscape(fieldName, dialect, false);
                     }
                     pickArg_ = pickArg_ + suffix;
                     allArgs = ArrayUtil.append(allArgs, pickArg_);
@@ -166,12 +166,12 @@ public class JoinSql extends AbsISql {
             Class<?> clazz = sqlItem.getClazz();
             String tableName1 = sqlItem.getTableName();
             if (clazz != null && StrUtil.isBlank(tableName1)) {
-                tableName1 = accessUtils.getTableName(clazz, dialectV2);
+                tableName1 = accessUtils.getTableName(clazz, dialect);
             }
             sqlItem.setTableName(tableName1);
             String on = sqlItem.getOn();
             if (StrUtil.isNotBlank(on)) {
-                on = accessUtils.sqlNameEscape(accessUtils.fn(on), dialectV2, false);
+                on = accessUtils.sqlNameEscape(accessUtils.fn(on), dialect, false);
             }
             sqlItem.setOn(on);
         }

@@ -1,8 +1,8 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.util.StrUtil;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.orm.plugin.IObtainTenantId;
 import easy4j.infra.dbaccess.orm.plugin.IPlugin;
 import lombok.Data;
@@ -118,8 +118,8 @@ public class AccessConfig {
                 synchronized (DB_MAP) {
                     if (DB_MAP.get(dataSource1) == null) {
                         try (Connection connection = dataSource1.getConnection()) {
-                            DialectV2 dialectV2 = DialectFactory.get(connection);
-                            String dbType = dialectV2.getDbType();
+                            Dialect dialect = DialectFactory.get(connection);
+                            String dbType = dialect.getDbType();
                             DB_MAP.put(dataSource1, dbType);
                             s = dbType;
                         } catch (SQLException ignored) {

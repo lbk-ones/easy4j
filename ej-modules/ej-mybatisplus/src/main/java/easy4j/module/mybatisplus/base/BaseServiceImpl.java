@@ -41,8 +41,8 @@ import easy4j.infra.common.utils.BusCode;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.context.api.seed.MybatisPlusSnowSeed;
 import easy4j.infra.context.api.user.UserContext;
-import easy4j.infra.dbaccess.DBAccess;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
+import easy4j.infra.dbaccess.orm.IDBAccess;
 import easy4j.module.mybatisplus.audit.AutoAudit;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -390,11 +390,11 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
         return objects.toArray(new String[]{});
     }
 
-    private DBAccess dbAccess;
+    private IDBAccess dbAccess;
 
-    public DBAccess access() {
+    public IDBAccess access() {
         if (dbAccess == null) {
-            dbAccess = SpringUtil.getBean(DBAccess.class);
+            dbAccess = SpringUtil.getBean(IDBAccess.class);
         }
         return dbAccess;
     }
@@ -414,7 +414,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             a.setUpdateName(userContext.getUserNameCn());
             a.setLastUpdateTime(new Date());
             if (updateDb) {
-                access().updateByPrimaryKeySelective(a, tClass, false);
+                access().updateById(a,true, tClass);
             }
         }
 
@@ -476,7 +476,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             a.setUpdateName(userNameCn);
             a.setLastUpdateTime(new Date());
             if (updateDb) {
-                access().updateByPrimaryKeySelective(a, tClass, false);
+                access().updateById(a,true, tClass);
             }
         }
     }

@@ -5,13 +5,10 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.helper.DDlHelper;
-import easy4j.infra.dbaccess.orm.conditions.Condition;
-import easy4j.infra.dbaccess.orm.conditions.IWhere;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
+import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import lombok.Getter;
@@ -115,7 +112,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
@@ -168,7 +165,7 @@ public class DBAccessImpl implements IDBAccess {
         List<AccessField> columnInfoList = context.getIdList();
         IWhere whereBuild = WhereBuild.get();
         columnInfoList.forEach(e -> {
-            whereBuild.getWhere().ifPresent(e2->e2.eq(e.getColumnName(), Wd.value(e.getColumnValue())));
+            whereBuild.getWhere().ifPresent(e2 -> e2.eq(e.getColumnName(), Wd.value(e.getColumnValue())));
         });
         List<Condition> conditions = whereBuild.getWhere().orElseThrow().getConditions();
         if (conditions.isEmpty()) {
@@ -186,7 +183,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        try{
+        try {
             Iterator<T> iterator = params.iterator();
             int i = 0;
             while (iterator.hasNext()) {
@@ -198,7 +195,7 @@ public class DBAccessImpl implements IDBAccess {
                 i += deleteByIdWith(context, false);
             }
             return i;
-        }finally {
+        } finally {
             accessUtils.releaseConnection(context);
         }
     }
@@ -234,6 +231,46 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
+    @Override
+    public <T> int dynamicUpdate(List<EasyMap<String, Object>> value, String tableName, String schema, boolean isSkipNull) {
+        if (CollUtil.isEmpty(value)) return 0;
+        if (StrUtil.isBlank(tableName)) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setMapParams(value)
+                .setTableName(tableName)
+                .setSchema(schema)
+                .setSkipNullIs(isSkipNull)
+                .setOperateType(OperateType.INSERT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        try {
+            int i = 0;
+            for (EasyMap<String, Object> param : value) {
+                accessUtils.refreshContextByMap(context, param);
+                IWhere whereBuild = idEq(context);
+                if (whereBuild == null) return 0;
+                i += updateByIdWith(context, false);
+            }
+            return i;
+        } finally {
+            accessUtils.releaseConnection(context);
+        }
+    }
+
+    @Override
+    public <T> int dynamicSave(List<EasyMap<String, Object>> value, String tableName, String schema) {
+        if (CollUtil.isEmpty(value)) return 0;
+        if (StrUtil.isBlank(tableName)) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setMapParams(value)
+                .setTableName(tableName)
+                .setSchema(schema)
+                .setOperateType(OperateType.INSERT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.resolveContext(e, false);
+            return e.getEffectRows();
+        });
+    }
 
     // 为了简单批量直接循环
     @Override
@@ -273,7 +310,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return e.getEffectRows();
         });
@@ -281,7 +318,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> int update(IWhere updateBuild, Class<T> clazz) {
+    public <T> int update(IUpdateBuild updateBuild, Class<T> clazz) {
         if (updateBuild == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
@@ -364,7 +401,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> EasyMap<String, Object> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args) {
+    public <T> List<EasyMap<String, Object>> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args) {
         if (StrUtil.isBlank(sql)) return null;
         Access<T> tAccess = new Access<T>()
                 .setSql(sql)
@@ -375,7 +412,7 @@ public class DBAccessImpl implements IDBAccess {
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, true);
-            return ListTs.get(e.getResultMapList(), 0);
+            return e.getResultMapList();
         });
 
     }
@@ -395,11 +432,54 @@ public class DBAccessImpl implements IDBAccess {
         List<Condition> selectFields = whereBuild.getSelectFields();
         flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultMapList(), 0);
         });
 
+    }
+
+    @Override
+    public PageRes queryPageByTableName(String schema, String tableName, boolean resultFieldToCame, IWhere whereBuild, boolean queryRealFields, Page<Object> page) {
+        if (StrUtil.isBlank(tableName)) return new PageRes();
+        Access<Object> tAccess = new Access<>()
+                .setSchema(schema)
+                .setPage(page)
+                .setTableName(tableName)
+                .setResultFieldToCame(resultFieldToCame)
+                .setWhere(whereBuild)
+                .setReturnMap(true)
+                .setOperateType(OperateType.SELECT);
+        if (page != null) {
+            tAccess.setOperateType(OperateType.SELECT_COUNT);
+            RuntimeContext<Object> context = accessUtils.toContext(tAccess);
+            List<Condition> selectFields = whereBuild.getSelectFields();
+            flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
+            return exeCallback(context, e -> {
+                e.setSkipTail(true);
+                accessUtils.resolveContext(e, false);
+                long count = e.getCount();
+                PageRes pageRes = new PageRes();
+                pageRes.setPageNo(page.getPageNo());
+                pageRes.setPageSize(page.getPageSize());
+                if (count <= 0) {
+                    return pageRes;
+                }
+                pageRes.setTotal(count);
+                e.setOperateType(OperateType.SELECT_PAGE);
+                e.setSkipTail(false);
+
+                accessUtils.resolveContext(e, false);
+                List<EasyMap<String, Object>> resultMapList = e.getResultMapList();
+                pageRes.setRecords(resultMapList);
+                return pageRes;
+            });
+        } else {
+            List<EasyMap<String, Object>> stringObjectEasyMap = queryMapListByTableName(schema, tableName, resultFieldToCame, whereBuild, queryRealFields);
+            PageRes pageRes = new PageRes();
+            pageRes.setRecords(stringObjectEasyMap);
+            return pageRes;
+        }
     }
 
     @Override
@@ -418,7 +498,7 @@ public class DBAccessImpl implements IDBAccess {
         flushRealFields(schema, tableName, whereBuild, queryRealFields, selectFields, context);
 
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return e.getResultMapList();
         });
@@ -428,7 +508,7 @@ public class DBAccessImpl implements IDBAccess {
     private static void flushRealFields(String schema, String tableName, IWhere whereBuild, boolean queryRealFields, List<Condition> selectFields, RuntimeContext<Object> context) {
         // 如果没字段则把字段查出来
         if (selectFields.isEmpty() && queryRealFields) {
-            DialectV2 dialectV2 = context.getDialectV2();
+            Dialect dialect = context.getDialect();
             Connection connection = context.getConnection();
             String catalog = null;
             try {
@@ -436,7 +516,7 @@ public class DBAccessImpl implements IDBAccess {
             } catch (SQLException ignored) {
             }
             // 不带缓存
-            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(catalog, schema, tableName);
+            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialect.getColumnsNoCacheQuiet(catalog, schema, tableName);
             for (DatabaseColumnMetadata databaseColumnMetadata : columnsNoCacheQuiet) {
                 whereBuild.getWhere().orElseThrow().select(databaseColumnMetadata.getColumnName());
             }
@@ -454,7 +534,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
 
             return e.getResultList();
@@ -487,7 +567,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultList(), 0);
         });
@@ -504,7 +584,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_COUNT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return e.getCount();
         });
@@ -520,7 +600,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT_EXIST);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return e.isExists();
         });
@@ -538,7 +618,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
-            
+
             accessUtils.resolveContext(e, false);
             return ListTs.get(e.getResultMapList(), 0);
         });
@@ -558,7 +638,7 @@ public class DBAccessImpl implements IDBAccess {
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
         return exeCallback(context, e -> {
             e.setSkipTail(true);
-            
+
             accessUtils.resolveContext(e, false);
             long count = e.getCount();
             PageRes pageRes = new PageRes();
@@ -570,7 +650,7 @@ public class DBAccessImpl implements IDBAccess {
             pageRes.setTotal(count);
             e.setOperateType(OperateType.SELECT_PAGE);
             e.setSkipTail(false);
-            
+
             accessUtils.resolveContext(e, false);
             List<T> resultList = e.getResultList();
             pageRes.setRecords(resultList);

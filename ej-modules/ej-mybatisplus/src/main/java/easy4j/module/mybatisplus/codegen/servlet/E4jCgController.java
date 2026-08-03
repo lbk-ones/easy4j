@@ -21,17 +21,15 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.collect.Lists;
 
 import easy4j.infra.base.resolve.AbstractEasy4jResolve;
-import easy4j.infra.base.resolve.DataSourceUrlResolve;
 import easy4j.infra.base.starter.env.Easy4j;
-import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.*;
 import easy4j.infra.common.utils.servletmvc.MethodType;
 import easy4j.infra.common.utils.servletmvc.SRes;
 import easy4j.infra.common.utils.servletmvc.ServletHandler;
 import easy4j.infra.common.utils.servletmvc.UrlMap;
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -47,7 +45,6 @@ import easy4j.module.mybatisplus.codegen.servlet.ast.ClassParseResult;
 import easy4j.module.mybatisplus.codegen.servlet.ast.JavaClassParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -98,8 +95,8 @@ public class E4jCgController {
                 dataSource = SpringUtil.getBean(DataSource.class);
             }
             connection = dataSource.getConnection();
-            DialectV2 dialectV2 = DialectFactory.get(connection);
-            List<TableMetadata> allTableInfoByTableType = dialectV2.getAllTableInfoByTableTypeNoCache(null, new String[]{"TABLE"});
+            Dialect dialect = DialectFactory.get(connection);
+            List<TableMetadata> allTableInfoByTableType = dialect.getAllTableInfoByTableTypeNoCache(null, new String[]{"TABLE"});
             List<String> collect = allTableInfoByTableType
                     .stream()
                     .map(TableMetadata::getTableName)
@@ -607,8 +604,8 @@ public class E4jCgController {
                 password);
         Map<String, DatabaseColumnMetadata> columnNameMap = new HashMap<>();
         try (Connection quietConnection = tempDataSource.getQuietConnection()) {
-            DialectV2 dialectV2 = DialectFactory.get(quietConnection);
-            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialectV2.getColumnsNoCacheQuiet(quietConnection.getCatalog(), quietConnection.getSchema(), tableName);
+            Dialect dialect = DialectFactory.get(quietConnection);
+            List<DatabaseColumnMetadata> columnsNoCacheQuiet = dialect.getColumnsNoCacheQuiet(quietConnection.getCatalog(), quietConnection.getSchema(), tableName);
             columnNameMap = ListTs.toMap(columnsNoCacheQuiet, e -> StrUtil.toCamelCase(StrUtil.toUnderlineCase(e.getColumnName()).toLowerCase()));
         }
         return columnNameMap;

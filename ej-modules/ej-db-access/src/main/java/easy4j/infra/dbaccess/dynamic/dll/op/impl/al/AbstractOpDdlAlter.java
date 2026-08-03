@@ -7,8 +7,8 @@ import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.header.CheckUtils;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.dynamic.dll.DDLFieldInfo;
 import easy4j.infra.dbaccess.dynamic.dll.DDLTableInfo;
 import easy4j.infra.dbaccess.dynamic.dll.op.OpConfig;
@@ -17,8 +17,6 @@ import easy4j.infra.dbaccess.dynamic.dll.op.OpSelector;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpColumnConstraints;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpDdlAlter;
 import easy4j.infra.dbaccess.dynamic.dll.op.api.OpSqlCommands;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.IOpMeta;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.OpDbMeta;
 import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
 import lombok.Getter;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -190,7 +188,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     public String dropTableIfExists(String tableName, boolean isExe) {
         OpContext opContext1 = this.getOpContext();
         Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
-        DialectV2 select = DialectFactory.get(connection);
+        Dialect select = DialectFactory.get(connection);
         List<TableMetadata> tableInfos = select.getAllTableInfoByTableTypeNoCache(tableName, new String[]{"TABLE"});
         String s = this.getOpContext().getOpConfig().patchStrWithTemplate(tableName, this.getDropTableTemplate(), COLUMN_MAP, EXT_MAP, this::getDropTableMap);
         if (ListTs.isEmpty(tableInfos)) {
@@ -207,7 +205,7 @@ public abstract class AbstractOpDdlAlter implements OpDdlAlter {
     public List<String> dropALlTableIfExists(boolean isExe) {
         OpContext opContext1 = this.getOpContext();
         Connection connection = Optional.ofNullable(opContext1).map(OpContext::getConnection).orElseThrow(() -> new IllegalArgumentException("the connection is null"));
-        DialectV2 select = DialectFactory.get(connection);
+        Dialect select = DialectFactory.get(connection);
         List<TableMetadata> allTableInfoByTableType = select.getAllTableInfoByTableType(null, new String[]{"TABLE"});
         List<String> res = ListTs.newList();
         if (ListTs.isNotEmpty(allTableInfoByTableType)) {

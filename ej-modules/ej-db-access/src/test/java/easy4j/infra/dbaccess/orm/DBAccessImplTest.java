@@ -1,12 +1,13 @@
 package easy4j.infra.dbaccess.orm;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.Page;
-import easy4j.infra.dbaccess.dialect.v2.DialectFactory;
-import easy4j.infra.dbaccess.dialect.v2.DialectV2;
+import easy4j.infra.dbaccess.dialect.DialectFactory;
+import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.PageRes;
 import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
@@ -39,7 +40,7 @@ class DBAccessImplTest {
     IDBAccess idbAccess;
     DynamicDDL dynamicDDL = null;
 
-    DialectV2 dialectV2;
+    Dialect dialect;
     String dbType;
 
     AccessConfig accessConfig;
@@ -60,11 +61,11 @@ class DBAccessImplTest {
         if (s != null) {
             System.out.println("create table ->" + s);
         }
-        dialectV2 = DialectFactory.get(connection);
-        dbType = dialectV2.getDbType();
-        int majorVersion = dialectV2.getMajorVersion();
-        int minorVersion = dialectV2.getMinorVersion();
-        String productVersion = dialectV2.getProductVersion();
+        dialect = DialectFactory.get(connection);
+        dbType = dialect.getDbType();
+        int majorVersion = dialect.getMajorVersion();
+        int minorVersion = dialect.getMinorVersion();
+        String productVersion = dialect.getProductVersion();
         System.out.println(majorVersion+","+minorVersion+","+productVersion);
     }
 
@@ -82,7 +83,7 @@ class DBAccessImplTest {
         if (accessConfig.isDb2AutoUpperCase() && Objects.equals(dbType, DbType.DB2.getDb())) {
             name = name.toUpperCase();
         }
-        return dialectV2.escape(name);
+        return dialect.escape(name);
     }
 
     @AfterEach
@@ -436,10 +437,12 @@ class DBAccessImplTest {
 
         // Query as map
         String sql = "SELECT * FROM " + fn("sys_operation_logs") + " WHERE " + fn("module") + " = ?";
-        EasyMap<String, Object> result = idbAccess.queryMapListBySql(sql, true, "mapQueryTest");
+        List<EasyMap<String, Object>> mapQueryTest = idbAccess.queryMapListBySql(sql, true, "mapQueryTest");
 
 
-        assertNotNull(result);
+        assertEquals(1, mapQueryTest.size());
+        EasyMap<String, Object> stringObjectEasyMap = mapQueryTest.get(0);
+        assertTrue(StrUtil.equals("mapQueryTest",stringObjectEasyMap.get("module").toString()));
     }
 
     @Test
