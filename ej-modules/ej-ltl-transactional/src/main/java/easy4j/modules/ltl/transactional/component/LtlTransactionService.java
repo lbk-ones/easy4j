@@ -17,6 +17,7 @@ package easy4j.modules.ltl.transactional.component;
 import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.SqlFileEnums;
 import easy4j.infra.dbaccess.orm.IDBAccess;
+import easy4j.infra.dbaccess.orm.conditions.IWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import easy4j.modules.ltl.transactional.LocalMessage;
 import org.springframework.beans.factory.InitializingBean;
@@ -60,7 +61,7 @@ public class LtlTransactionService implements InitializingBean {
 
     public List<LocalMessage> findAllFailed() {
         List<LocalMessage> all;
-        WhereBuild isFreeze = WhereBuild.get().isNull("isFreeze");
+        IWhereBuild isFreeze = WhereBuild.get().isNull("isFreeze");
         all = dbAccess.query(isFreeze, LocalMessage.class);
         return all;
     }
