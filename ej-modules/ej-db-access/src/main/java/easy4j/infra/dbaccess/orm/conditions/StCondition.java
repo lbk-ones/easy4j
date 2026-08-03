@@ -105,15 +105,27 @@ public interface StCondition<T, S> extends St {
 
     T last(String last);
 
+    T last(boolean option, String last);
+
     T select(S... columns);
+
+    T select(boolean option, S... columns);
 
     T groupBy(S... column);
 
+    T groupBy(boolean option, S... column);
+
     T asc(S... column);
+
+    T asc(boolean option, S... column);
 
     T desc(S... column);
 
+    T desc(boolean option, S... column);
+
     T having(S column, String value);
+
+    T having(boolean option, S column, String value);
 
     // 构建子条件
     T and(T subBuilder);
@@ -139,5 +151,7 @@ public interface StCondition<T, S> extends St {
     T not(Consumer<T> subBuilder);
 
     T not(boolean option, Consumer<T> subBuilder);
+
+    T optionDo(boolean option, VoidFunc func);
 
 }

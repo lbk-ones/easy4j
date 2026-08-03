@@ -26,4 +26,12 @@ public interface IWhereBuild extends IWhere, StCondition<IWhereBuild,String> {
 
     List<Condition> getUpdateConditions();
 
+    @Override
+    default IWhereBuild optionDo(boolean option, VoidFunc func){
+        if(option && func!=null){
+            func.call();
+        }
+        return this;
+    }
+
 }

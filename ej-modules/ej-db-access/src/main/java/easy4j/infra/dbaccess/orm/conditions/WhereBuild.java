@@ -303,7 +303,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
 
 
     public IWhereBuild sql(boolean option,String sql,Object ...args_){
-        if(option) {
+        if(option && StrUtil.isNotBlank(sql)) {
             if(notExistsColumn(sql,CompareOperator.UNKNOW)) conditions.add(new Condition(sql, CompareOperator.UNKNOW, args_));
         }
         return this;
@@ -378,6 +378,36 @@ public class WhereBuild implements Serializable,IWhereBuild {
             havingList.add(new Condition(name, CompareOperator.EMPTY, value));
         }
         return this;
+    }
+
+    @Override
+    public IWhereBuild last(boolean option, String last) {
+        return optionDo(option,()->this.last(last));
+    }
+
+    @Override
+    public IWhereBuild select(boolean option, String... columns) {
+        return optionDo(option,()->this.select(columns));
+    }
+
+    @Override
+    public IWhereBuild groupBy(boolean option, String... column) {
+        return optionDo(option,()->this.groupBy(column));
+    }
+
+    @Override
+    public IWhereBuild asc(boolean option, String... column) {
+        return optionDo(option,()->this.asc(column));
+    }
+
+    @Override
+    public IWhereBuild desc(boolean option, String... column) {
+        return optionDo(option,()->this.desc(column));
+    }
+
+    @Override
+    public IWhereBuild having(boolean option, String column, String value) {
+        return optionDo(option,()->this.having(column,value));
     }
 
     // 构建子条件

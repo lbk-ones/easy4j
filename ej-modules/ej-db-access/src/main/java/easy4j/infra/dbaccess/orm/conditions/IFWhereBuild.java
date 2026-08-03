@@ -19,4 +19,13 @@ import cn.hutool.core.lang.func.Func1;
 public interface IFWhereBuild<T> extends IWhere, StCondition<IFWhereBuild<T>, Func1<T, ?>> {
 
     IFWhereBuild<T> withLogicOperator(LogicOperator operator);
+
+    @Override
+    default IFWhereBuild<T> optionDo(boolean option, VoidFunc func) {
+        if (option && func != null) {
+            func.call();
+        }
+        return this;
+    }
+
 }

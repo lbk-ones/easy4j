@@ -16,5 +16,14 @@ package easy4j.infra.dbaccess.orm.conditions;
 
 
 public interface IUpdateBuild extends IWhere, StUpdateCondition<IUpdateBuild, String>, StCondition<IUpdateBuild, String> {
+
     IUpdateBuild withLogicOperator(LogicOperator operator);
+
+    @Override
+    default IUpdateBuild optionDo(boolean option, VoidFunc func) {
+        if (option && func != null) {
+            func.call();
+        }
+        return this;
+    }
 }

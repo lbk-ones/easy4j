@@ -20,4 +20,11 @@ public interface IFUpdateBuild<T> extends IWhere, StUpdateCondition<IFUpdateBuil
 
     IFUpdateBuild<T> withLogicOperator(LogicOperator operator);
 
+    @Override
+    default IFUpdateBuild<T> optionDo(boolean option, VoidFunc func) {
+        if (option && func != null) {
+            func.call();
+        }
+        return this;
+    }
 }
