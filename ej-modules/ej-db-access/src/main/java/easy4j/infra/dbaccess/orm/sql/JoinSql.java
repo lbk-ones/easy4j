@@ -31,6 +31,63 @@ public class JoinSql extends AbsISql {
         return runtimeContext.getOperateType() == OperateType.SELECT_JOIN;
     }
 
+    public record As(String pickName, String suffix) {
+    }
+
+    /**
+     * 处理 as 别名
+     *
+     * @param pickArg 参数名称
+     * @return As对象
+     */
+    public As handlerAs(String pickArg) {
+        String suffix = "";
+        String pickArg_ = pickArg;
+        // 处理别名 as 或者空格
+        // 支持 as AS As aS
+        if (pickArg_.indexOf(" as ") > 0) {
+            List<String> split = StrUtil.split(pickArg_, " as ");
+            if (split.size() == 2) {
+                suffix = " as " + StrUtil.trim(split.get(1));
+                pickArg_ = StrUtil.trim(split.get(0));
+            }
+        } else {
+            if (pickArg_.indexOf(" AS ") > 0) {
+                List<String> split = StrUtil.split(pickArg_, " AS ");
+                if (split.size() == 2) {
+                    suffix = " as " + StrUtil.trim(split.get(1));
+                    pickArg_ = StrUtil.trim(split.get(0));
+                }
+            } else {
+                int asIndex3 = pickArg_.indexOf(" As ");
+                if (asIndex3 > 0) {
+                    List<String> split = StrUtil.split(pickArg_, " As ");
+                    if (split.size() == 2) {
+                        suffix = " as " + StrUtil.trim(split.get(1));
+                        pickArg_ = StrUtil.trim(split.get(0));
+                    }
+                } else {
+                    if (pickArg_.indexOf(" aS ") > 0) {
+                        List<String> split = StrUtil.split(pickArg_, " aS ");
+                        if (split.size() == 2) {
+                            suffix = " as " + StrUtil.trim(split.get(1));
+                            pickArg_ = StrUtil.trim(split.get(0));
+                        }
+                    }
+                    int eIndex = pickArg_.indexOf(" ");
+                    if (eIndex > 0) {
+                        List<String> split = StrUtil.split(pickArg_, " ");
+                        split = split.stream().filter(StrUtil::isNotBlank).map(StrUtil::trim).toList();
+                        suffix = " " + StrUtil.trim(split.get(1));
+                        pickArg_ = StrUtil.trim(split.get(0));
+                    }
+                }
+
+            }
+        }
+        return new As(pickArg_, suffix);
+    }
+
     @Override
     public <T> String build(RuntimeContext<T> runtimeContext) {
         List<Object> sqlAllArgs = new ArrayList<>();
@@ -81,25 +138,10 @@ public class JoinSql extends AbsISql {
             if (pickArgs != null && pickArgs.length > 0) {
                 String[] args = {};
                 for (String pickArg : pickArgs) {
-                    String suffix = "";
-                    String pickArg_ = pickArg;
-                    // 处理别名 as 或者空格
-                    int asIndex = pickArg_.indexOf(" as ");
-                    if (asIndex > 0) {
-                        List<String> split = StrUtil.split(pickArg_, "as");
-                        if (split.size() == 2) {
-                            suffix = " as " + StrUtil.trim(split.get(1));
-                            pickArg_ = StrUtil.trim(split.get(0));
-                        }
-                    } else {
-                        int eIndex = pickArg_.indexOf(" ");
-                        if (eIndex > 0) {
-                            List<String> split = StrUtil.split(pickArg_, " ");
-                            split = split.stream().filter(StrUtil::isNotBlank).map(StrUtil::trim).toList();
-                            suffix = " " + StrUtil.trim(split.get(1));
-                            pickArg_ = StrUtil.trim(split.get(0));
-                        }
-                    }
+                    if (StrUtil.isBlank(pickArg)) continue;
+                    As as = this.handlerAs(pickArg);
+                    String pickArg_ = as.pickName();
+                    String suffix = as.suffix();
                     // 转下划线
                     pickArg_ = accessUtils.fn(pickArg_);
                     if (!StrUtil.startWith(pickArg_, name + SP.DOT)) {
@@ -248,7 +290,7 @@ public class JoinSql extends AbsISql {
     /**
      * 测试用例
      */
-    private static void test() {
+    public static void main(String[] args) {
 
         String jdbcUrl = "jdbc:h2:mem:testdb";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
@@ -278,8 +320,11 @@ public class JoinSql extends AbsISql {
                         SqlItem.join(),
                         SqlItem.of("operateCode", SysLogRecord.class, "var3", "var4"),
                         SqlItem.join("hash join"),
-                        SqlItem.of("operateCode2", SysLogRecord.class, "var5  varxx", "wq.var6  as  wqx")
-                ).where(FWhereBuild.get(SysLogRecord.class).sql(true, "a.operateId = ? and b.tag = ?", "23", "25"))
+                        SqlItem.of("operateCode2", SysLogRecord.class, "var5  varxx", "wq.var6  aS  wqx")
+                ).where(FWhereBuild.get(SysLogRecord.class)
+                        .sql(true, "a.operateId = ? and b.tag = ?", "23", "25")
+                        .eq(SysLogRecord::getParams,"23")
+                )
         );
         String build = joinSql.build(context);
         System.out.println(build);

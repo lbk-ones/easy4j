@@ -73,9 +73,26 @@ public class Condition {
 
     public String getSqlSegment(List<Object> argsList, RuntimeContext<?> runtimeContext) {
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
-        String column = accessUtils.escapeCn(accessUtils.fn(getColumn()), runtimeContext.getDialectV2(), false);
+        // fix: 如果传进来的 列名包含别名 比如 a.xxx = '33' 这种，把别名单独拆出来
+        String column_ = this.getColumn();
+        String prefix = null;
+        int dotIndex = column_.indexOf(".");
+        if (dotIndex > 0) {
+            prefix = StrUtil.sub(column_, 0, dotIndex);
+            column_ = StrUtil.sub(column_, dotIndex + 1, column_.length());
+            // 如果是 a. 这种则将a变成字段名称
+            if (StrUtil.isBlank(column_)) {
+                column_ = prefix;
+                prefix = null;
+            }
+        }
+        String column = column_;
+        if (!ListTs.asList(CompareOperator.UNKNOW,CompareOperator.DECR_BY,CompareOperator.INCR_BY).contains(operator)) {
+            column = accessUtils.escapeCn(accessUtils.fn(column), runtimeContext.getDialectV2(), false);
+        }
         // 给参数加前缀
         String argNamePrefix = runtimeContext.getArgNamePrefix();
+        argNamePrefix = StrUtil.blankToDefault(argNamePrefix, prefix);
         if (StrUtil.isNotBlank(argNamePrefix)) {
             if (column.indexOf(".") <= 0) {
                 if (StrUtil.endWith(argNamePrefix, SP.DOT)) {
@@ -94,7 +111,7 @@ public class Condition {
                             argsList.add(v);
                             return Wd.place(v);
                         })
-                        .collect(Collectors.joining(SP.COMMA+SP.SPACE));
+                        .collect(Collectors.joining(SP.COMMA + SP.SPACE));
                 return String.format("%s %s (%s)", column, operator.getSymbol(), values);
             } else {
                 if (value instanceof CharSequence) {
@@ -121,13 +138,13 @@ public class Condition {
                 argsList.addAll(Arrays.asList(values));
             }
             // 不转义 直接返回
-            return this.column;
-        }else if (operator == CompareOperator.DECR_BY) {
+            return column;
+        } else if (operator == CompareOperator.DECR_BY) {
             // 没有参数
-            return String.format(operator.getSymbol(), column, column,value);
-        }else if (operator == CompareOperator.INCR_BY) {
+            return String.format(operator.getSymbol(), column, column, value);
+        } else if (operator == CompareOperator.INCR_BY) {
             // 没有参数
-            return String.format(operator.getSymbol(), column, column,value);
+            return String.format(operator.getSymbol(), column, column, value);
         }
         argsList.add(value);
         return String.format("%s %s %s", column, operator.getSymbol(), Wd.place(value));

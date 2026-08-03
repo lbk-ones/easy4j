@@ -19,6 +19,7 @@ public class SqlItem {
     // 拿出来on的字段
     private String on;
 
+    // 指定这个表要查询的字段 支持别名 不传默认*
     private String[] pickArgs;
 
     // left join , join
@@ -85,7 +86,7 @@ public class SqlItem {
     private static SqlItem of(Class<?> clazz, String... pickArgs) {
         SqlItem sqlItem = new SqlItem();
         sqlItem.setClazz(clazz);
-        if (pickArgs.length == 0) {
+        if (pickArgs!=null && pickArgs.length == 0) {
             sqlItem.setPickArgs(new String[]{"*"});
         } else {
             sqlItem.setPickArgs(pickArgs);
@@ -107,6 +108,7 @@ public class SqlItem {
 
     /**
      * 条件构造，没有name会自动推算
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      *
      * @param on       需要联表查询的那个字段
      * @param clazz    类对象
@@ -121,7 +123,7 @@ public class SqlItem {
 
     /**
      * 条件构造，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on         需要联表查询的那个字段
      * @param clazz      类对象
      * @param whereBuild on里面的条件构造器 会追加到 on语句里面 比如 on (a.aid = b.bid and (追加到这里))，会自动添加这个表的别名 比如 a b c
@@ -136,7 +138,7 @@ public class SqlItem {
 
     /**
      * 条件构造，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on       需要联表查询的那个字段
      * @param name     表名别称 比如 a,b,c
      * @param clazz    类对象
@@ -151,7 +153,7 @@ public class SqlItem {
 
     /**
      * 条件构造，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on         需要联表查询的那个字段
      * @param name       表名别称 比如 a,b,c
      * @param clazz      类对象
@@ -167,7 +169,7 @@ public class SqlItem {
 
     /**
      * 条件构造(lambda)，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on       需要联表查询的那个字段
      * @param clazz    类对象
      * @param pickArgs 查询的参数可以加name比如 a.xxx、b.xx 也可以不加，同样也支持别名 name1 as name、name2 na
@@ -180,7 +182,7 @@ public class SqlItem {
 
     /**
      * 条件构造(lambda)，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on       需要联表查询的那个字段
      * @param name     表名别称 比如 a,b,c
      * @param clazz    类对象
@@ -196,7 +198,7 @@ public class SqlItem {
 
     /**
      * 条件构造(lambda)，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on         需要联表查询的那个字段
      * @param clazz      类对象
      * @param whereBuild on里面的条件构造器 会追加到 on语句里面 比如 on (a.aid = b.bid and (追加到这里))，会自动添加这个表的别名 比如 a b c
@@ -212,7 +214,7 @@ public class SqlItem {
 
     /**
      * 条件构造(lambda)，没有name会自动推算
-     *
+     * pickArgs 传空字符串或者null代表不查询这个表的字段,如果什么都不传则代表查全部
      * @param on         需要联表查询的那个字段
      * @param name       表名别称 比如 a,b,c
      * @param clazz      类对象
