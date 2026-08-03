@@ -15,9 +15,11 @@ import java.util.List;
 @Slf4j
 public class LogSql {
 
-    public static void init(RuntimeContext<?> runtimeContext, Long time) {
+    public static void init(RuntimeContext<?> runtimeContext, Long time,Long getConnectionTime,Long paramHandlerTime) {
         LogResult logResult = new LogResult();
         logResult.setBeginTime(time);
+        logResult.setGetConnectionTime(getConnectionTime);
+        logResult.setParamHandlerTime(paramHandlerTime);
         runtimeContext.setLogResult(logResult);
     }
 
@@ -86,7 +88,7 @@ public class LogSql {
                 logResult.setCostTime(System.currentTimeMillis() - logResult.getBeginTime());
                 logResult.setEffectRows(effectRows);
                 if (log.isInfoEnabled()) {
-                    log.info("[SQL] [{}ms {}ms] {} rows => {}", logResult.getCostTime(), exeTime, effectRows, logResult.getSql());
+                    log.info("[SQL] [{},{},{}]ms {} rows => {}", logResult.getCostTime(),logResult.getGetConnectionTime(), exeTime, effectRows, logResult.getSql());
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());

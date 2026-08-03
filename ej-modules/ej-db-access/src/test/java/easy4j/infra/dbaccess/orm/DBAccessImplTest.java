@@ -10,7 +10,7 @@ import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
 import easy4j.infra.dbaccess.domain.OperationLogs;
 import easy4j.infra.dbaccess.domain.PageRes;
-import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdLong;
@@ -48,10 +48,12 @@ class DBAccessImplTest {
     @BeforeEach
     synchronized void setUp() {
 
+        DataSource dataSource = getDb2_v12_1_5DataSource();
         accessConfig = new AccessConfig();
         accessConfig.addPlugin(new VersionLockPlugin());
         accessConfig.addPlugin(new LogicDeletePlugin());
-        DataSource dataSource = getH2DataSource();
+        accessConfig.setH2AutoUpperCase(false);
+        accessConfig.setIgnoreEscape(true);
         accessConfig.setDataSource(dataSource);
         accessConfig.setOnlyPrintSlowSql(false);
         idbAccess = new DBAccessImpl(accessConfig);
@@ -83,7 +85,10 @@ class DBAccessImplTest {
         if (accessConfig.isDb2AutoUpperCase() && Objects.equals(dbType, DbType.DB2.getDb())) {
             name = name.toUpperCase();
         }
-        return dialect.escape(name);
+        if (!accessConfig.isIgnoreEscape()) {
+            return dialect.escape(name);
+        }
+        return name;
     }
 
     @AfterEach
@@ -95,13 +100,13 @@ class DBAccessImplTest {
         }
     }
 
-    public DataSource getDb2_v12_1_5DataSource() {
+    public static DataSource getDb2_v12_1_5DataSource() {
         String jdbcUrl = "jdbc:db2://localhost:25000/SAMPLE";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, "bokun", "986099");
     }
 
-    public DataSource getMysql8DataSource() {
+    public static DataSource getMysql8DataSource() {
         String mysqlDbUrl = System.getenv("MYSQL_DB_URL");
         String userName = System.getenv("MYSQL_DB_USERNAME");
         String password = System.getenv("MYSQL_DB_PASSWORD");
@@ -110,13 +115,13 @@ class DBAccessImplTest {
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
 
-    public DataSource getOracle19cDataSource() {
+    public static DataSource getOracle19cDataSource() {
         String jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/orcl";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, "ts_schema", "ts_password");
     }
 
-    public DataSource getPg15DataSource() {
+    public static DataSource getPg15DataSource() {
         String pgDbUrl = System.getenv("PG_DB_URL");
         String userName = System.getenv("PG_DB_USERNAME");
         String password = System.getenv("PG_DB_PASSWORD");
@@ -126,7 +131,7 @@ class DBAccessImplTest {
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
 
-    public DataSource getMs2025DataSource() {
+    public static DataSource getMs2025DataSource() {
         String msUrl = System.getenv("MS_DB_URL");
         String userName = System.getenv("MS_DB_USERNAME");
         String password = System.getenv("MS_DB_PASSWORD");
@@ -135,7 +140,7 @@ class DBAccessImplTest {
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, userName, password);
     }
 
-    public DataSource getH2DataSource() {
+    public static DataSource getH2DataSource() {
         String jdbcUrl = "jdbc:h2:mem:testdb";
         String driverClassNameByUrl = SqlType.getDriverClassNameByUrl(jdbcUrl);
         return new TempDataSource(driverClassNameByUrl, jdbcUrl, "sa", "");

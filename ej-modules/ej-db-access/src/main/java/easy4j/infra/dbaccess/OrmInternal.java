@@ -19,7 +19,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.common.utils.*;
-import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.OrmFactory;

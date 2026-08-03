@@ -1,6 +1,6 @@
 package easy4j.infra.dbaccess.dialect;
 
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.*;
+import easy4j.infra.dbaccess.dll.op.meta.*;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 
 import jakarta.annotation.Nullable;

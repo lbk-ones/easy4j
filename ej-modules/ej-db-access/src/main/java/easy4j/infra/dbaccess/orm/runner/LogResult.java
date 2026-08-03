@@ -18,6 +18,8 @@ public class LogResult {
 
     // sql解析前的时间
     private long beginTime;
+    private long getConnectionTime;
+    private long paramHandlerTime;
 
 
     // 真正执行的开始时间

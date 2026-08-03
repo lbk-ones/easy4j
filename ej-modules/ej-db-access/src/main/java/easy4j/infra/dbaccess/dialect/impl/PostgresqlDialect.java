@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
-import easy4j.infra.dbaccess.dynamic.dll.PgSQLFieldType;
+import easy4j.infra.dbaccess.dll.PgSQLFieldType;
 
 import java.sql.Connection;
 import java.util.Optional;

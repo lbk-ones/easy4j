@@ -1,9 +1,8 @@
 package easy4j.infra.dbaccess.domain;
 
-import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.dynamic.dll.DDLField;
-import easy4j.infra.dbaccess.dynamic.dll.DDLTable;
-import easy4j.infra.dbaccess.dynamic.dll.idx.DDLIndex;
+import easy4j.infra.dbaccess.dll.DDLField;
+import easy4j.infra.dbaccess.dll.DDLTable;
+import easy4j.infra.dbaccess.dll.idx.DDLIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;

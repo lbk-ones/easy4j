@@ -20,7 +20,7 @@ public class DialectFactory {
 
     private static final Properties databaseTypeMappings = getDefaultDatabaseTypeMappings();
 
-    private static Properties getDefaultDatabaseTypeMappings() {
+    public static Properties getDefaultDatabaseTypeMappings() {
         Properties databaseTypeMappings = new Properties();
         databaseTypeMappings.setProperty("H2", DbType.H2.getDb());
         databaseTypeMappings.setProperty("MySQL", DbType.MYSQL.getDb());

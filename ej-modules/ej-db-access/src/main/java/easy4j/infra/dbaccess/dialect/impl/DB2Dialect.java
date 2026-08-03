@@ -4,8 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
-import easy4j.infra.dbaccess.dynamic.dll.DB2FieldType;
-import easy4j.infra.dbaccess.dynamic.dll.OracleFieldType;
+import easy4j.infra.dbaccess.dll.DB2FieldType;
+import easy4j.infra.dbaccess.dll.OracleFieldType;
 
 import java.sql.Connection;
 import java.util.Optional;
@@ -86,6 +86,6 @@ public class DB2Dialect extends AbstractDialect {
 
     @Override
     public String getDefaultDateTime() {
-        return null;
+        return "current_timestamp";
     }
 }

@@ -1,20 +1,25 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
+import easy4j.infra.common.utils.EStopWatch;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.PrimaryKeyMetadata;
+import easy4j.infra.dbaccess.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
@@ -180,7 +185,10 @@ public class AccessUtils implements Serializable {
             fields = ReflectUtil.getFields(clazz);
         }
         // obtain datasource connection
+
+        long l = System.currentTimeMillis();
         Connection connection = getConnection();
+        long getConnectionTime = System.currentTimeMillis() - l;
         Dialect dialect = DialectFactory.get(connection);
         String dbType = dialect.getDbType();
         List<AccessField> columnInfoList = new ArrayList<>();
@@ -189,6 +197,7 @@ public class AccessUtils implements Serializable {
         List<AccessField> insertList = new LinkedList<>();
         List<AccessField> idlist = new LinkedList<>();
         List<AccessField> autoIncrementsList = new LinkedList<>();
+        long l2 = System.currentTimeMillis();
         int index = 0;
         // 如果没有参数则只记录字段信息 字段信息的值是null
         if (p.isEmpty()) {
@@ -247,7 +256,6 @@ public class AccessUtils implements Serializable {
                 index++;
             }
         }
-
         String schema = access.getSchema();
         RuntimeContext<T> tRuntimeContext = new RuntimeContext<T>()
                 .setSqlWrapper(access.getSqlWrapper())
@@ -270,7 +278,8 @@ public class AccessUtils implements Serializable {
                 .setDialect(dialect)
                 .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialect), sqlNameEscape(fn(access.getTableName()), dialect, false)))
                 .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialect, false));
-        LogSql.init(tRuntimeContext, bt);
+        long l3 = System.currentTimeMillis() - l2;
+        LogSql.init(tRuntimeContext, bt,getConnectionTime,l3);
         return tRuntimeContext;
 
     }

@@ -24,9 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SysConstant;
-import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.annotations.JdbcTable;
-import easy4j.infra.dbaccess.dynamic.dll.DDLField;
 import easy4j.module.sauth.authentication.JWTUtils;
 import easy4j.module.seed.CommonKey;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,8 +33,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * SecuritySession

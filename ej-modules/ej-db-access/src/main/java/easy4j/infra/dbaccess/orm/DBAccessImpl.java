@@ -6,7 +6,7 @@ import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.DatabaseColumnMetadata;
+import easy4j.infra.dbaccess.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.helper.DDlHelper;
 import easy4j.infra.dbaccess.orm.conditions.*;
 import easy4j.infra.dbaccess.domain.PageRes;

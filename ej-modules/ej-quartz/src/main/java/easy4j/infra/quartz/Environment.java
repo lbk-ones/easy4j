@@ -11,7 +11,7 @@ import easy4j.infra.dbaccess.OrmInternal;
 import easy4j.infra.dbaccess.TempDataSource;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
-import easy4j.infra.dbaccess.dynamic.dll.op.meta.TableMetadata;
+import easy4j.infra.dbaccess.dll.op.meta.TableMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;

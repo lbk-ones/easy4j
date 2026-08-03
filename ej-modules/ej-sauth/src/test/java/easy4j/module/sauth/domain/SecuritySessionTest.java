@@ -1,15 +1,10 @@
 package easy4j.module.sauth.domain;
 
-import easy4j.infra.base.starter.Easy4JStarter;
 import easy4j.infra.dbaccess.TempDataSource;
-import easy4j.infra.dbaccess.dynamic.dll.op.DynamicDDL;
+import easy4j.infra.dbaccess.dll.op.DynamicDDL;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SecuritySessionTest {
 

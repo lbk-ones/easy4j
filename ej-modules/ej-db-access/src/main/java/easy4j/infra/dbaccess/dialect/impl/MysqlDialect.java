@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.dialect.AbstractDialect;
-import easy4j.infra.dbaccess.dynamic.dll.MySQLFieldType;
+import easy4j.infra.dbaccess.dll.MySQLFieldType;
 
 import java.sql.Connection;
 import java.util.List;

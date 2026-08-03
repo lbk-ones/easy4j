@@ -14,7 +14,7 @@
  */
 package easy4j.module.mybatisplus.audit;
 
-import easy4j.infra.dbaccess.dynamic.dll.DDLField;
+import easy4j.infra.dbaccess.dll.DDLField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
