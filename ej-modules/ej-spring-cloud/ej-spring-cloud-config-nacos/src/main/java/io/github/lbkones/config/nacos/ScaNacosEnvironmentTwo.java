@@ -16,16 +16,18 @@ package io.github.lbkones.config.nacos;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
-import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.config.StringConfigToPropertySourceUtils;
 import  io.github.lbkones.config.api.ConfigCenterFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
@@ -49,11 +51,12 @@ import java.util.Set;
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER + 1)
 public class ScaNacosEnvironmentTwo extends AbstractEasy4jEnvironment {
 
-    public static final String SCA_OVERRIDE_ENV = "sca-nacos-config-2";
+    public static final String SYS_OVERIDE_PARAMS = "sca-nacos-environment-sys-overide";
+    public static final String NOSYS_OVERIDE_PARAMS = "sca-nacos-environment-nosys-overide";
 
     @Override
     public String getName() {
-        return SCA_OVERRIDE_ENV;
+        return SYS_OVERIDE_PARAMS;
     }
 
     @Override
@@ -76,7 +79,6 @@ public class ScaNacosEnvironmentTwo extends AbstractEasy4jEnvironment {
             System.out.println(SysLog.compact("skip load nacos config two step"));
             return;
         }
-        List<EjSysFieldInfo> allEjSysFieldInfoList = EjSysFieldInfo.getAllEjSysInfoList();
         NacosPropetiesParse build = NacosPropetiesParse.build(this.getConfigEnvironment(), true);
         List<NacosPropetiesParse.NacosDataId> dataIds = build.getDataIds();
         for (NacosPropetiesParse.NacosDataId dataId_ : dataIds) {
@@ -88,59 +90,53 @@ public class ScaNacosEnvironmentTwo extends AbstractEasy4jEnvironment {
             PropertySource<?> propertySource = propertySources.get(nacosPropertiesResourceName);
             if (ObjectUtil.isEmpty(propertySource)) {
                 System.err.println(SysLog.compact("nacos configuration center failed to read the value. " + nacosPropertiesResourceName));
-                return;
+                continue;
             }
             assert propertySource != null;
 
+            Map<String, String> ccMap = castToMap(propertySource);
             // init config center
-            ConfigCenterFactory.get().change(castToMap(propertySource));
+            ConfigCenterFactory.get().change(ccMap);
 
             Map<String, Object> mapPropertiesResource = Maps.newHashMap();
-            Map<String, EjSysFieldInfo> stringEjSysFieldInfoMap = ListTs.mapOne(allEjSysFieldInfoList, EjSysFieldInfo::getSysConstantName);
-            allEjSysFieldInfoList.forEach(ejSysFieldInfo -> {
-                String sysConstantName = ejSysFieldInfo.getSysConstantName();
-                Object property = propertySource.getProperty(sysConstantName);
-                if (ObjectUtil.isNotEmpty(property)) {
-                    mapPropertiesResource.put(sysConstantName, property);
+            Map<String, Object> nonSysMap = Maps.newHashMap();
+            for (Map.Entry<String, String> ccEntry : ccMap.entrySet()) {
+                String key = ccEntry.getKey();
+                String value = ccEntry.getValue();
+                if(StrUtil.startWith(key, SysConstant.PARAM_PREFIX+ SP.DOT)){
+                    mapPropertiesResource.put(key, value);
+                }else{
+                    nonSysMap.put(key,value);
                 }
-            });
+            }
 
-            // 以 easy4j.开头的参数
+            // 以 easy4j.开头的参数 优先级比较高 如果同时设置 那么会采用前者的值
             if (CollUtil.isNotEmpty(mapPropertiesResource)) {
 
                 BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
                 bootStrapSpecialVsResolve.handler(mapPropertiesResource, null);
 
                 System.out.println(SysLog.compact("success override nacos sys config keys:" + mapPropertiesResource.size()));
-                OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName(), mapPropertiesResource, true);
-
-                // 这个时候一定能保证FIRST_ENV_NAME在最前面
-                propertySources.addAfter(FIRST_ENV_NAME, originTrackedMapPropertySource);
+                OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(SYS_OVERIDE_PARAMS, mapPropertiesResource, true);
+                propertySources.addBefore(FIRST_ENV_NAME, originTrackedMapPropertySource);
             }
-
+            // SYS_OVERIDE_PARAMS > NOSYS_OVERIDE_PARAMS > FIRST_ENV_NAME
             // 覆盖所有非系统参数
-            Map<String, Object> nonSysMap = getNoSysMap(propertySource, stringEjSysFieldInfoMap);
             if (CollUtil.isNotEmpty(nonSysMap)) {
                 System.out.println(SysLog.compact("success override nacos nonsys config keys:" + nonSysMap.size()));
-
-                OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(getName() + "_2", nonSysMap, true);
-                propertySources.addBefore(FIRST_ENV_NAME, originTrackedMapPropertySource);
+                if(propertySources.contains(SYS_OVERIDE_PARAMS)){
+                    OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(NOSYS_OVERIDE_PARAMS, nonSysMap, true);
+                    propertySources.addAfter(SYS_OVERIDE_PARAMS, originTrackedMapPropertySource);
+                }else{
+                    OriginTrackedMapPropertySource originTrackedMapPropertySource = new OriginTrackedMapPropertySource(NOSYS_OVERIDE_PARAMS, nonSysMap, true);
+                    propertySources.addBefore(FIRST_ENV_NAME, originTrackedMapPropertySource);
+                }
             }
         }
 
     }
     private static Map<String, String> castToMap(PropertySource<?> propertySource){
-        Map<@Nullable String, @Nullable String> res = Maps.newHashMap();
-        Object source = propertySource.getSource();
-        if (source instanceof Map<?, ?> source1) {
-            Set<? extends Map.Entry<?, ?>> entries = source1.entrySet();
-            for (Map.Entry<?, ?> entry : entries) {
-                String key = String.valueOf(entry.getKey());
-                Object value = entry.getValue();
-                res.put(key,String.valueOf(value));
-            }
-        }
-        return res;
+        return StringConfigToPropertySourceUtils.toMapStr(propertySource);
     }
 
     private static Map<String, Object> getNoSysMap(PropertySource<?> propertySource, Map<String, EjSysFieldInfo> stringEjSysFieldInfoMap) {

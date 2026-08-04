@@ -2,6 +2,7 @@ package easy4j.infra.common.utils.config;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -117,14 +118,24 @@ public class StringConfigToPropertySourceUtils {
      */
     public static Map<String, Object> toMap(PropertySource<?> propertySource) {
         Map<String, Object> res = new HashMap<>();
-        if (null == propertySource) return res;
+        getMap(propertySource, res,Object.class);
+        return res;
+    }
+
+    public static Map<String, String> toMapStr(PropertySource<?> propertySource) {
+        Map<String, String> res = new HashMap<>();
+        getMap(propertySource, res,String.class);
+        return res;
+    }
+
+    private static <K,V> void getMap(PropertySource<?> propertySource, Map<String,V> res,Class<V> vClass) {
         Object source = propertySource.getSource();
         if (propertySource instanceof EnumerablePropertySource<?> source1) {
             String[] propertyNames = source1.getPropertyNames();
             for (String propertyName : propertyNames) {
                 Object property = propertySource.getProperty(propertyName);
                 if (property != null) {
-                    res.put(propertyName, property.toString());
+                    res.put(propertyName, vClass.cast(property));
                 }
             }
         }else if (source instanceof Map<?, ?> source1) {
@@ -132,11 +143,10 @@ public class StringConfigToPropertySourceUtils {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
                 if (value != null) {
-                    res.put(key.toString(), value.toString());
+                    res.put(key.toString(), vClass.cast(value));
                 }
             }
         }
-        return res;
     }
 
     /*public static void main(String[] args) {

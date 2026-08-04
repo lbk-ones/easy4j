@@ -213,3 +213,10 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 - spring-cloud模块下config-nacos和registry-nacos优化，在使用了nacos当做配置中心之后，可以脱离nacos配置中心部署
 - NamingServerInvoker从sca模块迁移到registry-nacos模块下去并优化部分逻辑
 - NacosEventListener从sca模块迁移到registry-nacos模块
+
+# **2.1.5** - 2026-08-04
+- 重构db-access模块WhereBuild一系列逻辑
+- 删除大量db-access过时代码
+- 加入参数debug模式 --EASY4J_ENV_DEBUG=true开启
+- 优化参数系统加载顺序
+- 优化以及bug修复若干

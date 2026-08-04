@@ -164,6 +164,10 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         try {
             String name = getName();
+            String initParameterValue = getInitParameterValue("EASY4J_ENV_DEBUG");
+            if(StrUtil.equals("true",initParameterValue)){
+                System.out.println(SysLog.compact("environment post processor -> "+name));
+            }
             initEnv(environment, application);
             if (isSkip()) {
                 System.out.println(SysLog.compact("skip " + getName() + " config.."));

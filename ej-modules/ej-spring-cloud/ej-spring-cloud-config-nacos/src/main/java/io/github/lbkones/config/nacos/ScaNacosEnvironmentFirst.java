@@ -53,7 +53,7 @@ import java.util.Properties;
 @Order(value = ConfigDataEnvironmentPostProcessor.ORDER - 2)
 public class ScaNacosEnvironmentFirst extends AbstractEasy4jEnvironment {
 
-    public static final String SCA_ENV = "sca-nacos-config-1";
+    public static final String SCA_ENV = "sca-nacos-environment-first";
 
     @Override
     public String getName() {
