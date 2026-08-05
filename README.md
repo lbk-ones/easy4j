@@ -118,7 +118,7 @@ Easy4J 框架包含以下核心模块：
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
-        <ej.version>2.1.2</ej.version>
+        <ej.version>2.1.5</ej.version>
     </properties>
 
 

@@ -146,6 +146,113 @@
 
     </dependencies>
 
+    <!--<build>
+        <plugins>
+            &lt;!&ndash; Shade 插件：合并模块代码，但保留第三方依赖关系 &ndash;&gt;
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
 
+                            <transformers>
+                                &lt;!&ndash; 合并 Spring Boot 自动配置 &ndash;&gt;
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</resource>
+                                </transformer>
+
+                                &lt;!&ndash; 合并 spring.factories &ndash;&gt;
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.factories</resource>
+                                </transformer>
+
+                                &lt;!&ndash; 合并 SPI 文件 &ndash;&gt;
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+
+                                &lt;!&ndash; 合并 spring-configuration-metadata.json &ndash;&gt;
+&lt;!&ndash;                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">&ndash;&gt;
+&lt;!&ndash;                                    <resource>META-INF/spring-configuration-metadata.json</resource>&ndash;&gt;
+&lt;!&ndash;                                </transformer>&ndash;&gt;
+
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>META-INF/spring-configuration-metadata.json</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>README.md</resource>
+                                </transformer>
+
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>readme.md</resource>
+                                </transformer>
+
+                                &lt;!&ndash; MANIFEST.MF 合并 &ndash;&gt;
+&lt;!&ndash;                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">&ndash;&gt;
+&lt;!&ndash;                                    <mainClass>你的主类</mainClass>&ndash;&gt;
+&lt;!&ndash;                                </transformer>&ndash;&gt;
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        &lt;!&ndash; 排除所有 pom 文件 &ndash;&gt;
+                                        <exclude>META-INF/maven/**</exclude>
+                                        &lt;!&ndash; 排除签名文件 &ndash;&gt;
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            &lt;!&ndash; 移除 filters，让它默认打包所有依赖 &ndash;&gt;
+                            <artifactSet>
+                                <includes>
+                                    <include>io.github.lbk-ones:*</include>
+                                </includes>
+                                <excludes>
+                                    &lt;!&ndash; 如果有特殊要排除的第三方包，才在这里写 &ndash;&gt;
+
+                                </excludes>
+                            </artifactSet>
+                            <finalName>easy4j-all-${revision}</finalName>
+                        </configuration>
+&lt;!&ndash;                        &ndash;&gt;
+&lt;!&ndash;                        <configuration>&ndash;&gt;
+&lt;!&ndash;                            &lt;!&ndash; 关键：不打包第三方依赖 &ndash;&gt;&ndash;&gt;
+&lt;!&ndash;                            <shadedArtifactAttached>true</shadedArtifactAttached>&ndash;&gt;
+&lt;!&ndash;                            <createDependencyReducedPom>true</createDependencyReducedPom>&ndash;&gt;
+
+&lt;!&ndash;                            &lt;!&ndash; 只打包自己的模块，不打包外部库 &ndash;&gt;&ndash;&gt;
+&lt;!&ndash;                            <filters>&ndash;&gt;
+&lt;!&ndash;                                &lt;!&ndash; 包含你的所有模块 &ndash;&gt;&ndash;&gt;
+&lt;!&ndash;                                <filter>&ndash;&gt;
+&lt;!&ndash;                                    <artifact>io.github.lbk-ones:*</artifact>&ndash;&gt;
+&lt;!&ndash;                                    <includes>&ndash;&gt;
+&lt;!&ndash;                                        <include>**</include>&ndash;&gt;
+&lt;!&ndash;                                    </includes>&ndash;&gt;
+&lt;!&ndash;                                </filter>&ndash;&gt;
+&lt;!&ndash;                                &lt;!&ndash; 排除所有第三方库 &ndash;&gt;&ndash;&gt;
+&lt;!&ndash;                                <filter>&ndash;&gt;
+&lt;!&ndash;                                    <artifact>*:*:*:*:*</artifact>&ndash;&gt;
+&lt;!&ndash;                                    <excludes>&ndash;&gt;
+&lt;!&ndash;                                        <exclude>**</exclude>&ndash;&gt;
+&lt;!&ndash;                                    </excludes>&ndash;&gt;
+&lt;!&ndash;                                </filter>&ndash;&gt;
+&lt;!&ndash;                            </filters>&ndash;&gt;
+
+&lt;!&ndash;                            <finalName>easy4j-boot-starter</finalName>&ndash;&gt;
+&lt;!&ndash;                        </configuration>&ndash;&gt;
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>-->
 
 </project>
