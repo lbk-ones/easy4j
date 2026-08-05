@@ -216,7 +216,13 @@ org.springframework.cache.CacheManager          缓存管理器如果要使用�
 
 # **2.1.5** - 2026-08-04
 - 重构db-access模块WhereBuild一系列逻辑
-- 删除大量db-access过时代码
-- 加入参数debug模式 --EASY4J_ENV_DEBUG=true开启
+- 删除大量db-access模块过时代码
+- 新增系统参数easy4j.disabled.db.autoddl设置为true禁用内部DB自动建表行为
+- 新增系统参数easy4j.disabled.env.inject设置为true禁用参数自动注入行为
+- 新增系统参数easy4j.boot.debug设置为true开启debug模式，可以打印很多启动阶段调试信息，有助于排查问题
 - 优化参数系统加载顺序
-- 优化以及bug修复若干
+- 修复有些写在本地的参数，配置中心的值无法覆盖的问题
+- 修复自动建表混乱的问题
+
+ps:
+> 新增的参数是从命令行参数、-D、env中拿取，不进入spring配置文件，优先级：命令行 > -D > env

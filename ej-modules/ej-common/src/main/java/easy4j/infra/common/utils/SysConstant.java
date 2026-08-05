@@ -87,6 +87,12 @@ public class SysConstant {
     // ------spring cloud alibaba end
 
     // -------------------------EASY4j PROPERTIES----------------------------------------
+    // 禁用内部DB自动建表行为
+    public static final String DISABLED_DB_AUTO_DDL = PARAM_PREFIX + StringPool.DOT  +"disabled.db.autoddl";
+    // 禁用参数自动注入行为
+    public static final String DISABLED_ENV_INJECT = PARAM_PREFIX + StringPool.DOT  +"disabled.env.inject";
+    // 开启debug模式，可以打印很多启动阶段调试信息
+    public static final String EASY4J_ENV_DEBUG = PARAM_PREFIX + StringPool.DOT  + "boot.debug";
 
     public static final String DB_URL_STR_NEW = PARAM_PREFIX + StringPool.DOT + "data-source-url";
 

@@ -145,11 +145,10 @@ public class Easy4jConfigEnvironment extends AbstractEasy4jEnvironment {
                         MutablePropertySources propertySources = environment.getPropertySources();
                         MapPropertySource propertiesPropertySource = new MapPropertySource(key_, mapProperties);
                         // fix: 优先级必须比注解要高
-                        if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES) && propertySources.contains(FIRST_ENV_NAME)) {
-                            propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES, propertiesPropertySource);
+                        if (propertySources.contains(FIRST_ENV_NAME)) {
+                            propertySources.addBefore(FIRST_ENV_NAME, propertiesPropertySource);
                         } else {
-                            propertySources
-                                    .addAfter(FIRST_ENV_NAME, propertiesPropertySource);
+                            propertySources.addLast(propertiesPropertySource);
                         }
                     }
                 }

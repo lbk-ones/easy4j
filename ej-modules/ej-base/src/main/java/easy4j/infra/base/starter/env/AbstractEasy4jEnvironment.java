@@ -17,19 +17,15 @@ package easy4j.infra.base.starter.env;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
-import easy4j.infra.base.properties.EjSysFieldInfo;
 import easy4j.infra.base.properties.EjSysProperties;
-import easy4j.infra.base.resolve.AbstractEasy4jResolve;
 import easy4j.infra.base.resolve.BootStrapSpecialVsResolve;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.*;
 import jodd.util.StringPool;
 import lombok.Getter;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.PropertiesPropertySourceLoader;
@@ -46,11 +42,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 抽象处理配置
@@ -163,8 +157,9 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
     @Override
     public final void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         try {
+            if (StrUtil.equals("true",getInitParameterValue(SysConstant.DISABLED_ENV_INJECT))) return;
             String name = getName();
-            String initParameterValue = getInitParameterValue("EASY4J_ENV_DEBUG");
+            String initParameterValue = getInitParameterValue(SysConstant.EASY4J_ENV_DEBUG);
             if(StrUtil.equals("true",initParameterValue)){
                 System.out.println(SysLog.compact("environment post processor -> "+name));
             }
@@ -268,7 +263,7 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
      *
      * @param name 参数名称
      */
-    public String getInitParameterValue(String name) {
+    public static String getInitParameterValue(String name) {
         Map<String, String> argsMap = Easy4j.getSpringInputArgsMap();
         String var1 = argsMap.get(name);
         String var2 = System.getProperty(name);
@@ -384,6 +379,18 @@ public abstract class AbstractEasy4jEnvironment extends StandAbstractEasy4jResol
             BootStrapSpecialVsResolve bootStrapSpecialVsResolve = new BootStrapSpecialVsResolve();
             bootStrapSpecialVsResolve.handler(mapProperties, null);
             System.out.println(SysLog.compact("final " + mapProperties.size() + " properties will be inject env"));
+            String initParameterValue = getInitParameterValue(SysConstant.EASY4J_ENV_DEBUG);
+            if(StrUtil.equals("true",initParameterValue)){
+                System.out.println(" ");
+                System.out.println(SysLog.compact("================================ ⬇⬇⬇⬇⬇⬇⬇⬇⬇ early bootstrap properties print"));
+                System.out.println(" ");
+                for (Map.Entry<String, Object> entry : mapProperties.entrySet()) {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    System.out.println(SysLog.compact(key + " = "+ value));
+                }
+                System.out.println(SysLog.compact("================================ ⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆ early bootstrap properties print"));
+            }
             // fix: if enable redis server.port...attrs confusion
             if (propertySources.contains(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES)) {
                 propertySources.addBefore(Easy4j.EJ_SYS_ANNOTATION_PROPERTIES, new MapPropertySource(FIRST_ENV_NAME, mapProperties));

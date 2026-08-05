@@ -1,6 +1,7 @@
 package easy4j.infra.base.starter.env;
 
 import cn.hutool.core.util.StrUtil;
+import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.config.StringConfigToPropertySourceUtils;
 import org.springframework.boot.SpringApplication;
@@ -9,14 +10,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-@Order(value = ConfigDataEnvironmentPostProcessor.ORDER + 1000)
-public class EnvironmentDebug extends AbstractEasy4jEnvironment{
+/**
+ * debug 日志
+ * @since 2.1.5
+ */
+@Order(value = ConfigDataEnvironmentPostProcessor.ORDER + 3000)
+public class Easy4jEnvironmentDebug extends AbstractEasy4jEnvironment{
 
     private static  boolean EXED = false;
 
@@ -34,7 +37,7 @@ public class EnvironmentDebug extends AbstractEasy4jEnvironment{
     public void handlerEnvironMent(ConfigurableEnvironment environment, SpringApplication application) {
         if(!EXED){
             try{
-                String initParameterValue = getInitParameterValue("EASY4J_ENV_DEBUG");
+                String initParameterValue = getInitParameterValue(SysConstant.EASY4J_ENV_DEBUG);
                 if(StrUtil.equals("true",initParameterValue)){
                     MutablePropertySources propertySources = environment.getPropertySources();
                     for (PropertySource<?> next : propertySources) {

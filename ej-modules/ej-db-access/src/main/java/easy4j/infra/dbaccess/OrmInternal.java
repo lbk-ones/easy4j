@@ -18,6 +18,7 @@ package easy4j.infra.dbaccess;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
+import easy4j.infra.base.starter.env.AbstractEasy4jEnvironment;
 import easy4j.infra.common.utils.*;
 import easy4j.infra.dbaccess.dll.op.DynamicDDL;
 import easy4j.infra.dbaccess.helper.DDlHelper;
@@ -67,18 +68,18 @@ public class OrmInternal extends StandAbstractEasy4jResolve {
             IDBAccess idbAccess = getIdbAccess(null);
             ObjectHolder.INSTANCE.setObject(CACHE_KEY, idbAccess);
         }
-        return (IDBAccess) ObjectHolder.INSTANCE.getObject(CACHE_KEY);
+        IDBAccess object = (IDBAccess) ObjectHolder.INSTANCE.getObject(CACHE_KEY);
+        init(object);
+        return object;
     }
 
     private static @NonNull IDBAccess getIdbAccess(DataSource dataSource) {
-        IDBAccess idbAccess = OrmFactory.getInternal(dataSource, e -> {
+        return OrmFactory.getInternal(dataSource, e -> {
             e.setInTransaction(false);
             e.setPrintSqlIs(true);
             // 全部sql都打印
             e.setOnlyPrintSlowSql(false);
         });
-        init(idbAccess);
-        return idbAccess;
     }
 
     public static void initDb(SqlFileEnums path) {
@@ -110,6 +111,11 @@ public class OrmInternal extends StandAbstractEasy4jResolve {
      * @param jdbcDbAccess orm实例
      */
     public static void init(IDBAccess jdbcDbAccess) {
+
+        if (jdbcDbAccess == null) return;
+
+        if (StrUtil.equals("true", AbstractEasy4jEnvironment.getInitParameterValue(SysConstant.DISABLED_DB_AUTO_DDL))) return;
+
         synchronized (INIT_DB_FILE_PATH) {
             for (SqlFileEnums s : INIT_DB_FILE_PATH) {
                 boolean contains = INITED_FILE_PATH.contains(s);

@@ -64,6 +64,7 @@ public class EncryptionProperties {
                 "io.github.lbkones.",
                 "org.springdoc.",
                 "de.codecentric.boot.admin.",
+                "org.springframework.boot.actuate",
                 skipList
         ).filter(StrUtil::isNotBlank).toList());
     }
