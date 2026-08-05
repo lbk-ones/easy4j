@@ -70,7 +70,7 @@ public class Application
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
-        <ej.version>2.1.5</ej.version>
+        <ej.version>2.1.5.1</ej.version>
     </properties>
 
 
