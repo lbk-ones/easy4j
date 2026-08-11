@@ -33,6 +33,10 @@ public class NacosConfigConstants {
 
     public static final String COMMA = ",";
 
+    public static final String REFRESH_ENABLED = "refreshEnabled";
+    public static final String GROUP = "group";
+    public static final String DOT = ".";
+
     private NacosConfigConstants() {
         // 防止实例化
     }

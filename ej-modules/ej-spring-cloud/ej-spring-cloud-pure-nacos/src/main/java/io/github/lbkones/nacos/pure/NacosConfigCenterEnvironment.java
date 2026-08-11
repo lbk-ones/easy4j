@@ -38,6 +38,7 @@ public class NacosConfigCenterEnvironment implements EnvironmentPostProcessor {
 
     private static ConfigService configService;
     private static final Map<String, Object> lastKeyMap = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> listenMap = new ConcurrentHashMap<>();
     private static boolean hasStarted = false;
 
     private Properties buildNacosProperties(NacosStandProperties parse) {
@@ -130,33 +131,37 @@ public class NacosConfigCenterEnvironment implements EnvironmentPostProcessor {
 
                 log(false, "begin listener " + resourceName);
                 // 决定是否开启参数刷新
-                String refreshEnabled = StrUtil.blankToDefault(dataId.getQueryMap().get("refreshEnabled"), String.valueOf(parse.isCloudRefreshEnabled()));
+                String refreshEnabled = StrUtil.blankToDefault(dataId.getQueryMap().get(NacosConfigConstants.REFRESH_ENABLED), String.valueOf(parse.isCloudRefreshEnabled()));
                 if (Objects.equals(refreshEnabled, "true")) {
-                    configService.addListener(dataId_, group, new Listener() {
+                    if (listenMap.get(resourceName) == null) {
+                        listenMap.put(resourceName,true);
+                        configService.addListener(dataId_, group, new Listener() {
 
-                        @Override
-                        public Executor getExecutor() {
-                            return Executors.newSingleThreadExecutor(new NamedThreadFactory("ncl-", true));
-                        }
-
-                        @Override
-                        public void receiveConfigInfo(String configInfo) {
-                            log(false, "nacos client receive config ===> " + configInfo);
-                            String trim = configInfo.trim();
-                            if (!StringUtils.hasText(trim)) return;
-                            Set<String> keys = new HashSet<>();
-                            PropertySource<?> propertySource = SCPropertySourceUtils.autoParse(resourceName, configInfo);
-                            setLastKey(propertySource, keys);
-                            CloudPropertiesRefresh cloudPropertiesRefresh = CloudPropertiesRefreshHolder.cloudPropertiesRefresh;
-                            if (cloudPropertiesRefresh != null) {
-                                log(false, "begin notify spring cloud context ,the keys size is " + keys.size());
-                                long beginTime = System.currentTimeMillis();
-                                cloudPropertiesRefresh.sendRefreshEvent(keys);
-                                long endTime = System.currentTimeMillis();
-                                log(false, "notify cost " + (endTime - beginTime) + "ms");
+                            @Override
+                            public Executor getExecutor() {
+                                return Executors.newSingleThreadExecutor(new NamedThreadFactory("ncl-", true));
                             }
-                        }
-                    });
+
+                            @Override
+                            public void receiveConfigInfo(String configInfo) {
+                                log(false, "nacos client receive config ===> " + configInfo);
+                                String trim = configInfo.trim();
+                                if (!StringUtils.hasText(trim)) return;
+                                Set<String> keys = new HashSet<>();
+                                PropertySource<?> propertySource = SCPropertySourceUtils.autoParse(resourceName, configInfo);
+                                setLastKey(propertySource, keys);
+                                CloudPropertiesRefresh cloudPropertiesRefresh = CloudPropertiesRefreshHolder.cloudPropertiesRefresh;
+                                if (cloudPropertiesRefresh != null) {
+                                    log(false, "begin notify spring cloud context ,the keys size is " + keys.size());
+                                    long beginTime = System.currentTimeMillis();
+                                    cloudPropertiesRefresh.sendRefreshEvent(keys);
+                                    long endTime = System.currentTimeMillis();
+                                    log(false, "notify cost " + (endTime - beginTime) + "ms");
+                                }
+                            }
+                        });
+                    }
+
                 }
                 hasStarted = true;
             }

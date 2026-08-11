@@ -132,9 +132,9 @@ public class DbGen extends AbstractGen {
                     if (!StrUtil.equals(tableName1, tableName)) {
                         continue;
                     }
-                    Class<?> javaClassByTypeNameAndDbType = dialect.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize());
+                    Class<?> javaClassByTypeNameAndDbType = dialect.getJavaClassByTypeNameAndDbType(databaseColumnMetadata.getTypeName() + "#" + databaseColumnMetadata.getColumnSize());
                     if (javaClassByTypeNameAndDbType == null) {
-                        System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() +"【"+databaseColumnMetadata.getTypeName()+"#"+databaseColumnMetadata.getColumnSize()+"】"+ " vs java class is null！");
+                        System.err.println("the 【" + tableName1 + "】-> field " + databaseColumnMetadata.getColumnName() + "【" + databaseColumnMetadata.getTypeName() + "#" + databaseColumnMetadata.getColumnSize() + "】" + " vs java class is null！");
                         continue;
                     }
                     boolean needImport = false;
@@ -175,7 +175,7 @@ public class DbGen extends AbstractGen {
                     eFieldInfo.setSameSchema(sameSchema);
 
                     // fix: 注释中有双引号导致的报错
-                    eFieldInfo.setDescription(StrUtil.replace(StrUtil.blankToDefault(remarks, StrUtil.toCamelCase(columnName)), "\"","\\\""));
+                    eFieldInfo.setDescription(StrUtil.replace(StrUtil.blankToDefault(remarks, StrUtil.toCamelCase(columnName)), "\"", "\\\""));
                     eFieldInfo.setType(javaClassByTypeNameAndDbType.getSimpleName());
                     eFieldInfo.setHasAutoincrement("YES".equalsIgnoreCase(databaseColumnMetadata.getIsAutoincrement()));
                     String name = JdbcType.forCode(databaseColumnMetadata.getDataType()).name();
@@ -190,6 +190,10 @@ public class DbGen extends AbstractGen {
                         continue;
                     }
                     fields.add(eFieldInfo);
+                }
+                // fix: 修复如果只有部分审计字段，这部分字段不会被生成的问题，早都想修复了这次修复下
+                if (collect.size() > autoIndex && autoIndex > 0 && !autoAudit.isEmpty()) {
+                    fields.addAll(autoAudit);
                 }
                 // 如果全是审计字段会有问题 但是话说回来全是审计 没有什么意义 先不管
                 if (fields.isEmpty()) {
@@ -243,9 +247,9 @@ public class DbGen extends AbstractGen {
                 }
                 if (dbGenSetting.isGenMapperXml()) {
                     EntityInfo entityInfo1 = new EntityInfo();
-                    BeanUtil.copyProperties(entityInfo,entityInfo1);
+                    BeanUtil.copyProperties(entityInfo, entityInfo1);
                     // fix：mapper xml lost audit fields
-                    ListTs.addAll(entityInfo1.getFieldInfoList(),entityInfo1.getAuditFields());
+                    ListTs.addAll(entityInfo1.getFieldInfoList(), entityInfo1.getAuditFields());
                     String fileName = entityInfo.getSchema() + "Mapper.xml";
                     String filePath = filePath_ + File.separator + SRC_MAIN_RESOURCE + File.separator + parsePackage(this.getMapperXmlPackageName()) + File.separator + dbType + File.separator + fileName;
                     String s = loadTemplate(filePath, "temp", "MapperXmlGen.ftl", entityInfo, isPreview);

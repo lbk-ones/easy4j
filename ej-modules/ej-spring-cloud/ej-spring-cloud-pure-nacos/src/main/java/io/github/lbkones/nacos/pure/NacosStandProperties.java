@@ -5,6 +5,9 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
@@ -73,6 +76,7 @@ public class NacosStandProperties {
             suffix = environment.resolvePlaceholders(annotation.dataIdSuffix());
         }
 
+
         String applicationName = environment.getProperty(NacosConfigConstants.SPRING_APPLICATION_NAME);
         String addr = environment.getProperty(NacosConfigConstants.NACOS_SERVER_ADDR);
         String userName = environment.getProperty(NacosConfigConstants.NACOS_USERNAME);
@@ -104,8 +108,8 @@ public class NacosStandProperties {
                 Map<String, String> queryMap = getQueryMap(s);
                 List<String> split1 = StrUtil.split(s, "?");
                 String dataId = get(split1, 0);
-                String group = queryMap.get("group");
-                List<String> split2 = StrUtil.split(dataId, ".");
+                String group = queryMap.get(NacosConfigConstants.GROUP);
+                List<String> split2 = StrUtil.split(dataId, NacosConfigConstants.DOT);
                 String s1 = get(split2, 0);
                 String s2 = get(split2, 1);
                 List<String> objects = new ArrayList<>();
@@ -129,6 +133,45 @@ public class NacosStandProperties {
         } else {
             defaultDataId(prefix + applicationName + suffix, configFileExtension, nacosConfigGroup, dataIds_);
         }
+        // shared-configs
+        configToDataId("spring.cloud.nacos.config.shared-configs", environment, dataIds_, nacosConfigGroup);
+        // ext-config
+        configToDataId("spring.cloud.nacos.config.ext-config", environment, dataIds_, nacosConfigGroup);
+        // extension-configs
+        configToDataId("spring.cloud.nacos.config.extension-configs", environment, dataIds_, nacosConfigGroup);
+        // shared-dataids
+        String sharedDataIds = environment.getProperty("spring.cloud.nacos.config.shared-dataids", String.class);
+        if (StrUtil.isNotBlank(sharedDataIds)) {
+            List<String> split = StrUtil.split(sharedDataIds, NacosConfigConstants.COMMA);
+            for (String s : split) {
+                if (StrUtil.isBlank(s)) continue;
+                DataId dataId1 = new DataId();
+                dataId1.setDataId(s);
+                dataIds_.add(dataId1);
+            }
+        }
+        // refreshable-dataids
+        String refreshableDataIds = environment.getProperty("spring.cloud.nacos.config.refreshable-dataids", String.class);
+        Set<String> refreshableDataIdSet = new HashSet<>();
+        if (StrUtil.isNotBlank(refreshableDataIds)) {
+            List<String> split = StrUtil.split(refreshableDataIds, NacosConfigConstants.COMMA);
+            for (String s : split) {
+                if (StrUtil.isBlank(s)) continue;
+                refreshableDataIdSet.add(s);
+            }
+        }
+        for (DataId dataId : dataIds_) {
+            if (refreshableDataIdSet.contains(dataId.getDataId())) {
+                Map<String, String> queryMap = dataId.getQueryMap();
+                if (queryMap == null) {
+                    Map<String, String> var1 = new HashMap<>();
+                    var1.put(NacosConfigConstants.REFRESH_ENABLED, "true");
+                    dataId.setQueryMap(var1);
+                } else {
+                    queryMap.put(NacosConfigConstants.REFRESH_ENABLED, "true");
+                }
+            }
+        }
         NacosStandProperties nacosStandProperties = new NacosStandProperties();
         nacosStandProperties.setCloudRefreshEnabled(cloudRefreshEnabled);
         nacosStandProperties.setConfigEnabled(configEnabled);
@@ -141,6 +184,24 @@ public class NacosStandProperties {
         nacosStandProperties.setNacosConfigUsername(StrUtil.blankToDefault(nacosConfigUsername, userName));
         nacosStandProperties.setNacosConfigPassword(StrUtil.blankToDefault(nacosConfigPassword, nacosPassword));
         return nacosStandProperties;
+    }
+
+    private static void configToDataId(String prefix, Environment environment, List<DataId> dataIds_, String finalNacosConfigGroup) {
+        BindResult<List<DataIdConfig>> bind = Binder.get(environment).bind(prefix, Bindable.listOf(DataIdConfig.class));
+        bind.ifBound(e -> {
+            for (DataIdConfig config : e) {
+                if (config == null) continue;
+                String dataId = config.getDataId();
+                if (StrUtil.isBlank(dataId)) continue;
+                DataId dataId1 = new DataId();
+                dataId1.setGroup(StrUtil.blankToDefault(config.getGroup(), finalNacosConfigGroup));
+                dataId1.setDataId(dataId);
+                Map<String, String> map = new HashMap<>();
+                map.put(NacosConfigConstants.REFRESH_ENABLED, String.valueOf(config.isRefresh()));
+                dataId1.setQueryMap(map);
+                dataIds_.add(dataId1);
+            }
+        });
     }
 
     private static void defaultDataId(String applicationName, String configFileExtension, String nacosConfigGroup, List<DataId> dataIds_) {

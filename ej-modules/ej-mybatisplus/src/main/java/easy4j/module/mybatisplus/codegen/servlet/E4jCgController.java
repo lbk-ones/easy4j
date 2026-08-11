@@ -69,13 +69,13 @@ public class E4jCgController {
         Map<String, String> formDataMap = servletHandler.getFormDataMap();
         String dbUrlStr = formDataMap.get("dbUrlStr");
         boolean externalUrl = false;
-        if(StrUtil.isNotBlank(dbUrlStr)){
+        if (StrUtil.isNotBlank(dbUrlStr)) {
             externalUrl = true;
             String dbUrlUserName = formDataMap.get("dbUrlUserName");
             String dbUrlPassword = formDataMap.get("dbUrlPassword");
             dbUrl = AbstractEasy4jResolve.getUrl(dbUrlStr);
-            if(StrUtil.isNotBlank(dbUrlUserName)) userName=dbUrlUserName;
-            if(StrUtil.isNotBlank(dbUrlPassword)) password=dbUrlPassword;
+            if (StrUtil.isNotBlank(dbUrlUserName)) userName = dbUrlUserName;
+            if (StrUtil.isNotBlank(dbUrlPassword)) password = dbUrlPassword;
         }
         standRes.setUrl(dbUrl);
         standRes.setUsername(userName);
@@ -88,10 +88,10 @@ public class E4jCgController {
         standRes.setForceDelete(false);
         Connection connection = null;
         try {
-            DataSource dataSource =null;
+            DataSource dataSource = null;
             if (externalUrl) {
-                dataSource = new TempDataSource(SqlType.getDriverClassNameByUrl(dbUrl),dbUrl, userName, password);
-            }else{
+                dataSource = new TempDataSource(SqlType.getDriverClassNameByUrl(dbUrl), dbUrl, userName, password);
+            } else {
                 dataSource = SpringUtil.getBean(DataSource.class);
             }
             connection = dataSource.getConnection();
@@ -105,7 +105,7 @@ public class E4jCgController {
             standRes.setAllTables(collect);
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             JdbcHelper.close(connection);
         }
         servletHandler.responseJson(SRes.success(standRes));
@@ -470,13 +470,23 @@ public class E4jCgController {
             File file2 = new File(domainName);
             ClassParseResult dtoParse;
             ClassParseResult domainParse;
-            if (file.exists() && file2.exists()) {
-                dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
-                domainParse = JavaClassParser.INSTANCE.parse(domainName);
+            if (file.exists() || file2.exists()) {
+                if (file.exists()) {
+                    dtoParse = JavaClassParser.INSTANCE.parse(dtoName);
+                } else {
+                    Class<?> dtoClass = Class.forName(parentPackageName + SP.DOT + dtoPackageName + SP.DOT + dtoName_);
+                    dtoParse = clazzToClassParseResult(dtoClass);
+                }
+                if (file2.exists()) {
+                    domainParse = JavaClassParser.INSTANCE.parse(domainName);
+                } else {
+                    Class<?> domainClass = Class.forName(parentPackageName + SP.DOT + entityPackageName + SP.DOT + domainName_);
+                    domainParse = clazzToClassParseResult(domainClass);
+                }
             } else {
                 Class<?> dtoClass = Class.forName(parentPackageName + SP.DOT + dtoPackageName + SP.DOT + dtoName_);
-                Class<?> domainClass = Class.forName(parentPackageName + SP.DOT + entityPackageName + SP.DOT + domainName_);
                 dtoParse = clazzToClassParseResult(dtoClass);
+                Class<?> domainClass = Class.forName(parentPackageName + SP.DOT + entityPackageName + SP.DOT + domainName_);
                 domainParse = clazzToClassParseResult(domainClass);
             }
 
@@ -498,7 +508,7 @@ public class E4jCgController {
             List<ClassField> fields = dtoParse.getFields();
             List<PageViewRes.ColumnInfo> objects = Lists.newArrayList();
             Class<AutoAudit> autoAuditClass = AutoAudit.class;
-            List<String> auditFieldNames = Arrays.stream(ReflectUtil.getFields(autoAuditClass)).map(Field::getName).collect(Collectors.toList());
+            List<String> auditFieldNames = Arrays.stream(ReflectUtil.getFields(autoAuditClass)).map(Field::getName).toList();
             int size = fields.size();
             for (int i = 0; i < size; i++) {
                 ClassField field = fields.get(i);
