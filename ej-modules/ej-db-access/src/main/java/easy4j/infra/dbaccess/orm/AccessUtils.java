@@ -1,20 +1,15 @@
 package easy4j.infra.dbaccess.orm;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.system.SystemUtil;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
-import easy4j.infra.common.utils.EStopWatch;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
-import easy4j.infra.context.api.dblog.Easy4jDbLog;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -112,7 +107,7 @@ public class AccessUtils implements Serializable {
      */
     public String getTableName(Class<?> clazz, Dialect dialect) {
         if (clazz == null) return null;
-        String tableName = Vendor.getTableName(clazz);
+        String tableName = Vendor.getTableName(clazz, true);
         if (StrUtil.isBlank(tableName)) {
             String simpleName = clazz.getSimpleName();
             tableName = sqlNameEscape(fn(simpleName), dialect, false);
@@ -276,7 +271,7 @@ public class AccessUtils implements Serializable {
                 .setAutoIncrementList(autoIncrementsList)
                 .setInsertFields(insertList)
                 .setDialect(dialect)
-                .setTableName(StrUtil.blankToDefault(getTableName(clazz, dialect), sqlNameEscape(fn(access.getTableName()), dialect, false)))
+                .setTableName(StrUtil.blankToDefault(sqlNameEscape(fn(access.getTableName()), dialect, false),getTableName(clazz, dialect)))
                 .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialect, false));
         long l3 = System.currentTimeMillis() - l2;
         LogSql.init(tRuntimeContext, bt,getConnectionTime,l3);

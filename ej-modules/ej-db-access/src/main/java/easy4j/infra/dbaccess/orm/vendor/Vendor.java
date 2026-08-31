@@ -68,7 +68,7 @@ public class Vendor {
         return null;
     }
 
-    public static String getTableName(Class<?> clazz) {
+    public static String getTableName(Class<?> clazz, boolean returnNull) {
         if (clazz == null) return null;
         for (VendorSpi vendorSpi : vendorList) {
             String tableName = vendorSpi.getTableName(clazz);
@@ -76,7 +76,11 @@ public class Vendor {
                 return tableName;
             }
         }
-        return clazz.getSimpleName();
+        if(returnNull){
+            return null;
+        }else{
+            return clazz.getSimpleName();
+        }
     }
 
     public static boolean skipColumn(Field field) {

@@ -56,13 +56,16 @@ public class PublicHeaders {
             xTenantId.ifPresent(object -> object21.set(SysConstant.X_TENANT_ID, object.toString()));
             easy4jRpcTrace.ifPresent(object -> object21.set(THConstant.EASY4J_RPC_TRACE, object.toString()));
             noLoginRpc.ifPresent(object -> object21.set(THConstant.EASY4J_RPC_NO_LOGIN, object.toString()));
+            Easy4j.getUserContext().keysVisitor(object21::set);
         } else if (object2 instanceof RequestTemplate requestTemplate) {
             threadHashValue.ifPresent(object -> requestTemplate.header(SysConstant.SERVER_TRACE_NAME, object.toString()));
             xAccessToken.ifPresent(object -> requestTemplate.header(SysConstant.X_ACCESS_TOKEN, object.toString()));
             xTenantId.ifPresent(object -> requestTemplate.header(SysConstant.X_TENANT_ID, object.toString()));
             easy4jRpcTrace.ifPresent(object -> requestTemplate.header(THConstant.EASY4J_RPC_TRACE, object.toString()));
             noLoginRpc.ifPresent(object -> requestTemplate.header(THConstant.EASY4J_RPC_NO_LOGIN, object.toString()));
+            Easy4j.getUserContext().keysVisitor(requestTemplate::header);
         }
+
     }
 
 }

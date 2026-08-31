@@ -52,6 +52,11 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
 
     SecurityAuthorization authorizationStrategy;
 
+    IGatewayUserContext gatewayFilter = null;
+
+    boolean hasGatewayError = false;
+
+
     public SecurityAuthorization getAuthorizationStrategy() {
         if (authorizationStrategy == null) {
             authorizationStrategy = SpringUtil.getBean(SecurityAuthorization.class);
@@ -63,12 +68,12 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     public Easy4jSecurityFilterInterceptor() {
     }
 
-    public String getToken(HttpServletRequest request){
+    public String getToken(HttpServletRequest request) {
         boolean useCookies = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_IS_USE_COOKIE, boolean.class);
         String token = null;
-        if(!useCookies){
+        if (!useCookies) {
             token = StrUtil.blankToDefault(request.getHeader(SysConstant.X_ACCESS_TOKEN), request.getParameter(SysConstant.X_ACCESS_TOKEN));
-        }else{
+        } else {
             token = CookieUtil.getCookie(request, SysConstant.X_ACCESS_TOKEN);
         }
         return token;
@@ -78,6 +83,26 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
         boolean property1 = Easy4j.getProperty(SysConstant.EASY4J_SAUTH_ENABLE, boolean.class);
         if (!property1) {
+            // 未开启sauth模块的时候，检测一下网关
+            try {
+                // 出现过异常就直接跳过了
+                if(hasGatewayError){
+                   return true;
+                }
+                if (gatewayFilter == null) {
+                    gatewayFilter = SpringUtil.getBean(IGatewayUserContext.class);
+                }
+                if(gatewayFilter!=null){
+                    UserContext userContext = gatewayFilter.handlerFilter(request, response, handler);
+                    if (userContext != null) {
+                        userContext.setGateWay(true);
+                        userContext.setEmpty(false);
+                        GateWayFilterUtils.bindUserCtxFromGateway(() -> userContext, gatewayFilter.getUserContextName(), request);
+                    }
+                }
+            } catch (Exception ignored) {
+                hasGatewayError = true;
+            }
             return true;
         }
         SecurityAuthorization authorizationStrategy1 = getAuthorizationStrategy();
@@ -179,17 +204,19 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     @Nullable
     private <T> T getInstance(Class<T> aClass) {
         T iBearerAuthentication = null;
-        try{
+        try {
             iBearerAuthentication = ReflectUtil.newInstance(aClass);
-        }catch (Throwable ignored){}
-        if(iBearerAuthentication == null){
+        } catch (Throwable ignored) {
+        }
+        if (iBearerAuthentication == null) {
             List<T> load = ServiceLoaderUtils.load(aClass);
             if (ListTs.isEmpty(load)) {
-                try{
+                try {
                     iBearerAuthentication = SpringUtil.getBean(aClass);
-                }catch (Exception ignored){}
-            }else{
-                iBearerAuthentication = ListTs.get(load,0);
+                } catch (Exception ignored) {
+                }
+            } else {
+                iBearerAuthentication = ListTs.get(load, 0);
             }
         }
         return iBearerAuthentication;
@@ -226,15 +253,20 @@ public class Easy4jSecurityFilterInterceptor extends AbstractEasy4JWebMvcHandler
     }
 
     public static void bindUserCtx(ISecurityEasy4jUser user) {
-        Easy4jContext context = Easy4j.getContext();
         UserContext userContext = new UserContext();
         userContext.setUserName(user.getUsername());
         userContext.setUserId(user.getUserId());
         userContext.setUserNameCn(user.getUsernameCn());
         userContext.setTenantId(user.getTenantId());
         userContext.setRoleCodeList(user.getRoleCodeList());
-        context.registerThreadHash(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME, userContext);
+        bindUserContext(userContext);
     }
+
+    public static void bindUserContext(UserContext uc) {
+        Easy4jContext context = Easy4j.getContext();
+        context.registerThreadHash(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME, uc);
+    }
+
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex, HandlerMethod handler) {

@@ -36,6 +36,7 @@ import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.context.Easy4jContext;
+import easy4j.infra.context.api.user.UserContext;
 import jodd.util.StringPool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -449,6 +450,23 @@ public class Easy4j implements ApplicationContextAware {
 
     public static Easy4jContext getContext() {
         return Easy4jContextHolder.easy4jContext;
+    }
+
+
+    /**
+     * 获取全局简单的用户信息上下文
+     * @return
+     */
+    public static UserContext getUserContext() {
+        Easy4jContext context = getContext();
+        Optional<Object> threadHashValue = context.getThreadHashValue(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME);
+        if (threadHashValue.isPresent()) {
+            Object o = threadHashValue.get();
+            return (UserContext) o;
+        }
+        UserContext userContext = new UserContext();
+        userContext.setEmpty(true);
+        return userContext;
     }
 
 

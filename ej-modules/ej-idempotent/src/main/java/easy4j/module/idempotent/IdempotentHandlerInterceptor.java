@@ -98,7 +98,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
             boolean degradeGlobalIdempotent = annotation.degradeGlobalIdempotent();
             // return null 代表不需要幂等
             String generateKey = unionKey(globalIdempotent, degradeGlobalIdempotent, request, keyGenerator.generate(request));
-            if (generateKey == null) return true;
+            if (StrUtil.isBlank(generateKey)) return true;
             request.setAttribute(WEB_ANNOTATION_KEY, annotation);
             request.setAttribute(IDENTIFY_KEY, generateKey);
             if (!storage.acquireLock(generateKey, annotation.expireSeconds(), request)) {
@@ -151,7 +151,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
             }
             String accessToken = request.getHeader(SysConstant.X_ACCESS_TOKEN);
             if (StrUtil.isBlank(accessToken)) {
-                return md5(generateKey);
+                return  null;
             }
             return md5(accessToken + "--" + generateKey2);
         }

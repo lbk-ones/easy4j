@@ -25,6 +25,8 @@ import jodd.util.StringPool;
 public class SysConstant {
 
     public static final String PARAM_PREFIX = "easy4j";
+    public static final String PARAM_PREFIX_DOT = PARAM_PREFIX+SP.DOT;
+    public static final String PARAM_PREFIX_DASH = PARAM_PREFIX+SP.DASH;
     public static final String PARAM_PREFIX_SESSION = PARAM_PREFIX+SP.COLON+"session";
     // 包结构的前缀
     public static final String PACKAGE_PREFIX = PARAM_PREFIX;

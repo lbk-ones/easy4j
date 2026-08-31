@@ -1,0 +1,275 @@
+/**
+ * Copyright (c) 2025, libokun(2100370548@qq.com). All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package easy4j.infra.common.header;
+
+import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import easy4j.infra.common.exception.EasyException;
+import easy4j.infra.common.i18n.I18nUtils;
+import easy4j.infra.common.utils.BusCode;
+import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.common.utils.json.JacksonUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jodd.util.StringPool;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * 第一版统一返回消息体，把参数名称写死
+ *
+ * @param <T>
+ * @author bokun.li
+ */
+@Setter
+@Getter
+@Schema(description = "通用信息返回实体", name = "EasyResult")
+public class EasyResultV1<T> implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 6095433538316185020L;
+
+    // 业务状态码
+    @Schema(description = "业务状态码（0=成功，非0=错误）")
+    private String code;
+
+    @JsonIgnore
+    @Schema(description = "远程调用方法")
+    private String rpcMethod;
+
+    // 提示消息
+    @Schema(description = "提示消息")
+    private String message;
+
+    // 错误堆栈信息
+    @Schema(description = "错误堆栈信息")
+    private String errorInfo;
+    // 返回对象
+    @Schema(description = "返回对象")
+    private T data;
+
+
+    public static <T> EasyResultV1<T> ok(T data) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setData(data);
+        return easyResult;
+    }
+
+    public static <T> EasyResultV1<T> okCode(String code) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setData(null);
+        easyResult.setCode(code);
+        String message1 = I18nUtils.getMessage(code);
+        if (StrUtil.isNotBlank(message1)) {
+            easyResult.setMessage(message1);
+        } else {
+            easyResult.setMessage(I18nUtils.getOperateSuccessStr());
+        }
+        return easyResult;
+    }
+
+    public static <T> EasyResultV1<T> ok(T data, String message) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setData(data);
+        easyResult.setMessage(message);
+        return easyResult;
+    }
+
+    @JsonIgnore
+    public static <T> EasyResultV1<T> error(String message) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setCode(BusCode.A00003);
+        easyResult.setMessage(message);
+        easyResult.setData(null);
+        return easyResult;
+    }
+
+    public static <T> EasyResultV1<T> parseI18nWithData(String i18nCode, T data) {
+
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setCode(i18nCode);
+        easyResult.setMessage(I18nUtils.getMessage(i18nCode));
+        easyResult.setData(data);
+        return easyResult;
+    }
+
+    public static <T> EasyResultV1<T> parseFromI18n(String i18nCode, String... args) {
+
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setCode(i18nCode);
+        easyResult.setMessage(I18nUtils.getMessage(i18nCode, args));
+        easyResult.setData(null);
+        return easyResult;
+    }
+
+
+    // 失败返回（code ≠ 0）
+    public static <T> EasyResultV1<T> error(String code, String message) {
+        EasyResultV1<T> result = new EasyResultV1<>();
+        result.setCode(code);
+        result.setMessage(message);
+        return result;
+    }
+
+    // 失败返回（带异常信息）
+    public static <T> EasyResultV1<T> error(String code, String message, String errorInfo) {
+        EasyResultV1<T> result = new EasyResultV1<>();
+        result.setCode(code);
+        result.setMessage(message);
+        result.setErrorInfo(errorInfo);
+        return result;
+    }
+
+    @JsonIgnore
+    public static <T> EasyResultV1<T> error(Throwable e) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setCode(BusCode.A00003);
+        easyResult.setMessage(I18nUtils.getOperateErrorStr());
+        if (!(e instanceof EasyException)) {
+            easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
+        }
+        easyResult.setData(null);
+        return easyResult;
+    }
+
+    @JsonIgnore
+    public static <T> EasyResultV1<T> errorGateway(Throwable e) {
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        easyResult.setCode(BusCode.A00061);
+        easyResult.setMessage(e.getMessage());
+        if (!(e instanceof EasyException)) {
+            easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
+        }
+        easyResult.setData(null);
+        return easyResult;
+    }
+
+    /**
+     * <p>转 i18n</p>
+     * <p>可以直接抛出类似这种异常 throw EasyException("A0001,参数1,参数2") 然后参数自动填充到占位符里面去</p>
+     *
+     * @param e   异常信息
+     * @param <T>
+     * @return 返回异常结果
+     * @author bokun.li
+     */
+    public static <T> EasyResultV1<T> toI18n(Throwable e) {
+        return toI18n(e, null);
+    }
+
+    /**
+     * 根据传入的local转i18n
+     *
+     * @param e
+     * @param local
+     * @param <T>
+     * @return
+     * @author bokun.li
+     */
+    public static <T> EasyResultV1<T> toI18n(Throwable e, Locale local) {
+        String msg = "";
+        boolean isEasy4j = false;
+        String msgKey = null;
+        if (e instanceof EasyException) {
+            String message1 = e.getMessage();
+            if (StrUtil.isNotEmpty(message1)) {
+                isEasy4j = true;
+                int i = message1.indexOf(",");
+                msgKey = message1.substring(0, i > 0 ? i : message1.length());
+                if (i > 0) {
+                    String argStr = message1.substring(i + 1);
+                    if (StrUtil.isNotEmpty(argStr)) {
+                        List<String> list = ListTs.asList(argStr.split(StringPool.COMMA));
+                        msg = I18nUtils.getMessage(msgKey, local, list.toArray(new String[]{}));
+                    } else {
+                        // fix like this A00003,
+                        String msg2 = StrUtil.replaceLast(message1, ",", "");
+                        msg = I18nUtils.getMessage(msg2, local);
+                    }
+                } else {
+                    msg = I18nUtils.getMessage(msgKey);
+                }
+            }
+        }
+        String code = BusCode.A00003;
+        // 不允许使用自己定义的内容发布异常
+        if (msg.isEmpty()) {
+            msg = isEasy4j ? e.getMessage() : I18nUtils.getMessage(code, local);
+        } else {
+            code = msgKey;
+        }
+        EasyResultV1<T> easyResult = new EasyResultV1<T>();
+        //easyResult.setCode(String.valueOf(SysConstant.ERRORCODE));
+        easyResult.setMessage(msg);
+        easyResult.setCode(code);
+        if (!(e instanceof EasyException)) {
+            easyResult.setErrorInfo(SysLog.getStackTraceInfo(e));
+        }
+        easyResult.setData(null);
+        return easyResult;
+
+    }
+
+    public EasyResultV1() {
+        this.code = String.valueOf(SysConstant.SUCCESS_CODE); // 默认成功
+        this.message = I18nUtils.getOperateSuccessStr();
+    }
+
+
+    @JsonIgnore
+    public boolean isSuccess() {
+        return String.valueOf(SysConstant.SUCCESS_CODE).equals(code);
+    }
+
+    public EasyResultV1(String code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+
+    public EasyResultV1(String code) {
+        this.code = code;
+    }
+
+
+    public EasyResultV1(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return JacksonUtil.toJsonContainNull(this);
+    }
+
+    /**
+     * 兼容获取消息和错误
+     *
+     * @author bokun.li
+     * @date 2025-06-15
+     */
+    @JsonIgnore
+    public String getMsgAndError() {
+        String message1 = StrUtil.blankToDefault(this.getMessage(), "");
+        String error1 = StrUtil.blankToDefault(this.getErrorInfo(), "");
+        return StrUtil.blankToDefault(message1, "") + (StrUtil.isNotBlank(error1) ? ":" + error1 : "");
+    }
+}

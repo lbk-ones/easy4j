@@ -75,6 +75,26 @@ public class Config {
     }
 
     /**
+     * 响应拦截器
+     * @return
+     */
+    @Bean
+    public CommonResponseBodyAdvice commonResponseBodyAdvice() {
+        return new CommonResponseBodyAdvice();
+    }
+
+    /**
+     *请求拦截器
+     *
+     * @author bokun.li
+     * @date 2025-06-08 17:54:55
+     */
+    @Bean
+    public CommonRequestBodyAdvice commonRequestBodyAdvice() {
+        return new CommonRequestBodyAdvice();
+    }
+
+    /**
      * mvc 拦截器  配置
      *
      * @author bokun.li

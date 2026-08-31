@@ -56,13 +56,7 @@ public class AutoAuditHandler implements MetaObjectHandler {
 
 
     public static UserContext getUserContext() {
-        Easy4jContext context = Easy4j.getContext();
-        Optional<Object> threadHashValue = context.getThreadHashValue(UserContext.USER_CONTEXT_NAME, UserContext.USER_CONTEXT_NAME);
-        if (threadHashValue.isPresent()) {
-            Object o = threadHashValue.get();
-            return (UserContext) o;
-        }
-        return  new UserContext();
+        return Easy4j.getUserContext();
     }
 
     @Override

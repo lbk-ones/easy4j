@@ -171,7 +171,7 @@ public class JavaClassMetaInfoParse implements MetaInfoParse {
         OpConfig opConfig = this.opContext.getOpConfig();
         if (clazz == null) return null;
         StringBuilder sb = new StringBuilder();
-        String tableName = Vendor.getTableName(clazz);
+        String tableName = Vendor.getTableName(clazz, false);
         String underlineCase = dialect.escape(opConfig.autoCase(tableName, true));
         sb.append(underlineCase);
         return sb.toString();
