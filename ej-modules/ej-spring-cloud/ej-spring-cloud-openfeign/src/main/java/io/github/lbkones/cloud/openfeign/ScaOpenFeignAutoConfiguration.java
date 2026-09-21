@@ -40,7 +40,7 @@ public class ScaOpenFeignAutoConfiguration {
         messageConverters.removeIf(e -> e instanceof MappingJackson2HttpMessageConverter);
         MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
         mappingJackson2HttpMessageConverter.setObjectMapper(JacksonUtil.getMapper());
-        messageConverters.add(0, mappingJackson2HttpMessageConverter);
+        messageConverters.add(mappingJackson2HttpMessageConverter);
         restTemplate.setMessageConverters(messageConverters);
     }
 

@@ -24,9 +24,11 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import easy4j.infra.base.properties.NacosPropetiesParse;
 import easy4j.infra.base.resolve.StandAbstractEasy4jResolve;
 import easy4j.infra.base.starter.env.Easy4j;
+import easy4j.infra.common.exception.EasyException;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.SysConstant;
+import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.context.AutoRegisterContext;
 import easy4j.infra.context.Easy4jContext;
@@ -40,10 +42,13 @@ import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -80,8 +85,7 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
     private static final Map<String, NamingService> namingServiceCache = new ConcurrentHashMap<>();
 
 
-
-    public NamingServerInvoker(String nameSpace2, String serverAddr, String username, String password,RestTemplate restTemplate) {
+    public NamingServerInvoker(String nameSpace2, String serverAddr, String username, String password, RestTemplate restTemplate) {
         this.nameSpace = nameSpace2;
         this.serverAddr = serverAddr;
         this.username = username;
@@ -154,6 +158,90 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
                     String.class
             );
             return exchange.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("调用服务失败", e);
+        }
+    }
+
+
+    /**
+     * 统一返回字符串
+     *
+     * @param invokeDto
+     * @return
+     */
+    public String exeMethod(NacosInvokeDto invokeDto) {
+        try {
+            String serverName = invokeDto.getServerName();
+            String path = invokeDto.getPath();
+            HttpMethod method = invokeDto.getMethod();
+            if (method == null) {
+                throw new EasyException("method is not null");
+            }
+            if (StrUtil.isBlank(path)) {
+                throw new EasyException("path is not null");
+            }
+            if (StrUtil.isBlank(serverName)) {
+                throw new EasyException("serverName is not null");
+            }
+            Object body = invokeDto.getBody();
+            String accessToken = invokeDto.getAccessToken();
+            boolean resetHeader = invokeDto.isResetHeader();
+            HttpHeaders httpHeaders = invokeDto.getHttpHeaders();
+            Map<String, Object> paramMap = invokeDto.getParamMap();
+            Instance instance = selectInstance(serverName, invokeDto.getGroup());
+            String url = buildUrl(instance, path, paramMap);
+            if (httpHeaders == null) {
+                httpHeaders = new HttpHeaders();
+            }
+            if (!resetHeader) {
+                initHeader(httpHeaders, accessToken);
+            }
+            MediaType contentType = httpHeaders.getContentType();
+            if (contentType == null) {
+                if (body instanceof MultipartFile) {
+                    httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+                } else {
+                    // body自动序列化为json
+                    if (invokeDto.isJson() && body != null) {
+                        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    } else {
+                        // 默认 application/x-www-form-urlencoded
+                        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                    }
+                }
+            }
+            HttpEntity<Object> objectHttpEntity = null;
+            if (body != null) {
+                objectHttpEntity = new HttpEntity<>(body, httpHeaders);
+            } else {
+                objectHttpEntity = new HttpEntity<>(httpHeaders);
+            }
+            ResponseEntity<byte[]> exchange = restTemplate.exchange(
+                    url,
+                    method,
+                    objectHttpEntity,
+                    byte[].class
+            );
+            HttpHeaders headers = exchange.getHeaders();
+            MediaType contentType1 = headers.getContentType();
+            if(log.isDebugEnabled()){
+                log.debug(SysLog.compact("res content type ->"+contentType1));
+            }
+            if (contentType1 != MediaType.APPLICATION_OCTET_STREAM) {
+                byte[] body1 = exchange.getBody();
+
+                if (body1 != null) {
+                    String s = new String(body1, StandardCharsets.UTF_8);
+                    if(log.isDebugEnabled()){
+                        log.debug(SysLog.compact("res str is ->"+s));
+                    }
+                    return s;
+                }
+            } else {
+                invokeDto.setResData(exchange.getBody());
+            }
+            return null;
         } catch (Exception e) {
             throw new RuntimeException("调用服务失败", e);
         }
@@ -486,6 +574,11 @@ public class NamingServerInvoker extends StandAbstractEasy4jResolve implements A
         String path = nacosInvokeDto.getPath();
         String serverName = nacosInvokeDto.getServerName();
         return delete(serverName, group1, path, accessToken);
+    }
+
+    @Override
+    public String exe(NacosInvokeDto nacosInvokeDto) {
+        return exeMethod(nacosInvokeDto);
     }
 
     @Override

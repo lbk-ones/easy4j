@@ -43,7 +43,7 @@ public class ${domainName}Controller {
 
     @Operation(summary = "${cnDesc}分页查询", description = "${cnDesc}分页查询，不需要该功能则不理会")
     @PostMapping("pageQuery${domainName}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-pageQuery${domainName}")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/pageQuery${domainName}")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -61,7 +61,7 @@ public class ${domainName}Controller {
 
     @Operation(summary = "查询所有已启用的${cnDesc}", description = "查询所有已启用的${cnDesc}，不需要该功能则不理会")
     @GetMapping("getAllEnableNotDelete")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-getAllEnableNotDelete")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/getAllEnableNotDelete")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -81,7 +81,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @PostMapping("save${domainName}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-save${domainName}")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/save${domainName}")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -100,7 +100,7 @@ public class ${domainName}Controller {
 
     @Operation(summary = "${cnDesc}批量查询", description = "根据主键查询或批量查询${cnDesc}(批量查询用,分割)，不需要该功能则不理会")
     @GetMapping("get${domainName}ById/{id}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-get${domainName}ById")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/get${domainName}ById")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -120,7 +120,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @PostMapping("publish${domainName}s")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-publish${domainName}s")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/publish${domainName}s")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -140,7 +140,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @DeleteMapping("delete${domainName}/{id}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-delete${domainName}s")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/delete${domainName}s")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -161,7 +161,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @PutMapping("update${domainName}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-update${domainName}")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/update${domainName}")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -182,7 +182,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @PostMapping("copy${domainName}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-copy${domainName}")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/copy${domainName}")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -202,7 +202,7 @@ public class ${domainName}Controller {
     @RequestLog
     @WebIdempotent
     @PostMapping("enableOrDisable${domainName}")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"-enableOrDisable${domainName}")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/enableOrDisable${domainName}")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(

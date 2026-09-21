@@ -22,6 +22,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * RestTemplate的日志拦截器

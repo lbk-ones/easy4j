@@ -1,10 +1,12 @@
 package easy4j.infra.webmvc;
 
+import cn.hutool.core.util.StrUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
+
 /**
  * Cookie 工具类：设置、获取、删除、支持HttpOnly/SameSite/Secure
  */
@@ -12,14 +14,15 @@ public class CookieUtil {
 
     /**
      * 设置Cookie
+     *
      * @param response 响应
-     * @param name cookie名
-     * @param value cookie值
-     * @param maxAge 过期时间 秒；-1=浏览器关闭失效，0=删除
-     * @param path 路径 默认 /
-     * @param domain 域名
+     * @param name     cookie名
+     * @param value    cookie值
+     * @param maxAge   过期时间 秒；-1=浏览器关闭失效，0=删除
+     * @param path     路径 默认 /
+     * @param domain   域名
      * @param httpOnly 是否仅http不可js读取
-     * @param secure 是否仅https传输
+     * @param secure   是否仅https传输
      * @param sameSite SameSite 值：Lax/Strict/None
      */
     public static void setCookie(HttpServletResponse response,
@@ -39,8 +42,10 @@ public class CookieUtil {
         } else {
             sb.append("; Path=/");
         }
-        // 过期时间
-        sb.append("; Max-Age=").append(maxAge);
+        if (maxAge > 0) {
+            // 过期时间
+            sb.append("; Max-Age=").append(maxAge);
+        }
         // 域名
         if (StringUtils.hasText(domain)) {
             sb.append("; Domain=").append(domain);
@@ -84,12 +89,15 @@ public class CookieUtil {
         if (cookies == null || cookies.length == 0) {
             return null;
         }
+        String value = null;
         for (Cookie cookie : cookies) {
             if (name.equals(cookie.getName())) {
-                return cookie.getValue();
+                if (StrUtil.isBlank(value)) {
+                    value = cookie.getValue();
+                }
             }
         }
-        return null;
+        return value;
     }
 
     /**
@@ -112,6 +120,7 @@ public class CookieUtil {
 
     /**
      * 设置登录Token Cookie（HttpOnly 推荐）
+     *
      * @param maxAge 秒
      */
     public static void setTokenCookie(HttpServletResponse response, String cookieName, String token, int maxAge) {

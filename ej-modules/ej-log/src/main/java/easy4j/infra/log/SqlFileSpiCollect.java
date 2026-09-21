@@ -14,7 +14,7 @@ public class SqlFileSpiCollect implements SqlFileSpi {
     public List<SqlFileEnums> collect() {
         Boolean property = Easy4j.getProperty(SysConstant.EASY4J_ENABLE_OPERATE_LOG, Boolean.class);
         if(property!=null && property){
-            return ListTs.asList(SqlFileEnums.DB_FENCE);
+            return ListTs.asList(SqlFileEnums.DB_OPERATE_LOG);
         }
         return List.of();
     }

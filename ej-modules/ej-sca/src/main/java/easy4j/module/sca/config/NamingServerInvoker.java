@@ -58,6 +58,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NamingServerInvoker extends StandAbstractEasy4jResolve implements AutoRegisterContext, Easy4jNacosInvokerApi {
 
+    @Override
+    public String exe(NacosInvokeDto nacosInvokeDto) {
+        return "";
+    }
+
     // 命名空间
     private String nameSpace = "public";
 

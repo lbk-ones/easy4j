@@ -34,4 +34,6 @@ public interface Easy4jNacosInvokerApi {
 
     String delete(NacosInvokeDto nacosInvokeDto);
 
+    String exe(NacosInvokeDto nacosInvokeDto);
+
 }

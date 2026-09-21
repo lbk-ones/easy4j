@@ -62,7 +62,8 @@ public class Easy4jFlywayMigrationStrategy implements FlywayMigrationStrategy {
 
             dynamicDataSourceMigrate();
 
-        } catch (FlywayException e) {
+        } catch (Exception e) {
+            log.error("flyway 出现异常",e);
             if (e instanceof FlywayValidateException) {
                 // default disabled content check
                 boolean checkSumDisabled = Easy4j.getProperty(SysConstant.EASY4J_FLYWAY_CHECKSUM_DISABLED, boolean.class, true);

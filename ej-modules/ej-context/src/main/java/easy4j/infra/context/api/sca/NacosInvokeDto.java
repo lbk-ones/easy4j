@@ -14,8 +14,11 @@
  */
 package easy4j.infra.context.api.sca;
 
+import easy4j.infra.common.utils.EasyMap;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
@@ -23,6 +26,7 @@ import java.util.Map;
 @Builder
 public class NacosInvokeDto {
 
+    // 服务名称
     private String serverName;
 
     private String group;
@@ -33,9 +37,29 @@ public class NacosInvokeDto {
 
     private String accessToken;
 
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.set("var1", "value1")
+    private HttpHeaders httpHeaders;
+
+
+
+    // 是否跳过header赋值，调用其他服务时候可能需要这个功能
+    private boolean resetHeader;
+
+    /**
+     * @see org.springframework.http.HttpMethod
+     */
+    private HttpMethod method;
+
+
+    /**
+     * query传参，传参自动追加到query
+     */
     private Map<String, Object> paramMap;
 
     private boolean isJson;
+
+    private byte[] resData;
 
 
 }
