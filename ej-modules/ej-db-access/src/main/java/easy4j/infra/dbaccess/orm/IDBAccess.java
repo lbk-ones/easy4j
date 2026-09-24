@@ -27,11 +27,12 @@ import java.util.List;
  * 9、慢sql打印
  * 10、spring事务混入，或者跳出事务
  * 11、支持插件开发，扩展，内置乐观锁,逻辑删除等插件
+ * 12、支持多数据源切换
  * </pre>
  *
- * @since 2.1.4
- * @version 2.1.5
  * @author bokun.li
+ * @version 2.1.5
+ * @since 2.1.4
  */
 public interface IDBAccess {
 
@@ -76,6 +77,25 @@ public interface IDBAccess {
     <T> List<T> save(Iterable<T> params, Class<T> clazz);
 
     /**
+     * 以jdbcBatch的形式去写入，不带数据库自动回写
+     * @param params 参数
+     * @param clazz 对象类型
+     * @param batchSize 批量条数如果不设置则默认200条
+     * @return 返回写入的条数
+     * @param <T> 泛型约束
+     */
+    <T> int batchSave(Iterable<T> params, Class<T> clazz,int batchSize);
+
+    /**
+     * 以jdbcBatch的形式去写入，不带数据库自动回写
+     * @param params 参数
+     * @param clazz 对象类型
+     * @return 返回写入的条数
+     * @param <T> 泛型约束
+     */
+    <T> int batchSave(Iterable<T> params, Class<T> clazz);
+
+    /**
      * 根据条件删除
      *
      * @param whereBuild 条件构造器
@@ -107,10 +127,11 @@ public interface IDBAccess {
 
     /**
      * 根据主键删除直接传入主键，只适用于单主键那种表
+     *
      * @param primaryKey 主键的值 可以传入 Wd包装类
-     * @param clazz 类字节码对象
+     * @param clazz      类字节码对象
+     * @param <T>        泛型约束
      * @return 受影响的条数
-     * @param <T> 泛型约束
      */
     <T> int deleteByPrimaryKey(Serializable primaryKey, Class<T> clazz);
 
@@ -173,46 +194,59 @@ public interface IDBAccess {
 
     /**
      * 批量动态更新（循环更新），会跟据主键去更新
-     * @param value map集合
-     * @param tableName tableName
-     * @param schema schema
+     *
+     * @param value      map集合
+     * @param tableName  tableName
+     * @param schema     schema
      * @param isSkipNull 是否更新null值
+     * @param <T>        泛型
      * @return int
-     * @param <T> 泛型
      */
-    <T> int dynamicUpdate(List<EasyMap<String,Object>> value,String tableName,String schema,boolean isSkipNull);
+    <T> int dynamicUpdate(List<EasyMap<String, Object>> value, String tableName, String schema, boolean isSkipNull);
 
 
     /**
      * 批量动态写入
+     *
      * @param value
      * @param tableName
      * @param schema
-     * @return
      * @param <T>
+     * @return
      */
-    <T> int dynamicSave(List<EasyMap<String,Object>> value,String tableName,String schema);
+    <T> int dynamicSave(List<EasyMap<String, Object>> value, String tableName, String schema);
 
     /**
      * 可以连表的复杂查询
      *
-     * @param sql   带占位符的sql
+     * @param sql   join条件构造器
      * @param clazz 对象类型
      * @param <T>   泛型
      * @return 对象集合
      */
-    <T> List<T> queryJoin(SqlWrapper sql,Class<T> clazz);
+    <T> List<T> queryJoin(SqlWrapper sql, Class<T> clazz);
+
+    /**
+     * 可以连表的复杂查询 (分页)
+     * 不传page则效果和queryJoin没区别
+     *
+     * @param sql   join条件构造器
+     * @param clazz 对象类型，最后的结果会转成这个字节码对象的实例
+     * @param <T>   泛型
+     * @return
+     */
+    <T> PageRes queryPageJoin(SqlWrapper sql, Page<T> page, Class<T> clazz);
 
 
     /**
      * 可以连表的复杂查询
      *
-     * @param sql   带占位符的sql
+     * @param sql               带占位符的sql
      * @param resultFieldToCame 是否将返回map中的key转为驼峰
-     * @param <T>   泛型
+     * @param <T>               泛型
      * @return 对象集合
      */
-    <T> List<EasyMap<String,Object>> queryMapJoin(SqlWrapper sql,boolean resultFieldToCame);
+    <T> List<EasyMap<String, Object>> queryMapJoin(SqlWrapper sql, boolean resultFieldToCame);
 
     /**
      * 传入sql查询对象集合
@@ -369,6 +403,7 @@ public interface IDBAccess {
 
     /**
      * 截断表
+     *
      * @param clazz
      * @param <T>
      * @return 返回受影响条数

@@ -1,2 +1,3 @@
 easy4j.infra.dbaccess.orm.sql.dialect.OracleInsertSql
 easy4j.infra.dbaccess.orm.sql.dialect.OracleBatchInsertSql
+easy4j.infra.dbaccess.orm.sql.dialect.JdbcBatchInsertSql

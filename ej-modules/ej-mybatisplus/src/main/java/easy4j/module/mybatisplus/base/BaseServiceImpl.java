@@ -24,6 +24,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.func.LambdaUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -145,11 +146,22 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                 String s = StrUtil.trim(key.get(0).toString());
                 String s2 = StrUtil.trim(key.get(1).toString());
                 Object s3 = key.get(2);
-                if (StrUtil.hasBlank(s, s2) || null == s3) {
+                if (StrUtil.hasBlank(s, s2) || ObjectUtil.isEmpty(s3)) {
                     continue;
                 }
                 if (toUnderLine) {
                     s = StrUtil.toUnderlineCase(s);
+                }
+                // 指定查询哪些字段
+                if (StrUtil.equals(s, "select")) {
+                    Object o = key.get(2);
+                    List<String> list = ListTs.objectToListT(o, String.class, Function.identity());
+                    for (String string : list) {
+                        if (toUnderLine) {
+                            queryWrapper.select(StrUtil.toUnderlineCase(string));
+                        }
+                    }
+                    continue;
                 }
                 if (SqlInjectionUtils.check(s)) {
                     throw new EasyException(BusCode.A00058);
@@ -228,6 +240,10 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
                         } catch (Throwable e) {
                             throw EasyException.wrap(BusCode.A000031, "query between values is error!" + e.getMessage());
                         }
+                        break;
+                    case "orderBy":
+                        String o = String.valueOf(ListTs.get(key, 2));
+                        queryWrapper.orderBy(true, !StrUtil.equals(o, "desc"), s);
                         break;
                     default:
                         throw EasyException.wrap(BusCode.A00047, s2);
@@ -414,7 +430,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             a.setUpdateName(userContext.getUserNameCn());
             a.setLastUpdateTime(new Date());
             if (updateDb) {
-                access().updateById(a,true, tClass);
+                access().updateById(a, true, tClass);
             }
         }
 
@@ -476,7 +492,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, 
             a.setUpdateName(userNameCn);
             a.setLastUpdateTime(new Date());
             if (updateDb) {
-                access().updateById(a,true, tClass);
+                access().updateById(a, true, tClass);
             }
         }
     }

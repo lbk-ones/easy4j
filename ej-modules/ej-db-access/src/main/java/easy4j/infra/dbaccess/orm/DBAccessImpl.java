@@ -84,8 +84,28 @@ public class DBAccessImpl implements IDBAccess {
             accessUtils.resolveContext(e, false);
             return e.getParams();
         });
+    }
 
+    @Override
+    public <T> int batchSave(Iterable<T> params, Class<T> clazz, int batchSize) {
+        if (CollUtil.isEmpty(params)) return 0;
+        if (clazz == null) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setParams(params)
+                .setBatchMode(true)
+                .setBatchSize(batchSize)
+                .setClazz(clazz)
+                .setOperateType(OperateType.INSERT);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.resolveContext(e, false);
+            return e.getEffectRows();
+        });
+    }
 
+    @Override
+    public <T> int batchSave(Iterable<T> params, Class<T> clazz) {
+        return batchSave(params,clazz,200);
     }
 
     @Override
@@ -346,6 +366,43 @@ public class DBAccessImpl implements IDBAccess {
             accessUtils.resolveContext(e, false);
             return e.getResultList();
         });
+    }
+
+    @Override
+    public <T> PageRes queryPageJoin(SqlWrapper sql, Page<T> page, Class<T> clazz) {
+        if (clazz == null || sql == null) return PageRes.get();
+        Access<T> tAccess = new Access<T>()
+                .setSqlWrapper(sql)
+                .setPage(page)
+                .setClazz(clazz)
+                .setOperateType(OperateType.SELECT);
+        if (page != null) {
+            tAccess.setOperateType(OperateType.SELECT_JOIN_COUNT);
+            RuntimeContext<T> context = accessUtils.toContext(tAccess);
+            return exeCallback(context, e -> {
+                e.setSkipTail(true);
+                accessUtils.resolveContext(e, false);
+                long count = e.getCount();
+                PageRes pageRes = new PageRes();
+                pageRes.setPageNo(page.getPageNo());
+                pageRes.setPageSize(page.getPageSize());
+                if (count <= 0) {
+                    return pageRes;
+                }
+                pageRes.setTotal(count);
+                e.setOperateType(OperateType.SELECT_JOIN_PAGE);
+                e.setSkipTail(false);
+                accessUtils.resolveContext(e, false);
+                List<EasyMap<String, Object>> resultMapList = e.getResultMapList();
+                pageRes.setRecords(resultMapList);
+                return pageRes;
+            });
+        } else {
+            List<T> ts = queryJoin(sql, clazz);
+            PageRes pageRes = new PageRes();
+            pageRes.setRecords(ts);
+            return pageRes;
+        }
     }
 
     @Override

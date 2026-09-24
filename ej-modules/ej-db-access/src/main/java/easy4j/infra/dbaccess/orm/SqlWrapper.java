@@ -12,6 +12,7 @@ import java.util.List;
  * join查询构造器适用方法
  * <hr/>
  * <pre>
+ * // 如果SqlItem不指定前缀那么默认 a b c d 往后推
  * new SqlWrapper(
  *     SqlItem.of(OperationLogs::getOperatorId, OperationLogs.class,
  *             FWhereBuild.get(OperationLogs.class)
@@ -27,7 +28,12 @@ import java.util.List;
  *     SqlItem.of("operateCode", SysLogRecord.class, "var3", "var4"),
  *     SqlItem.join("hash join"),
  *     SqlItem.of("operateCode2", SysLogRecord.class, "var5  varxx", "wq.var6  as  wqx")
- * ).where(FWhereBuild.get(SysLogRecord.class).sql(true, "a.operateId = ? and b.tag = ?", "23", "25"))
+ * )
+ * // .where里面是最终的条件，需要注意字段的前缀要和前面写的SqlItem对应起来
+ * .where(
+ *      FWhereBuild.get(SysLogRecord.class)
+ *      .sql(true, "a.operateId = ? and b.tag = ?", "23", "25")
+ * )
  * </pre>
  *
  * @author bokun.li

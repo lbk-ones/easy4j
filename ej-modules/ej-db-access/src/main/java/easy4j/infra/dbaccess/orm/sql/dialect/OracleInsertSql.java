@@ -68,8 +68,6 @@ public class OracleInsertSql extends AbstractSqlDialect {
         String sql = runtimeContext.getSql();
         List<Object> args = runtimeContext.getArgs();
         List<?> params = runtimeContext.getParams();
-        List<AccessField> columnInfoList = runtimeContext.getColumnInfoList(runtimeContext.getInsertFields());
-        int oneRowArgSize = columnInfoList.size();
         PsRes psRes = new PsRes();
         Connection conn = runtimeContext.getConnection();
         List<AccessField> autoIncrementList = runtimeContext.getAutoIncrementList();
@@ -83,7 +81,7 @@ public class OracleInsertSql extends AbstractSqlDialect {
                 cstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             }
             psRes.setStatement(cstmt);
-            int i2 = args.size() / oneRowArgSize;
+            int i2 = runtimeContext.getInsertRows(args);
             List<ResultSet> resultSets = new ArrayList<>();
             List<List<Object>> partitionGroup = ListTs.splitCollection(args, i2);
             List<Map<String, Object>> handle = new ArrayList<>();

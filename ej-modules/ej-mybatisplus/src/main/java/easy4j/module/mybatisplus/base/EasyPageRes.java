@@ -22,6 +22,7 @@ import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -64,6 +65,18 @@ public class EasyPageRes extends EasyMap<String, Object> {
     public EasyPageRes(List<?> objects) {
         init(this);
         setRecords(objects);
+    }
+
+    /**
+     * 兼容 easy4j.infra.dbaccess.domain.PageRes 这个 可以直接将 easy4j.infra.dbaccess.domain.PageRes 传入这个构造方法的参数
+     * @param objects
+     */
+    public EasyPageRes(Map<String,Object> objects) {
+        init(this);
+        put(PAGE_NO,objects.get(PAGE_NO));
+        put(PAGE_SIZE,objects.get(PAGE_SIZE));
+        put(TOTAL,objects.get(TOTAL));
+        put(RECORDS,objects.get(RECORDS));
     }
 
 

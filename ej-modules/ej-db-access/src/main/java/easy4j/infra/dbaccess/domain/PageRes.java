@@ -24,15 +24,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * EasyPageResult
- * 分页返回
- * 使用方法
- * 1、EasyPageRes.from(Page<T> mybatisPlus);
- * 2、new EasyPageRes(pageNo,pageSize,records);
- * 3、new EasyPageRes(records);
- * 4、easyPageRes.setPageNo(long);
- * 5、easyPageRes.getPageNo();
- * 6、easyPageRes.loopRecords(Class<T> aclass,e->{});
+ *可以通过 easy4j.module.mybatisplus.base.EasyPageRes.EasyPageRes(java.util.Map<java.lang.String,java.lang.Object>) 进行转换
+ * @see easy4j.module.mybatisplus.base.EasyPageRes
  *
  * @author bokun.li
  * @date 2025/8/8

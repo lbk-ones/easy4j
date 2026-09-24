@@ -1,11 +1,8 @@
-package easy4j.module.datasource.dynamic;
-
-import org.springframework.stereotype.Component;
+package easy4j.infra.context;
 
 /**
  * 数据源上下文（适配自定义数据源标识）
  */
-@Component
 public class DataSourceContextHolder {
 
     public static final String DEFAULT_KEY = "$easy4j_default";

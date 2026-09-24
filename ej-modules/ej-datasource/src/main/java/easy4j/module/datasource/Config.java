@@ -14,6 +14,7 @@
  */
 package easy4j.module.datasource;
 
+import easy4j.module.datasource.dynamic.DsExecutor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -39,6 +40,12 @@ public class Config {
     @ConditionalOnMissingBean
     public Log4j3Filter log4j3Filter() {
         return new Log4j3Filter();
+    }
+
+
+    @Bean
+    public DsExecutor dsExecutor(){
+        return new DsExecutor();
     }
 
 }

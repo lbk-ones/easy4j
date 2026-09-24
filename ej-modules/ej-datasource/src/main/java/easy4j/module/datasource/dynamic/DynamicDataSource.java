@@ -1,5 +1,6 @@
 package easy4j.module.datasource.dynamic;
 
+import easy4j.infra.context.DataSourceContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import org.springframework.lang.Nullable;

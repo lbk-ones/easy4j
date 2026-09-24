@@ -3,8 +3,6 @@ package easy4j.infra.dbaccess.orm;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
-import easy4j.infra.dbaccess.orm.conditions.UpdateBuild;
-import easy4j.infra.dbaccess.orm.conditions.WhereBuild;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -12,7 +10,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * 这是传参层包装类
@@ -56,6 +53,16 @@ public class Access<T> {
     private boolean resultFieldToCame;
 
     private boolean returnMap = false;
+
+    /**
+     * jdbc batch 模式
+     */
+    private boolean batchMode = false;
+
+    /**
+     * 每一批的大小
+     */
+    private int batchSize = 200;
 
     private Map<String, Object> extParams = new HashMap<>();
 

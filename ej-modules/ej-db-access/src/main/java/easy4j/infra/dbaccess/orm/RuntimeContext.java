@@ -141,6 +141,12 @@ public class RuntimeContext<T> {
     private long count;
     private boolean exists;
 
+    // 批处理大小
+    private int batchSize = 200;
+
+    // 是否走batch模式
+    private boolean batchIs = false;
+
     public String getDotTableName() {
         return ListTs.join(SP.DOT, ListTs.asList(schema, tableName));
     }
@@ -165,23 +171,16 @@ public class RuntimeContext<T> {
 
     public List<Object> getArgs() {
         List<Object> args = new LinkedList<>();
-        if (
-                operateType == OperateType.SELECT ||
-                        operateType == OperateType.SELECT_COUNT ||
-                        operateType == OperateType.SELECT_EXIST ||
-                        operateType == OperateType.SELECT_PAGE ||
-                        operateType == OperateType.SELECT_JOIN
-        ) {
+        if (OperateType.getSelectOperateTypes().contains(operateType)) {
             if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
-        } else if (operateType == OperateType.INSERT) {
-
+        } else if (OperateType.getInsertOperateTypes().contains(operateType)) {
             if (insertFields != null) {
                 insertFields = insertFields.stream().filter(e -> !e.isSkipPsSet()).toList();
             }
             groupSortAddArgs(args,insertFields);
-        } else if (operateType == OperateType.UPDATE) {
+        } else if (OperateType.getUpdateOperateTypes().contains(operateType)) {
             if (CollUtil.isNotEmpty(updateArgs)) {
                 args.addAll(updateArgs);
             }
@@ -191,8 +190,7 @@ public class RuntimeContext<T> {
             if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
-
-        } else if (operateType == OperateType.DELETE) {
+        } else if (OperateType.getDeleteOperateTypes().contains(operateType)) {
             if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }
@@ -262,4 +260,14 @@ public class RuntimeContext<T> {
     }
 
 
+    /**
+     * 获取要写入的行数
+     * @param args 参数集合
+     * @return 行数
+     */
+    public int getInsertRows(List<Object> args) {
+        List<AccessField> columnInfoList = this.getColumnInfoList(this.getInsertFields());
+        int oneRowArgSize = columnInfoList.size();
+        return args.size() / oneRowArgSize;
+    }
 }

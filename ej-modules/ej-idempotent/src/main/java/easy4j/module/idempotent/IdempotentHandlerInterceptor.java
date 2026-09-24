@@ -151,7 +151,7 @@ public class IdempotentHandlerInterceptor extends AbstractEasy4JWebMvcHandler {
             }
             String accessToken = request.getHeader(SysConstant.X_ACCESS_TOKEN);
             if (StrUtil.isBlank(accessToken)) {
-                return  null;
+                return null;
             }
             return md5(accessToken + "--" + generateKey2);
         }

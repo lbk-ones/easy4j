@@ -73,11 +73,12 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         Page<${entityName}> page = page(new Page<>(pageQuery.getPageNo(), pageQuery.getPageSize()),objectEQueryWrapper);
         EasyPageRes from = EasyPageRes.from(page);
         List<${entityName}> records = from.getRecords(${entityName}.class);
-        List<${entityName}Dto> dtos = list${entityName}ToDto(records);
+        List<${entityName}Dto> dtos = list${entityName}ToDto(records,true);
         return from.setRecords(dtos);
     }
 
-    public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list) {
+    @Override
+    public List<${entityName}Dto> list${entityName}ToDto(List<${entityName}> list,boolean fieldExtension) {
         List<${entityName}Dto> collect = list.stream()
             .map(${mapperStructClassSimpleName}.instance::to${entityName}Dto)
             .collect(Collectors.toList());
@@ -92,7 +93,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
     }
 
     @Override
-    public List<${entityName}Dto> getAllEnableNotDelete() {
+    public List<${entityName}Dto> list(List<List<Object>> keys) {
         EQueryWrapper<${entityName}> query = new EQueryWrapper<>(${entityName}.class);
         boolean b = ReflectUtil.hasField(${entityName}.class, IS_ENABLED);
         boolean b2 = ReflectUtil.hasField(${entityName}.class, IS_DELETED);
@@ -102,8 +103,9 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         if (b2) {
             query.eq(IS_DELETED, IS_DELETED_VALID[0]);
         }
+        parseKeysToQuery(keys, objectEQueryWrapper);
         List<${entityName}> domainList = this.getBaseMapper().selectList(query);
-        return list${entityName}ToDto(domainList);
+        return list${entityName}ToDto(domainList,true);
     }
 
     @Override
@@ -120,7 +122,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
                 throw new EasyException(BusCode.A00065);
             }
         }
-        return list${entityName}ToDto(newInsert);
+        return list${entityName}ToDto(newInsert,true);
     }
 
 
@@ -144,7 +146,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
                 }
             }
         }
-        return list${entityName}ToDto(domainList);
+        return list${entityName}ToDto(domainList,true);
     }
 
     @Override
@@ -216,7 +218,7 @@ public class ${domainName}ServiceImpl extends BaseServiceImpl<${entityName}Mappe
         List<${entityName}> domainList = list${entityName}DtoToDomain(domainDtos);
         domainList.forEach(this::clearId);
         this.patchPrimaryKeys(domainList,${entityName}.class);
-        req.set${entityName}Dtos(list${entityName}ToDto(domainList));
+        req.set${entityName}Dtos(list${entityName}ToDto(domainList,true));
         return save${domainName}(req);
     }
 

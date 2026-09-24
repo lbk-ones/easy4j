@@ -42,7 +42,8 @@ public class CookieUtil {
         } else {
             sb.append("; Path=/");
         }
-        if (maxAge > 0) {
+        // 小于0 则代表是会话期cookie 关掉浏览器cookie就清除
+        if (maxAge >= 0) {
             // 过期时间
             sb.append("; Max-Age=").append(maxAge);
         }

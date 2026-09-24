@@ -10,6 +10,7 @@ import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
+import easy4j.infra.context.DataSourceContextHolder;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -28,10 +29,12 @@ import easy4j.infra.dbaccess.orm.runner.SqlRunner;
 import easy4j.infra.dbaccess.orm.sql.SqlFactory;
 import easy4j.infra.dbaccess.orm.vendor.Vendor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 import javax.sql.DataSource;
@@ -44,6 +47,7 @@ import java.util.*;
  * 工具类不存放任何属性 只存放 AccessConfig
  */
 @Data
+@Slf4j
 public class AccessUtils implements Serializable {
 
 
@@ -59,6 +63,16 @@ public class AccessUtils implements Serializable {
         try {
             Assert.notNull(dataSource);
             if (this.accessConfig.isInTransaction()) {
+                String dataSourceKey = DataSourceContextHolder.getDataSourceKey();
+                // 说明有指定的多数据库
+                if (!StrUtil.equals(DataSourceContextHolder.DEFAULT_KEY, dataSourceKey) && dataSource instanceof AbstractRoutingDataSource) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("db-access 数据源切换到  {}", dataSourceKey);
+                    }
+                    Connection connection = dataSource.getConnection();
+                    connection.setAutoCommit(true);
+                    return connection;
+                }
                 return DataSourceUtils.getConnection(dataSource);
             } else {
                 Connection connection = dataSource.getConnection();
@@ -257,6 +271,8 @@ public class AccessUtils implements Serializable {
                 .setSql(access.getSql())
                 .setPage(access.getPage())
                 .setAccess(access)
+                .setBatchIs(access.isBatchMode())
+                .setBatchSize(access.getBatchSize())
                 .setAccessUtils(this)
                 .setClazz(clazz)
                 .setDbType(dbType)
@@ -271,28 +287,29 @@ public class AccessUtils implements Serializable {
                 .setAutoIncrementList(autoIncrementsList)
                 .setInsertFields(insertList)
                 .setDialect(dialect)
-                .setTableName(StrUtil.blankToDefault(sqlNameEscape(fn(access.getTableName()), dialect, false),getTableName(clazz, dialect)))
+                .setTableName(StrUtil.blankToDefault(sqlNameEscape(fn(access.getTableName()), dialect, false), getTableName(clazz, dialect)))
                 .setSchema(sqlNameEscape(StrUtil.blankToDefault(getSchema(clazz), schema), dialect, false));
         long l3 = System.currentTimeMillis() - l2;
-        LogSql.init(tRuntimeContext, bt,getConnectionTime,l3);
+        LogSql.init(tRuntimeContext, bt, getConnectionTime, l3);
         return tRuntimeContext;
 
     }
 
     /**
      * 从数据库中解析字段信息
-     * @param access 传参
-     * @param fields 字段列表（这里会为空）
-     * @param connection 连接信息
-     * @param dialect 方言
-     * @param index 序号
-     * @param columnInfoList 字段信息集合
+     *
+     * @param access             传参
+     * @param fields             字段列表（这里会为空）
+     * @param connection         连接信息
+     * @param dialect            方言
+     * @param index              序号
+     * @param columnInfoList     字段信息集合
      * @param autoIncrementsList 递增集合
-     * @param idlist 主键集合
-     * @param operateType 操作类型
-     * @param updateList 更新集合
-     * @param insertList 写入集合
-     * @param <T> 反向约束
+     * @param idlist             主键集合
+     * @param operateType        操作类型
+     * @param updateList         更新集合
+     * @param insertList         写入集合
+     * @param <T>                反向约束
      */
     private <T> void dynamicParse(
             Access<T> access,
@@ -313,46 +330,46 @@ public class AccessUtils implements Serializable {
         if (fields.length == 0 && StrUtil.isNotBlank(tableName) && CollUtil.isNotEmpty(mapParams)) {
             try {
                 String catalog = connection.getCatalog();
-                String schema = StrUtil.blankToDefault(schema1,connection.getSchema());
+                String schema = StrUtil.blankToDefault(schema1, connection.getSchema());
                 List<DatabaseColumnMetadata> columns = dialect.getColumns(catalog, schema, tableName);
                 List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(catalog, schema, tableName);
                 Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
-                    for (EasyMap<String, Object> mapParam : mapParams) {
-                        for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
-                            String columnName = databaseColumnMetadata.getColumnName();
-                            PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
-                            boolean isPk = primaryKeyMetadata == null;
-                            boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
-                            WdFieldInfo wdFieldInfo = new WdFieldInfo();
-                            if (index == 0) {
-                                patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, null, isPk, isAutoincrement, columnName);
-                            }
-                            Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
-                            refreshParam(
-                                    ignoreCame,
-                                    null,
-                                    wdFieldInfo,
-                                    columnName,
-                                    dialect,
-                                    index,
-                                    isPk,
-                                    isAutoincrement,
-                                    idlist,
-                                    operateType,
-                                    access.isSkipNullIs(),
-                                    updateList,
-                                    insertList
-                            );
+                for (EasyMap<String, Object> mapParam : mapParams) {
+                    for (DatabaseColumnMetadata databaseColumnMetadata : columns) {
+                        String columnName = databaseColumnMetadata.getColumnName();
+                        PrimaryKeyMetadata primaryKeyMetadata = map.get(columnName);
+                        boolean isPk = primaryKeyMetadata == null;
+                        boolean isAutoincrement = StrUtil.equals("YES", databaseColumnMetadata.getIsAutoincrement());
+                        WdFieldInfo wdFieldInfo = new WdFieldInfo();
+                        if (index == 0) {
+                            patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, null, isPk, isAutoincrement, columnName);
                         }
-                        index++;
+                        Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
+                        refreshParam(
+                                ignoreCame,
+                                null,
+                                wdFieldInfo,
+                                columnName,
+                                dialect,
+                                index,
+                                isPk,
+                                isAutoincrement,
+                                idlist,
+                                operateType,
+                                access.isSkipNullIs(),
+                                updateList,
+                                insertList
+                        );
                     }
+                    index++;
+                }
             } catch (SQLException e) {
                 throw AccessUtils.translate("dynamic parse error", "", e, accessConfig.getDataSource());
             }
         }
     }
 
-    public <T> void refreshContextByMap(RuntimeContext<T> context, EasyMap<String,Object> param) {
+    public <T> void refreshContextByMap(RuntimeContext<T> context, EasyMap<String, Object> param) {
         Dialect dialect = context.getDialect();
         if (param == null) return;
         OperateType operateType = context.getOperateType();
@@ -367,7 +384,7 @@ public class AccessUtils implements Serializable {
         String tableName = access.getTableName();
         try {
             String catalog = connection.getCatalog();
-            String schema = StrUtil.blankToDefault(schema1,connection.getSchema());
+            String schema = StrUtil.blankToDefault(schema1, connection.getSchema());
             List<DatabaseColumnMetadata> columns = dialect.getColumns(catalog, schema, tableName);
             List<PrimaryKeyMetadata> primaryKes = dialect.getPrimaryKes(catalog, schema, tableName);
             Map<String, PrimaryKeyMetadata> map = ListTs.toMap(primaryKes, PrimaryKeyMetadata::getColumnName);
@@ -454,7 +471,7 @@ public class AccessUtils implements Serializable {
      * @param fieldValue      参数的值
      * @param parentField     参数的field对象
      * @param columnField     参数的名称
-     * @param dialect       方言
+     * @param dialect         方言
      * @param index           第几个参数
      * @param pk              是否主键
      * @param isAutoIncrement 是否自动递增

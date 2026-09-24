@@ -59,9 +59,9 @@ public class ${domainName}Controller {
         return EasyResult.ok(i${domainName}Service.pageQuery${domainName}(${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq));
     }
 
-    @Operation(summary = "查询所有已启用的${cnDesc}", description = "查询所有已启用的${cnDesc}，不需要该功能则不理会")
-    @GetMapping("getAllEnableNotDelete")
-    @SentinelResource(value = ${domainName?upper_case}_URL +"/getAllEnableNotDelete")
+    @Operation(summary = "查询所有已启用的${cnDesc}", description = "查询所有已启用的${cnDesc}/或者根据条件查询，不需要该功能则不理会")
+    @PostMapping("list")
+    @SentinelResource(value = ${domainName?upper_case}_URL +"/list")
     @GlobalXAccessToken
     @GlobalApiResponses
     @ApiResponse(
@@ -73,8 +73,8 @@ public class ${domainName}Controller {
                     )
             )
     )
-    public EasyResult<List<${returnDtoName}>> getAllEnableNotDelete(){
-        return EasyResult.ok(i${domainName}Service.getAllEnableNotDelete());
+    public EasyResult<List<${returnDtoName}>> list(@RequestBody(required = false) List<List<Object>> keys){
+        return EasyResult.ok(i${domainName}Service.list(keys));
     }
 
     @Operation(summary = "${cnDesc}保存", description = "新增或批量新增${cnDesc}，不需要该功能则不理会")

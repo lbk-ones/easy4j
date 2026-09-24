@@ -15,7 +15,7 @@ import java.util.List;
 public interface I${domainName}Service extends IService<${entityName}> {
     EasyPageRes pageQuery${domainName}(${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq);
 
-    List<${entityName}Dto> getAllEnableNotDelete();
+    List<${entityName}Dto> list(List<List<Object>> keys);
 
     List<${entityName}Dto> save${domainName}(${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReq);
 
@@ -30,4 +30,7 @@ public interface I${domainName}Service extends IService<${entityName}> {
     List<${entityName}Dto> copy${domainName}(${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReqs);
 
     List<${entityName}Dto> enableOrDisable${domainName}(${domainName}ControllerReq ${(domainName?substring(0,1))?lower_case + (domainName?substring(1))}ControllerReqs);
+
+    List<${entityName}Dto> list${domainName}ToDto(List<${domainName}> list,boolean fieldExtension);
+
 }

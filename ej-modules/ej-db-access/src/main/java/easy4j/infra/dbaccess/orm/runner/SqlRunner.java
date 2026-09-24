@@ -33,7 +33,7 @@ public class SqlRunner {
         PsRes psRes = null;
         try{
             // query
-            if (OperateType.SELECT == operateType || OperateType.SELECT_PAGE == operateType  || OperateType.SELECT_JOIN == operateType) {
+            if (OperateType.getOperateTypeByRunnerType(SqlRunnerTypeEnum.select).contains(operateType)) {
                 List<T> handle;
                 LogSql.exeBegin(context);
                 psRes = jdbcUtils.query(context);
@@ -70,7 +70,7 @@ public class SqlRunner {
                     throw AccessUtils.translate("select_run",context.getSql(),e,context.getConfig().getDataSource());
 
                 }
-            }else if(OperateType.SELECT_COUNT == operateType ){
+            }else if(OperateType.getOperateTypeByRunnerType(SqlRunnerTypeEnum.count).contains(operateType)){
                 ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
                 LogSql.exeBegin(context);
@@ -85,7 +85,7 @@ public class SqlRunner {
                 }
                 context.setCount(count);
                 context.setEffectRows(Math.toIntExact(count));
-            }else if(OperateType.SELECT_EXIST == operateType){
+            }else if(OperateType.getOperateTypeByRunnerType(SqlRunnerTypeEnum.exist).contains(operateType)){
                 ScalarHandler<Object> tBeanListHandler = new ScalarHandler<>(1);
                 Long count;
                 LogSql.exeBegin(context);

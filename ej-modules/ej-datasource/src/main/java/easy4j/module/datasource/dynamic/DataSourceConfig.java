@@ -12,6 +12,7 @@ import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.utils.SqlType;
 import easy4j.infra.common.utils.SysConstant;
 import easy4j.infra.common.utils.SysLog;
+import easy4j.infra.context.DataSourceContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.Advisor;
 import org.springframework.beans.factory.annotation.Qualifier;

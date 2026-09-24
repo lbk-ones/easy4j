@@ -16,6 +16,8 @@
 package easy4j.module.datasource.dynamic;
 
 
+import easy4j.infra.context.DataSourceContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 /**
@@ -24,6 +26,7 @@ import org.aopalliance.intercept.MethodInvocation;
  * @author TaoYu
  * @since 1.2.0
  */
+@Slf4j
 public class DynamicDataSourceAnnotationInterceptor implements MethodInterceptor {
 
     /**
