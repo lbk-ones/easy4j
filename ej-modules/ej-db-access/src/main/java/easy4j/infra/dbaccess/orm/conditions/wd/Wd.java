@@ -14,6 +14,7 @@ import easy4j.infra.dbaccess.orm.handler.DefaultTypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeHandler;
 import easy4j.infra.dbaccess.orm.handler.TypeReference;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -44,6 +45,10 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     @JsonIgnore
     public static Map<Class<?>,Class<?>> CLASS_CACHE = new WeakKeyValueConcurrentMap<>();
 
+    // 字段名称
+    @Getter
+    private String name;
+
     // 整个替换
     private String placeHolder = DEFAULT_PLACE;
 
@@ -58,7 +63,7 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     // 类型转换器
     private JdbcType jdbcType;
 
-    // 类型转换器
+    // 别称
     private String alias;
 
     public Wd() {
@@ -91,6 +96,11 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
         return instance;
     }
 
+    public Wd<T> setName(String name) {
+        this.name = name;
+        return instance;
+    }
+
     public abstract Wd<T> cloneNew();
 
     public String getAlias() {
@@ -118,6 +128,13 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
     }
 
     public Wd(String placeHolder, T value) {
+        this.placeHolder = placeHolder;
+        this.value = value;
+        register();
+    }
+
+    public Wd(String placeHolder, T value,String name) {
+        this.name = name;
         this.placeHolder = placeHolder;
         this.value = value;
         register();
@@ -275,6 +292,19 @@ public abstract class Wd<T> extends TypeReference<T> implements Serializable {
             return wd.getPlaceHolder();
         } else {
             return DEFAULT_PLACE;
+        }
+    }
+  /**
+     * 获取字段名称
+     *
+     * @param object wd包装类实例
+     */
+    public static String name(Object object) {
+        if (object == null) return null;
+        if (object instanceof Wd<?> wd) {
+            return wd.getName();
+        } else {
+            return null;
         }
     }
 

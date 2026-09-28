@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class DBAccessImpl implements IDBAccess {
@@ -105,7 +106,7 @@ public class DBAccessImpl implements IDBAccess {
 
     @Override
     public <T> int batchSave(Iterable<T> params, Class<T> clazz) {
-        return batchSave(params,clazz,200);
+        return batchSave(params, clazz, 200);
     }
 
     @Override
@@ -148,7 +149,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        IWhere whereBuild = idEq(context);
+        IWhere whereBuild = idEqOrIn(context);
         if (whereBuild == null) return 0;
         return deleteByIdWith(context, true);
 
@@ -159,11 +160,11 @@ public class DBAccessImpl implements IDBAccess {
         if (key == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
-                .setPrimaryKey(key)
+                .setPrimaryKeys(ListTs.asList(key))
                 .setClazz(clazz)
                 .setOperateType(OperateType.DELETE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        IWhere whereBuild = idEq(context);
+        IWhere whereBuild = idEqOrIn(context);
         if (whereBuild == null) return 0;
         return deleteByIdWith(context, true);
     }
@@ -181,18 +182,81 @@ public class DBAccessImpl implements IDBAccess {
 
     }
 
-    public <T> IWhere idEq(RuntimeContext<T> context) {
+    @Override
+    public <T> int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, Class<T> clazz) {
+        return batchDeleteByPrimaryKeys(primaryKeys, clazz, 200);
+    }
+
+    @Override
+    public <T> int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, Class<T> clazz, int batchSize) {
+        if (primaryKeys == null) return 0;
+        if (clazz == null) return 0;
+        Access<T> tAccess = new Access<T>()
+                .setPrimaryKeys(primaryKeys)
+                .setBatchSize(batchSize)
+                .setBatchMode(true)
+                .setClazz(clazz)
+                .setOperateType(OperateType.DELETE);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        IWhere whereBuild = idEqOrIn(context);
+        if (whereBuild == null) return 0;
+        return deleteByIdWith(context, true);
+    }
+
+    /**
+     * 添加主键条件,重置where条件
+     *
+     * @param context 上下文
+     * @param <T>     泛型约束
+     * @return 条件器
+     */
+    public <T> IWhere idEqOrIn(RuntimeContext<T> context) {
         List<AccessField> columnInfoList = context.getIdList();
-        IWhere whereBuild = WhereBuild.get();
-        columnInfoList.forEach(e -> {
-            whereBuild.getWhere().ifPresent(e2 -> e2.eq(e.getColumnName(), Wd.value(e.getColumnValue())));
-        });
-        List<Condition> conditions = whereBuild.getWhere().orElseThrow().getConditions();
-        if (conditions.isEmpty()) {
-            return null;
+        Access<T> access = context.getAccess();
+        IWhere where = access.getWhere();
+        if (where == null) {
+            where = access.getUpdate();
         }
-        context.getAccess().setWhere(whereBuild);
-        return whereBuild;
+        if(where == null){
+            where = WhereBuild.get();
+        }
+        boolean isUpdate = where instanceof IUpdateBuild || where instanceof IFUpdateBuild;
+        if (ListTs.isNotEmpty(columnInfoList)) {
+            Map<String, List<AccessField>> entryMap = ListTs.groupBy(columnInfoList, AccessField::getColumnName);
+            for (Map.Entry<String, List<AccessField>> entry : entryMap.entrySet()) {
+                String key = entry.getKey();
+                List<AccessField> value = entry.getValue();
+                List<AccessField> dValue = ListTs.distinct(value, e -> String.valueOf(e.getColumnValue()));
+                if (dValue.size() == 1) {
+                    if (isUpdate) {
+                        where.getUpdate().ifPresent(e2 -> e2.eq(key, Wd.value(ListTs.get(dValue, 0))));
+                    } else {
+                        where.getWhere().ifPresent(e2 -> e2.eq(key, Wd.value(ListTs.get(dValue, 0))));
+                    }
+                } else if (dValue.size() > 1) {
+                    if (isUpdate) {
+                        where.getUpdate().ifPresent(e2 -> e2.in(key, dValue.stream().map(e -> Wd.value(e.getColumnValue())).toList()));
+                    } else {
+                        where.getWhere().ifPresent(e2 -> e2.in(key, dValue.stream().map(e -> Wd.value(e.getColumnValue())).toList()));
+                    }
+                }
+            }
+
+            if (isUpdate) {
+                List<Condition> conditions = where.getUpdate().orElseThrow().getWhere().orElseThrow().getUpdateConditions();
+                if (conditions.isEmpty()) {
+                    return null;
+                }
+                access.setUpdate(where);
+            } else {
+                List<Condition> conditions = where.getWhere().orElseThrow().getConditions();
+                if (conditions.isEmpty()) {
+                    return null;
+                }
+                access.setWhere(where);
+            }
+        }
+        return where;
     }
 
     @Override
@@ -210,7 +274,7 @@ public class DBAccessImpl implements IDBAccess {
                 T next = iterator.next();
                 context.setParams(ListTs.asList(next));
                 accessUtils.refreshContextByParam(context, next);
-                IWhere whereBuild = idEq(context);
+                IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) continue;
                 i += deleteByIdWith(context, false);
             }
@@ -231,7 +295,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setOperateType(OperateType.UPDATE);
 
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        IWhere whereBuild = idEq(context);
+        IWhere whereBuild = idEqOrIn(context);
         if (whereBuild == null) return 0;
         return updateByIdWith(context, true);
 
@@ -266,7 +330,7 @@ public class DBAccessImpl implements IDBAccess {
             int i = 0;
             for (EasyMap<String, Object> param : value) {
                 accessUtils.refreshContextByMap(context, param);
-                IWhere whereBuild = idEq(context);
+                IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) return 0;
                 i += updateByIdWith(context, false);
             }
@@ -307,7 +371,7 @@ public class DBAccessImpl implements IDBAccess {
             for (T param : params) {
                 context.setParams(ListTs.asList(param));
                 accessUtils.refreshContextByParam(context, param);
-                IWhere whereBuild = idEq(context);
+                IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) return 0;
                 i += updateByIdWith(context, false);
             }
@@ -338,7 +402,7 @@ public class DBAccessImpl implements IDBAccess {
     }
 
     @Override
-    public <T> int update(IUpdateBuild updateBuild, Class<T> clazz) {
+    public <T> int update(IWhere updateBuild, Class<T> clazz) {
         if (updateBuild == null) return 0;
         if (clazz == null) return 0;
         Access<T> tAccess = new Access<T>()
@@ -346,6 +410,33 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.UPDATE);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        return exeCallback(context, e -> {
+            accessUtils.resolveContext(e, false);
+            return e.getEffectRows();
+        });
+    }
+
+    @Override
+    public <T> int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, Class<T> clazz) {
+        return batchUpdateByPrimaryKeys(updateBuild, primaryKeys, clazz, 200);
+    }
+
+    @Override
+    public <T> int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, Class<T> clazz, int batchSize) {
+        if (updateBuild == null) return 0;
+        if (clazz == null) return 0;
+        if (primaryKeys == null) return 0;
+        // 清除掉where条件
+        Access<T> tAccess = new Access<T>()
+                .setUpdate(updateBuild)
+                .setPrimaryKeys(primaryKeys)
+                .setBatchSize(batchSize)
+                .setClazz(clazz)
+                .setBatchMode(true)
+                .setOperateType(OperateType.UPDATE);
+        RuntimeContext<T> context = accessUtils.toContext(tAccess);
+        IWhere whereBuild = idEqOrIn(context);
+        if (whereBuild == null) return 0;
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, false);
             return e.getEffectRows();
@@ -725,7 +816,7 @@ public class DBAccessImpl implements IDBAccess {
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        IWhere whereBuild = idEq(context);
+        IWhere whereBuild = idEqOrIn(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, false);
@@ -738,11 +829,11 @@ public class DBAccessImpl implements IDBAccess {
         if (primaryKey == null) return null;
         if (clazz == null) return null;
         Access<T> tAccess = new Access<T>()
-                .setPrimaryKey(primaryKey)
+                .setPrimaryKeys(ListTs.asList(primaryKey))
                 .setClazz(clazz)
                 .setOperateType(OperateType.SELECT);
         RuntimeContext<T> context = accessUtils.toContext(tAccess);
-        IWhere whereBuild = idEq(context);
+        IWhere whereBuild = idEqOrIn(context);
         if (whereBuild == null) return null;
         return exeCallback(context, e -> {
             accessUtils.resolveContext(e, false);

@@ -17,14 +17,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 另外一种批量写入的方式，但是这种写法不会带回写
+ * oracle另外一种批量写入的方式，但是这种写法不会带回写
  */
 public class OracleBatchInsertSql extends AbstractSqlDialect {
 
     @Override
     public boolean match(RuntimeContext<?> context) {
         int oracleWriteStrategy = context.getAccessUtils().getAccessConfig().getOracleWriteStrategy();
-        return context.getOperateType() == OperateType.INSERT && Objects.equals(context.getDbType(), DbType.ORACLE.getDb()) && oracleWriteStrategy != 1;
+        return context.getOperateType() == OperateType.INSERT
+                && Objects.equals(context.getDbType(), DbType.ORACLE.getDb())
+                && oracleWriteStrategy != 1
+                && !context.isBatchIs();
     }
 
     @Override

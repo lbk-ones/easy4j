@@ -11,6 +11,8 @@ import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.common.utils.ListTs;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.context.DataSourceContextHolder;
+import easy4j.infra.context.api.seed.Easy4jSeed;
+import easy4j.infra.context.api.seed.MybatisPlusSnowSeed;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
@@ -42,6 +44,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * 工具类不存放任何属性 只存放 AccessConfig
@@ -218,19 +221,28 @@ public class AccessUtils implements Serializable {
                 WdFieldInfo wdFieldInfo = resolveWdField(field);
                 AccessField accessField = patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                 // feat: 新增按主键值查询的功能
-                Serializable primaryKey = access.getPrimaryKey();
-                if (pk && primaryKey != null && accessField != null) {
-                    AccessField accessField1 = accessField.cloneNew();
-                    if (primaryKey instanceof Wd<?> wd) {
-                        Object value = wd.getValue();
-                        if (ObjectUtil.isEmpty(value)) {
-                            throw new AccessException("primaryKey value is empty!");
+                // fix: 修正多主键或者主键in这种可能
+                Iterable<? extends Serializable> primaryKeys = access.getPrimaryKeys();
+                if (pk && primaryKeys != null) {
+                    for (Serializable key : primaryKeys) {
+                        AccessField accessField1 = accessField.cloneNew();
+                        if (key instanceof Wd<?> wd) {
+                            Object value = wd.getValue();
+                            if (ObjectUtil.isEmpty(value)) {
+                                throw new AccessException("primaryKey value is empty!");
+                            }
                         }
+                        // 如果指定了名称则这里替换name的名称
+                        String name = Wd.name(key);
+                        if (StrUtil.isNotBlank(name)) {
+                            accessField1.setColumnName(name);
+                            accessField1.setEscapeColumnName(sqlNameEscape(name, dialect, false));
+                        }
+                        accessField1.setPlaceHolder(Wd.place(key));
+                        accessField1.setAlias(Wd.alias(key));
+                        Wd.setNewValue(accessField1, key);
+                        idlist.add(accessField1);
                     }
-                    accessField1.setPlaceHolder(Wd.place(primaryKey));
-                    accessField1.setAlias(Wd.alias(primaryKey));
-                    Wd.setNewValue(accessField1, primaryKey);
-                    idlist.add(accessField1);
                 }
             }
             // 动态解析
@@ -247,6 +259,12 @@ public class AccessUtils implements Serializable {
                         patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
                     }
                     refreshParam(
+                            new Consumer<Object>() {
+                                @Override
+                                public void accept(Object o) {
+                                    ReflectUtil.setFieldValue(t, field, o);
+                                }
+                            },
                             ReflectUtil.getFieldValue(t, field),
                             field,
                             wdFieldInfo,
@@ -346,6 +364,12 @@ public class AccessUtils implements Serializable {
                         }
                         Object ignoreCame = mapParam.getIgnoreCame(columnName, true);
                         refreshParam(
+                                new Consumer<Object>() {
+                                    @Override
+                                    public void accept(Object o) {
+                                        mapParam.put(columnName, o);
+                                    }
+                                },
                                 ignoreCame,
                                 null,
                                 wdFieldInfo,
@@ -396,6 +420,8 @@ public class AccessUtils implements Serializable {
                 WdFieldInfo wdFieldInfo = new WdFieldInfo();
                 Object ignoreCame = param.getIgnoreCame(columnName, true);
                 refreshParam(
+                        o -> {
+                        },
                         ignoreCame,
                         null,
                         wdFieldInfo,
@@ -468,21 +494,23 @@ public class AccessUtils implements Serializable {
     /**
      * 刷新一个参数
      *
-     * @param fieldValue      参数的值
-     * @param parentField     参数的field对象
-     * @param columnField     参数的名称
-     * @param dialect         方言
-     * @param index           第几个参数
-     * @param pk              是否主键
-     * @param isAutoIncrement 是否自动递增
-     * @param idlist          主键列表
-     * @param operateType     操作类型
-     * @param access          传参
-     * @param updateList      更新列表
-     * @param insertList      写入列表
-     * @param <T>             泛型
+     * @param objSetValue      参数字段重写（给主键默认值）
+     * @param fieldValue       参数的值
+     * @param parentField      参数的field对象
+     * @param columnField      参数的名称
+     * @param dialect          方言
+     * @param index            第几个参数
+     * @param pk               是否主键
+     * @param isAutoIncrement  是否自动递增
+     * @param idlist           主键列表
+     * @param operateType      操作类型
+     * @param updateIsSkipNull 传参
+     * @param updateList       更新列表
+     * @param insertList       写入列表
+     * @param <T>              泛型
      */
     private <T> AccessField refreshParam(
+            Consumer<Object> objSetValue,
             Object fieldValue,
             Field parentField,
             WdFieldInfo wdFieldInfo,
@@ -493,7 +521,7 @@ public class AccessUtils implements Serializable {
             boolean isAutoIncrement,
             List<AccessField> idlist,
             OperateType operateType,
-            boolean access,
+            boolean updateIsSkipNull,
             List<AccessField> updateList,
             List<AccessField> insertList) {
         AccessField accessField = new AccessField();
@@ -507,23 +535,40 @@ public class AccessUtils implements Serializable {
         accessField.setGroup(index);
         accessField.setPkIs(pk);
         accessField.setAutoIncrementIs(isAutoIncrement);
-        if (pk) {
-            idlist.add(accessField);
-        }
+        // 更新
         if (operateType == OperateType.UPDATE && !pk) {
-            if (access) {
+            if (updateIsSkipNull) {
                 if (!ObjectUtil.isEmpty(fieldValue)) updateList.add(accessField);
             } else {
                 updateList.add(accessField);
             }
         } else if (operateType == OperateType.INSERT) {
+            // 写入
             if (isAutoIncrement) {
                 if (!ObjectUtil.isEmpty(Wd.value(accessField.getColumnValue()))) {
                     insertList.add(accessField);
                 }
             } else {
+                // feat: 如果是写入，且这个字段是主键，并且传入的时候没有给值，那么这里会根据字段类型进行赋值，只考虑long类型和String类型，其他无法确认
+                if (pk && parentField != null && ObjectUtil.isEmpty(fieldValue)) {
+                    Class<?> type = parentField.getType();
+                    if (type == Long.class || type == long.class) {
+                        Easy4jSeed easy4jSeed = Easy4j.getContext().get(MybatisPlusSnowSeed.class);
+                        long l = easy4jSeed.nextIdLong();
+                        objSetValue.accept(l);
+                        Wd.setNewValue(accessField, l);
+                    } else if (type == String.class) {
+                        Easy4jSeed easy4jSeed = Easy4j.getContext().get(MybatisPlusSnowSeed.class);
+                        String l = easy4jSeed.nextIdStr();
+                        objSetValue.accept(l);
+                        Wd.setNewValue(accessField, l);
+                    }
+                }
                 insertList.add(accessField);
             }
+        }
+        if (pk) {
+            idlist.add(accessField);
         }
         return accessField;
 
@@ -555,6 +600,12 @@ public class AccessUtils implements Serializable {
             String columnField = getColumnNameFormField(field);
             WdFieldInfo wdFieldInfo = resolveWdField(field);
             AccessField accessField = refreshParam(
+                    new Consumer<Object>() {
+                        @Override
+                        public void accept(Object o) {
+                            ReflectUtil.setFieldValue(param, field, o);
+                        }
+                    },
                     ReflectUtil.getFieldValue(param, field),
                     field,
                     wdFieldInfo,

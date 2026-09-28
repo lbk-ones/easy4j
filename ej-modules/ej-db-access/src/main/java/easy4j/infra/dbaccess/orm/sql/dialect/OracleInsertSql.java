@@ -24,7 +24,10 @@ public class OracleInsertSql extends AbstractSqlDialect {
     @Override
     public boolean match(RuntimeContext<?> context) {
         int oracleWriteStrategy = context.getAccessUtils().getAccessConfig().getOracleWriteStrategy();
-        return context.getOperateType() == OperateType.INSERT && Objects.equals(context.getDbType(), DbType.ORACLE.getDb()) && oracleWriteStrategy == 1;
+        return context.getOperateType() == OperateType.INSERT
+                && Objects.equals(context.getDbType(), DbType.ORACLE.getDb())
+                && oracleWriteStrategy == 1
+                && !context.isBatchIs();
     }
 
     @Override

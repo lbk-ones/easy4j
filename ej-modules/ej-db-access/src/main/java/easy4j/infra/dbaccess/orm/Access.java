@@ -22,7 +22,7 @@ public class Access<T> {
 
     private T param;
 
-    private Serializable primaryKey;
+    private Iterable<? extends Serializable> primaryKeys;
 
     private Iterable<T> params;
 
@@ -42,9 +42,9 @@ public class Access<T> {
 
     private IWhere where;
 
-    private SqlWrapper sqlWrapper;
-
     private IWhere update;
+
+    private SqlWrapper sqlWrapper;
 
     private boolean skipNullIs;
 

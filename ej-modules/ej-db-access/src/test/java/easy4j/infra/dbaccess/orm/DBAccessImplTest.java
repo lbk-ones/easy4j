@@ -1281,4 +1281,35 @@ class DBAccessImplTest {
         assertEquals(30,pageSize);
 
     }
+
+
+    @Test
+    void testBatchUpdate() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        Date last = null;
+        int total = 633;
+        for (int i = 0; i < total; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setId((long) (i + 1));
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            last = new Date();
+            operationLogs.setCreatedAt(last);
+            objects.add(operationLogs);
+        }
+        int i = idbAccess.batchSave(objects, OperationLogs.class);
+        assertEquals(total, i);
+
+        List<Long> list = objects.stream().map(OperationLogs::getId).toList();
+
+        FUpdateBuild<OperationLogs> operationLogsFUpdateBuild = FUpdateBuild.get(OperationLogs.class);
+        operationLogsFUpdateBuild.set(true,OperationLogs::getAction,"create");
+        operationLogsFUpdateBuild.set(true,OperationLogs::getOperatorUa,"ua-01");
+        int i1 = idbAccess.batchUpdateByPrimaryKeys(operationLogsFUpdateBuild, list, OperationLogs.class);
+        assertEquals(i, i1);
+        int i2 = idbAccess.batchDeleteByPrimaryKeys(list, OperationLogs.class);
+        assertEquals(i, i2);
+
+    }
 }

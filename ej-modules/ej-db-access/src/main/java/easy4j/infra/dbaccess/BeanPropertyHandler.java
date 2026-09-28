@@ -73,12 +73,9 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
      * ResultSet结果集处理
      */
     protected T handleRow(ResultSet rs) throws SQLException {
-        Constructor<T> constructor = ReflectUtil.getConstructor(mappedClass);
-        if (constructor == null) {
-            throw new AccessException("not empty parameter constructor!");
-        }
         /**
          * 根据bean的class类型实例化为对象
+         * record 类是无法反射的
          */
         T mappedObject = ReflectUtil.newInstance(mappedClass);
         ResultSetMetaData rsmd = rs.getMetaData();

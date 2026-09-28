@@ -12,6 +12,7 @@ import java.util.List;
 public class PsRes {
 
     ResultSet resultSet;
+
     List<ResultSet> resultSets;
 
     Statement statement;

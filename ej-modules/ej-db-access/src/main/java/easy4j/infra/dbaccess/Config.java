@@ -33,33 +33,28 @@ public class Config implements AutoRegisterContext {
     SpringOrmProperties ormProperties;
 
 
-    @Autowired(required = false)
-    List<IPlugin> pluginsList;
+    @Bean
+    @ConditionalOnMissingBean
+    PluginLoader pluginLoader(){
+        return new PluginLoader();
+    }
 
     @Bean
     @ConditionalOnMissingBean
     public IDBAccess idbAccess() {
         // 默认加入当前事务，且打印全部sql
-        AccessConfig accessConfig = new AccessConfig().setDataSource(dataSource).setInTransaction(true).setPrintSqlIs(true).setOnlyPrintSlowSql(false);
+        AccessConfig accessConfig = new AccessConfig()
+                .setDataSource(dataSource)
+                .setInTransaction(true)
+                .setPrintSqlIs(true)
+                .setOnlyPrintSlowSql(false);
+
         List<String> plugins = ormProperties.getPlugins();
-        if (plugins != null) {
-            List<IPlugin> staticAll = Plugins.staticAll;
-            List<IPlugin> finalAll = new ArrayList<>();
-            ListTs.addAll(finalAll, staticAll);
-            if (CollUtil.isNotEmpty(pluginsList)) {
-                ListTs.addAll(finalAll, pluginsList);
-            }
-            for (IPlugin iPlugin : finalAll) {
-                String name = iPlugin.getName();
-                if (StrUtil.isBlank(name)) continue;
-                if (plugins.stream().anyMatch(e -> StrUtil.equals(e, name))) {
-                    System.out.println(SysLog.compact("load db access orm plugin " + name));
-                    accessConfig.addPlugin(iPlugin);
-                }
-            }
-        }
+        PluginLoader.loader(plugins, accessConfig);
         return OrmFactory.get(accessConfig,ormProperties, true);
     }
+
+
 
     @Override
     public void registerToContext(Easy4jContext easy4jContext) {

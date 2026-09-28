@@ -45,7 +45,10 @@ public class RuntimeContext<T> {
 
     // where后面sql的参数值
     private List<Object> whereArgs;
-    // 更新有可能传入值
+
+
+    // 更新有可能传入值 updateArgs：value1、value2
+    // update tablex set name1='value1',name2='value2'
     private List<Object> updateArgs;
 
     // 表名
@@ -67,7 +70,7 @@ public class RuntimeContext<T> {
     // 查询的字段
     private List<String> selectFields;
 
-    // 更新时候的 sqlSet
+    // 更新时候的 sqlSet 如果这个有值、说明这个字段updateFields没值
     private List<String> sqlSet;
 
     // 转义的查询字段
@@ -181,12 +184,15 @@ public class RuntimeContext<T> {
             }
             groupSortAddArgs(args,insertFields);
         } else if (OperateType.getUpdateOperateTypes().contains(operateType)) {
+            // UpdateBuild set 传入的参数值
             if (CollUtil.isNotEmpty(updateArgs)) {
                 args.addAll(updateArgs);
             }
+            // 如果未使用UpdateBuild，传入的是对象集合则这个会有值
             if(CollUtil.isNotEmpty(updateFields)){
                 groupSortAddArgs(args,updateFields);
             }
+            // where条件
             if (CollUtil.isNotEmpty(whereArgs)) {
                 args.addAll(whereArgs);
             }

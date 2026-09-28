@@ -3,8 +3,9 @@ package easy4j.infra.dbaccess.orm;
 import easy4j.infra.common.utils.EasyMap;
 import easy4j.infra.dbaccess.Page;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
-import easy4j.infra.dbaccess.orm.conditions.IWhere;
 import easy4j.infra.dbaccess.domain.PageRes;
+import easy4j.infra.dbaccess.orm.conditions.IUpdateBuild;
+import easy4j.infra.dbaccess.orm.conditions.IWhere;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -12,8 +13,9 @@ import java.sql.Connection;
 import java.util.List;
 
 /**
- * 一个简单的orm框架
- *
+ * 一个简单的orm框架,去掉
+ * <br/>
+ * 泛型简化版本，这个版本，可以在调用方法的时候不传入class类型对象，只需要在创建的时候传一次就可以了
  * <pre>
  * 1、支持单表的增删改查
  * 2、支持多种数据库 mysql,postgresql,oracle,sqlserver,h2,db2
@@ -33,7 +35,7 @@ import java.util.List;
  * @version 2.1.5
  * @since 2.1.4
  */
-public interface IDBAccess {
+public interface IDBAccessBase<T> {
 
 
     /**
@@ -59,113 +61,72 @@ public interface IDBAccess {
      * 写入一条数据
      *
      * @param params 要写入的数据
-     * @param clazz  要写入的字节码对象
-     * @param <T>    泛型
      * @return 写入后的数据
      */
-    <T> T save(T params, Class<T> clazz);
+    T save(T params);
 
     /**
      * 写入多条数据
      *
      * @param params 参数
-     * @param clazz  对象类型
-     * @param <T>    泛型
      * @return 写入后的数据
      */
-    <T> List<T> save(Iterable<T> params, Class<T> clazz);
+    List<T> save(Iterable<T> params);
 
     /**
      * 以jdbcBatch的形式去写入，不带数据库自动回写
-     *
-     * @param params    参数
-     * @param clazz     对象类型
-     * @param batchSize 批量条数如果不设置则默认200条
-     * @param <T>       泛型约束
-     * @return 返回写入的条数
-     */
-    <T> int batchSave(Iterable<T> params, Class<T> clazz, int batchSize);
-
-    /**
-     * 以jdbcBatch的形式去写入，不带数据库自动回写
-     *
      * @param params 参数
-     * @param clazz  对象类型
-     * @param <T>    泛型约束
+     * @param batchSize 批量条数如果不设置则默认200条
      * @return 返回写入的条数
      */
-    <T> int batchSave(Iterable<T> params, Class<T> clazz);
+    int batchSave(Iterable<T> params,int batchSize);
+
+    /**
+     * 以jdbcBatch的形式去写入，不带数据库自动回写
+     * @param params 参数
+     * @return 返回写入的条数
+     */
+    int batchSave(Iterable<T> params);
 
     /**
      * 根据条件删除
      *
      * @param whereBuild 条件构造器
-     * @param clazz      对象类型
-     * @param <T>        泛型
      * @return 删除的条数
      */
-    <T> int delete(IWhere whereBuild, Class<T> clazz);
+    int delete(IWhere whereBuild);
 
     /**
      * 删除所有
      *
-     * @param clazz
-     * @param <T>
      * @return
      */
-    <T> int deleteAll(Class<T> clazz);
+    int deleteAll();
 
 
     /**
      * 根据主键删除数据
      *
      * @param params 对象实例
-     * @param clazz  对象类型
-     * @param <T>    泛型约束
      * @return 删除条数
      */
-    <T> int deleteById(T params, Class<T> clazz);
+    int deleteById(T params);
 
     /**
      * 根据主键删除直接传入主键，只适用于单主键那种表
      *
      * @param primaryKey 主键的值 可以传入 Wd包装类
-     * @param clazz      类字节码对象
-     * @param <T>        泛型约束
      * @return 受影响的条数
      */
-    <T> int deleteByPrimaryKey(Serializable primaryKey, Class<T> clazz);
+    int deleteByPrimaryKey(Serializable primaryKey);
 
     /**
-     * 根据主键批量删除 (使用jdbc Batch 模式来删除)
+     * 根据主键批量删除
      *
-     * @param primaryKeys 主键
-     * @param clazz       对象类型
-     * @param <T>         泛型
+     * @param ids   主键
      * @return 删除的条数
      */
-    <T> int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, Class<T> clazz);
-
-    /**
-     * 根据主键批量删除 (使用jdbc Batch 模式来删除)
-     *
-     * @param primaryKeys 主键
-     * @param clazz       对象类型
-     * @param batchSize   批处理大小
-     * @param <T>         泛型
-     * @return 删除的条数
-     */
-    <T> int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, Class<T> clazz, int batchSize);
-
-    /**
-     * 根据主键批量删除(循环单条删除)
-     *
-     * @param primaryKeys 主键
-     * @param clazz       对象类型
-     * @param <T>         泛型
-     * @return 删除的条数
-     */
-    <T> int deleteByIds(Iterable<T> primaryKeys, Class<T> clazz);
+    int deleteByIds(Iterable<T> ids);
 
 
     /**
@@ -174,74 +135,36 @@ public interface IDBAccess {
      * @param params     要更新的参数
      * @param isSkipNull 是否更新null值
      * @param whereBuild 条件构造器
-     * @param clazz      对象类型
-     * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int update(T params, boolean isSkipNull, IWhere whereBuild, Class<T> clazz);
+    int update(T params, boolean isSkipNull, IWhere whereBuild);
 
     /**
      * 使用IWhere进行更新
      *
-     * @param updateBuild 更新条件构造器
-     * @param clazz       类
-     * @param <T>         泛型
+     * @param updateBuild 更新构造器
      * @return 受影响条数
      */
-    <T> int update(IWhere updateBuild, Class<T> clazz);
-
-    /**
-     * batch模式的批量更新
-     *
-     * <pre>
-     * int result = batchUpdate(new UpdateBuild().set(true,"name","joke"),ListTs.asList(216161761760,216161761761),XXXXClass.class)
-     * </pre>
-     *
-     * @param updateBuild 更新条件构造器，不能传入where条件，比如eq或者in之类的，他们会被清除掉，条件只能通过primaryKeys来表达
-     * @param primaryKeys 主键集合 可以使用Wd包装类
-     * @param clazz       要更新的对象类型
-     * @param <T>         泛型约束
-     * @return 更新条数
-     */
-    <T> int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, Class<T> clazz);
-
-    /**
-     * batch模式的批量更新(可指定batchSize)
-     *
-     * <pre>
-     * int result = batchUpdate(new UpdateBuild().set(true,"name","joke"),ListTs.asList(216161761760,216161761761),XXXXClass.class)
-     * </pre>
-     *
-     * @param updateBuild 更新条件构造器，不能传入where条件，比如eq或者in之类的，他们会被清除掉，条件只能通过primaryKeys来表达
-     * @param primaryKeys 主键集合 可以使用Wd包装类
-     * @param clazz       要更新的对象类型
-     * @param <T>         泛型约束
-     * @return 更新条数
-     */
-    <T> int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, Class<T> clazz, int batchSize);
+    int update(IUpdateBuild updateBuild);
 
     /**
      * 根据主键更新
      *
      * @param params     要更新的参数
      * @param isSkipNull 是否更新null值
-     * @param clazz      对象类型
-     * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int updateById(T params, boolean isSkipNull, Class<T> clazz);
+    int updateById(T params, boolean isSkipNull);
 
 
     /**
-     * 根据主键批量更新 (循环更新)
+     * 根据主键批量更新
      *
      * @param params     要更新的集合
      * @param isSkipNull 是否更新null值
-     * @param clazz      对象类型
-     * @param <T>        泛型约束
      * @return 更新影响条数
      */
-    <T> int updateByIds(Iterable<T> params, boolean isSkipNull, Class<T> clazz);
+    int updateByIds(Iterable<T> params, boolean isSkipNull);
 
 
     /**
@@ -251,10 +174,9 @@ public interface IDBAccess {
      * @param tableName  tableName
      * @param schema     schema
      * @param isSkipNull 是否更新null值
-     * @param <T>        泛型
      * @return int
      */
-    <T> int dynamicUpdate(List<EasyMap<String, Object>> value, String tableName, String schema, boolean isSkipNull);
+    int dynamicUpdate(List<EasyMap<String, Object>> value, String tableName, String schema, boolean isSkipNull);
 
 
     /**
@@ -263,31 +185,26 @@ public interface IDBAccess {
      * @param value
      * @param tableName
      * @param schema
-     * @param <T>
      * @return
      */
-    <T> int dynamicSave(List<EasyMap<String, Object>> value, String tableName, String schema);
+    int dynamicSave(List<EasyMap<String, Object>> value, String tableName, String schema);
 
     /**
      * 可以连表的复杂查询
      *
      * @param sql   join条件构造器
-     * @param clazz 对象类型
-     * @param <T>   泛型
      * @return 对象集合
      */
-    <T> List<T> queryJoin(SqlWrapper sql, Class<T> clazz);
+    List<T> queryJoin(SqlWrapper sql);
 
     /**
      * 可以连表的复杂查询 (分页)
      * 不传page则效果和queryJoin没区别
      *
      * @param sql   join条件构造器
-     * @param clazz 对象类型，最后的结果会转成这个字节码对象的实例
-     * @param <T>   泛型
      * @return
      */
-    <T> PageRes queryPageJoin(SqlWrapper sql, Page<T> page, Class<T> clazz);
+    PageRes queryPageJoin(SqlWrapper sql, Page<T> page);
 
 
     /**
@@ -295,43 +212,37 @@ public interface IDBAccess {
      *
      * @param sql               带占位符的sql
      * @param resultFieldToCame 是否将返回map中的key转为驼峰
-     * @param <T>               泛型
      * @return 对象集合
      */
-    <T> List<EasyMap<String, Object>> queryMapJoin(SqlWrapper sql, boolean resultFieldToCame);
+    List<EasyMap<String, Object>> queryMapJoin(SqlWrapper sql, boolean resultFieldToCame);
 
     /**
      * 传入sql查询对象集合
      *
      * @param sql   带占位符的sql
-     * @param clazz 对象类型
      * @param args  可变参数列表
-     * @param <T>   泛型
      * @return 对象集合
      */
-    <T> List<T> query(String sql, Class<T> clazz, Object... args);
+    List<T> query(String sql, Object... args);
 
     /**
      * 传入sql查询一个对象
      *
      * @param sql   带占位符的sql
-     * @param clazz 对象类型
      * @param args  可变参数列表
-     * @param <T>   泛型
      * @return 对象集合
      */
-    <T> T queryOne(String sql, Class<T> clazz, Object... args);
+    T queryOne(String sql, Object... args);
 
     /**
      * 传入sql将查询结果以Map的结果返回
      *
-     * @param <T>               泛型
      * @param sql               带占位符的sql
      * @param resultFieldToCame 是否将返回map中的key转为驼峰
      * @param args              可变参数列表
      * @return 对象集合
      */
-    <T> List<EasyMap<String, Object>> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args);
+    List<EasyMap<String, Object>> queryMapListBySql(String sql, boolean resultFieldToCame, Object... args);
 
     /**
      * 传入表名和查询条件将查询结果以Map的结果返回（根据传入的表名自动查询这个表的字段集合）whereBuild=null则是全查询
@@ -370,20 +281,16 @@ public interface IDBAccess {
      * 根据条件构造器来查询结果集合
      *
      * @param whereBuild 条件构造器
-     * @param clazz      对象类型
-     * @param <T>        泛型
      * @return 对象集合
      */
-    <T> List<T> query(IWhere whereBuild, Class<T> clazz);
+    List<T> query(IWhere whereBuild);
 
     /**
      * 查询所有
      *
-     * @param clazz
-     * @param <T>
      * @return
      */
-    <T> List<T> queryAll(Class<T> clazz);
+    List<T> queryAll();
 
 
     /**
@@ -392,27 +299,23 @@ public interface IDBAccess {
      * @param whereBuild 条件构造器
      * @return T
      */
-    <T> T queryOne(IWhere whereBuild, Class<T> clazz);
+    T queryOne(IWhere whereBuild);
 
     /**
      * 查询数量
      *
      * @param whereBuild 条件构造器
-     * @param clazz      类型
-     * @param <T>        泛型
      * @return 总数
      */
-    <T> long count(IWhere whereBuild, Class<T> clazz);
+    long count(IWhere whereBuild);
 
     /**
      * 是否存在
      *
      * @param whereBuild 条件构造器
-     * @param clazz      类型
-     * @param <T>        泛型
      * @return boolean
      */
-    <T> boolean exists(IWhere whereBuild, Class<T> clazz);
+    boolean exists(IWhere whereBuild);
 
     /**
      * 根据条件构造器来查询单个结果,以map形式返回
@@ -421,45 +324,37 @@ public interface IDBAccess {
      * @param toCamel    是否转为驼峰
      * @return T
      */
-    <T> EasyMap<String, Object> queryOneMap(IWhere whereBuild, Class<T> clazz, boolean toCamel);
+    EasyMap<String, Object> queryOneMap(IWhere whereBuild, boolean toCamel);
 
     /**
      * 根据条件构造器来分页查询结果集合
      *
      * @param whereBuild 条件构造器
      * @param page       分页传参
-     * @param clazz      对象类型
      * @return T
      */
-    <T> PageRes queryPage(IWhere whereBuild, Page<T> page, Class<T> clazz);
+    PageRes queryPage(IWhere whereBuild, Page<T> page);
 
     /**
      * 根据ID查询
      *
      * @param param
-     * @param clazz
-     * @param <T>
      * @return 返回结果
      */
-    <T> T queryById(T param, Class<T> clazz);
+    T queryById(T param);
 
     /**
      * 根据ID的值查询 只适用于单主键那种表
      *
      * @param primaryKey 可以传入 Wd包装类
-     * @param clazz
-     * @param <T>
      * @return 返回结果
      */
-    <T> T queryByPrimaryKey(Serializable primaryKey, Class<T> clazz);
+    T queryByPrimaryKey(Serializable primaryKey);
 
     /**
      * 截断表
-     *
-     * @param clazz
-     * @param <T>
      * @return 返回受影响条数
      */
-    <T> int truncate(Class<T> clazz);
+    int truncate();
 
 }

@@ -38,11 +38,31 @@ public enum OperateType {
     DELETE(false, false, false, true, SqlRunnerTypeEnum.other),
     // TRUNCATE操作
     TRUNCATE(false, false, false, true, SqlRunnerTypeEnum.other);
+
+    /**
+     * 是否是查询类操作
+     */
     private final boolean isSelect;
+
+    /**
+     * 是否是更新类操作
+     */
     private final boolean isUpdate;
+
+    /**
+     * 是否是插入类操作
+     */
     private final boolean isSave;
+
+    /**
+     * 是否是删除类操作
+     */
     private final boolean isDelete;
-    // sqlrunner的操作类型
+
+    /**
+     * sqlrunner的操作类型
+     * ps执行的类型
+     */
     private final SqlRunnerTypeEnum runnerType;
 
     OperateType(boolean isSelect, boolean isUpdate, boolean isSave, boolean isDelete, SqlRunnerTypeEnum runnerType) {

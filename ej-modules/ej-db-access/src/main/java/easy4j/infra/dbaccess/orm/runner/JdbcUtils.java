@@ -50,25 +50,28 @@ public class JdbcUtils {
         boolean isInsert = operateType == OperateType.INSERT;
         AccessUtils accessUtils = runtimeContext.getAccessUtils();
         ResultSet generatedKeys = null;
-        PreparedStatement ps = null;
-        int effectRows = 0;
+        PsRes psRes2 = null;
         k:
         {
             if (isInsert) {
                 try {
                     List<AccessField> autoIncrementColumns = runtimeContext.getAutoIncrementList();
-                    ps = connection1.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                    StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
-                    effectRows = ps.executeUpdate();
+                    psRes2 = ExecutorUtil.executeUpdate(connection1, sql, new Executor() {
+                        @Override
+                        public void setParameters(PreparedStatement pstmt) throws SQLException {
+                            StatementUtils.fillParams(runtimeContext, pstmt, args.toArray(new Object[]{}));
+                        }
+                    }, Statement.RETURN_GENERATED_KEYS);
+                    int effectRows = psRes2.getEffectRows();
                     // 回写
-                    generatedKeys = ps.getGeneratedKeys();
+                    generatedKeys = psRes2.getStatement().getGeneratedKeys();
                     if (generatedKeys == null) break k;
                     MapListHandler mapListHandler = new MapListHandler();
                     List<Map<String, Object>> handle = mapListHandler.handle(generatedKeys);
                     writeBack(params, handle, autoIncrementColumns);
                     // fix 有些数据库 比如 sqlserver 设置了 RETURN_GENERATED_KEYS  insert into values (),() 返回的行数为-1
                     if (effectRows == -1) {
-                        effectRows = handle.size();
+                        psRes2.setEffectRows(handle.size());
                     }
                 } catch (SQLException e) {
                     throw AccessUtils.translate("update", sql, e, runtimeContext.getConfig().getDataSource());
@@ -77,16 +80,18 @@ public class JdbcUtils {
                 }
             } else {
                 try {
-                    ps = connection1.prepareStatement(sql);
-                    StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
-
-                    effectRows = ps.executeUpdate();
+                    psRes2 = ExecutorUtil.executeUpdate(connection1, sql, new Executor() {
+                        @Override
+                        public void setParameters(PreparedStatement pstmt) throws SQLException {
+                            StatementUtils.fillParams(runtimeContext, pstmt, args.toArray(new Object[]{}));
+                        }
+                    },null);
                 } catch (SQLException e) {
                     throw AccessUtils.translate("update", sql, e, runtimeContext.getConfig().getDataSource());
                 }
             }
         }
-        return new PsRes().setStatement(ps).setEffectRows(effectRows);
+        return psRes2;
 
 
     }
@@ -168,24 +173,24 @@ public class JdbcUtils {
     ) {
         PsRes psRes = psOperateFunc(runtimeContext);
         if (psRes != null) return psRes;
-        String sql = runtimeContext.getSql();
-        List<Object> args = runtimeContext.getArgs();
         Connection conn = getConnection();
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
+        String sql = runtimeContext.getSql();
+        Integer fetchSize = runtimeContext.getConfig().getFetchSize();
+        List<Object> args = runtimeContext.getArgs();
         try {
-            ps = conn.prepareStatement(sql);
-            Integer fetchSize = runtimeContext.getConfig().getFetchSize();
-            if (fetchSize != null) {
-                ps.setFetchSize(fetchSize);
-            }
-            StatementUtils.fillParams(runtimeContext, ps, args.toArray(new Object[]{}));
-            resultSet = ps.executeQuery();
+            return ExecutorUtil.executeQuery(conn, sql, new Executor() {
+                @Override
+                public void setParameters(PreparedStatement pstmt) throws SQLException {
+                    if (fetchSize != null) {
+                        pstmt.setFetchSize(fetchSize);
+                    }
+                    StatementUtils.fillParams(runtimeContext, pstmt, args.toArray(new Object[]{}));
+                }
+            });
+
         } catch (SQLException e) {
             throw AccessUtils.translate("query", sql, e, runtimeContext.getConfig().getDataSource());
-
         }
-        return new PsRes(resultSet, ps);
     }
 
 

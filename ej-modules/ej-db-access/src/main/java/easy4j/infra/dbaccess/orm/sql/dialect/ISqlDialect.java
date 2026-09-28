@@ -16,7 +16,7 @@ public interface ISqlDialect extends Function<RuntimeContext<?>, PsRes> {
     boolean match(RuntimeContext<?> context);
 
     /**
-     * sql构建方法
+     * sql构建方法,构建出来的sql会放到RuntimeContext里面去
      *
      * @param context
      * @return
