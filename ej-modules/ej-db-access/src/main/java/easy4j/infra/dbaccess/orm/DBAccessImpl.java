@@ -393,7 +393,7 @@ public class DBAccessImpl implements IDBAccess {
                 e.setOperateType(OperateType.SELECT_JOIN_PAGE);
                 e.setSkipTail(false);
                 accessUtils.resolveContext(e, false);
-                List<EasyMap<String, Object>> resultMapList = e.getResultMapList();
+                List<T> resultMapList = e.getResultList();
                 pageRes.setRecords(resultMapList);
                 return pageRes;
             });

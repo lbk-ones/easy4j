@@ -23,10 +23,7 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,7 +45,7 @@ class DBAccessImplTest {
     @BeforeEach
     synchronized void setUp() {
 
-        DataSource dataSource = getDb2_v12_1_5DataSource();
+        DataSource dataSource = getH2DataSource();
         accessConfig = new AccessConfig();
         accessConfig.addPlugin(new VersionLockPlugin());
         accessConfig.addPlugin(new LogicDeletePlugin());
@@ -1214,5 +1211,74 @@ class DBAccessImplTest {
 
         assertNotNull(operationLogs);
         assertFalse(operationLogs.isEmpty());
+    }
+
+
+
+    @Test
+    void testBatchSave() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        Date last = null;
+        int total = 523;
+        for (int i = 0; i < total; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setId((long) (i + 1));
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            last = new Date();
+            operationLogs.setCreatedAt(last);
+            objects.add(operationLogs);
+        }
+        int i = idbAccess.batchSave(objects, OperationLogs.class);
+        assertEquals(total, i);
+
+        List<OperationLogs> operationLogs = idbAccess.queryAll(OperationLogs.class);
+
+        operationLogs.sort(Comparator.comparing(OperationLogs::getId));
+
+        for (int i1 = 0; i1 < operationLogs.size(); i1++) {
+            OperationLogs operationLogs1 = operationLogs.get(i1);
+            String businessNo = operationLogs1.getBusinessNo();
+            Long id = operationLogs1.getId();
+            assertEquals(i1+1, id);
+            assertEquals("multiOrder"+i1, businessNo);
+        }
+
+    }
+
+
+    @Test
+    void testPageJoinSelect() {
+        ArrayList<OperationLogs> objects = ListTs.newArrayList();
+        Date last = null;
+        int total = 600;
+        for (int i = 0; i < total; i++) {
+            OperationLogs operationLogs = new OperationLogs();
+            operationLogs.setId((long) (i + 1));
+            operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
+            operationLogs.setBusinessNo("multiOrder" + i);
+            operationLogs.setOperatorId((long) (i % 3));
+            last = new Date();
+            operationLogs.setCreatedAt(last);
+            objects.add(operationLogs);
+        }
+        int i = idbAccess.batchSave(objects, OperationLogs.class);
+        assertEquals(total, i);
+
+        PageRes operationLogs = idbAccess.queryPageJoin(new SqlWrapper(
+                SqlItem.of(OperationLogs::getId, OperationLogs.class,OperationLogs::getId,OperationLogs::getBusinessNo,OperationLogs::getModule)
+        ).where(
+                FWhereBuild.get(OperationLogs.class)
+                        .sql("a." + fn("module") + " = ?", "multiOrder2")
+        ),new Page<>(0,30),OperationLogs.class);
+
+        List<OperationLogs> records = operationLogs.getRecords(OperationLogs.class);
+        long pageNo = operationLogs.getPageNo();
+        long pageSize = operationLogs.getPageSize();
+        assertEquals(30,records.size());
+        assertEquals(1,pageNo);
+        assertEquals(30,pageSize);
+
     }
 }

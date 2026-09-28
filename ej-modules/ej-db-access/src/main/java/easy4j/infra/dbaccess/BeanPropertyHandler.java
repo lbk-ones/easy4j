@@ -21,6 +21,7 @@ import easy4j.infra.common.utils.ObjectHolder;
 import easy4j.infra.common.utils.SP;
 import easy4j.infra.common.utils.json.JacksonUtil;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
+import easy4j.infra.dbaccess.orm.AccessException;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.conditions.wd.Wd;
 import easy4j.infra.dbaccess.orm.conditions.wd.WdFieldInfo;
@@ -32,6 +33,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
@@ -71,6 +73,10 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
      * ResultSet结果集处理
      */
     protected T handleRow(ResultSet rs) throws SQLException {
+        Constructor<T> constructor = ReflectUtil.getConstructor(mappedClass);
+        if (constructor == null) {
+            throw new AccessException("not empty parameter constructor!");
+        }
         /**
          * 根据bean的class类型实例化为对象
          */
@@ -115,7 +121,7 @@ public class BeanPropertyHandler<T> extends AbstractListHandler<T> {
                     WdFieldInfo wdFieldInfo = AccessUtils.resolveWdField(field);
                     // 拿取包装类真正的字段类型
                     if (Wd.class.isAssignableFrom(propertyType)) {
-                        o = (Wd)WdRegister.instanceCache(propertyType);
+                        o = (Wd) WdRegister.instanceCache(propertyType);
                         Wd.setFieldInfo(wdFieldInfo, o);
                         propertyType = (Class<?>) o.getRawType();
                         TypeHandler<?> typeHandler = o.getTypeHandler();

@@ -1,32 +1,27 @@
 package easy4j.infra.dbaccess.orm.sql.dialect;
 
+import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.utils.ListTs;
+import easy4j.infra.common.utils.SP;
 import easy4j.infra.dbaccess.orm.AccessField;
 import easy4j.infra.dbaccess.orm.AccessUtils;
 import easy4j.infra.dbaccess.orm.OperateType;
 import easy4j.infra.dbaccess.orm.RuntimeContext;
-import easy4j.infra.dbaccess.orm.runner.LogResult;
 import easy4j.infra.dbaccess.orm.runner.LogSql;
 import easy4j.infra.dbaccess.orm.runner.PsRes;
 import easy4j.infra.dbaccess.orm.runner.StatementUtils;
-import easy4j.infra.dbaccess.orm.sql.InsertSql;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 
 /**
  * jdbc batch 模式
  */
 @Slf4j
 public class JdbcBatchInsertSql extends AbstractSqlDialect {
-
-    /**
-     * 用一下单条写入逻辑
-     */
-    private final InsertSql insertSql = new InsertSql();
 
     @Override
     public boolean match(RuntimeContext<?> context) {
@@ -35,8 +30,33 @@ public class JdbcBatchInsertSql extends AbstractSqlDialect {
     }
 
     @Override
-    public String build(RuntimeContext<?> context) {
-        return insertSql.build(context);
+    public String build(RuntimeContext<?> runtimeContext) {
+        String dotTableName = runtimeContext.getDotTableName();
+        StringBuilder sql = new StringBuilder("insert into " + dotTableName + SP.SPACE);
+        List<AccessField> insertFieldsList = runtimeContext.getInsertFields();
+        List<AccessField> insertFields = runtimeContext.getColumnInfoList(insertFieldsList);
+        List<String> fields = new ArrayList<>();
+        for (AccessField insertField : insertFields) {
+            String escapeColumnName = insertField.getEscapeColumnName();
+            fields.add(escapeColumnName);
+        }
+        if (!fields.isEmpty()) {
+            sql.append("(").append(ListTs.join(SP.SPACE + SP.COMMA + SP.SPACE, fields)).append(")");
+        }
+        sql.append(SP.SPACE);
+        sql.append("values");
+        sql.append(SP.SPACE);
+        List<String> valueList = new ArrayList<>();
+        for (AccessField insertField : insertFields) {
+            valueList.add(insertField.getPlaceHolder());
+        }
+        String join = ListTs.join(SP.COMMA, valueList);
+        sql.append(SP.LEFT_BRACKET + SP.SPACE).append(join).append(SP.SPACE).append(SP.RIGHT_BRACKET);
+        String lastSql = runtimeContext.getLastSql();
+        if (StrUtil.isNotBlank(lastSql)) {
+            sql.append(SP.SPACE).append(lastSql);
+        }
+        return sql.toString();
     }
 
     @Override
@@ -103,6 +123,7 @@ public class JdbcBatchInsertSql extends AbstractSqlDialect {
                 log.error("batch exception ",AccessUtils.translate("setAutoCommit", sql, e, runtimeContext.getConfig().getDataSource()));
             }
         }
+        runtimeContext.setTempSkipPrintSql(true);
         return psRes;
     }
 }

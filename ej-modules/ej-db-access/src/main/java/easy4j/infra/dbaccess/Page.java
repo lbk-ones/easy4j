@@ -76,14 +76,26 @@ public class Page<T> implements Serializable {
         this.pageSize = pageSize;
     }
 
+    public Page(int pageNo_, int pageSize) {
+        if (pageNo_ >= 1) {
+            this.pageNo = pageNo_;
+        }
+
+        this.pageSize = pageSize;
+    }
+
     /**
      * 设置当前页的页号,小于1时自动设置为1.
      */
     public void setPageNo(int pageNo) {
-        this.pageNo = pageNo;
+        this.pageNo = Math.max(pageNo, 1);
+    }
+
+    public int getPageNo() {
         if (pageNo < 1) {
-            this.pageNo = 1;
+            return 1;
         }
+        return pageNo;
     }
 
     /**

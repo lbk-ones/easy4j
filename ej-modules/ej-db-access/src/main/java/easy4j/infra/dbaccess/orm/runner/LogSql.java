@@ -59,7 +59,7 @@ public class LogSql {
         boolean onlyPrintSlowSql = config.isOnlyPrintSlowSql();
         long slowSqlTime = config.getSlowSqlTime();
         boolean printSqlIs = config.isPrintSqlIs();
-        if (printSqlIs) {
+        if (!printSqlIs) {
             return;
         }
         // 实时判断到底该不该打印sql
