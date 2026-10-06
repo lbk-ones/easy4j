@@ -23,6 +23,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import easy4j.infra.common.annotations.Desc;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -510,6 +511,7 @@ public class ListTs {
     }
 
 
+    @Nullable
     public static <T> T get(Iterable<T> collection, int index) {
 
         if (CollUtil.isNotEmpty(collection)) {

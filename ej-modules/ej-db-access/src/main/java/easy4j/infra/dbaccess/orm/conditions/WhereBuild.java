@@ -319,6 +319,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
 
+    @Override
     public IWhereBuild select(String... columns) {
         if (!this.isSubSql) {
             List<Condition> map = ListTs.objectToListT(columns, Condition.class, e -> {
@@ -565,7 +566,7 @@ public class WhereBuild implements Serializable,IWhereBuild {
     }
 
     // 静态工厂方法
-    public static IWhereBuild get() {
+    public static WhereBuild get() {
         return new WhereBuild();
     }
 }

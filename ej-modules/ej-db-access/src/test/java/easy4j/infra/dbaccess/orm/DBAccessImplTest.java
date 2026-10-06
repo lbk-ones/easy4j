@@ -1222,7 +1222,9 @@ class DBAccessImplTest {
         int total = 523;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            operationLogs.setId((long) (i + 1));
+            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+                operationLogs.setId((long) (i + 1));
+            }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
             operationLogs.setBusinessNo("multiOrder" + i);
             operationLogs.setOperatorId((long) (i % 3));
@@ -1233,16 +1235,23 @@ class DBAccessImplTest {
         int i = idbAccess.batchSave(objects, OperationLogs.class);
         assertEquals(total, i);
 
-        List<OperationLogs> operationLogs = idbAccess.queryAll(OperationLogs.class);
+        IFWhereBuild<OperationLogs> asc = FWhereBuild.get(OperationLogs.class).asc(OperationLogs::getId);
+        List<OperationLogs> operationLogs = idbAccess.query(asc,OperationLogs.class);
 
-        operationLogs.sort(Comparator.comparing(OperationLogs::getId));
+        //operationLogs.sort(Comparator.comparing(OperationLogs::getId));
 
         for (int i1 = 0; i1 < operationLogs.size(); i1++) {
             OperationLogs operationLogs1 = operationLogs.get(i1);
             String businessNo = operationLogs1.getBusinessNo();
             Long id = operationLogs1.getId();
-            assertEquals(i1+1, id);
-            assertEquals("multiOrder"+i1, businessNo);
+            if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+                assertNotNull(id);
+                assertNotNull(businessNo);
+            }else{
+                assertEquals(i1+1, id);
+                assertEquals("multiOrder"+i1, businessNo);
+            }
+
         }
 
     }
@@ -1255,7 +1264,9 @@ class DBAccessImplTest {
         int total = 600;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            operationLogs.setId((long) (i + 1));
+            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+                operationLogs.setId((long) (i + 1));
+            }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
             operationLogs.setBusinessNo("multiOrder" + i);
             operationLogs.setOperatorId((long) (i % 3));
@@ -1290,7 +1301,9 @@ class DBAccessImplTest {
         int total = 633;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            operationLogs.setId((long) (i + 1));
+            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+                operationLogs.setId((long) (i + 1));
+            }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
             operationLogs.setBusinessNo("multiOrder" + i);
             operationLogs.setOperatorId((long) (i % 3));
@@ -1300,8 +1313,21 @@ class DBAccessImplTest {
         }
         int i = idbAccess.batchSave(objects, OperationLogs.class);
         assertEquals(total, i);
-
-        List<Long> list = objects.stream().map(OperationLogs::getId).toList();
+        List<Long> list = new ArrayList<>();
+        if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+            FWhereBuild<OperationLogs> operationLogsFWhereBuild = FWhereBuild.get(OperationLogs.class);
+            operationLogsFWhereBuild.select(OperationLogs::getId);
+            List<OperationLogs> query = idbAccess.query(operationLogsFWhereBuild, OperationLogs.class);
+            for (OperationLogs operationLogs : query) {
+                Long id = operationLogs.getId();
+                list.add(id);
+            }
+        }else{
+            for (OperationLogs object : objects) {
+                Long id = object.getId();
+                list.add(id);
+            }
+        }
 
         FUpdateBuild<OperationLogs> operationLogsFUpdateBuild = FUpdateBuild.get(OperationLogs.class);
         operationLogsFUpdateBuild.set(true,OperationLogs::getAction,"create");

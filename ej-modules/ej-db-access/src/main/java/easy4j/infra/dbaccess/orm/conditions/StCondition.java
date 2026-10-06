@@ -107,20 +107,28 @@ public interface StCondition<T, S> extends St {
 
     T last(boolean option, String last);
 
+    @SuppressWarnings("Unchecked")
     T select(S... columns);
 
+    @SuppressWarnings("Unchecked")
     T select(boolean option, S... columns);
 
+    @SuppressWarnings("Unchecked")
     T groupBy(S... column);
 
+    @SuppressWarnings("Unchecked")
     T groupBy(boolean option, S... column);
 
+    @SuppressWarnings("Unchecked")
     T asc(S... column);
 
+    @SuppressWarnings("Unchecked")
     T asc(boolean option, S... column);
 
+    @SuppressWarnings("Unchecked")
     T desc(S... column);
 
+    @SuppressWarnings("Unchecked")
     T desc(boolean option, S... column);
 
     T having(S column, String value);

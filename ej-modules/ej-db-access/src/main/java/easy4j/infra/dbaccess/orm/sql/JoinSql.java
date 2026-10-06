@@ -12,6 +12,7 @@ import easy4j.infra.dbaccess.domain.SysLogRecord;
 import easy4j.infra.dbaccess.orm.*;
 import easy4j.infra.dbaccess.orm.conditions.FWhereBuild;
 import easy4j.infra.dbaccess.orm.conditions.IWhere;
+import lombok.Setter;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -21,7 +22,10 @@ import java.util.*;
  *
  * @author bokun.li
  */
+@Setter
 public class JoinSql extends AbsISql {
+
+    boolean isCount;
 
     @Override
     public <T> boolean match(RuntimeContext<T> runtimeContext) {
@@ -177,16 +181,23 @@ public class JoinSql extends AbsISql {
         }
 
         StringBuilder sqlBuild = new StringBuilder("select");
-        for (int i = 0; i < allArgs.length; i++) {
-            String allArg = allArgs[i];
-            if (i > 0) {
+        if(!isCount){
+            for (int i = 0; i < allArgs.length; i++) {
+                String allArg = allArgs[i];
+                if (i > 0) {
+                    sqlBuild.append(SP.SPACE);
+                    sqlBuild.append(SP.COMMA);
+                }
                 sqlBuild.append(SP.SPACE);
-                sqlBuild.append(SP.COMMA);
+                sqlBuild.append(allArg);
             }
             sqlBuild.append(SP.SPACE);
-            sqlBuild.append(allArg);
+        }else{
+            sqlBuild.append(SP.SPACE);
+            sqlBuild.append("count(1)");
+            sqlBuild.append(SP.SPACE);
         }
-        sqlBuild.append(SP.SPACE);
+
         sqlBuild.append("from");
         // 4、开始拼接 from语句
         SqlItem one = null;

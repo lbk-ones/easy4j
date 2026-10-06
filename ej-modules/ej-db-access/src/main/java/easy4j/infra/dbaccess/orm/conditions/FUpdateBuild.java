@@ -408,7 +408,7 @@ public class FUpdateBuild<T> implements IFUpdateBuild<T> {
         String[] names = new String[]{};
         for (Func1<T, ?> column : columns) {
             String name = getName(column);
-            ArrayUtil.append(names, name);
+            names = ArrayUtil.append(names, name);
         }
         return names;
     }

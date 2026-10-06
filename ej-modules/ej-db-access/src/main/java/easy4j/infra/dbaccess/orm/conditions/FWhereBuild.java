@@ -353,7 +353,7 @@ public class FWhereBuild<T> implements IFWhereBuild<T> {
         String[] names = new String[]{};
         for (Func1<T, ?> column : columns) {
             String name = getName(column);
-            ArrayUtil.append(names, name);
+            names = ArrayUtil.append(names, name);
         }
         return names;
     }
@@ -549,7 +549,7 @@ public class FWhereBuild<T> implements IFWhereBuild<T> {
         return where.buildUpdate(argList, context);
     }
 
-    public static <T> IFWhereBuild<T> get(Class<T> aclass) {
+    public static <T> FWhereBuild<T> get(Class<T> aclass) {
         FWhereBuild<T> fWhereBuild = new FWhereBuild<>();
         fWhereBuild.setAclass(aclass);
         return fWhereBuild;

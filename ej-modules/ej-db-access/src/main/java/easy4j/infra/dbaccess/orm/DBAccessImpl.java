@@ -217,7 +217,7 @@ public class DBAccessImpl implements IDBAccess {
         if (where == null) {
             where = access.getUpdate();
         }
-        if(where == null){
+        if (where == null) {
             where = WhereBuild.get();
         }
         boolean isUpdate = where instanceof IUpdateBuild || where instanceof IFUpdateBuild;
@@ -228,11 +228,16 @@ public class DBAccessImpl implements IDBAccess {
                 List<AccessField> value = entry.getValue();
                 List<AccessField> dValue = ListTs.distinct(value, e -> String.valueOf(e.getColumnValue()));
                 if (dValue.size() == 1) {
-                    if (isUpdate) {
-                        where.getUpdate().ifPresent(e2 -> e2.eq(key, Wd.value(ListTs.get(dValue, 0))));
-                    } else {
-                        where.getWhere().ifPresent(e2 -> e2.eq(key, Wd.value(ListTs.get(dValue, 0))));
+                    AccessField accessField = ListTs.get(dValue, 0);
+                    if (accessField != null) {
+                        Object columnValue = accessField.getColumnValue();
+                        if (isUpdate) {
+                            where.getUpdate().ifPresent(e2 -> e2.eq(key, Wd.value(columnValue)));
+                        } else {
+                            where.getWhere().ifPresent(e2 -> e2.eq(key, Wd.value(columnValue)));
+                        }
                     }
+
                 } else if (dValue.size() > 1) {
                     if (isUpdate) {
                         where.getUpdate().ifPresent(e2 -> e2.in(key, dValue.stream().map(e -> Wd.value(e.getColumnValue())).toList()));
@@ -277,6 +282,7 @@ public class DBAccessImpl implements IDBAccess {
                 IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) continue;
                 i += deleteByIdWith(context, false);
+                whereBuild.clear();
             }
             return i;
         } finally {
@@ -333,6 +339,7 @@ public class DBAccessImpl implements IDBAccess {
                 IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) return 0;
                 i += updateByIdWith(context, false);
+                whereBuild.clear();
             }
             return i;
         } finally {
@@ -374,6 +381,7 @@ public class DBAccessImpl implements IDBAccess {
                 IWhere whereBuild = idEqOrIn(context);
                 if (whereBuild == null) return 0;
                 i += updateByIdWith(context, false);
+                whereBuild.clear();
             }
             return i;
         } finally {

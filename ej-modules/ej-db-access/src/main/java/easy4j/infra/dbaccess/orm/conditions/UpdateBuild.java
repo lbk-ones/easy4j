@@ -462,7 +462,7 @@ public class UpdateBuild implements IUpdateBuild {
         return where.buildUpdate(argList, context);
     }
 
-    public static IUpdateBuild get() {
+    public static UpdateBuild get() {
         return new UpdateBuild();
     }
 
