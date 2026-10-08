@@ -76,8 +76,10 @@ public interface IDBAccess {
     <T> List<T> save(Iterable<T> params, Class<T> clazz);
 
     /**
+     * <pre>
      * 以jdbcBatch的形式去写入，不带数据库自动回写
-     *
+     * 如果没有特别设置过数据库 sqlserver、db2、oracle这几个数据库不能给递增列写值，不然会报错
+     * </pre>
      * @param params    参数
      * @param clazz     对象类型
      * @param batchSize 批量条数如果不设置则默认200条
@@ -87,8 +89,10 @@ public interface IDBAccess {
     <T> int batchSave(Iterable<T> params, Class<T> clazz, int batchSize);
 
     /**
+     * <pre>
      * 以jdbcBatch的形式去写入，不带数据库自动回写
-     *
+     * 如果没有特别设置过数据库 sqlserver、db2、oracle这几个数据库不能给递增列写值，不然会报错
+     * </pre>
      * @param params 参数
      * @param clazz  对象类型
      * @param <T>    泛型约束

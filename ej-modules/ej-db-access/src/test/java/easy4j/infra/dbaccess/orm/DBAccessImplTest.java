@@ -1222,7 +1222,7 @@ class DBAccessImplTest {
         int total = 523;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) && !StrUtil.equals(dbType,DbType.SQL_SERVER.getDb()) ){
                 operationLogs.setId((long) (i + 1));
             }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
@@ -1244,7 +1244,7 @@ class DBAccessImplTest {
             OperationLogs operationLogs1 = operationLogs.get(i1);
             String businessNo = operationLogs1.getBusinessNo();
             Long id = operationLogs1.getId();
-            if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+            if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) || StrUtil.equals(dbType,DbType.SQL_SERVER.getDb())){
                 assertNotNull(id);
                 assertNotNull(businessNo);
             }else{
@@ -1264,7 +1264,11 @@ class DBAccessImplTest {
         int total = 600;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+            if(
+                    !StrUtil.equals(dbType,DbType.ORACLE.getDb()) &&
+                    !StrUtil.equals(dbType,DbType.DB2.getDb()) &&
+                    !StrUtil.equals(dbType,DbType.SQL_SERVER.getDb())
+            ){
                 operationLogs.setId((long) (i + 1));
             }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
@@ -1301,7 +1305,7 @@ class DBAccessImplTest {
         int total = 633;
         for (int i = 0; i < total; i++) {
             OperationLogs operationLogs = new OperationLogs();
-            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+            if(!StrUtil.equals(dbType,DbType.ORACLE.getDb()) && !StrUtil.equals(dbType,DbType.DB2.getDb()) && !StrUtil.equals(dbType,DbType.SQL_SERVER.getDb()) ){
                 operationLogs.setId((long) (i + 1));
             }
             operationLogs.setModule(i < 3 ? "multiOrder1" : "multiOrder2");
@@ -1314,7 +1318,7 @@ class DBAccessImplTest {
         int i = idbAccess.batchSave(objects, OperationLogs.class);
         assertEquals(total, i);
         List<Long> list = new ArrayList<>();
-        if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) ){
+        if(StrUtil.equals(dbType,DbType.ORACLE.getDb()) || StrUtil.equals(dbType,DbType.DB2.getDb()) || StrUtil.equals(dbType,DbType.SQL_SERVER.getDb()) ){
             FWhereBuild<OperationLogs> operationLogsFWhereBuild = FWhereBuild.get(OperationLogs.class);
             operationLogsFWhereBuild.select(OperationLogs::getId);
             List<OperationLogs> query = idbAccess.query(operationLogsFWhereBuild, OperationLogs.class);

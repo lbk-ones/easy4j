@@ -254,4 +254,25 @@ public class DBAccess<T> implements IDBAccessBase<T> {
     public int truncate() {
         return idbAccess.truncate(clazz);
     }
+
+    @Override
+    public int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys) {
+        return idbAccess.batchDeleteByPrimaryKeys(primaryKeys,clazz);
+    }
+
+    @Override
+    public int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, int batchSize) {
+        return idbAccess.batchDeleteByPrimaryKeys(primaryKeys,clazz,batchSize);
+    }
+
+    @Override
+    public int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys) {
+        return idbAccess.batchUpdateByPrimaryKeys(updateBuild,primaryKeys,clazz);
+    }
+
+    @Override
+    public int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, int batchSize) {
+        return idbAccess.batchUpdateByPrimaryKeys(updateBuild,primaryKeys,clazz,batchSize);
+    }
+
 }

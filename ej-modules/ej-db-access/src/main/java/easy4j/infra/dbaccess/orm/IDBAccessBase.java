@@ -357,4 +357,48 @@ public interface IDBAccessBase<T> {
      */
     int truncate();
 
+
+    /**
+     * 根据主键批量删除 (使用jdbc Batch 模式来删除)
+     *
+     * @param primaryKeys 主键
+     * @return 删除的条数
+     */
+    int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys);
+
+    /**
+     * 根据主键批量删除 (使用jdbc Batch 模式来删除)
+     *
+     * @param primaryKeys 主键
+     * @param batchSize   批处理大小
+     * @return 删除的条数
+     */
+    int batchDeleteByPrimaryKeys(Iterable<? extends Serializable> primaryKeys, int batchSize);
+
+    /**
+     * batch模式的批量更新
+     *
+     * <pre>
+     * int result = batchUpdate(new UpdateBuild().set(true,"name","joke"),ListTs.asList(216161761760,216161761761),XXXXClass.class)
+     * </pre>
+     *
+     * @param updateBuild 更新条件构造器，不能传入where条件，比如eq或者in之类的，他们会被清除掉，条件只能通过primaryKeys来表达
+     * @param primaryKeys 主键集合 可以使用Wd包装类
+     * @return 更新条数
+     */
+    int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys);
+
+    /**
+     * batch模式的批量更新(可指定batchSize)
+     *
+     * <pre>
+     * int result = batchUpdate(new UpdateBuild().set(true,"name","joke"),ListTs.asList(216161761760,216161761761),XXXXClass.class)
+     * </pre>
+     *
+     * @param updateBuild 更新条件构造器，不能传入where条件，比如eq或者in之类的，他们会被清除掉，条件只能通过primaryKeys来表达
+     * @param primaryKeys 主键集合 可以使用Wd包装类
+     * @return 更新条数
+     */
+    int batchUpdateByPrimaryKeys(IWhere updateBuild, Iterable<? extends Serializable> primaryKeys, int batchSize);
+
 }

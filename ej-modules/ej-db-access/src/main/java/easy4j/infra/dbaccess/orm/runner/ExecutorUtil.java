@@ -121,6 +121,9 @@ public class ExecutorUtil {
                         if (result > 0) {
                             totalCount += result;
                             theBatchNumber += result;
+                        }else if(result == Statement.SUCCESS_NO_INFO){
+                            totalCount += 1;
+                            theBatchNumber += 1;
                         }
                     }
                     if (batchCallback != null) {
@@ -138,6 +141,9 @@ public class ExecutorUtil {
                     if (result > 0) {
                         totalCount += result;
                         theBatchNumber += result;
+                    }else if(result == Statement.SUCCESS_NO_INFO){
+                        totalCount += 1;
+                        theBatchNumber += 1;
                     }
                 }
                 if (batchCallback != null) {
