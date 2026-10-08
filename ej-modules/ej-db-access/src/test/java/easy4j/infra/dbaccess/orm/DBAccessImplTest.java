@@ -45,7 +45,7 @@ class DBAccessImplTest {
     @BeforeEach
     synchronized void setUp() {
 
-        DataSource dataSource = getH2DataSource();
+        DataSource dataSource = getPg15DataSource();
         accessConfig = new AccessConfig();
         accessConfig.addPlugin(new VersionLockPlugin());
         accessConfig.addPlugin(new LogicDeletePlugin());
@@ -182,6 +182,91 @@ class DBAccessImplTest {
         assertTrue(saved.getId() > 0);
         assertEquals("testSingle", saved.getModule());
         assertEquals("single001", saved.getBusinessNo());
+    }
+
+    /**
+     * 连续单条写入：每次 save 都创建上下文，预热后测试字段/列模板缓存的稳定调用路径。
+     * 测量包含连接获取、SQL 执行和提交，不包含数据准备、校验及测试前后的建表/清理。
+     * 可用 -Deasy4j.perf.warmup / records / rounds 调整预热条数、每轮条数和轮数。
+     */
+    @Test
+    void testContinuousSavePerformance() {
+        int warmup = Integer.getInteger("easy4j.perf.warmup", 100);
+        int records = Integer.getInteger("easy4j.perf.records", 1000);
+        int rounds = Integer.getInteger("easy4j.perf.rounds", 3);
+        assertTrue(warmup >= 0, "warmup must be non-negative");
+        assertTrue(records > 0, "records must be positive");
+        assertTrue(rounds > 0, "rounds must be positive");
+
+        String module = "savePerf_" + UUID.randomUUID().toString().replace("-", "");
+        Set<Long> ids = new HashSet<>();
+        boolean printSql = accessConfig.isPrintSqlIs();
+        accessConfig.setPrintSqlIs(false);
+        try {
+            OperationLogs[] warmupRows = continuousSaveRows(module, 0, warmup);
+            for (int i = 0; i < warmupRows.length; i++) {
+                warmupRows[i] = idbAccess.save(warmupRows[i], OperationLogs.class);
+            }
+            verifyContinuousSaveRows(warmupRows, ids);
+            long totalNanos = 0;
+            for (int round = 1; round <= rounds; round++) {
+                OperationLogs[] rows = continuousSaveRows(module, round, records);
+                long[] latencies = new long[records];
+                long begin = System.nanoTime();
+                for (int i = 0; i < records; i++) {
+                    long started = System.nanoTime();
+                    rows[i] = idbAccess.save(rows[i], OperationLogs.class);
+                    latencies[i] = System.nanoTime() - started;
+                }
+                long elapsed = System.nanoTime() - begin;
+                totalNanos += elapsed;
+
+                // 校验不计入耗时，确认连续写入没有丢失数据或复用缓存中的主键值。
+                verifyContinuousSaveRows(rows, ids);
+                assertEquals((long) warmup + (long) round * records,
+                        idbAccess.count(WhereBuild.get().eq("module", module), OperationLogs.class));
+                Arrays.sort(latencies);
+                long p95 = latencies[(int) Math.ceil(records * 0.95) - 1];
+                System.out.printf(Locale.ROOT,
+                        "[save-performance] db=%s round=%d/%d records=%d elapsed=%.3f ms throughput=%.2f rows/s avg=%.3f ms p95=%.3f ms%n",
+                        dbType, round, rounds, records, elapsed / 1_000_000.0,
+                        records * 1_000_000_000.0 / elapsed,
+                        elapsed / (1_000_000.0 * records), p95 / 1_000_000.0);
+            }
+            long measuredRecords = (long) records * rounds;
+            System.out.printf(Locale.ROOT,
+                    "[save-performance] summary db=%s warmup=%d measuredRecords=%d elapsed=%.3f ms throughput=%.2f rows/s avg=%.3f ms%n",
+                    dbType, warmup, measuredRecords, totalNanos / 1_000_000.0,
+                    measuredRecords * 1_000_000_000.0 / totalNanos,
+                    totalNanos / (1_000_000.0 * measuredRecords));
+        } finally {
+            accessConfig.setPrintSqlIs(printSql);
+        }
+    }
+
+    private OperationLogs[] continuousSaveRows(String module, int round, int count) {
+        OperationLogs[] rows = new OperationLogs[count];
+        for (int i = 0; i < count; i++) {
+            OperationLogs row = new OperationLogs();
+            row.setModule(module);
+            row.setBusinessNo(module + "_" + round + "_" + i);
+            row.setOperatorId((long) i);
+            row.setOperatorName("performanceUser");
+            row.setSuccess(1);
+            row.setDescription("continuous save performance");
+            row.setCreatedAt(new Date());
+            rows[i] = row;
+        }
+        return rows;
+    }
+
+    private void verifyContinuousSaveRows(OperationLogs[] rows, Set<Long> ids) {
+        for (OperationLogs row : rows) {
+            assertNotNull(row);
+            assertNotNull(row.getId());
+            assertTrue(row.getId() > 0);
+            assertTrue(ids.add(row.getId()), "generated primary keys must be unique");
+        }
     }
 
     @Test
@@ -484,7 +569,6 @@ class DBAccessImplTest {
         operationLogs.setCreatedAt(new Date());
 
         OperationLogs saved = idbAccess.save(operationLogs, OperationLogs.class);
-
         // Query one by WhereBuild
         IWhereBuild whereBuild = WhereBuild.get().eq("business_no", "whereOne001");
         OperationLogs result = idbAccess.queryOne(whereBuild, OperationLogs.class);

@@ -5,6 +5,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.sql.Wrapper;
 import easy4j.infra.base.starter.env.Easy4j;
 import easy4j.infra.common.enums.DbType;
 import easy4j.infra.common.utils.EasyMap;
@@ -16,6 +17,8 @@ import easy4j.infra.context.api.seed.MybatisPlusSnowSeed;
 import easy4j.infra.dbaccess.annotations.JdbcColumn;
 import easy4j.infra.dbaccess.dialect.DialectFactory;
 import easy4j.infra.dbaccess.dialect.Dialect;
+import easy4j.infra.dbaccess.dialect.AbstractDialect;
+import easy4j.infra.dbaccess.dialect.impl.*;
 import easy4j.infra.dbaccess.dll.op.meta.DatabaseColumnMetadata;
 import easy4j.infra.dbaccess.dll.op.meta.PrimaryKeyMetadata;
 import easy4j.infra.dbaccess.helper.JdbcHelper;
@@ -44,15 +47,43 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 /**
- * 工具类不存放任何属性 只存放 AccessConfig
+ * 实例仅存放 AccessConfig，实体字段定义采用类级缓存。
  */
 @Data
 @Slf4j
 public class AccessUtils implements Serializable {
 
+    // 仅缓存与实体类型有关的字段定义；ClassValue 避免静态 Map 长期持有实体类加载器。
+    private static final ClassValue<EntityFields> FIELD_CACHE = new ClassValue<>() {
+        @Override
+        protected EntityFields computeValue(Class<?> type) {
+            Field[] fields = ReflectUtil.getFields(type);
+            List<ContextField> contextFields = new ArrayList<>(fields.length);
+            for (Field field : fields) {
+                if (Vendor.skipColumn(field)) continue;
+                contextFields.add(
+                    new ContextField(
+                            field,
+                            Vendor.isPk(field),
+                            Vendor.isAutoIncrement(field),
+                            Vendor.getColumnName(field),
+                            resolveWdField(field)
+                    )
+                );
+            }
+            return new EntityFields(fields, List.copyOf(contextFields), new ConcurrentHashMap<>());
+        }
+    };
+
+    private static final EntityFields EMPTY_FIELDS = new EntityFields(new Field[0], List.of(), new ConcurrentHashMap<>());
+
+    private static final Set<Class<?>> TEMPLATE_DIALECTS = Set.of(MysqlDialect.class, PostgresqlDialect.class,
+            OracleDialect.class, H2Dialect.class, DB2Dialect.class, SQLServerDialect.class);
 
     private AccessConfig accessConfig;
 
@@ -191,10 +222,11 @@ public class AccessUtils implements Serializable {
         OperateType operateType = access.getOperateType();
         List<T> p = new ArrayList<>();
         ListTs.add(p, params);
-        ListTs.addAll(p, params2);
-        Field[] fields = new Field[]{};
-        if (clazz != null) {
-            fields = ReflectUtil.getFields(clazz);
+        // 直接收集非空参数，避免 addAll 内部的临时列表和二次拷贝。
+        if (params2 != null) {
+            for (T param : params2) {
+                if (param != null) p.add(param);
+            }
         }
         // obtain datasource connection
 
@@ -210,20 +242,19 @@ public class AccessUtils implements Serializable {
         List<AccessField> idlist = new LinkedList<>();
         List<AccessField> autoIncrementsList = new LinkedList<>();
         long l2 = System.currentTimeMillis();
+        EntityFields entityFields = clazz == null ? EMPTY_FIELDS : FIELD_CACHE.get(clazz);
+        List<ContextField> contextFields = entityFields.contextFields();
+        // 缓存模板始终留在缓存内部；上下文持有独立副本，供插件和主键处理修改。
+        List<AccessField> columnTemplates = getColumnTemplates(entityFields, dialect, dbType);
         int index = 0;
         // 如果没有参数则只记录字段信息 字段信息的值是null
         if (p.isEmpty()) {
-            for (Field field : fields) {
-                if (skipColumn(field)) continue;
-                boolean pk = isPk(field);
-                boolean isAutoIncrement = isAutoIncrement(field);
-                String columnField = getColumnNameFormField(field);
-                WdFieldInfo wdFieldInfo = resolveWdField(field);
-                AccessField accessField = patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+            for (AccessField template : columnTemplates) {
+                AccessField accessField = copyColumnTemplate(template, columnInfoList, autoIncrementsList);
                 // feat: 新增按主键值查询的功能
                 // fix: 修正多主键或者主键in这种可能
                 Iterable<? extends Serializable> primaryKeys = access.getPrimaryKeys();
-                if (pk && primaryKeys != null) {
+                if (accessField.isPkIs() && primaryKeys != null) {
                     for (Serializable key : primaryKeys) {
                         AccessField accessField1 = accessField.cloneNew();
                         if (key instanceof Wd<?> wd) {
@@ -246,33 +277,29 @@ public class AccessUtils implements Serializable {
                 }
             }
             // 动态解析
-            this.dynamicParse(access, fields, connection, dialect, index, columnInfoList, autoIncrementsList, idlist, operateType, updateList, insertList);
+            this.dynamicParse(access, entityFields.fields(), connection, dialect, index, columnInfoList, autoIncrementsList, idlist, operateType, updateList, insertList);
         } else {
             for (T t : p) {
-                for (Field field : fields) {
-                    if (skipColumn(field)) continue;
-                    boolean pk = isPk(field);
-                    boolean isAutoIncrement = isAutoIncrement(field);
-                    String columnField = getColumnNameFormField(field);
-                    WdFieldInfo wdFieldInfo = resolveWdField(field);
+                for (int fieldIndex = 0; fieldIndex < contextFields.size(); fieldIndex++) {
+                    ContextField contextField = contextFields.get(fieldIndex);
+                    Field field = contextField.field();
+                    String columnField;
                     if (index == 0) {
-                        patchItem(wdFieldInfo, dialect, columnInfoList, autoIncrementsList, index, field, pk, isAutoIncrement, columnField);
+                        AccessField columnInfo = copyColumnTemplate(columnTemplates.get(fieldIndex), columnInfoList, autoIncrementsList);
+                        columnField = columnInfo.getColumnName();
+                    } else {
+                        columnField = columnInfoList.get(fieldIndex).getColumnName();
                     }
                     refreshParam(
-                            new Consumer<Object>() {
-                                @Override
-                                public void accept(Object o) {
-                                    ReflectUtil.setFieldValue(t, field, o);
-                                }
-                            },
+                            o -> ReflectUtil.setFieldValue(t, field, o),
                             ReflectUtil.getFieldValue(t, field),
                             field,
-                            wdFieldInfo,
+                            contextField.wdFieldInfo(),
                             columnField,
                             dialect,
                             index,
-                            pk,
-                            isAutoIncrement,
+                            contextField.pk(),
+                            contextField.autoIncrement(),
                             idlist,
                             operateType,
                             access.isSkipNullIs(),
@@ -311,6 +338,62 @@ public class AccessUtils implements Serializable {
         LogSql.init(tRuntimeContext, bt, getConnectionTime, l3);
         return tRuntimeContext;
 
+    }
+
+    private record ContextField(Field field, boolean pk, boolean autoIncrement,
+                                String columnName, WdFieldInfo wdFieldInfo) {
+    }
+
+    private record EntityFields(Field[] fields, List<ContextField> contextFields,
+                                ConcurrentMap<ColumnTemplateKey, List<AccessField>> columnTemplates) {
+    }
+
+    private record ColumnTemplateKey(Class<?> dialectClass, String dialectDbType, String namingDbType,
+                                     boolean underline, boolean pgLower, boolean oracleUpper,
+                                     boolean h2Upper, boolean db2Upper, boolean ignoreEscape, Locale locale,
+                                     Character preWrapQuote, Character sufWrapQuote) {
+    }
+
+    private List<AccessField> getColumnTemplates(EntityFields entityFields, Dialect dialect, String dbType) {
+        if (entityFields.contextFields().isEmpty()) return List.of();
+        // 自定义工具/方言可能带有实例状态，不能仅凭类型判断转义结果。
+        if (getClass() != AccessUtils.class || !TEMPLATE_DIALECTS.contains(dialect.getClass())) {
+            return buildColumnTemplates(entityFields, dialect);
+        }
+        Wrapper wrapper = AbstractDialect.dbVsWrapper.get(dbType);
+        ColumnTemplateKey key = new ColumnTemplateKey(
+                dialect.getClass(),
+                dbType,
+                accessConfig.getDbType(),
+                accessConfig.isFieldNameToUnderline(),
+                accessConfig.isPgAutoLowerCase(),
+                accessConfig.isOracleAutoUpperCase(),
+                accessConfig.isH2AutoUpperCase(),
+                accessConfig.isDb2AutoUpperCase(),
+                accessConfig.isIgnoreEscape(),
+                Locale.getDefault(),
+                wrapper == null ? null : wrapper.getPreWrapQuote(), wrapper == null ? null : wrapper.getSufWrapQuote()
+        );
+        return entityFields.columnTemplates().computeIfAbsent(key, ignored -> buildColumnTemplates(entityFields, dialect));
+    }
+
+    private List<AccessField> buildColumnTemplates(EntityFields entityFields, Dialect dialect) {
+        List<AccessField> templates = new ArrayList<>(entityFields.contextFields().size());
+        List<AccessField> autoIncrements = new ArrayList<>();
+        for (ContextField contextField : entityFields.contextFields()) {
+            String columnName = StrUtil.isNotBlank(contextField.columnName()) ? fn(contextField.columnName()) : null;
+            patchItem(contextField.wdFieldInfo(), dialect, templates, autoIncrements, 0,
+                    contextField.field(), contextField.pk(), contextField.autoIncrement(), columnName);
+        }
+        return List.copyOf(templates);
+    }
+
+    private AccessField copyColumnTemplate(AccessField template, List<AccessField> columnInfoList,
+                                           List<AccessField> autoIncrementsList) {
+        AccessField columnInfo = template.cloneNew();
+        columnInfoList.add(columnInfo);
+        if (columnInfo.isAutoIncrementIs()) autoIncrementsList.add(columnInfo);
+        return columnInfo;
     }
 
     /**
