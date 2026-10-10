@@ -94,12 +94,12 @@ public class OrmInternal extends StandAbstractEasy4jResolve {
      */
     public static void exeAll(DataSource dataSource) {
         List<SqlFileSpi> load = ServiceLoaderUtils.load(SqlFileSpi.class);
-        log.info(SysLog.compact("load sql file spi -> "+load.size() + " records"));
+        log.info(SysLog.compact("load sql file spi -> " + load.size() + " records"));
         for (SqlFileSpi sqlFileSpi : load) {
             List<SqlFileEnums> collect = sqlFileSpi.collect();
             if (CollUtil.isNotEmpty(collect)) {
                 for (SqlFileEnums sqlFileEnums : collect) {
-                    log.info(SysLog.compact("sql file is -> "+sqlFileEnums.getPath()));
+                    log.info(SysLog.compact("sql file is -> " + sqlFileEnums.getPath()));
                 }
                 INIT_DB_FILE_PATH.addAll(collect);
             }
@@ -118,7 +118,8 @@ public class OrmInternal extends StandAbstractEasy4jResolve {
 
         if (jdbcDbAccess == null) return;
 
-        if (StrUtil.equals("true", AbstractEasy4jEnvironment.getInitParameterValue(SysConstant.DISABLED_DB_AUTO_DDL))) return;
+        if (StrUtil.equals("true", AbstractEasy4jEnvironment.getInitParameterValue(SysConstant.DISABLED_DB_AUTO_DDL)))
+            return;
 
         synchronized (INIT_DB_FILE_PATH) {
             for (SqlFileEnums s : INIT_DB_FILE_PATH) {
@@ -129,7 +130,8 @@ public class OrmInternal extends StandAbstractEasy4jResolve {
                 String s1 = s.getPath();
                 Class<?> autoDDLClass = s.getAutoDDLClass();
                 if (StrUtil.isBlank(s1) && autoDDLClass != null) {
-                    log.info(SysLog.compact("begin auto ddl class"+autoDDLClass.getName()));
+                    INITED_FILE_PATH.add(s);
+                    log.info(SysLog.compact("begin auto ddl class" + autoDDLClass.getName()));
                     autoDDL(autoDDLClass);
                     continue;
                 }

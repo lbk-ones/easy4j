@@ -8,21 +8,22 @@ import easy4j.infra.common.utils.SysLog;
 import easy4j.infra.dbaccess.orm.plugin.IPlugin;
 import easy4j.infra.dbaccess.orm.plugin.Plugins;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class PluginLoader {
 
-    static List<IPlugin> pluginsList;
+    static List<IPlugin> pluginsList = new ArrayList<>();
 
-
-    @Resource
-    public void setPluginsList(List<IPlugin> pluginsList) {
-        PluginLoader.pluginsList = pluginsList;
+    @Autowired
+    public void setPluginsList(ObjectProvider<IPlugin> pluginProvider) {
+        PluginLoader.pluginsList = pluginProvider.orderedStream().collect(Collectors.toList());
     }
 
 

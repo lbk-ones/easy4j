@@ -28,20 +28,20 @@ public class QuerySql extends AbsISql {
         List<String> selectFields = runtimeContext.getEscapeSelectFields();
         // 1
         if (CollUtil.isNotEmpty(selectFields)) {
-            TEMP.append(SP.SPACE).append(ListTs.join(SP.DOT, selectFields));
+            TEMP.append(SP.SPACE).append(ListTs.join(SP.COMMA, selectFields));
         } else {
             List<AccessField> columnInfoList = runtimeContext.getColumnInfoList();
-            if (columnInfoList.stream().anyMatch(e-> StrUtil.isNotBlank(e.getAlias()))) {
+            if (columnInfoList.stream().anyMatch(e -> StrUtil.isNotBlank(e.getAlias()))) {
                 int k = 0;
                 for (AccessField accessField : columnInfoList) {
                     TEMP.append(SP.SPACE);
-                    if(k!=0){
+                    if (k != 0) {
                         TEMP.append(SP.COMMA);
                     }
                     TEMP.append(StrUtil.blankToDefault(accessField.getAlias(), accessField.getEscapeColumnName()));
                     k++;
                 }
-            }else{
+            } else {
                 TEMP.append(SP.SPACE).append("*");
             }
 

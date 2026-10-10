@@ -25,17 +25,21 @@ import java.util.List;
 @EnableConfigurationProperties({SpringOrmProperties.class})
 public class Config implements AutoRegisterContext {
 
-    @Resource
-    private DataSource dataSource;
 
+    private final DataSource dataSource;
+
+    private final SpringOrmProperties ormProperties;
 
     @Autowired
-    SpringOrmProperties ormProperties;
+    public Config(DataSource dataSource, SpringOrmProperties ormProperties) {
+        this.dataSource = dataSource;
+        this.ormProperties = ormProperties;
+    }
 
 
     @Bean
     @ConditionalOnMissingBean
-    PluginLoader pluginLoader(){
+    PluginLoader pluginLoader() {
         return new PluginLoader();
     }
 
@@ -51,9 +55,8 @@ public class Config implements AutoRegisterContext {
 
         List<String> plugins = ormProperties.getPlugins();
         PluginLoader.loader(plugins, accessConfig);
-        return OrmFactory.get(accessConfig,ormProperties, true);
+        return OrmFactory.get(accessConfig, ormProperties, true);
     }
-
 
 
     @Override

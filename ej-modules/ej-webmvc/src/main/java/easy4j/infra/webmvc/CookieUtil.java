@@ -7,6 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Cookie 工具类：设置、获取、删除、支持HttpOnly/SameSite/Secure
  */
@@ -35,7 +39,8 @@ public class CookieUtil {
                                  boolean secure,
                                  String sameSite) {
         StringBuilder sb = new StringBuilder();
-        sb.append(name).append("=").append(value);
+        String encode = URLEncoder.encode(value, StandardCharsets.UTF_8);
+        sb.append(name).append("=").append(encode);
         // 路径
         if (StringUtils.hasText(path)) {
             sb.append("; Path=").append(path);
@@ -94,7 +99,7 @@ public class CookieUtil {
         for (Cookie cookie : cookies) {
             if (name.equals(cookie.getName())) {
                 if (StrUtil.isBlank(value)) {
-                    value = cookie.getValue();
+                    value = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
                 }
             }
         }
